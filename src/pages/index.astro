@@ -1,0 +1,197 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import HeroSearch from '../components/home/HeroSearch.astro';
+import ProCallToAction from '../components/home/ProCallToAction.astro';
+import Loader from '../components/ui/Loader.astro';
+
+// IMPORTAMOS EL NUEVO COMPONENTE DE ÍCONOS
+import CategoryQuickLinks from '../components/home/CategoryQuickLinks.astro';
+---
+
+<Layout title="Red de Oficios - Inicio">
+  <Header />
+
+  <main>
+    <HeroSearch />
+
+    <CategoryQuickLinks />
+
+    <section id="resultados" class="results-section">
+      <h2 id="titulo-resultados">Profesionales Recientes</h2>
+      
+      <Loader />
+      
+      <div id="grid-profesionales" class="grid"></div>
+    </section>
+
+    <ProCallToAction />
+  </main>
+
+  <Footer />
+</Layout>
+
+<script>
+  import { db } from "../firebase/client";
+  import { collection, getDocs, query, limit, where, orderBy } from "firebase/firestore";
+
+  const contenedor = document.getElementById('grid-profesionales');
+  const loader = document.getElementById('loading');
+  const btnBuscar = document.getElementById('btn-buscar');
+  const selectCategoria = document.getElementById('filtro-categoria') as HTMLSelectElement;
+  const inputZona = document.getElementById('filtro-zona') as HTMLInputElement;
+  const tituloResultados = document.getElementById('titulo-resultados');
+
+function getIcono(categoria) {
+    const mapa = { 
+      'Plomería': '💧', 
+      'Electricidad': '⚡', 
+      'Gasista': '🔥', 
+      'Climatización': '❄️', 
+      'Albañilería': '🧱', 
+      'Pintura': '🖌️',
+      // NUEVOS
+      'Carpintería': '🪚',
+      'Maquillaje': '💄',
+      'Sastrería': '🧵',
+      'Zapatería': '👞',
+      'Jardinería': '🌿',
+      'Mecánica': '🚗'
+    };
+    return mapa[categoria] || '🛠️';
+  }
+
+  async function buscarProfesionales() {
+    if (!contenedor) return;
+    
+    contenedor.innerHTML = '';
+    loader?.classList.remove('hidden');
+    
+    const catSeleccionada = selectCategoria?.value;
+    const zonaTexto = inputZona?.value.toLowerCase().trim();
+
+    try {
+      const coleccionRef = collection(db, "profesionales");
+      let q;
+
+      if (catSeleccionada) {
+        // Intentamos ordenar por fecha los filtrados también (requiere índice compuesto en Firebase)
+        q = query(coleccionRef, where("categoria", "==", catSeleccionada), orderBy("fecha_alta", "desc"), limit(20));
+      } else {
+         // Ordenamos por los más recientes primero
+        q = query(coleccionRef, orderBy("fecha_alta", "desc"), limit(20));
+      }
+
+      const querySnapshot = await getDocs(q);
+
+      loader?.classList.add('hidden');
+
+      if (querySnapshot.empty) {
+        contenedor.innerHTML = '<p class="msg-vacio">No se encontraron profesionales con ese criterio.</p>';
+        return;
+      }
+
+      let encontrados = 0;
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const id = doc.id;
+        
+        const zonaData = data.zona ? data.zona.toLowerCase() : "";
+        const coincideZona = zonaTexto === "" || zonaData.includes(zonaTexto);
+
+        if (coincideZona) {
+          encontrados++;
+          const card = document.createElement('div');
+          card.className = 'card-pro';
+          card.innerHTML = `
+            <div class="card-header">
+              <span class="icon">${getIcono(data.categoria)}</span>
+              <span class="category-tag">${data.categoria}</span>
+            </div>
+            <h3>${data.nombre}</h3>
+            <p class="zona">📍 ${data.zona}</p>
+            <p class="desc">${data.descripcion ? data.descripcion.substring(0, 80) + '...' : 'Sin descripción.'}</p>
+            <a href="/perfil?id=${id}" class="btn-ver-perfil">Ver Perfil</a>
+          `;
+          contenedor.appendChild(card);
+        }
+      });
+
+      if (encontrados === 0) {
+        contenedor.innerHTML = '<p class="msg-vacio">Hay profesionales de este rubro, pero no en la zona que buscás.</p>';
+      } else {
+        if(tituloResultados) tituloResultados.innerText = catSeleccionada ? `Resultados para ${catSeleccionada}` : "Profesionales Recientes";
+      }
+
+    } catch (error) {
+      console.error("Error:", error);
+      loader?.classList.add('hidden');
+      contenedor.innerHTML = '<p class="msg-vacio">Ocurrió un error al buscar.</p>';
+    }
+  }
+
+// --- INICIALIZACIÓN ---
+  document.addEventListener('DOMContentLoaded', () => {
+    
+    // 1. Revisar si venimos del menú (URL params)
+    const params = new URLSearchParams(window.location.search);
+    const catParam = params.get('categoria');
+
+    if (catParam && selectCategoria) {
+      // Si hay categoría en la URL, cambiamos el valor del Select
+      selectCategoria.value = catParam;
+      
+      // Si el select no tiene esa opción (ej. error de tipeo), volvemos al default
+      if (selectCategoria.value !== catParam) {
+         selectCategoria.value = ""; 
+      }
+    }
+
+    // 2. Ejecutar la búsqueda
+    buscarProfesionales();
+  });
+</script>
+
+<style>
+  /* Estilos de layout para la home */
+  .results-section {
+    padding: 30px 20px 50px 20px; /* Ajusté un poco el padding superior */
+    text-align: center;
+    min-height: 400px;
+    background: #f9f9f9; /* Un fondo gris muy claro para separar de la sección de íconos */
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    max-width: 1000px;
+    margin: 30px auto 0 auto;
+  }
+  
+  .msg-vacio { color: #666; font-style: italic; margin-top: 20px; }
+
+  /* ESTILOS GLOBALES PARA LAS TARJETAS DINÁMICAS (JS) */
+  :global(.card-pro) {
+    border: 1px solid #eee; border-radius: 10px; padding: 20px; background: white;
+    text-align: left; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  :global(.card-pro:hover) { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+  
+  :global(.card-header) { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  :global(.card-header .icon) { font-size: 24px; }
+  :global(.category-tag) { background: #eef4ff; color: #0044cc; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+  
+  :global(.card-pro h3) { margin: 0 0 5px 0; color: #333; }
+  :global(.zona) { color: #666; font-size: 14px; margin: 0 0 10px 0; }
+  :global(.desc) { font-size: 14px; color: #555; margin-bottom: 20px; line-height: 1.4; flex-grow: 1; }
+  
+  :global(.btn-ver-perfil) {
+    display: block; text-align: center; background: white; border: 1px solid #0044cc;
+    color: #0044cc; padding: 10px; border-radius: 5px; text-decoration: none; font-weight: bold; transition: 0.2s;
+  }
+  :global(.btn-ver-perfil:hover) { background: #0044cc; color: white; }
+</style>

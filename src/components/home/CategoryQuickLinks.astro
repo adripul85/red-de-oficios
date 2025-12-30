@@ -1,0 +1,85 @@
+---
+// Datos estáticos para generar la grilla visual
+const categories = [
+  { icon: "💧", name: "Plomería" },
+  { icon: "⚡", name: "Electricidad" },
+  { icon: "🔥", name: "Gasista" },
+  { icon: "❄️", name: "Climatización" },
+  { icon: "🧱", name: "Albañilería" },
+  { icon: "🖌️", name: "Pintura" },
+  // NUEVOS OFICIOS
+  { icon: "🪚", name: "Carpintería" },
+  { icon: "💄", name: "Maquillaje" },
+  { icon: "🧵", name: "Sastrería" },
+  { icon: "👞", name: "Zapatería" },
+  { icon: "🌿", name: "Jardinería" },
+  { icon: "🚗", name: "Mecánica" },
+];
+---
+
+<section class="quick-links-section">
+  <h2>Explora los oficios disponibles</h2>
+  <div class="grid-links">
+    {categories.map((cat) => (
+      <a href="#resultados" class="card-link" title={`Ver profesionales de ${cat.name}`}>
+        <span class="icon-big">{cat.icon}</span>
+        <span class="cat-name">{cat.name}</span>
+      </a>
+    ))}
+  </div>
+</section>
+
+<style>
+  .quick-links-section {
+    padding: 40px 20px 20px 20px; /* Un poco menos de padding abajo */
+    text-align: center;
+    background: #fff;
+  }
+
+  .grid-links {
+    display: grid;
+    /* Tarjetas un poco más compactas (min 130px) */
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 15px;
+    max-width: 800px;
+    margin: 30px auto 0 auto;
+  }
+
+  .card-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #eee;
+    padding: 20px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: white;
+    text-decoration: none; /* Quitamos subrayado del enlace */
+    color: #333;
+    height: 100%; /* Para que todas tengan la misma altura */
+  }
+
+  .card-link:hover {
+    background: #f0f8ff; /* Un azul muy clarito al pasar el mouse */
+    box-shadow: 0 5px 15px rgba(0, 68, 204, 0.15);
+    transform: translateY(-3px);
+    border-color: #0044cc;
+  }
+  
+  .card-link:hover .cat-name {
+      color: #0044cc;
+  }
+
+  .icon-big {
+    font-size: 36px;
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  .cat-name {
+      font-weight: 500;
+      transition: color 0.3s;
+  }
+</style>

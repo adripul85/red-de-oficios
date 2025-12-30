@@ -1,0 +1,261 @@
+---
+// src/pages/perfil.astro
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Perfil del Profesional - Red de Oficios">
+  <Header />
+
+  <main>
+    <div class="container">
+      
+      <a href="/" class="btn-back">← Volver al listado</a>
+
+      <div id="loading" class="mensaje-estado">
+        Cargando información del experto...
+      </div>
+
+      <div id="perfil-content" class="perfil-wrapper hidden">
+        
+        <div class="perfil-header">
+          <div class="icono-grande" id="p-icono">🛠️</div>
+          <div>
+            <span class="badge" id="p-categoria">CATEGORÍA</span>
+            <h1 id="p-nombre">Nombre del Profesional</h1>
+            <p class="ubicacion">📍 <span id="p-zona">Zona</span></p>
+          </div>
+        </div>
+
+        <hr />
+
+        <div class="perfil-body">
+          <h2>Sobre mí</h2>
+          <p id="p-descripcion" class="texto-desc">
+            Aquí irá la descripción detallada...
+          </p>
+
+          <div class="info-extra">
+            <p><strong>📅 Miembro desde:</strong> <span id="p-fecha">-</span></p>
+          </div>
+        </div>
+
+        <div class="cta-box">
+          <p>¿Te interesa este servicio?</p>
+          <a href="#" id="btn-whatsapp" target="_blank" class="btn-whatsapp">
+            Enviar mensaje por WhatsApp 💬
+          </a>
+        </div>
+
+      </div>
+
+      <div id="error-msg" class="mensaje-estado hidden">
+        <p>⚠️ No pudimos encontrar este perfil.</p>
+        <a href="/">Volver al inicio</a>
+      </div>
+
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<script>
+  import { db } from "../firebase/client";
+  import { doc, getDoc } from "firebase/firestore";
+
+  // Helper de Iconos (Mismo que en el index, idealmente iría en un archivo utils.js)
+ function getIcono(categoria) {
+    const mapa = { 
+      'Plomería': '💧', 
+      'Electricidad': '⚡', 
+      'Gasista': '🔥', 
+      'Climatización': '❄️', 
+      'Albañilería': '🧱', 
+      'Pintura': '🖌️',
+      // NUEVOS
+      'Carpintería': '🪚',
+      'Maquillaje': '💄',
+      'Sastrería': '🧵',
+      'Zapatería': '👞',
+      'Jardinería': '🌿',
+      'Mecánica': '🚗'
+    };
+    return mapa[categoria] || '🛠️';
+  }
+
+  async function cargarPerfil() {
+    // 1. Obtener el ID de la URL (ej: dominio.com/perfil?id=12345)
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+
+    if (!id) {
+      mostrarError();
+      return;
+    }
+
+    try {
+      // 2. Buscar el documento específico en Firebase por ID
+      const docRef = doc(db, "profesionales", id);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        rellenarDatos(data);
+      } else {
+        mostrarError();
+      }
+
+    } catch (error) {
+      console.error("Error trayendo perfil:", error);
+      mostrarError();
+    }
+  }
+
+  function rellenarDatos(data) {
+    // Ocultar loading
+    document.getElementById('loading').classList.add('hidden');
+    // Mostrar contenido
+    document.getElementById('perfil-content').classList.remove('hidden');
+
+    // Inyectar textos
+    document.getElementById('p-nombre').innerText = data.nombre;
+    document.getElementById('p-categoria').innerText = data.categoria;
+    document.getElementById('p-zona').innerText = data.zona;
+    document.getElementById('p-descripcion').innerText = data.descripcion || "Este profesional no ha agregado una descripción detallada.";
+    
+    // Icono
+    document.getElementById('p-icono').innerText = getIcono(data.categoria);
+
+    // Fecha (Opcional, si guardaste fecha_alta como Timestamp de Firebase)
+    if (data.fecha_alta && data.fecha_alta.seconds) {
+      const fecha = new Date(data.fecha_alta.seconds * 1000);
+      document.getElementById('p-fecha').innerText = fecha.toLocaleDateString();
+    }
+
+    // Configurar botón de WhatsApp
+    const btnWs = document.getElementById('btn-whatsapp') as HTMLAnchorElement;
+    // Creamos un mensaje predefinido amigable
+    const mensaje = `Hola ${data.nombre}, te vi en Red de Oficios y necesito hacer una consulta.`;
+    btnWs.href = `https://wa.me/549${data.telefono}?text=${encodeURIComponent(mensaje)}`;
+  }
+
+  function mostrarError() {
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('error-msg').classList.remove('hidden');
+  }
+
+  // Ejecutar
+  cargarPerfil();
+</script>
+
+<style>
+  .container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+  
+  .btn-back {
+    display: inline-block;
+    margin-bottom: 20px;
+    text-decoration: none;
+    color: #666;
+    font-weight: bold;
+  }
+  .btn-back:hover { color: #0044cc; }
+
+  .hidden { display: none; }
+
+  .mensaje-estado {
+    text-align: center;
+    padding: 50px;
+    font-size: 18px;
+    color: #666;
+  }
+
+  /* Tarjeta principal del perfil */
+  .perfil-wrapper {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 40px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  }
+
+  .perfil-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .icono-grande {
+    font-size: 60px;
+    background: #f4f4f4;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  h1 { margin: 0; color: #002244; font-size: 32px; }
+  .badge {
+    background: #eef4ff; color: #0044cc; padding: 5px 10px;
+    border-radius: 4px; font-weight: bold; font-size: 14px;
+    text-transform: uppercase; display: inline-block; margin-bottom: 5px;
+  }
+  .ubicacion { font-size: 18px; color: #555; margin-top: 5px; }
+
+  hr { border: 0; border-top: 1px solid #eee; margin: 30px 0; }
+
+  .perfil-body h2 { color: #333; }
+  .texto-desc {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #444;
+    white-space: pre-line; /* Respeta los saltos de línea que escribió el usuario */
+  }
+
+  .info-extra {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #888;
+  }
+
+  /* Call to Action Box */
+  .cta-box {
+    margin-top: 40px;
+    background: #f9fff9;
+    border: 1px solid #d4edda;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  .btn-whatsapp {
+    display: inline-block;
+    background: #25d366;
+    color: white;
+    padding: 15px 30px;
+    border-radius: 50px; /* Redondo estilo botón moderno */
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 18px;
+    margin-top: 10px;
+    transition: transform 0.2s;
+    box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
+  }
+  .btn-whatsapp:hover {
+    transform: scale(1.05);
+    background: #1ebe57;
+  }
+
+  /* Responsive simple */
+  @media (max-width: 600px) {
+    .perfil-header { flex-direction: column; text-align: center; }
+    .perfil-wrapper { padding: 20px; }
+  }
+</style>

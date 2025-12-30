@@ -1,0 +1,31 @@
+<div id="loading" class="mensaje-estado">
+  <div class="spinner"></div>
+  <p>Cargando información...</p>
+</div>
+
+<style>
+  .mensaje-estado {
+    text-align: center;
+    padding: 50px;
+    color: #666;
+  }
+  
+  /* Un spinner simple con CSS */
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #0044cc;
+    border-radius: 50%;
+    margin: 0 auto 15px auto;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Clase de utilidad para ocultarlo desde JS */
+  :global(.hidden) { display: none !important; }
+</style>

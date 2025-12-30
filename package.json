@@ -1,0 +1,17 @@
+{
+  "name": "reddeoficio",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/vercel": "^9.0.2",
+    "astro": "^5.16.6",
+    "firebase": "^12.7.0",
+    "git": "^0.1.5"
+  }
+}

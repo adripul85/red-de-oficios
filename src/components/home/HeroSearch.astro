@@ -1,0 +1,100 @@
+<section class="hero">
+  <h1>Red de Oficios</h1>
+  <p>Conectamos expertos con soluciones.</p>
+  
+  <div class="search-box">
+    <select id="filtro-categoria">
+      <option value="">¿Qué servicio buscás?</option>
+      <option value="Plomería">Plomería</option>
+      <option value="Electricidad">Electricidad</option>
+      <option value="Gasista">Gasista</option>
+      <option value="Climatización">Climatización</option>
+      <option value="Albañilería">Albañilería</option>
+      <option value="Pintura">Pintura</option>
+      <option value="Carpintería">Carpintería</option>
+      <option value="Maquillaje">Maquillaje</option>
+      <option value="Sastrería">Sastrería</option>
+      <option value="Zapatería">Zapatería</option>
+      <option value="Jardinería">Jardinería</option>
+      <option value="Mecánica">Mecánica</option>
+    </select>
+
+    <input type="text" id="filtro-zona" placeholder="Tu Barrio o Zona (ej. Palermo)" />
+    
+    <button id="btn-buscar" type="button">BUSCAR</button>
+  </div>
+</section>
+
+<style>
+  .hero {
+    background: #f4f4f4;
+    padding: 80px 20px;
+    text-align: center;
+  }
+  .hero h1 { margin: 0 0 10px 0; font-size: 40px; color: #333; }
+  .hero p { font-size: 18px; color: #666; margin-bottom: 30px; }
+  
+  .search-box {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .search-box select, 
+  .search-box input {
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .search-box button {
+    padding: 15px 30px;
+    background: #0044cc;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background 0.2s;
+  }
+  .search-box button:hover {
+    background: #003399;
+  }
+  /* ... estilos anteriores ... */
+
+/* AGREGAR AL FINAL DEL STYLE */
+@media (max-width: 600px) {
+  .hero {
+    padding: 40px 15px !important; /* Menos relleno en celular */
+  }
+  
+  .hero h1 {
+    font-size: 28px !important; /* Texto un poco más chico */
+  }
+
+  .search-box {
+    flex-direction: column; /* Forzamos columna */
+    padding: 15px;
+  }
+
+  /* Que los inputs y el botón ocupen todo el ancho */
+  .search-box select, 
+  .search-box input, 
+  .search-box button {
+    width: 100%;
+    min-width: 100%; /* Asegura que no se achiquen */
+    margin-bottom: 10px;
+  }
+}
+</style>

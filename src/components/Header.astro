@@ -1,0 +1,245 @@
+---
+import Logo from './ui/Logo.astro';
+const categories = [
+  "Plomería", "Electricidad", "Gasista", "Climatización", 
+  "Albañilería", "Pintura", "Carpintería", "Maquillaje", 
+  "Sastrería", "Zapatería", "Jardinería", "Mecánica"
+];
+---
+
+<header>
+  
+  <a href="/" class="logo-container">
+    <Logo /> <span class="logo-text">Red de Oficios</span>
+  </a>
+
+  <nav>
+    <div class="dropdown">
+      <button id="btn-categorias" class="dropbtn" type="button">
+        Categorías ▾
+      </button>
+      
+      <div id="dropdown-menu" class="dropdown-content">
+        {categories.map((cat) => (
+          <a href={`/?categoria=${cat}#resultados`}>{cat}</a>
+        ))}
+      </div>
+    </div>
+
+    <a href="/#como-funciona" class="link-nav">Cómo funciona</a>
+  </nav>
+  
+  <a href="/alta" class="btn-pro">¿Sos Profesional?</a>
+</header>
+
+<script>
+  // CORRECCIÓN: Ejecutar lógica cuando el DOM esté listo
+  document.addEventListener('DOMContentLoaded', () => {
+    
+    const btn = document.getElementById('btn-categorias');
+    const menu = document.getElementById('dropdown-menu');
+
+    if (btn && menu) {
+      // 1. Al hacer click en el botón, alternar clase 'show'
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Evita que el click se propague al window
+        menu.classList.toggle('show');
+      });
+
+      // 2. Cerrar menú si se hace click fuera
+      window.addEventListener('click', (e) => {
+        if (menu.classList.contains('show')) {
+          // Si el click NO fue dentro del menú, ciérralo
+          // (Aunque en este caso queremos cerrarlo siempre que se haga click fuera del botón)
+          menu.classList.remove('show');
+        }
+      });
+      
+      // 3. Cerrar menú también si tocan un enlace dentro del menú (para ir a la categoría)
+      menu.querySelectorAll('a').forEach(link => {
+          link.addEventListener('click', () => {
+              menu.classList.remove('show');
+          });
+      });
+    }
+  });
+</script>
+
+<style>
+  /* --- HEADER BASE --- */
+  header {
+    background-color: var(--color-card-bg);
+    padding: 15px 20px; /* Un poco menos de padding lateral para móviles */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+
+  .logo {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--color-secondary);
+    text-decoration: none;
+    white-space: nowrap; /* Que no se rompa en dos líneas */
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .link-nav {
+    color: var(--color-text);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  
+  /* Ocultar "Cómo funciona" en móviles muy chicos para ahorrar espacio */
+  @media (max-width: 600px) {
+      .link-nav { display: none; }
+  }
+
+  /* --- DROPDOWN (MENÚ) --- */
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+
+  .dropbtn {
+    background: transparent !important;
+    color: var(--color-text) !important;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    padding: 8px 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .dropbtn:hover { color: var(--color-primary) !important; }
+
+  /* Contenido del menú (Oculto por defecto) */
+  .dropdown-content {
+    display: none; /* <--- IMPORTANTE: Oculto */
+    position: absolute;
+    background-color: white;
+    min-width: 200px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    z-index: 2000;
+    top: 100%; /* Justo debajo del botón */
+    left: 50%;
+    transform: translateX(-50%); /* Centrado */
+    margin-top: 10px;
+    
+    /* Scroll si hay muchas categorías */
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  /* CLASE QUE ACTIVA EL JS PARA MOSTRARLO */
+  .dropdown-content.show {
+    display: block !important; /* <--- IMPORTANTE: Visible */
+    animation: fadeIn 0.2s ease-in-out;
+  }
+
+  .dropdown-content a {
+    color: var(--color-text);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+  }
+  .dropdown-content a:last-child { border-bottom: none; }
+  .dropdown-content a:hover {
+    background-color: var(--color-bg);
+    color: var(--color-primary);
+  }
+
+  /* Botón CTA */
+  .btn-pro {
+    background-color: var(--color-primary);
+    color: white;
+    padding: 8px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  @media (max-width: 768px) {
+    header { gap: 10px; }
+    .logo { font-size: 18px; }
+    /* En móvil, alineamos el menú a la izquierda o derecha según convenga */
+    .dropdown-content { left: 0; transform: none; width: 200px; }
+  }
+  /* ... estilos anteriores ... */
+
+@media (max-width: 600px) {
+    header { 
+      padding: 15px; 
+      gap: 10px;
+    }
+    
+    .logo { 
+      font-size: 18px; /* Logo un pelín más chico */
+    }
+
+    /* Ocultamos el enlace "Cómo funciona" en celular para ahorrar espacio */
+    .link-nav { display: none; } 
+
+    /* El botón de "Sos Profesional" lo hacemos más compacto */
+    .btn-pro {
+      font-size: 12px;
+      padding: 8px 10px;
+      white-space: normal; /* Permitimos que el texto baje si es necesario */
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    /* Ajuste crítico del Dropdown en celular */
+    .dropdown-content {
+      position: fixed; /* Fijo en pantalla, no relativo al botón */
+      top: 60px; /* Debajo del header */
+      left: 5%; 
+      width: 90%; /* Ocupa casi toda la pantalla */
+      transform: none; /* Quitamos el centrado anterior */
+      max-height: 60vh; /* Máximo 60% del alto de pantalla */
+    }
+}
+
+/* NUEVOS ESTILOS PARA EL LOGO */
+  .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Espacio entre icono y texto */
+    text-decoration: none;
+  }
+
+  .logo-text {
+    font-size: 22px;
+    font-weight: 800;
+    color: #0707; /* Azul oscuro */
+    letter-spacing: -0.5px;
+  }
+
+  @media (max-width: 600px) {
+    /* En celular quizás quieras achicar un poco el texto */
+    .logo-text { font-size: 18px; }
+  }
+</style>
