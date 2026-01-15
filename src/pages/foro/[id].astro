@@ -1,0 +1,343 @@
+---
+export const prerender = false;
+
+import Layout from "../../layouts/Layout.astro";
+import { db } from "../../firebase/client";
+import {
+    doc,
+    getDoc,
+    collection,
+    query,
+    where,
+    getDocs,
+    orderBy,
+} from "firebase/firestore";
+
+const { id } = Astro.params;
+
+if (!id) return Astro.redirect("/foro");
+
+let thread = null;
+let replies = [];
+let error = null;
+
+// Helper de fechas ULTRA SEGURO
+function formatDate(timestamp) {
+    if (!timestamp) return "Fecha desconocida";
+    try {
+        // 1. Si es Timestamp de Firestore
+        if (timestamp && typeof timestamp.toDate === "function") {
+            return timestamp.toDate().toLocaleDateString();
+        }
+        // 2. Si es objeto Date JS
+        else if (timestamp instanceof Date) {
+            return timestamp.toLocaleDateString();
+        }
+        // 3. Si es String (ej: "2024-01-01")
+        else if (typeof timestamp === "string") {
+            return timestamp;
+        }
+        return "Fecha inválida";
+    } catch (e) {
+        return "Error fecha";
+    }
+}
+
+try {
+    // 1. OBTENER EL DEBATE
+    const threadRef = doc(db, "foro_threads", id);
+    const snap = await getDoc(threadRef);
+
+    if (snap.exists()) {
+        const data = snap.data();
+
+        // 🔥 SANITIZACIÓN DE DATOS (Rellena huecos si faltan datos en Firebase)
+        thread = {
+            id: snap.id,
+            title: data?.title || "Sin título",
+            content: data?.content || "Sin contenido.",
+            category: data?.category || "general",
+
+            // Datos de Autor (Importante: authorId puede venir null si es viejo)
+            authorName: data?.authorName || "Anónimo",
+            authorPhoto:
+                data?.authorPhoto || `https://ui-avatars.com/api/?name=User`,
+            authorId: data?.authorId || "unknown",
+
+            // Fecha
+            date: formatDate(data?.createdAt),
+
+            // Contadores (Asegurar que sean números)
+            likes: Number(data?.likes) || 0,
+            views: Number(data?.views) || 0,
+
+            // Arrays
+            images: Array.isArray(data?.images) ? data.images : [],
+        };
+
+        // 2. OBTENER RESPUESTAS
+        try {
+            const repliesRef = collection(db, "foro_posts");
+            const q = query(
+                repliesRef,
+                where("threadId", "==", id),
+                orderBy("createdAt", "asc"),
+            );
+            const repliesSnap = await getDocs(q);
+
+            replies = repliesSnap.docs.map((doc) => {
+                const rData = doc.data();
+                return {
+                    id: doc.id,
+                    content: rData?.content || "",
+                    authorName: rData?.authorName || "Anónimo",
+                    authorPhoto:
+                        rData?.authorPhoto ||
+                        `https://ui-avatars.com/api/?name=A`,
+                    date: formatDate(rData?.createdAt),
+                };
+            });
+        } catch (replyError) {
+            console.error(
+                "Error cargando respuestas (no bloqueante):",
+                replyError,
+            );
+            replies = []; // Si falla, mostramos 0 respuestas pero cargamos el post
+        }
+    } else {
+        error = "El debate no existe.";
+    }
+} catch (e) {
+    console.error("❌ Error CRÍTICO renderizando [id].astro:", e);
+    error = `Error técnico: ${e.message}`;
+}
+---
+
+<Layout title={thread ? thread.title : "Error"}>
+    <script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
+    ></script>
+
+    <div class="bg-[#F8F9FA] min-h-screen py-8 font-sans">
+        <div class="max-w-4xl mx-auto px-4">
+            <a
+                href="/foro"
+                class="text-slate-500 hover:text-[#FF5A5F] mb-6 inline-block font-bold text-sm"
+            >
+                ← Volver a la Comunidad
+            </a>
+
+            {
+                error ? (
+                    <div class="bg-red-50 border-l-4 border-red-500 p-6 rounded-r shadow-sm text-center">
+                        <h3 class="text-red-700 font-bold text-lg mb-2">
+                            😕 Ups, algo salió mal
+                        </h3>
+                        <p class="text-red-600 mb-4">{error}</p>
+                        <a
+                            href="/foro"
+                            class="bg-red-100 text-red-700 px-4 py-2 rounded-lg font-bold hover:bg-red-200"
+                        >
+                            Volver al Foro
+                        </a>
+                    </div>
+                ) : (
+                    <>
+                        {/* --- DEBATE PRINCIPAL --- */}
+                        <article class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 mb-8 relative group">
+                            <div class="flex items-start justify-between mb-6">
+                                <div class="flex items-center gap-4">
+                                    <img
+                                        src={thread.authorPhoto}
+                                        class="w-12 h-12 rounded-full border-2 border-slate-100"
+                                    />
+                                    <div>
+                                        <h1 class="text-2xl md:text-3xl font-bold text-slate-800 leading-tight mb-1">
+                                            {thread.title}
+                                        </h1>
+                                        <div class="flex items-center gap-2 text-sm text-slate-500">
+                                            <span class="font-bold text-[#FF5A5F]">
+                                                {thread.authorName}
+                                            </span>
+                                            <span>• {thread.date}</span>
+                                            <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-xs font-bold uppercase ml-2">
+                                                {thread.category}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="prose prose-slate max-w-none text-slate-700 leading-relaxed text-lg mb-6 whitespace-pre-line">
+                                {thread.content}
+                            </div>
+
+                            {thread.images.length > 0 && (
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                                    {thread.images.map((img) => (
+                                        <img
+                                            src={img}
+                                            class="rounded-xl border border-slate-100 w-full h-48 object-cover cursor-pointer hover:opacity-90"
+                                            onclick={`window.open('${img}', '_blank')`}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* CONTROLES (Solo visibles para el dueño) */}
+                            <div
+                                class="owner-controls hidden absolute top-6 right-6 flex gap-2"
+                                data-author-id={thread.authorId}
+                                data-thread-id={thread.id}
+                            >
+                                <button
+                                    class="btn-edit text-slate-400 hover:text-blue-600 p-2 transition"
+                                    title="Editar"
+                                >
+                                    ✏️
+                                </button>
+                                <button
+                                    class="btn-delete text-slate-400 hover:text-red-600 p-2 transition"
+                                    title="Eliminar"
+                                >
+                                    🗑️
+                                </button>
+                            </div>
+
+                            <div class="flex items-center gap-6 pt-6 border-t border-slate-100 text-slate-500 font-medium">
+                                <span>❤️ {thread.likes} Útil</span>
+                                <span>💬 {replies.length} Respuestas</span>
+                                <span>👁️ {thread.views} Vistas</span>
+                            </div>
+                        </article>
+
+                        {/* --- RESPUESTAS --- */}
+                        <div class="space-y-6 mb-12">
+                            <h3 class="text-xl font-bold text-slate-800 px-2">
+                                {replies.length} Respuestas
+                            </h3>
+                            {replies.map((reply) => (
+                                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex gap-4">
+                                    <img
+                                        src={reply.authorPhoto}
+                                        class="w-10 h-10 rounded-full border border-slate-100 flex-shrink-0"
+                                    />
+                                    <div class="flex-1">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="font-bold text-slate-800 text-sm">
+                                                {reply.authorName}
+                                            </span>
+                                            <span class="text-xs text-slate-400">
+                                                {reply.date}
+                                            </span>
+                                        </div>
+                                        <p class="text-slate-600 text-sm leading-relaxed whitespace-pre-line">
+                                            {reply.content}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* --- INPUT RESPUESTA --- */}
+                        <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 sticky bottom-4 z-10">
+                            <textarea
+                                id="reply-content"
+                                rows="3"
+                                class="w-full border border-slate-200 rounded-xl p-3 focus:border-[#FF5A5F] resize-none outline-none"
+                                placeholder="Escribe tu respuesta..."
+                            />
+                            <div class="flex justify-end mt-3">
+                                <button
+                                    id="btn-reply"
+                                    class="bg-[#FF5A5F] hover:bg-[#ff4146] text-white font-bold py-2 px-6 rounded-lg shadow-md transition"
+                                >
+                                    Publicar
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                )
+            }
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { auth, db } from "../../firebase/client";
+    import { onAuthStateChanged } from "firebase/auth";
+    import {
+        doc,
+        updateDoc,
+        addDoc,
+        collection,
+        serverTimestamp,
+        increment,
+        deleteDoc,
+    } from "firebase/firestore";
+
+    // @ts-ignore
+    const currentThreadId = window.location.pathname.split("/").pop();
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            document.querySelectorAll(".owner-controls").forEach((div) => {
+                // @ts-ignore
+                if (div.dataset.authorId === user.uid)
+                    div.classList.remove("hidden");
+            });
+        }
+    });
+
+    document
+        .getElementById("btn-reply")
+        ?.addEventListener("click", async () => {
+            // @ts-ignore
+            const content = document.getElementById("reply-content").value;
+            if (!content.trim()) return alert("Escribe algo.");
+            const user = auth.currentUser;
+            if (!user) return (window.location.href = "/ingresar");
+
+            try {
+                await addDoc(collection(db, "foro_posts"), {
+                    threadId: currentThreadId,
+                    content: content,
+                    authorId: user.uid,
+                    authorName: user.displayName || "Usuario",
+                    authorPhoto: user.photoURL,
+                    createdAt: serverTimestamp(),
+                });
+                await updateDoc(doc(db, "foro_threads", currentThreadId), {
+                    replyCount: increment(1),
+                    lastReplyAt: serverTimestamp(),
+                });
+                window.location.reload();
+            } catch (e) {
+                alert("Error al publicar.");
+            }
+        });
+
+    document.querySelectorAll(".btn-delete").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+            // @ts-ignore
+            if (confirm("¿Borrar debate?")) {
+                try {
+                    // @ts-ignore
+                    const id =
+                        e.target.closest(".owner-controls").dataset.threadId;
+                    await deleteDoc(doc(db, "foro_threads", id));
+                    window.location.href = "/foro";
+                } catch (e) {
+                    alert("Error al borrar");
+                }
+            }
+        });
+    });
+
+    document.querySelectorAll(".btn-edit").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+            // @ts-ignore
+            const id = e.target.closest(".owner-controls").dataset.threadId;
+            window.location.href = `/foro/editar/${id}`;
+        });
+    });
+</script>

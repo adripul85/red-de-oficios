@@ -1,85 +1,219 @@
 ---
-// Datos estáticos para generar la grilla visual
-const categories = [
-  { icon: "💧", name: "Plomería" },
-  { icon: "⚡", name: "Electricidad" },
-  { icon: "🔥", name: "Gasista" },
-  { icon: "❄️", name: "Climatización" },
-  { icon: "🧱", name: "Albañilería" },
-  { icon: "🖌️", name: "Pintura" },
-  // NUEVOS OFICIOS
-  { icon: "🪚", name: "Carpintería" },
-  { icon: "💄", name: "Maquillaje" },
-  { icon: "🧵", name: "Sastrería" },
-  { icon: "👞", name: "Zapatería" },
-  { icon: "🌿", name: "Jardinería" },
-  { icon: "🚗", name: "Mecánica" },
-];
+import { CATEGORIES } from "../../data/categories";
+
+// 1. Mapa de Iconos (Coincidiendo con tus nombres exactos)
+const iconMap: Record<string, string> = {
+  Albañil: "🧱",
+  Pintor: "🎨",
+  Techista: "🏠",
+  "Colocador de Pisos/Ceramista": "🔲",
+  Durlockero: "🏗️",
+  Herrero: "⚒️",
+  Carpintero: "🪚",
+  Plomero: "💧",
+  "Electricista Matriculado": "⚡",
+  "Gasista Matriculado": "🔥",
+  Cerrajero: "🔑",
+  "Técnico de Aire Acondicionado": "❄️",
+  Destapaciones: "🚽",
+  Vidriero: "🪟",
+  Persianista: "🪟",
+  Jardinero: "🌿",
+  Piletero: "🏊",
+  Fletero: "🚚",
+  Fumigador: "🦟",
+  Tapicero: "🛋️",
+  "Técnico de Electrodomésticos": "🔌",
+  "Instalador de Cámaras y Alarmas": "📹",
+  "Peinador / Estilista": "💇‍♀️",
+  "Maquillador / Maquilladora": "💄",
+  Barbero: "💈",
+  "Manicura / Pedicura": "💅",
+  Zapatero: "👞",
+  "Sastre / Modista": "🧵",
+  Relojero: "⌚",
+  default: "🛠️",
+};
+
+// 2. Aplanar lista completa para el JS
+const allRubros = CATEGORIES.flatMap((grupo) =>
+  grupo.trades.map((trade) => ({
+    nombre: trade.name,
+    // Usamos el nombre como slug para la búsqueda
+    slug: trade.name,
+    icon: iconMap[trade.name] || iconMap["default"],
+  })),
+);
 ---
 
 <section class="quick-links-section">
-  <h2>Explora los oficios disponibles</h2>
-  <div class="grid-links">
-    {categories.map((cat) => (
-      <a href="#resultados" class="card-link" title={`Ver profesionales de ${cat.name}`}>
-        <span class="icon-big">{cat.icon}</span>
-        <span class="cat-name">{cat.name}</span>
-      </a>
-    ))}
+  <div class="container">
+    <h2 class="section-title">¿Qué estás buscando hoy?</h2>
+
+    <div class="categories-grid" id="random-container">
+      <span style="color:#9ca3af; font-size:0.9rem;"
+        >Cargando sugerencias...</span
+      >
+    </div>
+
+    <div
+      id="rubros-data"
+      data-list={JSON.stringify(allRubros)}
+      style="display: none;"
+    >
+    </div>
   </div>
 </section>
 
+<script>
+  // Script que corre en el cliente para aleatorizar
+  document.addEventListener("astro:page-load", () => {
+    const dataDiv = document.getElementById("rubros-data");
+    const container = document.getElementById("random-container");
+
+    if (!dataDiv || !container) return;
+
+    const rawData = dataDiv.dataset.list;
+    if (!rawData) return;
+
+    const allRubros = JSON.parse(rawData);
+
+    // MEZCLAR
+    const shuffled = allRubros.sort(() => Math.random() - 0.5);
+
+    // TOMAR 6
+    const selected = shuffled.slice(0, 6);
+
+    // GENERAR HTML
+    const cardsHTML = selected
+      .map(
+        (cat: any) => `
+      <a href="/resultados?q=${encodeURIComponent(cat.slug)}" class="category-card fade-in">
+        <span class="icon">${cat.icon}</span>
+        <span class="name">${cat.nombre}</span>
+      </a>
+    `,
+      )
+      .join("");
+
+    const viewAllHTML = `
+      <a href="/resultados" class="category-card view-all fade-in">
+        <span class="icon">📚</span>
+        <span class="name">Ver todos los Rubros</span>
+      </a>
+    `;
+
+    container.innerHTML = cardsHTML + viewAllHTML;
+  });
+
+  // Fallback por si no usas View Transitions
+  document.addEventListener("DOMContentLoaded", () => {
+    document.dispatchEvent(new Event("astro:page-load"));
+  });
+</script>
+
 <style>
   .quick-links-section {
-    padding: 40px 20px 20px 20px; /* Un poco menos de padding abajo */
-    text-align: center;
-    background: #fff;
+    padding: 40px 0;
+    background: #ffffff;
   }
 
-  .grid-links {
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    color: #1f2937;
+    margin-bottom: 25px;
+    font-weight: 700;
+  }
+
+  .categories-grid {
     display: grid;
-    /* Tarjetas un poco más compactas (min 130px) */
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 15px;
-    max-width: 800px;
-    margin: 30px auto 0 auto;
+    min-height: 200px;
   }
 
-  .card-link {
+  /* ESTILOS GLOBALES PARA ELEMENTOS INYECTADOS */
+  :global(.category-card) {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border: 1px solid #eee;
-    padding: 20px;
-    border-radius: 10px;
-    transition: all 0.3s ease;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px 10px;
+    text-decoration: none;
+    transition: all 0.2s ease;
     cursor: pointer;
-    background: white;
-    text-decoration: none; /* Quitamos subrayado del enlace */
-    color: #333;
-    height: 100%; /* Para que todas tengan la misma altura */
+    height: 100%;
+    min-height: 110px;
+    animation: fadeIn 0.5s ease-in-out;
   }
 
-  .card-link:hover {
-    background: #f0f8ff; /* Un azul muy clarito al pasar el mouse */
-    box-shadow: 0 5px 15px rgba(0, 68, 204, 0.15);
+  :global(.category-card:hover) {
     transform: translateY(-3px);
-    border-color: #0044cc;
-  }
-  
-  .card-link:hover .cat-name {
-      color: #0044cc;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    border-color: #e67e22;
+    background: white;
   }
 
-  .icon-big {
-    font-size: 36px;
-    display: block;
+  :global(.category-card .icon) {
+    font-size: 2rem;
     margin-bottom: 10px;
   }
-  
-  .cat-name {
-      font-weight: 500;
-      transition: color 0.3s;
+
+  :global(.category-card .name) {
+    color: #4b5563;
+    font-weight: 600;
+    font-size: 0.85rem; /* Ajustado para nombres largos */
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  :global(.view-all) {
+    background: #fff7ed !important;
+    border-color: #ffedd5 !important;
+  }
+  :global(.view-all .name) {
+    color: #ea580c !important;
+  }
+  :global(.view-all:hover) {
+    background: #ffedd5 !important;
+    border-color: #ea580c !important;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .categories-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    :global(.category-card) {
+      padding: 15px 5px;
+      min-height: 90px;
+    }
+    :global(.category-card .icon) {
+      font-size: 1.5rem;
+      margin-bottom: 5px;
+    }
+    :global(.category-card .name) {
+      font-size: 0.7rem;
+    }
   }
 </style>

@@ -1,0 +1,624 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Mi Cuenta - Cliente">
+    <div
+        class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 py-8 px-4"
+    >
+        <div class="max-w-5xl mx-auto">
+            <!-- Header con saludo -->
+            <div class="mb-8">
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
+                    Mi Cuenta
+                </h1>
+                <p class="text-slate-500">Gestiona tu perfil y preferencias</p>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading" class="flex justify-center items-center py-20">
+                <div
+                    class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
+                >
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div
+                id="client-info"
+                class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6"
+            >
+                <!-- Sidebar - Perfil -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Card Perfil -->
+                    <div
+                        class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
+                    >
+                        <div class="text-center">
+                            <div class="relative w-28 h-28 mx-auto mb-4 group">
+                                <img
+                                    id="c-foto"
+                                    src=""
+                                    class="w-full h-full rounded-full object-cover border-4 border-blue-100 shadow-lg"
+                                    alt="Foto de perfil"
+                                />
+                                <div
+                                    class="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 border-4 border-white rounded-full"
+                                >
+                                </div>
+
+                                <!-- Botón cambiar foto -->
+                                <label
+                                    for="upload-avatar"
+                                    class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                >
+                                    <svg
+                                        class="w-8 h-8 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                        ></path>
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                                        ></path>
+                                    </svg>
+                                </label>
+                                <input
+                                    type="file"
+                                    id="upload-avatar"
+                                    accept="image/*"
+                                    class="hidden"
+                                />
+                            </div>
+
+                            <h2
+                                id="c-nombre"
+                                class="text-xl font-bold text-slate-900 mb-1"
+                            >
+                                Usuario
+                            </h2>
+                            <p id="c-email" class="text-sm text-slate-500 mb-4">
+                                email@ejemplo.com
+                            </p>
+
+                            <span
+                                class="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full text-xs font-bold"
+                            >
+                                <svg
+                                    class="w-4 h-4"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                                Cliente Verificado
+                            </span>
+                        </div>
+
+                        <hr class="my-6 border-slate-100" />
+
+                        <!-- Estadísticas rápidas -->
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="text-center p-3 bg-blue-50 rounded-2xl">
+                                <p
+                                    class="text-2xl font-bold text-blue-600"
+                                    id="favorites-count"
+                                >
+                                    0
+                                </p>
+                                <p class="text-xs text-slate-600 font-medium">
+                                    Favoritos
+                                </p>
+                            </div>
+                            <div
+                                class="text-center p-3 bg-purple-50 rounded-2xl"
+                            >
+                                <p class="text-2xl font-bold text-purple-600">
+                                    0
+                                </p>
+                                <p class="text-xs text-slate-600 font-medium">
+                                    Reseñas
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Botón Cerrar Sesión -->
+                        <button
+                            id="btn-logout"
+                            class="w-full py-3 px-4 bg-red-50 hover:bg-red-100 text-red-600 font-semibold rounded-2xl transition-all flex items-center justify-center gap-2 group"
+                        >
+                            <svg
+                                class="w-5 h-5 group-hover:rotate-12 transition-transform"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                                ></path>
+                            </svg>
+                            Cerrar Sesión
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Content - Favoritos -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Card Favoritos -->
+                    <div
+                        class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
+                    >
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center"
+                                >
+                                    <svg
+                                        class="w-6 h-6 text-red-600"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                    >
+                                        <path
+                                            fill-rule="evenodd"
+                                            d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                                            clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3
+                                        class="text-xl font-bold text-slate-900"
+                                    >
+                                        Mis Profesionales
+                                    </h3>
+                                    <p class="text-sm text-slate-500">
+                                        Tus favoritos guardados
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Favoritos -->
+                        <div id="favorites-list" class="grid gap-4">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+
+                        <!-- Empty State -->
+                        <div
+                            id="empty-favorites"
+                            class="hidden text-center py-12"
+                        >
+                            <div
+                                class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                            >
+                                <svg
+                                    class="w-10 h-10 text-slate-400"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                                    ></path>
+                                </svg>
+                            </div>
+                            <h4 class="font-bold text-slate-900 mb-2">
+                                No hay favoritos aún
+                            </h4>
+                            <p class="text-slate-500 text-sm mb-4">
+                                Explora profesionales y guárdalos como favoritos
+                            </p>
+                            <a
+                                href="/"
+                                class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-all"
+                            >
+                                Explorar Profesionales
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Card Actividad Reciente (placeholder para futuro) -->
+                    <div
+                        class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
+                    >
+                        <div class="flex items-center gap-3 mb-6">
+                            <div
+                                class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center"
+                            >
+                                <svg
+                                    class="w-6 h-6 text-blue-600"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    ></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-900">
+                                    Actividad Reciente
+                                </h3>
+                                <p class="text-sm text-slate-500">
+                                    Próximamente
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-center py-8 text-slate-400">
+                            <svg
+                                class="w-16 h-16 mx-auto mb-3 opacity-30"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                ></path>
+                            </svg>
+                            <p class="text-sm">
+                                Historial de contactos y reseñas
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { auth, db } from "../firebase/client";
+    import { onAuthStateChanged, signOut } from "firebase/auth";
+    import { doc, getDoc, setDoc } from "firebase/firestore";
+
+    const loading = document.getElementById("loading");
+    const info = document.getElementById("client-info");
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const docRef = doc(db, "clientes", user.uid);
+            let docSnap = await getDoc(docRef);
+
+            if (!docSnap.exists()) {
+                await setDoc(docRef, {
+                    nombre: user.displayName || "Usuario",
+                    email: user.email,
+                    foto:
+                        user.photoURL ||
+                        "https://ui-avatars.com/api/?name=" +
+                            (user.displayName || "U"),
+                    rol: "cliente",
+                    createdAt: new Date(),
+                });
+                docSnap = await getDoc(docRef);
+            }
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                // @ts-ignore
+                document.getElementById("c-nombre").innerText = data.nombre;
+                // @ts-ignore
+                document.getElementById("c-email").innerText = data.email;
+                // @ts-ignore
+                document.getElementById("c-foto").src =
+                    data.foto ||
+                    "https://ui-avatars.com/api/?name=" + data.nombre;
+
+                // Favoritos - Cargar datos reales de profesionales
+                const favs = data.favoritos || [];
+                // @ts-ignore
+                document.getElementById("favorites-count").innerText =
+                    favs.length;
+
+                const favList = document.getElementById("favorites-list");
+                const emptyState = document.getElementById("empty-favorites");
+
+                if (favs.length === 0) {
+                    // @ts-ignore
+                    emptyState.classList.remove("hidden");
+                } else {
+                    // @ts-ignore
+                    emptyState.classList.add("hidden");
+
+                    // Cargar datos completos de cada profesional
+                    const favoritosPromises = favs.map(
+                        async (favId: string) => {
+                            try {
+                                const proDocRef = doc(
+                                    db,
+                                    "profesionales",
+                                    favId,
+                                );
+                                const proSnap = await getDoc(proDocRef);
+                                if (proSnap.exists()) {
+                                    return { id: favId, ...proSnap.data() };
+                                }
+                                return null;
+                            } catch (e) {
+                                console.error("Error cargando profesional:", e);
+                                return null;
+                            }
+                        },
+                    );
+
+                    const favoritosData = await Promise.all(favoritosPromises);
+                    const validFavoritos = favoritosData.filter(
+                        (f) => f !== null,
+                    );
+
+                    // @ts-ignore
+                    favList.innerHTML = validFavoritos
+                        .map(
+                            (fav: any) => `
+              <a href="/perfil?id=${fav.id}" class="flex items-center gap-4 p-4 bg-slate-50 hover:bg-blue-50 rounded-2xl transition-all border border-transparent hover:border-blue-200 group">
+                <div class="relative">
+                  <img src="${fav.foto || "https://ui-avatars.com/api/?name=" + fav.nombre}" class="w-14 h-14 rounded-xl object-cover border-2 border-white shadow-sm" alt="${fav.nombre}">
+                  <div class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 border-2 border-white rounded-full flex items-center justify-center">
+                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">${fav.nombre}</h4>
+                  <p class="text-sm text-slate-500">${fav.rubro_principal || "Profesional"} • ${fav.zona || "Buenos Aires"}</p>
+                  <div class="flex items-center gap-1 mt-1">
+                    ${
+                        fav.promedio > 0
+                            ? `
+                      <span class="text-yellow-500 text-xs">⭐ ${fav.promedio.toFixed(1)}</span>
+                      <span class="text-slate-400 text-xs">(${fav.total_votos || 0})</span>
+                    `
+                            : ""
+                    }
+                  </div>
+                </div>
+                <svg class="w-5 h-5 text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </a>
+            `,
+                        )
+                        .join("");
+                }
+
+                // Cargar Reseñas del Cliente
+                await loadClientReviews(user.uid);
+
+                // Cargar Actividad Reciente
+                await loadRecentActivity(user.uid);
+                // @ts-ignore
+                loading.classList.add("hidden");
+                // @ts-ignore
+                info.classList.remove("hidden");
+            }
+        } else {
+            window.location.href = "/ingresar-cliente";
+        }
+    });
+
+    // Función para cargar reseñas del cliente
+    async function loadClientReviews(userId: string) {
+        const reviewsList = document.getElementById("reviews-list");
+        const emptyReviews = document.getElementById("empty-reviews");
+
+        try {
+            const {
+                collectionGroup,
+                query: firestoreQuery,
+                where: firestoreWhere,
+                getDocs: firestoreGetDocs,
+            } = await import("firebase/firestore");
+
+            // Usar collectionGroup para buscar en TODAS las subcolecciones "resenas"
+            const reviewsRef = collectionGroup(db, "resenas");
+            const q = firestoreQuery(
+                reviewsRef,
+                firestoreWhere("clienteId", "==", userId),
+            );
+
+            const snapshot = await firestoreGetDocs(q);
+
+            if (snapshot.empty) {
+                // @ts-ignore
+                emptyReviews?.classList.remove("hidden");
+            } else {
+                // @ts-ignore
+                emptyReviews?.classList.add("hidden");
+
+                const reviewsHTML = snapshot.docs
+                    .map((docSnap) => {
+                        const review = docSnap.data();
+                        const stars = "⭐".repeat(review.puntuacion || 0);
+                        const fecha = review.fecha?.toDate
+                            ? review.fecha.toDate().toLocaleDateString("es-AR")
+                            : "Fecha desconocida";
+
+                        // Extraer el ID del profesional del path
+                        const profesionalId =
+                            docSnap.ref.parent.parent?.id || "";
+
+                        return `
+            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+              <div class="flex justify-between items-start mb-2">
+                <div class="text-yellow-500 text-sm">${stars}</div>
+                <span class="text-xs text-slate-400">${fecha}</span>
+              </div>
+              <p class="text-sm text-slate-700 mb-2">${review.texto || review.comentario || "Sin comentario"}</p>
+              <a href="/perfil?id=${profesionalId}" class="text-xs text-blue-600 hover:text-blue-700 font-medium">
+                Ver profesional →
+              </a>
+            </div>
+          `;
+                    })
+                    .join("");
+
+                // @ts-ignore
+                if (reviewsList) reviewsList.innerHTML = reviewsHTML;
+            }
+        } catch (error: any) {
+            // Si hay error de permisos o la colección no existe, mostrar empty state sin error
+            console.log("Reseñas no disponibles:", error.code);
+            // @ts-ignore
+            emptyReviews?.classList.remove("hidden");
+        }
+    }
+
+    // Función para cargar actividad reciente
+    async function loadRecentActivity(userId: string) {
+        const activityList = document.getElementById("activity-list");
+        const emptyActivity = document.getElementById("empty-activity");
+
+        try {
+            const {
+                collection: firestoreCollection,
+                query: firestoreQuery,
+                where: firestoreWhere,
+                getDocs: firestoreGetDocs,
+                limit: firestoreLimit,
+            } = await import("firebase/firestore");
+
+            // Intentar cargar desde colección de actividad (si existe)
+            const activityRef = firestoreCollection(db, "actividad_clientes");
+            const q = firestoreQuery(
+                activityRef,
+                firestoreWhere("cliente_uid", "==", userId),
+                firestoreLimit(5),
+            );
+
+            const snapshot = await firestoreGetDocs(q);
+
+            if (snapshot.empty) {
+                // @ts-ignore
+                emptyActivity?.classList.remove("hidden");
+            } else {
+                // @ts-ignore
+                emptyActivity?.classList.add("hidden");
+
+                const activityHTML = snapshot.docs
+                    .map((docSnap) => {
+                        const activity = docSnap.data();
+                        const fecha = activity.fecha?.toDate
+                            ? activity.fecha
+                                  .toDate()
+                                  .toLocaleDateString("es-AR")
+                            : "Hoy";
+                        const icon =
+                            activity.tipo === "whatsapp"
+                                ? "💬"
+                                : activity.tipo === "perfil"
+                                  ? "👁️"
+                                  : "📱";
+
+                        return `
+            <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl text-sm">
+              <span class="text-2xl">${icon}</span>
+              <div class="flex-1">
+                <p class="text-slate-700">${activity.descripcion || "Contacto con profesional"}</p>
+                <p class="text-xs text-slate-400">${fecha}</p>
+              </div>
+            </div>
+          `;
+                    })
+                    .join("");
+
+                // @ts-ignore
+                if (activityList) activityList.innerHTML = activityHTML;
+            }
+        } catch (error: any) {
+            // Si hay error de permisos o la colección no existe, mostrar empty state sin error
+            console.log("Actividad no disponible:", error.code);
+            // @ts-ignore
+            emptyActivity?.classList.remove("hidden");
+        }
+    }
+
+    // Logout
+    document
+        .getElementById("btn-logout")
+        ?.addEventListener("click", async () => {
+            try {
+                await signOut(auth);
+                window.location.href = "/";
+            } catch (e) {
+                console.error(e);
+            }
+        });
+
+    // Upload Avatar
+    document
+        .getElementById("upload-avatar")
+        ?.addEventListener("change", async (e) => {
+            // @ts-ignore
+            const file = e.target?.files?.[0];
+            if (!file || !auth.currentUser) return;
+
+            try {
+                // Importar storage dinámicamente
+                const { ref, uploadBytes, getDownloadURL } =
+                    await import("firebase/storage");
+                const { storage } = await import("../firebase/client");
+
+                // Mostrar feedback
+                const fotoEl = document.getElementById("c-foto");
+                if (fotoEl) {
+                    // @ts-ignore
+                    fotoEl.style.opacity = "0.5";
+                }
+
+                // Subir a Storage
+                const storageRef = ref(
+                    storage,
+                    `clientes/${auth.currentUser.uid}/avatar.jpg`,
+                );
+                await uploadBytes(storageRef, file);
+                const downloadURL = await getDownloadURL(storageRef);
+
+                // Actualizar Firestore
+                const userDocRef = doc(db, "clientes", auth.currentUser.uid);
+                await setDoc(
+                    userDocRef,
+                    { foto: downloadURL },
+                    { merge: true },
+                );
+
+                // Actualizar UI
+                if (fotoEl) {
+                    // @ts-ignore
+                    fotoEl.src = downloadURL;
+                    // @ts-ignore
+                    fotoEl.style.opacity = "1";
+                }
+
+                // Notificación
+                alert("✅ Foto actualizada correctamente");
+            } catch (error) {
+                console.error("Error subiendo avatar:", error);
+                alert("❌ Error al subir la foto. Intenta de nuevo.");
+            }
+        });
+</script>

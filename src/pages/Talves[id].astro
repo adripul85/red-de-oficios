@@ -1,0 +1,77 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { db } from "../firebase/client"; // Ajusta la ruta a tu cliente firebase
+import { collection, query, where, getDocs } from "firebase/firestore";
+
+const { id } = Astro.params; // Esto captura lo que va en la URL
+
+// Lógica básica para buscar al usuario (esto se ejecutará en el servidor si usas SSR, o necesitas cliente)
+---
+
+<Layout title="Perfil Profesional">
+    <div class="container" style="padding: 100px 20px; text-align: center;">
+        <h1>Perfil Público</h1>
+        <p>Viendo el perfil con ID/Slug: <strong>{id}</strong></p>
+
+        <div id="profile-loader">Cargando datos...</div>
+        <div id="profile-content" class="hidden">
+            <h2 id="p-nombre"></h2>
+            <img id="p-foto" src="" style="width:150px; border-radius:50%;" />
+            <p id="p-rubro"></p>
+        </div>
+    </div>
+</Layout>
+
+<script define:vars={{ id }}>
+    import { db } from "../../firebase/client";
+    import {
+        collection,
+        query,
+        where,
+        getDocs,
+        doc,
+        getDoc,
+    } from "firebase/firestore";
+
+    async function loadProfile() {
+        console.log("Buscando perfil:", id);
+
+        // Intenta buscar por SLUG primero
+        const q = query(
+            collection(db, "profesionales"),
+            where("slug", "==", id),
+        );
+        const querySnapshot = await getDocs(q);
+
+        let data = null;
+
+        if (!querySnapshot.empty) {
+            data = querySnapshot.docs[0].data();
+        } else {
+            // Si no encuentra por slug, intenta por ID directo (UID)
+            try {
+                const docRef = doc(db, "profesionales", id);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) data = docSnap.data();
+            } catch (e) {
+                console.log("No es un ID válido tampoco");
+            }
+        }
+
+        if (data) {
+            document.getElementById("profile-loader").style.display = "none";
+            document
+                .getElementById("profile-content")
+                .classList.remove("hidden");
+
+            document.getElementById("p-nombre").innerText = data.nombre;
+            document.getElementById("p-rubro").innerText = data.rubro_principal;
+            if (data.foto) document.getElementById("p-foto").src = data.foto;
+        } else {
+            document.getElementById("profile-loader").innerText =
+                "Perfil no encontrado 😢";
+        }
+    }
+
+    loadProfile();
+</script>

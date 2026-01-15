@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Bloquear partes privadas para que no salgan en Google
+Disallow: /admin
+Disallow: /mi-perfil
+
+Sitemap: https://tu-proyecto.vercel.app/sitemap-index.xml

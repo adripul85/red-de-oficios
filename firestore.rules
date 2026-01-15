@@ -1,0 +1,130 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- FUNCIONES DE AYUDA ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Verifica si el usuario actual es el dueño del documento
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    // Verifica si es Admin o Moderador leyendo su perfil de profesional
+    function isStaff() {
+       return isSignedIn() && (
+         get(/databases/$(database)/documents/profesionales/$(request.auth.uid)).data.rol in ['admin', 'moderador', 'moderator']
+       );
+    }
+
+    // --- 1. PERFILES DE PROFESIONALES ---
+    match /profesionales/{userId} {
+      // Todo el mundo puede ver los perfiles
+      allow read: if true;
+      
+      // Crear: Solo el dueño al registrarse
+      allow create: if isOwner(userId);
+      
+      // Actualizar: 
+      // 1. El dueño (sus datos propios).
+      // 2. El Admin (para verificar cuentas, cambiar planes, etc).
+      // 3. Contadores automáticos (likes, vistas) permitidos a usuarios logueados.
+      allow update: if isOwner(userId) || isStaff() || (
+        isSignedIn() && 
+        request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['promedio', 'total_votos', 'vistas_perfil', 'contactos_whatsapp', 'likes', 'portfolio', 'servicios_lista'])
+      );
+      
+      // Borrar: Solo Admin
+      allow delete: if isStaff();
+      
+      // Subcolección de Reseñas
+      match /resenas/{reviewId} {
+        allow read: if true;
+        allow create: if isSignedIn();
+        allow delete: if isStaff() || (isSignedIn() && request.auth.uid == resource.data.clienteId);
+      }
+    }
+
+    // --- 2. CLIENTES ---
+    match /clientes/{userId} {
+      allow read, write: if isOwner(userId) || isStaff();
+    }
+
+    // --- 3. FORO (COMUNIDAD) ---
+    // Threads (Temas principales)
+    match /foro_threads/{threadId} {
+      allow read: if true; // Todos ven (sin orderBy para permitir posts viejos)
+      allow create: if isSignedIn(); // Logueados crean
+      // Solo el autor o el Admin pueden editar/borrar
+      allow update, delete: if isStaff() || (isSignedIn() && request.auth.uid == resource.data.authorId);
+    }
+    
+    // Posts (Respuestas)
+    match /foro_posts/{postId} {
+      allow read: if true; // Todos ven (sin orderBy para permitir posts viejos)
+      allow create: if isSignedIn();
+      // Solo el autor o el Admin pueden editar/borrar
+      allow update, delete: if isStaff() || (isSignedIn() && request.auth.uid == resource.data.authorId);
+    }
+
+    // --- 4. MENSAJERÍA Y REPORTES (PARA EL ADMIN PANEL) ---
+    // Mensajes de contacto desde la web (formulario de contacto)
+    match /mensajes_web/{msgId} {
+      allow create: if true; // Cualquiera puede enviar mensaje
+      allow read, update, delete: if isStaff(); // Solo admin/moderador puede leer
+    }
+    
+    // Reportes de perfiles (denuncias de usuarios)
+    match /reportes_perfiles/{reportId} {
+      allow create: if isSignedIn(); // Usuarios logueados pueden reportar
+      allow read, update: if isStaff(); // Solo admin/moderador puede ver y gestionar
+    }
+    
+    // Solicitudes de validación (si usas una aparte de 'profesionales')
+    match /solicitudes_validacion/{solicitudId} {
+      allow create: if isSignedIn();
+      allow read, write: if isStaff();
+    }
+
+    // --- 5. PERMITIR collectionGroup en resenas ---
+    match /{path=**}/resenas/{reviewId} {
+      allow read: if true;
+    }
+
+    // --- 6. OTROS ---
+    match /blog/{postId} { 
+      allow read: if true; 
+      allow write: if isStaff(); 
+    }
+    
+    match /blog_posts/{postId} { 
+      allow read: if true; 
+      allow write: if isStaff(); 
+    }
+    
+    match /search_trends/{docId} { 
+      allow read: if true; 
+      allow write: if true; 
+    }
+    
+    // Configuración del sistema (incluye giftcard)
+    match /configuracion/{docId} { 
+      allow read: if true; // Lectura pública para giftcard
+      allow write: if isStaff(); // Solo admin puede modificar
+    }
+    
+    // Gift Cards (si usas colección separada)
+    match /gift_cards/{cardId} { 
+      allow read: if isSignedIn();
+      allow update: if isStaff();
+    }
+
+    // --- ESTA LÍNEA DEBE ESTAR AL FINAL (Bloqueo por defecto) ---
+    match /{document=**} { 
+      allow read, write: if false; 
+    }
+  }
+}

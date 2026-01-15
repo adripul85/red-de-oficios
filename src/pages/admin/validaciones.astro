@@ -1,0 +1,243 @@
+---
+// 🔥 NOTA: Como estás en la carpeta /admin/, usamos ../../ para volver a la raíz src
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Panel Admin - Validaciones" hideHeader={true} hideFooter={true}>
+    <div class="flex h-screen bg-gray-100 font-sans">
+        <aside class="w-64 bg-gray-900 text-white flex flex-col shadow-xl">
+            <div
+                class="p-6 text-xl font-bold border-b border-gray-800 flex items-center gap-2"
+            >
+                🛡️ Admin Panel
+            </div>
+            <nav class="flex-1 p-4 space-y-2">
+                <a
+                    href="/admin"
+                    class="block py-2.5 px-4 rounded text-gray-300 hover:bg-gray-800 hover:text-white transition"
+                >
+                    ⬅ Volver al Sitio
+                </a>
+                <div
+                    class="block py-2.5 px-4 rounded bg-blue-600 text-white font-bold shadow-md"
+                >
+                    Validaciones
+                </div>
+            </nav>
+            <div
+                class="p-4 border-t border-gray-800 text-xs text-gray-500 text-center"
+            >
+                DeOficios Admin v1.0
+            </div>
+        </aside>
+
+        <main class="flex-1 p-8 overflow-y-auto">
+            <header class="mb-8 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">
+                        Solicitudes de Blindaje
+                    </h1>
+                    <p class="text-gray-600 mt-1">
+                        Revisa la documentación y otorga el Check Azul.
+                    </p>
+                </div>
+                <div
+                    class="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200"
+                >
+                    <span class="text-sm font-bold text-gray-500">Estado:</span>
+                    <span class="text-green-600 font-bold ml-1"
+                        >Sistema Activo 🟢</span
+                    >
+                </div>
+            </header>
+
+            <div id="loading" class="text-center py-20">
+                <div
+                    class="inline-block animate-spin text-4xl text-blue-600 mb-4"
+                >
+                    🌀
+                </div>
+                <p class="text-gray-500">Buscando solicitudes pendientes...</p>
+            </div>
+
+            <div
+                id="empty-state"
+                class="hidden text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-200"
+            >
+                <div class="text-5xl mb-4">✅</div>
+                <h3 class="font-bold text-xl text-gray-800">Todo al día</h3>
+                <p class="text-gray-500 mt-2">
+                    No hay profesionales pendientes de validación en este
+                    momento.
+                </p>
+            </div>
+
+            <div
+                id="cards-container"
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            >
+            </div>
+        </main>
+    </div>
+</Layout>
+
+<script>
+    // 🔥 IMPORTANTE: Ajustamos las rutas aquí también (../../)
+    import { auth, db } from "../../firebase/client";
+    import { onAuthStateChanged } from "firebase/auth";
+    import {
+        collection,
+        query,
+        where,
+        getDocs,
+        doc,
+        updateDoc,
+        getDoc,
+    } from "firebase/firestore";
+
+    const container = document.getElementById("cards-container");
+    const loading = document.getElementById("loading");
+    const empty = document.getElementById("empty-state");
+
+    // 1. VERIFICAR ADMIN
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) return (window.location.href = "/");
+
+        const docRef = doc(db, "profesionales", user.uid);
+        const docSnap = await getDoc(docRef);
+
+        // AQUI DEFINES QUIÉN ES ADMIN (Reemplaza con tu lógica o mail si prefieres)
+        const data = docSnap.data();
+        const isAdmin =
+            data && (data.rol === "admin" || data.rol === "moderador");
+
+        if (isAdmin) {
+            cargarSolicitudes();
+        } else {
+            alert("⛔ Acceso Denegado: Solo personal autorizado.");
+            window.location.href = "/";
+        }
+    });
+
+    // 2. CARGAR SOLICITUDES
+    async function cargarSolicitudes() {
+        // Buscamos profesionales donde 'validacion_estado' sea 'pendiente'
+        const q = query(
+            collection(db, "profesionales"),
+            where("validacion_estado", "==", "pendiente"),
+        );
+
+        try {
+            const querySnapshot = await getDocs(q);
+            loading.classList.add("hidden");
+
+            if (querySnapshot.empty) {
+                empty.classList.remove("hidden");
+                return;
+            }
+
+            container.innerHTML = "";
+            querySnapshot.forEach((docSnap) => {
+                crearTarjeta(docSnap.id, docSnap.data());
+            });
+        } catch (error) {
+            console.error(error);
+            loading.innerHTML = `<div class="bg-red-100 text-red-700 p-4 rounded">Error cargando datos: ${error.message}</div>`;
+        }
+    }
+
+    // 3. RENDERIZAR TARJETA
+    function crearTarjeta(uid, data) {
+        const card = document.createElement("div");
+        card.className =
+            "bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden flex flex-col hover:shadow-lg transition";
+
+        card.innerHTML = `
+            <div class="p-5 border-b border-gray-100 flex items-center gap-4 bg-gray-50">
+                <img src="${data.foto || `https://ui-avatars.com/api/?name=${data.nombre}`}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm">
+                <div>
+                    <h3 class="font-bold text-gray-800 text-sm leading-tight">${data.nombre}</h3>
+                    <p class="text-xs text-gray-500 uppercase font-bold tracking-wide">${data.rubro_principal}</p>
+                </div>
+            </div>
+
+            <div class="p-5 space-y-4 flex-1">
+                
+                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                    <p class="text-xs font-bold text-blue-800 uppercase mb-1">🪪 Documento DNI</p>
+                    ${
+                        data.doc_dni
+                            ? `<a href="${data.doc_dni}" target="_blank" class="text-sm text-blue-600 hover:underline flex items-center gap-1">👁️ Ver Documento</a>`
+                            : '<span class="text-red-500 text-xs font-bold">❌ No subido</span>'
+                    }
+                </div>
+
+                <div class="bg-purple-50 p-3 rounded-lg border border-purple-100">
+                    <p class="text-xs font-bold text-purple-800 uppercase mb-1">⚖️ Antecedentes</p>
+                    ${
+                        data.doc_antecedentes
+                            ? `<a href="${data.doc_antecedentes}" target="_blank" class="text-sm text-purple-600 hover:underline flex items-center gap-1">👁️ Ver Documento</a>`
+                            : '<span class="text-red-500 text-xs font-bold">❌ No subido</span>'
+                    }
+                </div>
+
+            </div>
+
+            <div class="p-4 border-t border-gray-100 grid grid-cols-2 gap-3 bg-gray-50">
+                <button class="btn-reject w-full py-2 bg-white border border-red-200 text-red-600 rounded-lg font-bold text-xs hover:bg-red-50 transition">
+                    Rechazar
+                </button>
+                <button class="btn-approve w-full py-2 bg-green-600 text-white rounded-lg font-bold text-xs hover:bg-green-700 shadow-sm transition">
+                    ✅ Aprobar
+                </button>
+            </div>
+        `;
+
+        // Lógica Botones
+        const btnApprove = card.querySelector(".btn-approve");
+        const btnReject = card.querySelector(".btn-reject");
+
+        btnApprove.onclick = async () => {
+            if (
+                !confirm(
+                    `¿Confirmas que los documentos de ${data.nombre} son válidos?`,
+                )
+            )
+                return;
+            try {
+                await updateDoc(doc(db, "profesionales", uid), {
+                    verificado: true,
+                    validacion_estado: "aprobado",
+                });
+                animarSalida(card);
+            } catch (e) {
+                alert("Error: " + e.message);
+            }
+        };
+
+        btnReject.onclick = async () => {
+            if (!confirm(`¿Rechazar documentación de ${data.nombre}?`)) return;
+            try {
+                await updateDoc(doc(db, "profesionales", uid), {
+                    verificado: false,
+                    validacion_estado: "rechazado",
+                });
+                animarSalida(card);
+            } catch (e) {
+                alert("Error: " + e.message);
+            }
+        };
+
+        container.appendChild(card);
+    }
+
+    function animarSalida(element) {
+        element.style.transform = "scale(0.9)";
+        element.style.opacity = "0";
+        setTimeout(() => {
+            element.remove();
+            if (container.children.length === 0)
+                empty.classList.remove("hidden");
+        }, 300);
+    }
+</script>

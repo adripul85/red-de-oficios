@@ -1,0 +1,89 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Términos y Condiciones - DeOficios">
+  
+
+  <main class="legal-container">
+    <div class="legal-header">
+      <h1>Términos y Condiciones 📜</h1>
+      <p class="last-update">Última actualización: {new Date().toLocaleDateString()}</p>
+    </div>
+
+    <div class="legal-content">
+      <section>
+        <h3>1. Introducción</h3>
+        <p>Bienvenido a <strong>DeOficios.com.ar</strong>. Al acceder y utilizar nuestro sitio web, aceptas cumplir con estos términos y condiciones. Si no estás de acuerdo con alguna parte de los términos, te rogamos que no utilices nuestros servicios.</p>
+      </section>
+
+      <section>
+        <h3>2. Descripción del Servicio</h3>
+        <p>DeOficios actúa exclusivamente como una <strong>plataforma de conexión</strong> ("Intermediario Digital") entre usuarios que buscan servicios ("Clientes") y profesionales que los ofrecen ("Profesionales"). Nosotros no empleamos a los profesionales ni garantizamos la calidad, seguridad o legalidad de los servicios prestados.</p>
+      </section>
+
+      <section>
+        <h3>3. Responsabilidad Limitada (Cláusula Clave)</h3>
+        <p>DeOficios <strong>NO se hace responsable</strong> por:</p>
+        <ul>
+          <li>La calidad, cumplimiento, puntualidad o garantía de los trabajos realizados por los profesionales.</li>
+          <li>Daños, perjuicios o pérdidas (materiales o personales) resultantes de la contratación de un servicio.</li>
+          <li>Disputas entre Clientes y Profesionales. Cualquier reclamo debe ser resuelto directamente entre las partes involucradas.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>4. Pagos y Suscripciones (Profesionales)</h3>
+        <p>Al contratar un Plan Premium (Mensual o Semestral):</p>
+        <ul>
+          <li><strong>Procesamiento:</strong> Los pagos son procesados de forma segura a través de Mercado Pago.</li>
+          <li><strong>Renovación y Cancelación:</strong> El servicio se mantiene activo por el periodo contratado. Puedes solicitar la baja en cualquier momento para evitar futuras renovaciones, pero <strong>no se realizan reembolsos parciales</strong> por periodos ya iniciados.</li>
+          <li><strong>Cambios de Precio:</strong> Nos reservamos el derecho de modificar las tarifas, notificando a los usuarios con antelación antes de su próxima renovación.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>5. Registro, Cuentas y Veracidad</h3>
+        <p>Al registrarte como Profesional, garantizas bajo declaración jurada que la información proporcionada (identidad, matrícula, domicilio) es verdadera y vigente.</p>
+        <p><strong>Nos reservamos el derecho de admisión y permanencia.</strong> Podemos suspender o eliminar cuentas que proporcionen información falsa, reciban múltiples reportes negativos o utilicen lenguaje ofensivo/discriminatorio.</p>
+      </section>
+
+      <section>
+        <h3>6. Verificación de Identidad</h3>
+        <p>La insignia de "Verificado" ✅ indica que DeOficios ha revisado la documentación digital presentada por el profesional (DNI, CUIT) en el momento de la solicitud. Esto es una medida de seguridad básica y <strong>no constituye un aval absoluto</strong> ni una garantía sobre la conducta futura del profesional.</p>
+      </section>
+
+      <section>
+        <h3>7. Propiedad Intelectual</h3>
+        <p>Todo el contenido de este sitio (logos, textos, diseño, base de datos) es propiedad exclusiva de DeOficios. Queda prohibida su reproducción, copia o "scraping" (extracción automática de datos) sin consentimiento expreso.</p>
+      </section>
+
+      <section>
+        <h3>8. Jurisdicción y Ley Aplicable</h3>
+        <p>Estos términos se rigen por las leyes de la República Argentina. Cualquier disputa legal será sometida a la jurisdicción exclusiva de los <strong>Tribunales Ordinarios de la Ciudad Autónoma de Buenos Aires (CABA)</strong>, renunciando a cualquier otro fuero.</p>
+      </section>
+    </div>
+
+  </main>
+  
+  
+</Layout>
+
+<style>
+  .legal-container { max-width: 800px; margin: 0 auto; padding: 60px 20px; font-family: 'Segoe UI', system-ui, sans-serif; min-height: 60vh; }
+  
+  .legal-header { text-align: center; margin-bottom: 50px; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; }
+  h1 { font-size: 2.5rem; color: #1f2937; margin-bottom: 10px; }
+  .last-update { color: #6b7280; font-size: 1rem; }
+  
+  .legal-content section { margin-bottom: 40px; }
+  h3 { color: #e67e22; font-size: 1.5rem; margin-bottom: 15px; font-weight: 700; }
+  p, li { line-height: 1.7; color: #374151; font-size: 1.05rem; }
+  
+  ul { padding-left: 20px; margin-top: 15px; }
+  li { margin-bottom: 10px; }
+  
+  strong { color: #111827; }
+</style>

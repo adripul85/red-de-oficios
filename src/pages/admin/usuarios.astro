@@ -1,0 +1,635 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { db } from "../../firebase/client";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
+
+// TRAER TODOS LOS USUARIOS
+const users = [];
+try {
+    const q = query(collection(db, "profesionales"), orderBy("nombre"));
+    const snapshot = await getDocs(q);
+    snapshot.forEach((doc) => {
+        users.push({ id: doc.id, ...doc.data() });
+    });
+} catch (e) {
+    console.error(e);
+}
+---
+
+<Layout title="Gestión de Usuarios - Admin">
+    <main class="container">
+        <div class="header-row">
+            <div>
+                <h1>👥 Gestión de Profesionales</h1>
+                <p>Total: {users.length} registrados</p>
+            </div>
+            <div class="actions-header">
+                <input
+                    type="text"
+                    id="searchUser"
+                    placeholder="🔍 Buscar por nombre o email..."
+                    class="search-input"
+                />
+                <a href="/admin" class="btn-back">⬅ Panel</a>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table id="usersTable">
+                <thead>
+                    <tr>
+                        <th>Perfil</th>
+                        <th>Datos</th>
+                        <th>Métricas</th>
+                        <th>Estado</th>
+                        <th>Plan</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {
+                        users.map((u) => (
+                            <tr class="user-row">
+                                <td>
+                                    <div class="user-cell">
+                                        {u.foto ? (
+                                            <img
+                                                src={u.foto}
+                                                class="mini-avatar"
+                                            />
+                                        ) : (
+                                            <span class="no-pic">👤</span>
+                                        )}
+                                        <div>
+                                            <strong class="u-name">
+                                                {u.nombre}
+                                            </strong>
+                                            <br />
+                                            <small class="u-email">
+                                                {u.email ||
+                                                    "ID: " +
+                                                        u.id.substring(0, 5) +
+                                                        "..."}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small>
+                                        {u.categoria || "Sin rubro"}
+                                        <br />
+                                        📍 {u.zona || "Sin zona"}
+                                    </small>
+                                </td>
+                                <td>
+                                    <div
+                                        class="stat-badge whatsapp-stat"
+                                        title="Clicks en WhatsApp"
+                                    >
+                                        <span class="icon">📲</span>
+                                        <span class="count">
+                                            {u.contactos_whatsapp || 0}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td id={`status-${u.id}`}>
+                                    {u.verificado ? (
+                                        <span class="badge verified">
+                                            Verificado ✅
+                                        </span>
+                                    ) : (
+                                        <span class="badge pending">
+                                            Pendiente ⏳
+                                        </span>
+                                    )}
+                                </td>
+                                <td id={`plan-${u.id}`}>
+                                    {u.plan === "mensual" ||
+                                    u.plan === "semestral" ||
+                                    u.plan === "experto" ? (
+                                        <span class="badge premium">
+                                            PREMIUM 💎
+                                        </span>
+                                    ) : (
+                                        <span class="badge free">Gratis</span>
+                                    )}
+                                </td>
+                                <td>
+                                    <button
+                                        class="btn-manage"
+                                        data-user={JSON.stringify(u)}
+                                    >
+                                        ⚙️ Gestionar
+                                    </button>
+                                </td>
+                            </tr>
+                        ))
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <dialog id="userModal" class="admin-modal">
+            <div class="modal-content">
+                <span class="close-modal" id="btn-close-modal">×</span>
+                <h2 id="m-nombre">Gestionar Usuario</h2>
+                <p id="m-id" class="text-muted">ID: ...</p>
+
+                <div class="modal-grid">
+                    <div class="modal-col">
+                        <h3>🔐 Datos Sensibles</h3>
+                        <div class="data-group">
+                            <label>DNI:</label>
+                            <span id="m-dni">-</span>
+                        </div>
+                        <div class="data-group">
+                            <label>CUIT:</label>
+                            <span id="m-cuit">-</span>
+                        </div>
+                        <div class="data-group">
+                            <label>Rol Actual:</label>
+                            <strong id="m-rol-display">-</strong>
+                        </div>
+                        <div class="data-group">
+                            <label>Certificado/Matrícula:</label>
+                            <a
+                                id="m-cert-link"
+                                href="#"
+                                target="_blank"
+                                class="btn-link hidden">Ver Documento 📄</a
+                            >
+                            <span id="m-no-cert">No subió archivo</span>
+                        </div>
+
+                        <hr />
+
+                        <h3>✅ Estado de Verificación</h3>
+                        <div class="verify-box">
+                            <p>¿Certificado válido?</p>
+                            <button id="btn-verify" class="btn-action verify"
+                                >Dar el Tilde Azul ✅</button
+                            >
+                            <button
+                                id="btn-unverify"
+                                class="btn-action unverify"
+                                >Quitar Verificación ❌</button
+                            >
+                        </div>
+                    </div>
+
+                    <div class="modal-col">
+                        <h3>👑 Roles del Sistema</h3>
+                        <div class="data-group">
+                            <label>Asignar Rol:</label>
+                            <select id="m-rol-select">
+                                <option value="profesional"
+                                    >Usuario / Profesional</option
+                                >
+                                <option value="moderador">Moderador</option>
+                                <option value="admin">Administrador</option>
+                            </select>
+                            <button
+                                id="btn-save-rol"
+                                class="btn-save"
+                                style="background-color: #7c3aed; margin-top: 5px;"
+                                >💾 Actualizar Rol</button
+                            >
+                        </div>
+
+                        <hr />
+
+                        <h3>💎 Membresía</h3>
+                        <select id="m-plan-select">
+                            <option value="gratuito">Gratuito (Básico)</option>
+                            <option value="mensual">Premium Mensual</option>
+                            <option value="semestral">Premium Semestral</option>
+                            <option value="experto">Plan Experto</option>
+                        </select>
+                        <button id="btn-save-plan" class="btn-save"
+                            >💾 Actualizar Plan</button
+                        >
+
+                        <hr />
+
+                        <h3>🚨 Zona de Peligro</h3>
+                        <button id="btn-delete-user" class="btn-delete-danger"
+                            >🗑️ ELIMINAR USUARIO</button
+                        >
+                    </div>
+                </div>
+            </div>
+        </dialog>
+    </main>
+</Layout>
+
+<script>
+    import { db, auth } from "../../firebase/client";
+    import { doc, updateDoc, getDoc, deleteDoc } from "firebase/firestore";
+    import { onAuthStateChanged } from "firebase/auth";
+
+    // 1. SEGURIDAD
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) window.location.href = "/";
+        const snap = await getDoc(doc(db, "profesionales", user.uid));
+        if (!snap.exists() || snap.data().rol !== "admin")
+            window.location.href = "/";
+    });
+
+    // 2. BUSCADOR
+    const searchInput = document.getElementById("searchUser");
+    searchInput?.addEventListener("keyup", (e) => {
+        // @ts-ignore
+        const term = e.target.value.toLowerCase();
+        document.querySelectorAll(".user-row").forEach((row) => {
+            const name = row.querySelector(".u-name").textContent.toLowerCase();
+            const email = row
+                .querySelector(".u-email")
+                .textContent.toLowerCase();
+            // @ts-ignore
+            row.style.display =
+                name.includes(term) || email.includes(term) ? "" : "none";
+        });
+    });
+
+    // 3. LÓGICA DEL MODAL
+    const modal = document.getElementById("userModal");
+    const closeBtn = document.getElementById("btn-close-modal");
+    let currentUserId = null;
+
+    // Cerrar modal
+    closeBtn?.addEventListener("click", () => modal.close());
+    modal?.addEventListener("click", (e) => {
+        if (e.target === modal) modal.close();
+    });
+
+    // Abrir modal (Delegación de eventos para botones "Gestionar")
+    document.querySelectorAll(".btn-manage").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+            // @ts-ignore
+            const userData = JSON.parse(e.currentTarget.dataset.user);
+            openModal(userData);
+        });
+    });
+
+    function openModal(u) {
+        currentUserId = u.id;
+
+        // Llenar datos básicos
+        document.getElementById("m-nombre").textContent = u.nombre;
+        document.getElementById("m-id").textContent = "ID: " + u.id;
+        document.getElementById("m-dni").textContent = u.dni || "No cargado";
+        document.getElementById("m-cuit").textContent = u.cuit || "No cargado";
+
+        // Certificado
+        const certLink = document.getElementById("m-cert-link");
+        const noCert = document.getElementById("m-no-cert");
+        if (u.certificado_url) {
+            // @ts-ignore
+            certLink.href = u.certificado_url;
+            certLink.classList.remove("hidden");
+            noCert.classList.add("hidden");
+        } else {
+            certLink.classList.add("hidden");
+            noCert.classList.remove("hidden");
+        }
+
+        // Planes y Roles
+        // @ts-ignore
+        document.getElementById("m-plan-select").value = u.plan || "gratuito";
+
+        const currentRol = u.rol || "profesional";
+        document.getElementById("m-rol-display").textContent =
+            currentRol.toUpperCase();
+        // @ts-ignore
+        document.getElementById("m-rol-select").value = currentRol;
+
+        // @ts-ignore
+        modal.showModal();
+    }
+
+    // 4. ACCIONES DE BOTONES
+
+    // Verificar
+    document
+        .getElementById("btn-verify")
+        ?.addEventListener("click", async () => {
+            if (!confirm("¿Confirmas que el documento es válido?")) return;
+            await updateDoc(doc(db, "profesionales", currentUserId), {
+                verificado: true,
+            });
+            alert("¡Usuario Verificado! ✅");
+            window.location.reload();
+        });
+
+    // Quitar Verificación
+    document
+        .getElementById("btn-unverify")
+        ?.addEventListener("click", async () => {
+            await updateDoc(doc(db, "profesionales", currentUserId), {
+                verificado: false,
+            });
+            alert("Verificación revocada.");
+            window.location.reload();
+        });
+
+    // Actualizar Rol
+    document
+        .getElementById("btn-save-rol")
+        ?.addEventListener("click", async () => {
+            // @ts-ignore
+            const nuevoRol = document.getElementById("m-rol-select").value;
+            if (confirm(`¿Cambiar rol a ${nuevoRol.toUpperCase()}?`)) {
+                await updateDoc(doc(db, "profesionales", currentUserId), {
+                    rol: nuevoRol,
+                });
+                alert("Rol actualizado.");
+                window.location.reload();
+            }
+        });
+
+    // Actualizar Plan
+    document
+        .getElementById("btn-save-plan")
+        ?.addEventListener("click", async () => {
+            // @ts-ignore
+            const nuevoPlan = document.getElementById("m-plan-select").value;
+            await updateDoc(doc(db, "profesionales", currentUserId), {
+                plan: nuevoPlan,
+            });
+            alert(`Plan actualizado a: ${nuevoPlan.toUpperCase()}`);
+            window.location.reload();
+        });
+
+    // Eliminar Usuario
+    document
+        .getElementById("btn-delete-user")
+        ?.addEventListener("click", async () => {
+            if (
+                confirm("⚠ PELIGRO: Esto borrará al usuario permanentemente.")
+            ) {
+                await deleteDoc(doc(db, "profesionales", currentUserId));
+                alert("Usuario eliminado.");
+                window.location.reload();
+            }
+        });
+</script>
+
+<style>
+    .container {
+        max-width: 1100px;
+        margin: 40px auto;
+        padding: 20px;
+        font-family: "Segoe UI", system-ui, sans-serif;
+    }
+    .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    .header-row h1 {
+        margin: 0;
+        color: #1f2937;
+    }
+
+    .search-input {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        width: 250px;
+    }
+    .btn-back {
+        background: #333;
+        color: white;
+        padding: 10px 15px;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-left: 10px;
+    }
+
+    /* TABLA */
+    .table-responsive {
+        overflow-x: auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 800px;
+    }
+    th {
+        background: #f3f4f6;
+        text-align: left;
+        padding: 15px;
+        color: #4b5563;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        vertical-align: middle;
+        color: #374151;
+    }
+
+    .user-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .mini-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    .no-pic {
+        font-size: 1.5rem;
+        background: #eee;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    /* BADGES */
+    .badge {
+        padding: 4px 8px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+    .verified {
+        background: #dcfce7;
+        color: #166534;
+    }
+    .pending {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+    .premium {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fbbf24;
+    }
+    .free {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    /* ESTILO WHATSAPP */
+    .whatsapp-stat {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background-color: #dcfce7;
+        color: #166534;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        border: 1px solid #bbf7d0;
+    }
+
+    .btn-manage {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.2s;
+    }
+    .btn-manage:hover {
+        background: #1d4ed8;
+    }
+
+    /* MODAL */
+    .admin-modal {
+        border: none;
+        border-radius: 12px;
+        padding: 0;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        max-width: 800px;
+        width: 95%;
+    }
+    .admin-modal::backdrop {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(2px);
+    }
+    .modal-content {
+        padding: 30px;
+        position: relative;
+    }
+    .close-modal {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 2rem;
+        cursor: pointer;
+        color: #666;
+    }
+    .modal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-top: 20px;
+    }
+    .modal-col h3 {
+        margin-top: 0;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 10px;
+        font-size: 1.1rem;
+        color: #333;
+    }
+    .data-group {
+        margin-bottom: 15px;
+    }
+    .data-group label {
+        font-weight: bold;
+        display: block;
+        color: #555;
+        font-size: 0.9rem;
+    }
+    .btn-link {
+        display: inline-block;
+        color: #2563eb;
+        text-decoration: underline;
+    }
+
+    .verify-box {
+        background: #f0fdfa;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        border: 1px dashed #10b981;
+    }
+    .btn-action {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        cursor: pointer;
+        border-radius: 6px;
+        border: none;
+        font-weight: bold;
+    }
+    .verify {
+        background: #10b981;
+        color: white;
+    }
+    .unverify {
+        background: #cbd5e1;
+        color: #333;
+        margin-top: 10px;
+    }
+
+    #m-plan-select,
+    #m-rol-select {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+    .btn-save {
+        width: 100%;
+        background: #2563eb;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    .btn-delete-danger {
+        width: 100%;
+        background: #dc2626;
+        color: white;
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    @media (max-width: 600px) {
+        .modal-grid {
+            grid-template-columns: 1fr;
+        }
+        .header-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>

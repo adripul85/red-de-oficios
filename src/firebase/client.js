@@ -1,11 +1,9 @@
-// src/firebase/client.js
 
-import { getStorage } from "firebase/storage"; // <--- IMPORTANTE
-
-
-
-import { initializeApp } from "firebase/app";
+import { getApps, getApp, initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { getStorage } from "firebase/storage";
+
 
 const firebaseConfig = {
   apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY,
@@ -16,5 +14,9 @@ const firebaseConfig = {
   appId: import.meta.env.PUBLIC_FIREBASE_APP_ID
 };
 
-const app = initializeApp(firebaseConfig);
+// Singleton pattern for SSR/HMR
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+
 export const db = getFirestore(app);
+export const auth = getAuth(app);
+export const storage = getStorage(app);

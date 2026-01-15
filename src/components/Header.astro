@@ -1,245 +1,348 @@
----
-import Logo from './ui/Logo.astro';
-const categories = [
-  "Plomería", "Electricidad", "Gasista", "Climatización", 
-  "Albañilería", "Pintura", "Carpintería", "Maquillaje", 
-  "Sastrería", "Zapatería", "Jardinería", "Mecánica"
-];
----
+<header class="site-header">
+  <div class="container header-content">
+    <a href="/" class="logo">DeOficios<span class="dot">.com.ar</span></a>
 
-<header>
-  
-  <a href="/" class="logo-container">
-    <Logo /> <span class="logo-text">Red de Oficios</span>
-  </a>
+    <div class="header-right">
+      <nav class="main-nav hidden-mobile">
+        <a
+          href="/planes"
+          id="btn-planes-desktop"
+          class="nav-link destacados hidden">🚀 Planes</a
+        >
+        <a href="/blog" class="nav-link">📰 Blog</a>
+      </nav>
 
-  <nav>
-    <div class="dropdown">
-      <button id="btn-categorias" class="dropbtn" type="button">
-        Categorías ▾
-      </button>
-      
-      <div id="dropdown-menu" class="dropdown-content">
-        {categories.map((cat) => (
-          <a href={`/?categoria=${cat}#resultados`}>{cat}</a>
-        ))}
+      <div class="separator hidden-mobile"></div>
+
+      <div class="right-actions">
+        <div id="user-area" class="auth-buttons">
+          <div class="spinner-small"></div>
+        </div>
+        <button id="menu-toggle" class="menu-toggle visible-mobile">☰</button>
       </div>
     </div>
+  </div>
 
-    <a href="/#como-funciona" class="link-nav">Cómo funciona</a>
-  </nav>
-  
-  <a href="/alta" class="btn-pro">¿Sos Profesional?</a>
+  <div id="mobile-menu" class="mobile-menu hidden">
+    <a href="/" class="mobile-link">🔍 Buscar</a>
+    <a href="/planes" id="btn-planes-mobile" class="mobile-link hidden"
+      >🚀 Planes</a
+    >
+    <a href="/blog" class="mobile-link">📰 Blog</a>
+    <div
+      id="mobile-auth-area"
+      class="p-4 border-t border-gray-100 flex flex-col gap-2"
+    >
+    </div>
+  </div>
 </header>
 
 <script>
-  // CORRECCIÓN: Ejecutar lógica cuando el DOM esté listo
-  document.addEventListener('DOMContentLoaded', () => {
-    
-    const btn = document.getElementById('btn-categorias');
-    const menu = document.getElementById('dropdown-menu');
+  import { auth, db } from "../firebase/client";
+  import { onAuthStateChanged, signOut } from "firebase/auth";
+  import { doc, getDoc } from "firebase/firestore";
 
-    if (btn && menu) {
-      // 1. Al hacer click en el botón, alternar clase 'show'
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Evita que el click se propague al window
-        menu.classList.toggle('show');
-      });
+  let currentUser = null; // Variable global para el usuario actual
 
-      // 2. Cerrar menú si se hace click fuera
-      window.addEventListener('click', (e) => {
-        if (menu.classList.contains('show')) {
-          // Si el click NO fue dentro del menú, ciérralo
-          // (Aunque en este caso queremos cerrarlo siempre que se haga click fuera del botón)
-          menu.classList.remove('show');
+  // Función principal de renderizado con CACHÉ
+  async function updateHeaderUI() {
+    const userArea = document.getElementById("user-area");
+    const mobileAuth = document.getElementById("mobile-auth-area");
+    if (!userArea) return;
+
+    if (currentUser) {
+      // --- USUARIO LOGUEADO ---
+      let nombre = "Usuario";
+      let avatarHTML =
+        '<div class="avatar-placeholder" style="width:32px;height:32px;border-radius:50%;background:#ea580c;color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;">U</div>';
+      let profileLink = "/mi-perfil";
+      let userType = null;
+
+      try {
+        // 🚀 OPTIMIZACIÓN 1: Verificar caché primero
+        const cachedType = localStorage.getItem(`userType_${currentUser.uid}`);
+
+        if (cachedType === "profesional" || cachedType === "cliente") {
+          console.log("⚡ [HEADER] Usando caché:", cachedType);
+
+          // Usar caché para query directa
+          const collection =
+            cachedType === "profesional" ? "profesionales" : "clientes";
+          const docRef = doc(db, collection, currentUser.uid);
+          const snap = await getDoc(docRef);
+
+          if (snap.exists()) {
+            const data = snap.data();
+            nombre = data.nombre || "Usuario";
+            profileLink =
+              cachedType === "profesional" ? "/mi-perfil" : "/mi-cuenta";
+            userType = cachedType;
+
+            if (data.foto) {
+              avatarHTML = `<img src="${data.foto}" alt="${nombre}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; display: block;" />`;
+            } else if (data.nombre) {
+              const bgColor =
+                cachedType === "profesional" ? "#ea580c" : "#4f46e5";
+              avatarHTML = `<div class="avatar-placeholder" style="width:32px;height:32px;border-radius:50%;background:${bgColor};color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;">${data.nombre[0].toUpperCase()}</div>`;
+            }
+          } else {
+            // Caché inválido, limpiar
+            localStorage.removeItem(`userType_${currentUser.uid}`);
+          }
         }
+
+        // 🚀 OPTIMIZACIÓN 2: Si no hay caché, queries EN PARALELO
+        if (!userType) {
+          console.log("⚡ [HEADER] Sin caché, buscando en paralelo...");
+
+          const [profSnap, clientSnap] = await Promise.all([
+            getDoc(doc(db, "profesionales", currentUser.uid)),
+            getDoc(doc(db, "clientes", currentUser.uid)),
+          ]);
+
+          if (profSnap.exists()) {
+            // Es profesional
+            const data = profSnap.data();
+            nombre = data.nombre || "Usuario";
+            profileLink = "/mi-perfil";
+            userType = "profesional";
+
+            if (data.foto) {
+              avatarHTML = `<img src="${data.foto}" alt="${nombre}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; display: block;" />`;
+            } else if (data.nombre) {
+              avatarHTML = `<div class="avatar-placeholder" style="width:32px;height:32px;border-radius:50%;background:#ea580c;color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;">${data.nombre[0].toUpperCase()}</div>`;
+            }
+
+            // Mostrar botón Planes para profesionales (query sin caché)
+            document
+              .getElementById("btn-planes-desktop")
+              ?.classList.remove("hidden");
+            document
+              .getElementById("btn-planes-mobile")
+              ?.classList.remove("hidden");
+
+            // Guardar en caché
+            localStorage.setItem(`userType_${currentUser.uid}`, "profesional");
+
+            // Mostrar botón Planes para profesionales
+            document
+              .getElementById("btn-planes-desktop")
+              ?.classList.remove("hidden");
+            document
+              .getElementById("btn-planes-mobile")
+              ?.classList.remove("hidden");
+          } else if (clientSnap.exists()) {
+            // Es cliente
+            const data = clientSnap.data();
+            nombre = data.nombre || "Usuario";
+            profileLink = "/mi-cuenta";
+            userType = "cliente";
+
+            if (data.foto) {
+              avatarHTML = `<img src="${data.foto}" alt="${nombre}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; display: block;" />`;
+            } else if (data.nombre) {
+              avatarHTML = `<div class="avatar-placeholder" style="width:32px;height:32px;border-radius:50%;background:#4f46e5;color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;">${data.nombre[0].toUpperCase()}</div>`;
+            }
+
+            // Guardar en caché
+            localStorage.setItem(`userType_${currentUser.uid}`, "cliente");
+          }
+        }
+      } catch (e) {
+        console.error("Error perfil", e);
+      }
+
+      const htmlUser = `
+        <div class="user-dropdown-container relative group">
+            <button class="flex items-center gap-2 text-gray-700 hover:text-orange-600 font-medium transition py-4 focus:outline-none">
+                ${avatarHTML}
+                <span>${nombre}</span>
+                <span class="text-xs">▼</span>
+            </button>
+            
+            <div class="absolute right-0 top-full pt-2 w-48 hidden group-hover:block z-50">
+                <div class="bg-white border border-gray-100 rounded-xl shadow-xl p-2">
+                    <a href="${profileLink}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition">👤 Mi Perfil</a>
+                    ${userType === "cliente" ? '<a href="/mi-cuenta" class="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition">❤️ Favoritos</a>' : ""}
+                    <hr class="my-1 border-gray-100">
+                    <button id="btn-logout-header" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition">🚪 Cerrar Sesión</button>
+                </div>
+            </div>
+        </div>
+      `;
+      userArea.innerHTML = htmlUser;
+
+      // MOVIL
+      if (mobileAuth)
+        mobileAuth.innerHTML = `
+          <div class="flex items-center gap-3 mb-3 px-2">
+             ${avatarHTML}
+             <div>
+                <p class="font-bold text-gray-800">${nombre}</p>
+                <p class="text-xs text-green-600">Sesión activa</p>
+             </div>
+          </div>
+          <a href="${profileLink}" class="block text-center w-full bg-gray-100 py-2 rounded-lg font-bold text-gray-700">Ir a mi Perfil</a>
+          <button id="btn-logout-mobile" class="block w-full text-center text-red-500 py-2 mt-2">Cerrar Sesión</button>
+      `;
+
+      // Event listeners para cerrar sesión
+      const btnLogoutHeader = document.getElementById("btn-logout-header");
+      const btnLogoutMobile = document.getElementById("btn-logout-mobile");
+
+      [btnLogoutHeader, btnLogoutMobile].forEach((btn) => {
+        btn?.addEventListener("click", async () => {
+          // Limpiar caché al cerrar sesión
+          if (currentUser) {
+            localStorage.removeItem(`userType_${currentUser.uid}`);
+          }
+          await signOut(auth);
+          window.location.href = "/"; // Redirigir a la página principal
+        });
       });
-      
-      // 3. Cerrar menú también si tocan un enlace dentro del menú (para ir a la categoría)
-      menu.querySelectorAll('a').forEach(link => {
-          link.addEventListener('click', () => {
-              menu.classList.remove('show');
-          });
-      });
+    } else {
+      // --- USUARIO NO LOGUEADO ---
+      const htmlAnonimo = `
+        <div class="flex items-center gap-3">
+            <a href="/ingresar-cliente" class="text-sm font-semibold text-gray-500 hover:text-blue-600 transition hidden md:block">Soy Cliente</a>
+            <a href="/ingresar" class="bg-orange-600 hover:bg-orange-700 text-white text-sm px-5 py-2.5 rounded-full font-bold shadow-sm transition">Soy Profesional</a>
+        </div>
+      `;
+      userArea.innerHTML = htmlAnonimo;
+
+      if (mobileAuth)
+        mobileAuth.innerHTML = `
+          <a href="/ingresar-cliente" class="block text-center w-full border border-gray-300 py-2 rounded-lg font-bold text-gray-600 mb-2">Soy Cliente</a>
+          <a href="/ingresar" class="block text-center w-full bg-orange-600 text-white py-2 rounded-lg font-bold">Soy Profesional</a>
+      `;
     }
+  }
+
+  // Listener de autenticación
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    await updateHeaderUI();
   });
+
+  // Listener de navegación en Astro
+  document.addEventListener("astro:page-load", async () => {
+    await updateHeaderUI();
+  });
+
+  const menuBtn = document.getElementById("menu-toggle");
+  const mobileMenu = document.getElementById("mobile-menu");
+  menuBtn?.addEventListener("click", () =>
+    mobileMenu?.classList.toggle("hidden"),
+  );
 </script>
 
 <style>
-  /* --- HEADER BASE --- */
-  header {
-    background-color: var(--color-card-bg);
-    padding: 15px 20px; /* Un poco menos de padding lateral para móviles */
+  .site-header {
+    background: white;
+    border-bottom: 1px solid #f3f4f6;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  .header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--color-border);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+    height: 70px;
   }
-
   .logo {
-    font-size: 20px;
+    font-family: "Montserrat", sans-serif;
     font-weight: 800;
-    color: var(--color-secondary);
+    font-size: 1.5rem;
+    color: #1f2937;
     text-decoration: none;
-    white-space: nowrap; /* Que no se rompa en dos líneas */
   }
-
-  nav {
+  .dot {
+    color: #ea580c;
+  }
+  .header-right {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 20px;
   }
-
-  .link-nav {
-    color: var(--color-text);
+  .main-nav {
+    display: flex;
+    gap: 20px;
+  }
+  .nav-link {
     text-decoration: none;
-    font-weight: 500;
-    font-size: 14px;
-  }
-  
-  /* Ocultar "Cómo funciona" en móviles muy chicos para ahorrar espacio */
-  @media (max-width: 600px) {
-      .link-nav { display: none; }
-  }
-
-  /* --- DROPDOWN (MENÚ) --- */
-  .dropdown {
-    position: relative;
-    display: inline-block;
-  }
-
-  .dropbtn {
-    background: transparent !important;
-    color: var(--color-text) !important;
-    font-size: 16px;
-    border: none;
-    cursor: pointer;
-    padding: 8px 12px;
+    color: #4b5563;
     font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+    font-size: 0.95rem;
+    transition: 0.2s;
   }
-  .dropbtn:hover { color: var(--color-primary) !important; }
-
-  /* Contenido del menú (Oculto por defecto) */
-  .dropdown-content {
-    display: none; /* <--- IMPORTANTE: Oculto */
-    position: absolute;
-    background-color: white;
-    min-width: 200px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    z-index: 2000;
-    top: 100%; /* Justo debajo del botón */
-    left: 50%;
-    transform: translateX(-50%); /* Centrado */
-    margin-top: 10px;
-    
-    /* Scroll si hay muchas categorías */
-    max-height: 300px;
-    overflow-y: auto;
+  .nav-link:hover {
+    color: #ea580c;
+  }
+  .separator {
+    width: 1px;
+    height: 24px;
+    background-color: #e5e7eb;
   }
 
-  /* CLASE QUE ACTIVA EL JS PARA MOSTRARLO */
-  .dropdown-content.show {
-    display: block !important; /* <--- IMPORTANTE: Visible */
-    animation: fadeIn 0.2s ease-in-out;
-  }
-
-  .dropdown-content a {
-    color: var(--color-text);
-    padding: 12px 16px;
-    text-decoration: none;
+  /* ESTO ARREGLA EL MENÚ */
+  .group:hover .group-hover\:block {
     display: block;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 14px;
-  }
-  .dropdown-content a:last-child { border-bottom: none; }
-  .dropdown-content a:hover {
-    background-color: var(--color-bg);
-    color: var(--color-primary);
   }
 
-  /* Botón CTA */
-  .btn-pro {
-    background-color: var(--color-primary);
-    color: white;
-    padding: 8px 15px;
+  .spinner-small {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #eee;
+    border-top: 2px solid #ea580c;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .menu-toggle {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: none;
+  }
+  .mobile-menu {
+    background: white;
+    border-top: 1px solid #eee;
+    padding: 15px;
+    position: absolute;
+    width: 100%;
+    left: 0;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+  }
+  .mobile-link {
+    display: block;
+    padding: 10px 0;
     text-decoration: none;
-    border-radius: 5px;
-    font-weight: bold;
-    font-size: 14px;
-    white-space: nowrap;
+    color: #374151;
+    font-weight: 600;
+    border-bottom: 1px solid #f9fafb;
   }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .hidden {
+    display: none !important;
   }
-
   @media (max-width: 768px) {
-    header { gap: 10px; }
-    .logo { font-size: 18px; }
-    /* En móvil, alineamos el menú a la izquierda o derecha según convenga */
-    .dropdown-content { left: 0; transform: none; width: 200px; }
-  }
-  /* ... estilos anteriores ... */
-
-@media (max-width: 600px) {
-    header { 
-      padding: 15px; 
-      gap: 10px;
+    .hidden-mobile {
+      display: none;
     }
-    
-    .logo { 
-      font-size: 18px; /* Logo un pelín más chico */
+    .visible-mobile {
+      display: block;
     }
-
-    /* Ocultamos el enlace "Cómo funciona" en celular para ahorrar espacio */
-    .link-nav { display: none; } 
-
-    /* El botón de "Sos Profesional" lo hacemos más compacto */
-    .btn-pro {
-      font-size: 12px;
-      padding: 8px 10px;
-      white-space: normal; /* Permitimos que el texto baje si es necesario */
-      text-align: center;
-      line-height: 1.2;
-    }
-
-    /* Ajuste crítico del Dropdown en celular */
-    .dropdown-content {
-      position: fixed; /* Fijo en pantalla, no relativo al botón */
-      top: 60px; /* Debajo del header */
-      left: 5%; 
-      width: 90%; /* Ocupa casi toda la pantalla */
-      transform: none; /* Quitamos el centrado anterior */
-      max-height: 60vh; /* Máximo 60% del alto de pantalla */
-    }
-}
-
-/* NUEVOS ESTILOS PARA EL LOGO */
-  .logo-container {
-    display: flex;
-    align-items: center;
-    gap: 10px; /* Espacio entre icono y texto */
-    text-decoration: none;
-  }
-
-  .logo-text {
-    font-size: 22px;
-    font-weight: 800;
-    color: #0707; /* Azul oscuro */
-    letter-spacing: -0.5px;
-  }
-
-  @media (max-width: 600px) {
-    /* En celular quizás quieras achicar un poco el texto */
-    .logo-text { font-size: 18px; }
   }
 </style>

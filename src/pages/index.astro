@@ -1,197 +1,810 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import HeroSearch from '../components/home/HeroSearch.astro';
-import ProCallToAction from '../components/home/ProCallToAction.astro';
-import Loader from '../components/ui/Loader.astro';
+import Layout from "../layouts/Layout.astro";
+import CategoryQuickLinks from "../components/home/CategoryQuickLinks.astro";
+import HeroSearch from "../components/home/HeroSearch.astro";
+import { db } from "../firebase/client";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  limit,
+  orderBy,
+} from "firebase/firestore";
 
-// IMPORTAMOS EL NUEVO COMPONENTE DE ÍCONOS
-import CategoryQuickLinks from '../components/home/CategoryQuickLinks.astro';
+// 1. TRAER SOLO LOS DESTACADOS (PREMIUM)
+// 1. TRAER SOLO LOS DESTACADOS (PREMIUM)
+const q = query(
+  collection(db, "profesionales"),
+  where("plan", "in", ["experto", "semestral", "impulso", "mensual"]),
+  limit(20),
+);
+
+const snapshot = await getDocs(q);
+let destacados = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+// Ordenar manualmente: Experto > Impulso
+destacados.sort((a: any, b: any) => {
+  const weightA = a.plan === "experto" || a.plan === "semestral" ? 2 : 1;
+  const weightB = b.plan === "experto" || b.plan === "semestral" ? 2 : 1;
+  return weightB - weightA;
+});
+
+// Tomar solo 4
+destacados = destacados.slice(0, 4);
+
+// 2. TRAER LOS MEJORES PUNTUADOS (EL PODIO)
+let topRated = [];
+try {
+  const qTop = query(
+    collection(db, "profesionales"),
+    orderBy("promedio", "desc"),
+    orderBy("total_votos", "desc"),
+    limit(10),
+  );
+  const snapTop = await getDocs(qTop);
+  topRated = snapTop.docs
+    .map((doc) => ({ id: doc.id, ...doc.data() }))
+    .filter((p) => p.promedio > 0)
+    .slice(0, 4);
+} catch (e) {
+  console.warn("Aviso Firebase índices");
+}
+
+// 3. --- NUEVO: TRAER TENDENCIAS DE BÚSQUEDA ---
+// Esto reemplaza las palabras estáticas por datos reales
+let trendingTags = [];
+try {
+  const qTrends = query(
+    collection(db, "search_trends"),
+    orderBy("count", "desc"), // Los más buscados primero
+    limit(4),
+  );
+  const snapTrends = await getDocs(qTrends);
+  trendingTags = snapTrends.docs.map((doc) => ({
+    term: doc.data().term_display || doc.id, // Usar el nombre bonito o el ID
+    link: doc.id, // El ID ya está en minusculas para la URL
+  }));
+} catch (error) {
+  // Fallback: Si no hay datos aún, mostramos estos por defecto
+  trendingTags = [
+    { term: "Gasista", link: "gasista" },
+    { term: "Electricista", link: "electricista" },
+    { term: "Albañil", link: "albañil" },
+  ];
+}
 ---
 
-<Layout title="Red de Oficios - Inicio">
-  <Header />
-
+<Layout title="DeOficios - Encontrá profesionales de confianza">
   <main>
-    <HeroSearch />
+    <HeroSearch trends={trendingTags} />
+
+    {
+      topRated.length > 0 && (
+        <section class="top-rated container section-pad">
+          <div class="section-header">
+            <h2>🏆 Los Favoritos del Barrio</h2>
+            <p>Profesionales con las mejores calificaciones.</p>
+          </div>
+
+          <div class="featured-grid">
+            {topRated.map((pro) => (
+              <a href={`/perfil?id=${pro.id}`} class="pro-card card-top">
+                <div class="pro-image">
+                  {pro.foto ? (
+                    <img src={pro.foto} alt={`Foto de ${pro.nombre}`} />
+                  ) : (
+                    <div class="placeholder">
+                      {pro.nombre ? pro.nombre[0].toUpperCase() : "U"}
+                    </div>
+                  )}
+                  <span class="badge-top">
+                    TOP {Number(pro.promedio || 0).toFixed(1)}
+                  </span>
+                </div>
+                <div class="pro-info">
+                  <h3>{pro.nombre}</h3>
+                  <span class="category">{pro.categoria}</span>
+                  <p class="zona">📍 {pro.zona || "Zona no especificada"}</p>
+                  <div class="rating">
+                    {"★".repeat(Math.round(pro.promedio || 0))}{" "}
+                    <span class="num">({pro.total_votos || 0})</span>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )
+    }
 
     <CategoryQuickLinks />
 
-    <section id="resultados" class="results-section">
-      <h2 id="titulo-resultados">Profesionales Recientes</h2>
-      
-      <Loader />
-      
-      <div id="grid-profesionales" class="grid"></div>
+    <section class="how-it-works section-pad">
+      <div class="container">
+        <div class="section-header">
+          <h2>¿Cómo funciona?</h2>
+          <p>El ciclo de confianza para un buen trabajo.</p>
+        </div>
+
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-icon">🔍</div>
+            <h3>1. Buscá</h3>
+            <p>Escribí qué necesitás o navegá por el mapa interactivo.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-icon">✅</div>
+            <h3>2. Compará</h3>
+            <p>Mirá fotos, leé opiniones reales y chequeá identidad.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-icon">📲</div>
+            <h3>3. Contactá</h3>
+            <p>Hablá directo por WhatsApp y coordiná el trabajo.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-icon">⭐</div>
+            <h3>4. Calificá</h3>
+            <p>Valorá al trabajador. ¡Ayudá a los honestos a crecer!</p>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <ProCallToAction />
-  </main>
+    <section class="map-banner container section-pad">
+      <div class="map-content-wrapper">
+        <div class="map-text">
+          <h3>📍 Mapa Interactivo</h3>
+          <p>Fijate quién está trabajando cerca de tu casa ahora mismo.</p>
+          <a href="/mapa" class="btn-map">Explorar Mapa en Vivo</a>
+        </div>
+        <div class="map-visual">🗺️</div>
+      </div>
+    </section>
 
-  <Footer />
+    {
+      destacados.length > 0 && (
+        <section class="featured-section container section-pad">
+          <div class="section-header">
+            <h2>Profesionales Destacados ⭐</h2>
+            <p>Los suscriptores Premium de la semana.</p>
+          </div>
+
+          <div class="featured-grid">
+            {destacados.map((pro) => (
+              <a href={`/perfil?id=${pro.id}`} class="pro-card">
+                <div class="pro-image">
+                  {pro.foto ? (
+                    <img src={pro.foto} alt={`Foto de ${pro.nombre}`} />
+                  ) : (
+                    <div class="placeholder">
+                      {pro.nombre ? pro.nombre[0].toUpperCase() : "U"}
+                    </div>
+                  )}
+                  <span class="badge-pro">DESTACADO</span>
+                </div>
+                <div class="pro-info">
+                  <h3>{pro.nombre} ✅</h3>
+                  <span class="category">{pro.categoria}</span>
+                  <p class="zona">📍 {pro.zona || "Zona no disp."}</p>
+                  <div class="rating">
+                    {"★".repeat(Math.round(pro.promedio || 5))}{" "}
+                    <span class="num">({pro.total_votos || 0})</span>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <section class="cta-pro section-pad">
+      <div class="container">
+        <h2>¿Sos Profesional? 🧰</h2>
+        <p>Sumate a la red y conseguí clientes nuevos.</p>
+
+        <div class="cta-buttons">
+          <a href="/ingresar" class="btn-join">Crear Perfil Gratis</a>
+          <a href="/planes" class="btn-plans">Ver Planes Premium</a>
+        </div>
+
+        <div style="margin-top: 30px; opacity: 0.8;">
+          <span style="color: #cbd5e1;">¿Sos un vecino buscando ayuda?</span>
+          <a
+            href="/ingresar-cliente"
+            style="color: #fbbf24; font-weight: bold; text-decoration: underline; margin-left: 5px;"
+          >
+            Ingresa como Cliente aquí
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
 </Layout>
 
 <script>
-  import { db } from "../firebase/client";
-  import { collection, getDocs, query, limit, where, orderBy } from "firebase/firestore";
+  const form = document.getElementById("main-search-form");
+  const input = document.getElementById("search-input") as HTMLInputElement;
 
-  const contenedor = document.getElementById('grid-profesionales');
-  const loader = document.getElementById('loading');
-  const btnBuscar = document.getElementById('btn-buscar');
-  const selectCategoria = document.getElementById('filtro-categoria') as HTMLSelectElement;
-  const inputZona = document.getElementById('filtro-zona') as HTMLInputElement;
-  const tituloResultados = document.getElementById('titulo-resultados');
-
-function getIcono(categoria) {
-    const mapa = { 
-      'Plomería': '💧', 
-      'Electricidad': '⚡', 
-      'Gasista': '🔥', 
-      'Climatización': '❄️', 
-      'Albañilería': '🧱', 
-      'Pintura': '🖌️',
-      // NUEVOS
-      'Carpintería': '🪚',
-      'Maquillaje': '💄',
-      'Sastrería': '🧵',
-      'Zapatería': '👞',
-      'Jardinería': '🌿',
-      'Mecánica': '🚗'
-    };
-    return mapa[categoria] || '🛠️';
-  }
-
-  async function buscarProfesionales() {
-    if (!contenedor) return;
-    
-    contenedor.innerHTML = '';
-    loader?.classList.remove('hidden');
-    
-    const catSeleccionada = selectCategoria?.value;
-    const zonaTexto = inputZona?.value.toLowerCase().trim();
-
-    try {
-      const coleccionRef = collection(db, "profesionales");
-      let q;
-
-      if (catSeleccionada) {
-        // Intentamos ordenar por fecha los filtrados también (requiere índice compuesto en Firebase)
-        q = query(coleccionRef, where("categoria", "==", catSeleccionada), orderBy("fecha_alta", "desc"), limit(20));
-      } else {
-         // Ordenamos por los más recientes primero
-        q = query(coleccionRef, orderBy("fecha_alta", "desc"), limit(20));
-      }
-
-      const querySnapshot = await getDocs(q);
-
-      loader?.classList.add('hidden');
-
-      if (querySnapshot.empty) {
-        contenedor.innerHTML = '<p class="msg-vacio">No se encontraron profesionales con ese criterio.</p>';
-        return;
-      }
-
-      let encontrados = 0;
-
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const id = doc.id;
-        
-        const zonaData = data.zona ? data.zona.toLowerCase() : "";
-        const coincideZona = zonaTexto === "" || zonaData.includes(zonaTexto);
-
-        if (coincideZona) {
-          encontrados++;
-          const card = document.createElement('div');
-          card.className = 'card-pro';
-          card.innerHTML = `
-            <div class="card-header">
-              <span class="icon">${getIcono(data.categoria)}</span>
-              <span class="category-tag">${data.categoria}</span>
-            </div>
-            <h3>${data.nombre}</h3>
-            <p class="zona">📍 ${data.zona}</p>
-            <p class="desc">${data.descripcion ? data.descripcion.substring(0, 80) + '...' : 'Sin descripción.'}</p>
-            <a href="/perfil?id=${id}" class="btn-ver-perfil">Ver Perfil</a>
-          `;
-          contenedor.appendChild(card);
+  if (form && input) {
+    form.addEventListener("submit", () => {
+      const term = input.value;
+      // Enviamos el dato al backend sin detener el formulario (Fire & Forget)
+      // Usamos navigator.sendBeacon si está disponible para asegurar el envío aunque cambie la página
+      if (term.length > 2) {
+        const data = JSON.stringify({ term });
+        if (navigator.sendBeacon) {
+          const blob = new Blob([data], { type: "application/json" });
+          navigator.sendBeacon("/api/log-search", blob);
+        } else {
+          // Fallback para navegadores viejos
+          fetch("/api/log-search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: data,
+            keepalive: true,
+          });
         }
-      });
-
-      if (encontrados === 0) {
-        contenedor.innerHTML = '<p class="msg-vacio">Hay profesionales de este rubro, pero no en la zona que buscás.</p>';
-      } else {
-        if(tituloResultados) tituloResultados.innerText = catSeleccionada ? `Resultados para ${catSeleccionada}` : "Profesionales Recientes";
       }
-
-    } catch (error) {
-      console.error("Error:", error);
-      loader?.classList.add('hidden');
-      contenedor.innerHTML = '<p class="msg-vacio">Ocurrió un error al buscar.</p>';
-    }
+    });
   }
-
-// --- INICIALIZACIÓN ---
-  document.addEventListener('DOMContentLoaded', () => {
-    
-    // 1. Revisar si venimos del menú (URL params)
-    const params = new URLSearchParams(window.location.search);
-    const catParam = params.get('categoria');
-
-    if (catParam && selectCategoria) {
-      // Si hay categoría en la URL, cambiamos el valor del Select
-      selectCategoria.value = catParam;
-      
-      // Si el select no tiene esa opción (ej. error de tipeo), volvemos al default
-      if (selectCategoria.value !== catParam) {
-         selectCategoria.value = ""; 
-      }
-    }
-
-    // 2. Ejecutar la búsqueda
-    buscarProfesionales();
-  });
 </script>
 
 <style>
-  /* Estilos de layout para la home */
-  .results-section {
-    padding: 30px 20px 50px 20px; /* Ajusté un poco el padding superior */
+  /* --- ESTILOS --- */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+  }
+  main {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  .section-pad {
+    padding-top: 60px;
+    padding-bottom: 60px;
+  }
+  .section-header {
     text-align: center;
-    min-height: 400px;
-    background: #f9f9f9; /* Un fondo gris muy claro para separar de la sección de íconos */
+    margin-bottom: 40px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .section-header h2 {
+    font-size: 2.2rem;
+    color: #1f2937;
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+  .section-header p {
+    color: #6b7280;
+    font-size: 1.1rem;
   }
 
-  .grid {
+  /* HERO */
+  .hero {
+    position: relative;
+    width: 100%;
+    min-height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: url("https://images.unsplash.com/photo-1581094794329-cd1096d7a43f?q=80&w=2070&auto=format&fit=crop")
+      no-repeat center center;
+    background-size: cover;
+    padding: 20px;
+  }
+  .hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 1;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    width: 100%;
+    max-width: 800px;
+  }
+  .hero h1 {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    color: white;
+    font-weight: 800;
+    line-height: 1.1;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  }
+  .hero p {
+    font-size: 1.3rem;
+    margin-bottom: 40px;
+    color: #e5e7eb;
+    font-weight: 500;
+  }
+
+  /* Buscador */
+  .search-box {
+    background: white;
+    padding: 6px;
+    border-radius: 50px;
+    display: flex;
+    gap: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 650px;
+    margin: 0 auto;
+  }
+  .search-box input {
+    flex: 1;
+    border: none;
+    padding: 15px 25px;
+    font-size: 1rem;
+    outline: none;
+    background: transparent;
+    color: #333;
+  }
+  .search-box button {
+    background: #ea580c;
+    color: white;
+    border: none;
+    padding: 12px 35px;
+    border-radius: 50px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 1rem;
+    white-space: nowrap;
+  }
+  .search-box button:hover {
+    background: #c2410c;
+  }
+
+  /* Tags */
+  .hero-tags {
+    margin-top: 30px;
+    font-size: 0.95rem;
+    color: #d1d5db;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .tags-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+  .hero-tags a {
+    color: #fbbf24;
+    text-decoration: none;
+    font-weight: 600;
+    border: 1px solid rgba(251, 191, 36, 0.3); /* Borde sutil */
+    padding: 5px 12px; /* Apariencia de botón/tag */
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+  }
+  .hero-tags a:hover {
+    background: #fbbf24;
+    color: #1f2937;
+    transform: scale(1.05);
+  }
+
+  /* ... RESTO DE ESTILOS IGUAL QUE ANTES ... */
+
+  .how-it-works {
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .steps-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    max-width: 1000px;
-    margin: 30px auto 0 auto;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
   }
-  
-  .msg-vacio { color: #666; font-style: italic; margin-top: 20px; }
 
-  /* ESTILOS GLOBALES PARA LAS TARJETAS DINÁMICAS (JS) */
-  :global(.card-pro) {
-    border: 1px solid #eee; border-radius: 10px; padding: 20px; background: white;
-    text-align: left; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    display: flex; flex-direction: column; justify-content: space-between;
+  .step-card {
+    text-align: center;
+    padding: 10px;
   }
-  :global(.card-pro:hover) { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-  
-  :global(.card-header) { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  :global(.card-header .icon) { font-size: 24px; }
-  :global(.category-tag) { background: #eef4ff; color: #0044cc; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
-  
-  :global(.card-pro h3) { margin: 0 0 5px 0; color: #333; }
-  :global(.zona) { color: #666; font-size: 14px; margin: 0 0 10px 0; }
-  :global(.desc) { font-size: 14px; color: #555; margin-bottom: 20px; line-height: 1.4; flex-grow: 1; }
-  
-  :global(.btn-ver-perfil) {
-    display: block; text-align: center; background: white; border: 1px solid #0044cc;
-    color: #0044cc; padding: 10px; border-radius: 5px; text-decoration: none; font-weight: bold; transition: 0.2s;
+  .step-icon {
+    width: 80px;
+    height: 80px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    margin: 0 auto 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 2px solid #e5e7eb;
+    color: #ea580c;
   }
-  :global(.btn-ver-perfil:hover) { background: #0044cc; color: white; }
+  .step-card h3 {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    color: #1f2937;
+  }
+  .step-card p {
+    font-size: 1rem;
+    color: #6b7280;
+    line-height: 1.5;
+  }
+
+  .map-content-wrapper {
+    background: #1f2937;
+    color: white;
+    border-radius: 20px;
+    padding: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    overflow: hidden;
+    position: relative;
+  }
+  .map-text {
+    z-index: 2;
+    position: relative;
+    max-width: 500px;
+  }
+  .map-text h3 {
+    font-size: 2.2rem;
+    margin: 0 0 15px 0;
+    color: #fbbf24;
+  }
+  .btn-map {
+    display: inline-block;
+    background: #fbbf24;
+    color: #1f2937;
+    padding: 12px 30px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-top: 20px;
+    transition: 0.2s;
+  }
+  .btn-map:hover {
+    background: #f59e0b;
+  }
+  .map-visual {
+    font-size: 10rem;
+    opacity: 0.1;
+    position: absolute;
+    right: -20px;
+    bottom: -40px;
+    transform: rotate(15deg);
+    pointer-events: none;
+  }
+
+  .featured-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 30px;
+  }
+  .pro-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    text-decoration: none;
+    color: inherit;
+    transition: 0.3s;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .pro-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    border-color: #ea580c;
+  }
+  .card-top {
+    border: 2px solid #fbbf24 !important;
+  }
+  .pro-image {
+    height: 180px;
+    position: relative;
+    background: #f3f4f6;
+  }
+  .pro-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .pro-image .placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #cbd5e1;
+    font-weight: bold;
+  }
+  .badge-top,
+  .badge-pro {
+    position: absolute;
+    top: 10px;
+    font-size: 0.7rem;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+  .badge-top {
+    left: 10px;
+    background: #1f2937;
+    color: #fbbf24;
+  }
+  .badge-pro {
+    right: 10px;
+    background: #fbbf24;
+    color: #1f2937;
+  }
+  .pro-info {
+    padding: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .pro-info h3 {
+    margin: 0 0 5px;
+    font-size: 1.1rem;
+    color: #1f2937;
+  }
+  .pro-info .category {
+    color: #ea580c;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    display: block;
+  }
+  .pro-info .zona {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .rating {
+    color: #fbbf24;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+  .rating .num {
+    color: #9ca3af;
+    font-size: 0.8rem;
+    font-weight: normal;
+  }
+
+  .cta-pro {
+    background: #1f2937;
+    color: white;
+    text-align: center;
+  }
+  .cta-pro h2 {
+    color: white;
+  }
+  .cta-pro p {
+    color: #d1d5db;
+  }
+  .cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+  }
+  .btn-join {
+    background: #ea580c;
+    color: white;
+    padding: 15px 30px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.2s;
+  }
+  .btn-plans {
+    border: 2px solid white;
+    color: white;
+    padding: 13px 30px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.2s;
+  }
+  .btn-join:hover {
+    background: #c2410c;
+  }
+  .btn-plans:hover {
+    background: white;
+    color: #1f2937;
+  }
+
+  @media (max-width: 1024px) {
+    .hero {
+      min-height: 50vh;
+    }
+    .hero h1 {
+      font-size: 2.8rem;
+    }
+    .steps-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .section-pad {
+      padding-top: 40px;
+      padding-bottom: 40px;
+    }
+    .container {
+      padding: 0 15px;
+    }
+    .hero {
+      min-height: auto;
+      padding: 100px 20px 60px;
+    }
+    .hero h1 {
+      font-size: 2.2rem;
+    }
+    .hero p {
+      font-size: 1.1rem;
+      margin-bottom: 30px;
+    }
+    .search-box {
+      flex-direction: column;
+      padding: 10px;
+      border-radius: 20px;
+    }
+    .search-box input {
+      text-align: center;
+      padding: 10px;
+      width: 100%;
+    }
+    .search-box button {
+      width: 100%;
+      border-radius: 20px;
+    }
+
+    .steps-grid {
+      grid-template-columns: 1fr;
+      max-width: 350px;
+      margin: 0 auto;
+      gap: 40px;
+    }
+
+    .map-content-wrapper {
+      text-align: center;
+      flex-direction: column;
+      padding: 30px 20px;
+    }
+    .map-text h3 {
+      font-size: 1.8rem;
+    }
+    .map-visual {
+      display: none;
+    }
+    .btn-map {
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .cta-buttons {
+      flex-direction: column;
+      width: 100%;
+      max-width: 300px;
+      margin: 30px auto 0;
+    }
+    .btn-join,
+    .btn-plans {
+      width: 100%;
+      display: block;
+      text-align: center;
+    }
+  }
+
+  .cta-dual-role {
+    background: #fff;
+    border-top: 1px solid #e5e7eb;
+  }
+  .roles-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .role-card {
+    background: #f9fafb;
+    padding: 30px;
+    border-radius: 16px;
+    text-align: center;
+    border: 2px solid transparent;
+    transition: 0.3s;
+  }
+  .role-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  }
+  .role-card.client:hover {
+    border-color: #3b82f6;
+  }
+  .role-card.pro:hover {
+    border-color: #ea580c;
+  }
+
+  .icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+  }
+  .role-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #1f2937;
+  }
+  .role-card p {
+    color: #6b7280;
+    margin-bottom: 25px;
+  }
+
+  .btn-role {
+    display: inline-block;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .btn-client {
+    background: #3b82f6;
+    color: white;
+  }
+  .btn-client:hover {
+    background: #2563eb;
+  }
+
+  .btn-pro {
+    background: #ea580c;
+    color: white;
+  }
+  .btn-pro:hover {
+    background: #c2410c;
+  }
+
+  @media (max-width: 768px) {
+    .roles-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>

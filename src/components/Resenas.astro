@@ -1,0 +1,279 @@
+---
+import { db } from "../firebase/client";
+import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
+
+const { proId } = Astro.props; // Recibimos el ID del profesional
+
+// 1. TRAER RESEÑAS
+let opiniones = [];
+try {
+  const q = query(
+    collection(db, "profesionales", proId, "resenas"),
+    orderBy("fecha", "desc"),
+    limit(20),
+  );
+  const snapshot = await getDocs(q);
+  opiniones = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+} catch (e) {
+  // Si falla es porque no hay colección, no pasa nada
+}
+---
+
+<div class="reviews-section-wrapper" id="reviews-wrapper" data-pro-id={proId}>
+  <h3>⭐ Opiniones de clientes ({opiniones.length})</h3>
+
+  <div class="reviews-list">
+    {
+      opiniones.length === 0 ? (
+        <div class="empty-state">
+          <p>Aún no hay opiniones. ¡Sé el primero en contar tu experiencia!</p>
+        </div>
+      ) : (
+        opiniones.map((op) => (
+          <div class="review-card">
+            <div class="review-header">
+              <strong>{op.clienteNombre}</strong>
+              <span class="stars">{"⭐".repeat(op.puntuacion)}</span>
+            </div>
+            <p class="comment">"{op.comentario}"</p>
+            <small class="date">
+              {op.fecha?.seconds
+                ? new Date(op.fecha.seconds * 1000).toLocaleDateString()
+                : "Reciente"}
+            </small>
+          </div>
+        ))
+      )
+    }
+  </div>
+
+  <hr class="divider" />
+
+  <div id="interaction-area">
+    <div id="guest-msg" class="guest-box">
+      <p>¿Lo contrataste? Inicia sesión para opinar.</p>
+      <a href="/ingresar-cliente" class="btn-login-review">🔑 Soy Cliente</a>
+    </div>
+
+    <form id="form-resena" class="review-form hidden">
+      <h4>Dejar una opinión</h4>
+      <div class="star-rating">
+        <input type="radio" name="rating" id="s5" value="5" /><label for="s5"
+          >★</label
+        >
+        <input type="radio" name="rating" id="s4" value="4" /><label for="s4"
+          >★</label
+        >
+        <input type="radio" name="rating" id="s3" value="3" /><label for="s3"
+          >★</label
+        >
+        <input type="radio" name="rating" id="s2" value="2" /><label for="s2"
+          >★</label
+        >
+        <input type="radio" name="rating" id="s1" value="1" /><label for="s1"
+          >★</label
+        >
+      </div>
+      <textarea
+        id="comment-input"
+        placeholder="¿Cómo fue el servicio?"
+        required
+        rows="3"></textarea>
+      <button type="submit" id="btn-submit">Publicar Opinión 🚀</button>
+      <p id="feedback-msg"></p>
+    </form>
+  </div>
+</div>
+
+<script>
+  import { auth, db } from "../firebase/client";
+  import { onAuthStateChanged } from "firebase/auth";
+  import {
+    collection,
+    addDoc,
+    serverTimestamp,
+    doc,
+    getDoc,
+    updateDoc,
+  } from "firebase/firestore";
+
+  const wrapper = document.getElementById("reviews-wrapper");
+  const proId = wrapper?.dataset.proId; // Leemos ID del HTML
+
+  const guestMsg = document.getElementById("guest-msg");
+  const form = document.getElementById("form-resena");
+  const feedback = document.getElementById("feedback-msg");
+  const btn = document.getElementById("btn-submit");
+
+  let currentUser = null;
+
+  // 1. DETECTAR SI ESTÁ LOGUEADO
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUser = user;
+      guestMsg.classList.add("hidden");
+      form.classList.remove("hidden");
+    } else {
+      guestMsg.classList.remove("hidden");
+      form.classList.add("hidden");
+    }
+  });
+
+  // 2. ENVIAR RESEÑA
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!currentUser || !proId) return;
+
+    const ratingEl = document.querySelector('input[name="rating"]:checked');
+    const rating = ratingEl ? parseInt(ratingEl.value) : 0;
+    const comment = document.getElementById("comment-input").value;
+
+    if (rating === 0) {
+      alert("¡Faltan las estrellas! ⭐");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Guardando...";
+
+    try {
+      // A. Guardar el documento de la reseña
+      await addDoc(collection(db, "profesionales", proId, "resenas"), {
+        clienteId: currentUser.uid,
+        clienteNombre: currentUser.displayName || "Cliente",
+        puntuacion: rating,
+        comentario: comment,
+        fecha: serverTimestamp(),
+      });
+
+      // B. Recalcular promedio del profesional
+      const profRef = doc(db, "profesionales", proId);
+      const profSnap = await getDoc(profRef);
+
+      if (profSnap.exists()) {
+        const d = profSnap.data();
+        // Aseguramos que existan valores base para no romper la matemática
+        const votosPrevios = d.total_votos || 0;
+        const promPrevio = d.promedio || 0;
+
+        const nuevoTotal = votosPrevios + 1;
+        // Fórmula matemática de promedio acumulado
+        const nuevoProm = (promPrevio * votosPrevios + rating) / nuevoTotal;
+
+        await updateDoc(profRef, {
+          total_votos: nuevoTotal,
+          promedio: nuevoProm,
+        });
+      }
+
+      feedback.textContent = "✅ ¡Gracias por opinar!";
+      feedback.style.color = "green";
+
+      // Recargar página para ver la nueva reseña
+      setTimeout(() => window.location.reload(), 1500);
+    } catch (err) {
+      console.error(err);
+      feedback.textContent = "❌ Error (Revisa permisos en Firebase)";
+      feedback.style.color = "red";
+      btn.disabled = false;
+      btn.textContent = "Publicar Opinión 🚀";
+    }
+  });
+</script>
+
+<style>
+  .reviews-section-wrapper {
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    margin-top: 30px;
+  }
+  .review-card {
+    background: #f9fafb;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #eee;
+  }
+  .review-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #374151;
+  }
+  .date {
+    font-size: 0.75rem;
+    color: #999;
+    display: block;
+    margin-top: 5px;
+  }
+
+  .guest-box {
+    text-align: center;
+    padding: 20px;
+    background: #fefce8;
+    border-radius: 8px;
+    border: 1px dashed #eab308;
+  }
+  .btn-login-review {
+    background: #1f2937;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 10px;
+  }
+
+  /* Estrellas Interactivas */
+  .star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 15px;
+  }
+  .star-rating input {
+    display: none;
+  }
+  .star-rating label {
+    font-size: 2.2rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .star-rating input:checked ~ label,
+  .star-rating label:hover,
+  .star-rating label:hover ~ label {
+    color: #fbbf24;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+  textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+  }
+  #btn-submit {
+    background: #ea580c;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    width: 100%;
+    cursor: pointer;
+  }
+  #btn-submit:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+</style>

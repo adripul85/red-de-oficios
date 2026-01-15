@@ -1,0 +1,59 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Pago Fallido - DeOficios">
+    <div
+        class="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-red-100 p-6"
+    >
+        <div
+            class="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 text-center"
+        >
+            <div
+                class="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6"
+            >
+                <svg
+                    class="w-12 h-12 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="3"
+                        d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </div>
+
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">
+                Pago No Procesado
+            </h1>
+            <p class="text-gray-600 mb-8">
+                No pudimos procesar tu pago. Por favor, intentá nuevamente o
+                contactanos si el problema persiste.
+            </p>
+
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <p class="text-sm text-red-800">
+                    ⚠️ No se realizó ningún cargo a tu cuenta.
+                </p>
+            </div>
+
+            <div class="space-y-3">
+                <a
+                    href="/planes"
+                    class="block w-full bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700 transition shadow-lg hover:shadow-xl"
+                >
+                    Intentar Nuevamente
+                </a>
+                <a
+                    href="/contacto"
+                    class="block w-full bg-gray-100 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-200 transition"
+                >
+                    Contactar Soporte
+                </a>
+            </div>
+        </div>
+    </div>
+</Layout>

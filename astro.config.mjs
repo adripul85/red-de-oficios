@@ -1,9 +1,30 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-
 import vercel from '@astrojs/vercel';
+import tailwind from '@astrojs/tailwind';
+import react from '@astrojs/react';
 
-// https://astro.build/config
+// Si prefieres usar Node.js (para VPS o Render), descomenta la línea de abajo y comenta la de vercel
+// import node from '@astrojs/node';
+
 export default defineConfig({
-  adapter: vercel()
+  // 'server' es obligatorio porque usamos autenticación y base de datos en vivo (SSR)
+  output: 'server',
+
+  // ADAPTADOR: Conecta tu código con el servidor
+  adapter: vercel(),
+
+  // Si usaras Node.js, sería así:
+  // adapter: node({ mode: 'standalone' }),
+
+  // INTEGRACIONES: Tailwind re-activado
+  integrations: [tailwind(), react()],
+
+  // VITE: Configuraciones extra del empaquetador (limpio por ahora)
+  vite: {
+    build: {
+      // Esto ayuda a evitar conflictos con librerías antiguas de JS
+      target: 'esnext'
+    }
+  }
 });

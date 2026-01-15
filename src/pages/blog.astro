@@ -1,0 +1,102 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { db } from '../firebase/client';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+
+// 1. TRAER ARTÍCULOS DE FIREBASE
+// Ordenamos por fecha descendente (lo más nuevo arriba)
+let posts = [];
+try {
+  const q = query(collection(db, "blog"), orderBy("fecha", "desc"));
+  const snapshot = await getDocs(q);
+  posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+} catch (e) {
+  console.error("Error trayendo blog:", e);
+  // Si falla el índice de fecha, traemos sin ordenar como fallback
+  const snapshot = await getDocs(collection(db, "blog"));
+  posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+---
+
+<Layout title="Blog de Oficios y Consejos - DeOficios">
+ 
+
+  <main class="blog-container">
+    
+    <section class="blog-hero">
+      <div class="container">
+        <h1>Consejos para tu Hogar 💡</h1>
+        <p>Guías, precios de referencia y trucos de nuestros expertos.</p>
+      </div>
+    </section>
+
+    <div class="container">
+      
+      {posts.length === 0 ? (
+        <div class="empty-state">
+            <span class="icon">📭</span>
+            <h3>Aún no hay noticias</h3>
+            <p>Estamos redactando los mejores consejos para vos. ¡Vuelve pronto!</p>
+        </div>
+      ) : (
+        <div class="blog-grid">
+          {posts.map((post: any) => (
+            /* Usamos el SLUG para la URL si existe, sino el ID */
+            <a href={`/blog/${post.slug || post.id}`} class="blog-card">
+              <div class="card-img">
+                <img src={post.imagen || 'https://via.placeholder.com/400x200'} alt={post.titulo} />
+                <span class="category-tag">{post.categoria || 'General'}</span>
+              </div>
+              <div class="card-content">
+                <h2>{post.titulo}</h2>
+                <p class="excerpt">{post.resumen}</p>
+                <div class="card-footer">
+                  <small>📅 {post.fecha ? new Date(post.fecha.seconds * 1000).toLocaleDateString() : ''}</small>
+                  <span class="read-more">Leer más ➜</span>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+
+    </div>
+  </main>
+
+  
+</Layout>
+
+<style>
+  .blog-container { background: #f9fafb; min-height: 80vh; font-family: 'Segoe UI', system-ui, sans-serif; padding-bottom: 60px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+  /* HERO */
+  .blog-hero { background: #1f2937; color: white; padding: 60px 0; text-align: center; margin-bottom: 40px; }
+  .blog-hero h1 { margin: 0 0 10px; font-size: 2.5rem; }
+  .blog-hero p { color: #9ca3af; font-size: 1.1rem; }
+
+  /* GRID */
+  .blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; }
+
+  /* CARD */
+  .blog-card { background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb; text-decoration: none; color: inherit; transition: 0.3s; display: flex; flex-direction: column; }
+  .blog-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); border-color: #fbbf24; }
+
+  .card-img { height: 200px; position: relative; overflow: hidden; }
+  .card-img img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
+  .blog-card:hover .card-img img { transform: scale(1.05); }
+  
+  .category-tag { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; }
+
+  .card-content { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+  .card-content h2 { margin: 0 0 10px; font-size: 1.2rem; color: #1f2937; line-height: 1.4; }
+  .excerpt { color: #6b7280; font-size: 0.95rem; line-height: 1.6; flex: 1; margin-bottom: 20px; }
+
+  .card-footer { border-top: 1px solid #f3f4f6; padding-top: 15px; display: flex; justify-content: space-between; align-items: center; color: #9ca3af; font-size: 0.85rem; }
+  .read-more { color: #ea580c; font-weight: bold; }
+
+  .empty-state { text-align: center; padding: 50px; color: #6b7280; grid-column: 1 / -1; }
+  .empty-state .icon { font-size: 4rem; display: block; margin-bottom: 10px; }
+</style>

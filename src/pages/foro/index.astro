@@ -1,0 +1,418 @@
+---
+export const prerender = false;
+
+import Layout from "../../layouts/Layout.astro";
+import { db } from "../../firebase/client";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
+
+// Categorías
+const categories = [
+    { id: "general", name: "General", icon: "📢", active: true },
+    { id: "electricidad", name: "Electricidad", icon: "⚡" },
+    { id: "plomeria", name: "Fontanería", icon: "🔧" },
+    { id: "albanileria", name: "Albañilería", icon: "🧱" },
+    { id: "jardineria", name: "Jardinería", icon: "🌿" },
+    { id: "aire-acondicionado", name: "Aire Acondicionado", icon: "❄️" },
+    { id: "herramientas", name: "Herramientas", icon: "🧰" },
+    { id: "negocios", name: "Presupuestos", icon: "💰" },
+    { id: "offtopic", name: "Off-Topic", icon: "☕" },
+];
+
+let threads = [];
+let topUsers = [];
+let totalThreads = 0;
+let errorMessage = null;
+
+try {
+    const q = query(collection(db, "foro_threads"));
+    const snapshot = await getDocs(q);
+
+    totalThreads = snapshot.size;
+
+    threads = snapshot.docs.map((doc) => {
+        const data = doc.data();
+
+        let createdAt = new Date();
+        if (data.createdAt && typeof data.createdAt.toDate === "function") {
+            createdAt = data.createdAt.toDate();
+        } else if (data.createdAt instanceof Date) {
+            createdAt = data.createdAt;
+        }
+
+        return {
+            id: doc.id,
+            authorId: data.authorId, // 🔥 IMPORTANTE: Necesario para validar propiedad
+            author: data.authorName || "Usuario",
+            avatar:
+                data.authorPhoto ||
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(data.authorName || "U")}&background=FF5A5F&color=fff`,
+            title: data.title || "Sin título",
+            excerpt: data.content ? data.content.substring(0, 100) + "..." : "",
+            group: getCategoryName(data.category),
+            date: getRelativeTime(createdAt),
+            rawDate: createdAt,
+            replies: data.replyCount || 0,
+            likes: data.likes || 0,
+            category: data.category || "general",
+        };
+    });
+
+    threads.sort((a, b) => b.rawDate - a.rawDate);
+
+    // Top Users Logic
+    const userCounts = {};
+    snapshot.docs.forEach((doc) => {
+        const d = doc.data();
+        const uid = d.authorId || "unknown";
+        if (!userCounts[uid])
+            userCounts[uid] = {
+                name: d.authorName,
+                count: 0,
+                avatar: d.authorPhoto,
+            };
+        userCounts[uid].count++;
+    });
+
+    topUsers = Object.values(userCounts)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 3)
+        .map((u) => ({
+            name: u.name || "Usuario",
+            points: u.count * 15,
+            avatar: u.avatar || `https://ui-avatars.com/api/?name=${u.name}`,
+        }));
+} catch (e) {
+    console.error("❌ Error cargando foro:", e);
+    errorMessage = e.message;
+}
+
+function getCategoryName(id) {
+    const c = categories.find((cat) => cat.id === id);
+    return c ? c.name : "General";
+}
+
+function getRelativeTime(date) {
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    if (diff < 60) return "Hace un momento";
+    const min = Math.floor(diff / 60);
+    if (min < 60) return `Hace ${min} min`;
+    const hours = Math.floor(min / 60);
+    if (hours < 24) return `Hace ${hours} h`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `Hace ${days} días`;
+    return date.toLocaleDateString();
+}
+---
+
+<Layout title="Comunidad - DeOficios">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    />
+    <script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
+    ></script>
+
+    <div class="bg-[#F8F9FA] min-h-screen font-sans">
+        <section class="bg-white border-b border-gray-200 pt-12 pb-12 px-4">
+            <div class="max-w-6xl mx-auto text-center">
+                <h1
+                    class="text-4xl md:text-6xl font-serif text-slate-800 mb-4 leading-tight"
+                >
+                    La Comunidad de Oficios
+                </h1>
+                <p class="text-slate-500 mb-8 text-lg max-w-2xl mx-auto">
+                    Resuelve dudas, comparte consejos y conecta con
+                    profesionales.
+                </p>
+
+                <div class="max-w-2xl mx-auto relative group">
+                    <input
+                        type="text"
+                        id="search-input"
+                        placeholder="¿Qué estás buscando hoy?"
+                        class="w-full pl-6 pr-32 py-4 rounded-2xl border-2 border-gray-200 focus:outline-none focus:border-[#FF5A5F] transition-all shadow-sm"
+                    />
+                    <button
+                        class="absolute right-2 top-2 bottom-2 bg-[#FF5A5F] text-white px-6 rounded-xl font-bold hover:bg-[#ff4146] transition"
+                    >
+                        Buscar
+                    </button>
+                </div>
+
+                <div
+                    class="mt-8 flex justify-center gap-8 text-sm text-slate-500"
+                >
+                    <div>
+                        <span class="font-bold text-[#FF5A5F]"
+                            >{totalThreads}</span
+                        > debates activos
+                    </div>
+                    <div>
+                        <span class="font-bold text-[#FF5A5F]"
+                            >{topUsers.length * 5}+</span
+                        > colaboradores
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div
+            class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-12 gap-8"
+        >
+            <aside class="hidden lg:block lg:col-span-3 space-y-6">
+                <a
+                    href="/foro/crear-debate"
+                    class="block w-full bg-[#FF5A5F] hover:bg-[#ff4146] text-white font-bold py-4 px-5 rounded-xl shadow-lg text-center transition-transform hover:-translate-y-1"
+                >
+                    ✍️ Iniciar nuevo debate
+                </a>
+
+                <div
+                    class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden"
+                >
+                    <div
+                        class="p-4 bg-slate-50 border-b border-slate-100 font-bold text-slate-800"
+                    >
+                        Categorías
+                    </div>
+                    <nav class="flex flex-col">
+                        {
+                            categories.map((cat) => (
+                                <a
+                                    href={`/foro?cat=${cat.id}`}
+                                    class="flex items-center gap-3 px-5 py-3 hover:bg-rose-50 text-slate-600 hover:text-[#FF5A5F] transition-colors border-l-4 border-transparent hover:border-[#FF5A5F]"
+                                >
+                                    <span>{cat.icon}</span> {cat.name}
+                                </a>
+                            ))
+                        }
+                    </nav>
+                </div>
+
+                <div
+                    class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5"
+                >
+                    <h3 class="font-bold text-slate-800 mb-4">
+                        🏆 Top Colaboradores
+                    </h3>
+                    <div class="space-y-4">
+                        {
+                            topUsers.map((user, idx) => (
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xs font-bold text-slate-300">
+                                        #{idx + 1}
+                                    </span>
+                                    <img
+                                        src={user.avatar}
+                                        class="w-8 h-8 rounded-full border border-gray-200"
+                                    />
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-700 leading-none">
+                                            {user.name}
+                                        </p>
+                                        <p class="text-xs text-slate-400">
+                                            {user.points} pts
+                                        </p>
+                                    </div>
+                                </div>
+                            ))
+                        }
+                    </div>
+                </div>
+            </aside>
+
+            <main class="lg:col-span-9 space-y-6">
+                {
+                    errorMessage && (
+                        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r shadow-sm">
+                            <p class="text-sm text-red-700 font-bold">
+                                Error de conexión
+                            </p>
+                            <p class="text-xs text-red-600">{errorMessage}</p>
+                        </div>
+                    )
+                }
+
+                <div class="space-y-4" id="threads-container">
+                    {
+                        threads.length === 0 && !errorMessage ? (
+                            <div class="text-center py-12 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                                <div class="text-4xl mb-3">📭</div>
+                                <h3 class="text-lg font-bold text-slate-700">
+                                    Aún no hay debates
+                                </h3>
+                                <a
+                                    href="/foro/crear-debate"
+                                    class="text-[#FF5A5F] font-bold hover:underline"
+                                >
+                                    Crear debate ahora →
+                                </a>
+                            </div>
+                        ) : (
+                            threads.map((thread) => (
+                                <article class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group relative">
+                                    {/* 🔥 BOTONES DE EDICIÓN/ELIMINACIÓN (Ocultos por defecto) */}
+                                    <div
+                                        class="owner-controls hidden absolute top-4 right-4 z-20 flex gap-2"
+                                        data-author-id={thread.authorId}
+                                        data-thread-id={thread.id}
+                                    >
+                                        <button
+                                            class="btn-edit bg-gray-100 hover:bg-blue-100 text-blue-600 p-2 rounded-lg text-xs font-bold shadow-sm transition"
+                                            title="Editar"
+                                        >
+                                            ✏️
+                                        </button>
+                                        <button
+                                            class="btn-delete bg-gray-100 hover:bg-red-100 text-red-600 p-2 rounded-lg text-xs font-bold shadow-sm transition"
+                                            title="Eliminar"
+                                        >
+                                            🗑️
+                                        </button>
+                                    </div>
+
+                                    <a
+                                        href={`/foro/${thread.id}`}
+                                        class="block relative z-10"
+                                    >
+                                        <div class="flex gap-4">
+                                            <img
+                                                src={thread.avatar}
+                                                class="w-12 h-12 rounded-full border-2 border-white shadow-sm flex-shrink-0"
+                                            />
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <span class="text-xs font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+                                                        {thread.group}
+                                                    </span>
+                                                    <span class="text-xs text-slate-400">
+                                                        • {thread.date}
+                                                    </span>
+                                                </div>
+                                                <h2 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-[#FF5A5F] transition-colors truncate pr-16">
+                                                    {thread.title}
+                                                </h2>
+                                                <p class="text-slate-500 text-sm line-clamp-2 mb-3">
+                                                    {thread.excerpt}
+                                                </p>
+                                                <div class="flex items-center gap-4 text-xs text-slate-400 font-medium">
+                                                    <span class="flex items-center gap-1">
+                                                        💬 {thread.replies}{" "}
+                                                        respuestas
+                                                    </span>
+                                                    <span class="flex items-center gap-1">
+                                                        👤 por {thread.author}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </article>
+                            ))
+                        )
+                    }
+                </div>
+            </main>
+        </div>
+
+        <a
+            href="/foro/crear-debate"
+            class="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-[#FF5A5F] text-white rounded-full shadow-xl flex items-center justify-center z-50 text-2xl hover:scale-110 transition"
+        >
+            ✍️
+        </a>
+    </div>
+</Layout>
+
+<style>
+    body {
+        font-family: "Inter", sans-serif;
+    }
+    .font-serif {
+        font-family: "DM Serif Display", serif;
+    }
+</style>
+
+<script>
+    import { auth, db } from "../../firebase/client";
+    import { onAuthStateChanged } from "firebase/auth";
+    import { doc, deleteDoc } from "firebase/firestore";
+
+    // Detectar usuario y mostrar botones
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            const controls = document.querySelectorAll(".owner-controls");
+            controls.forEach((ctrl) => {
+                // @ts-ignore
+                const authorId = ctrl.dataset.authorId;
+                // Si el usuario actual es el autor, mostrar controles
+                if (authorId === user.uid) {
+                    ctrl.classList.remove("hidden");
+                }
+            });
+        }
+    });
+
+    // Lógica de Eliminación
+    document.querySelectorAll(".btn-delete").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+            // Evitar que el click navegue al post
+            e.preventDefault();
+            e.stopPropagation();
+
+            // @ts-ignore
+            const parent = btn.closest(".owner-controls");
+            // @ts-ignore
+            const threadId = parent.dataset.threadId;
+
+            // @ts-ignore
+            const result = await Swal.fire({
+                title: "¿Eliminar debate?",
+                text: "No podrás revertir esto.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Sí, borrar",
+                cancelButtonText: "Cancelar",
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    await deleteDoc(doc(db, "foro_threads", threadId));
+                    // @ts-ignore
+                    await Swal.fire(
+                        "Eliminado",
+                        "El debate ha sido eliminado.",
+                        "success",
+                    );
+                    window.location.reload();
+                } catch (error) {
+                    console.error(error);
+                    // @ts-ignore
+                    Swal.fire(
+                        "Error",
+                        "No se pudo eliminar el debate.",
+                        "error",
+                    );
+                }
+            }
+        });
+    });
+
+    // Lógica de Edición
+    document.querySelectorAll(".btn-edit").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // @ts-ignore
+            const parent = btn.closest(".owner-controls");
+            // @ts-ignore
+            const threadId = parent.dataset.threadId;
+
+            // 🚀 REDIRECCIÓN REAL A LA PÁGINA DE EDICIÓN
+            window.location.href = `/foro/editar/${threadId}`;
+        });
+    });
+</script>

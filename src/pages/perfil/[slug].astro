@@ -1,0 +1,463 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import LoginCliente from "../../components/LoginCliente.astro";
+import { db } from "../../firebase/client";
+import {
+    collection,
+    query,
+    where,
+    getDocs,
+    doc,
+    getDoc,
+} from "firebase/firestore";
+
+// 1. OBTENER EL SLUG DE LA URL
+const { slug } = Astro.params;
+let profesional = null;
+let idProfesional = null;
+
+// 2. BUSCAR EL PROFESIONAL EN BASE DE DATOS (Server Side)
+if (slug) {
+    // Intentamos buscar por campo 'slug'
+    const q = query(collection(db, "profesionales"), where("slug", "==", slug));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+        profesional = querySnapshot.docs[0].data();
+        idProfesional = querySnapshot.docs[0].id;
+    } else {
+        // Si no existe por slug, intentamos por ID directo (backup)
+        try {
+            const docRef = doc(db, "profesionales", slug);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                profesional = docSnap.data();
+                idProfesional = docSnap.id;
+            }
+        } catch (e) {}
+    }
+}
+
+// Si no encontramos nada, redirigir o mostrar error
+if (!profesional) return Astro.redirect("/404");
+---
+
+<Layout title={`Perfil de ${profesional.nombre} - DeOficios`}>
+    <div class="bg-white border-b mb-8">
+        <div class="container mx-auto px-4 py-8 max-w-4xl">
+            <div class="flex flex-col md:flex-row items-center gap-6">
+                <div class="relative">
+                    <img
+                        src={profesional.foto ||
+                            "https://ui-avatars.com/api/?name=" +
+                                profesional.nombre}
+                        class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
+                    />
+                    {
+                        profesional.plan === "experto" && (
+                            <span class="absolute bottom-0 right-0 bg-yellow-400 text-xs font-bold px-2 py-1 rounded-full border border-white">
+                                ⭐ EXPERTO
+                            </span>
+                        )
+                    }
+                </div>
+
+                <div class="text-center md:text-left flex-1">
+                    <h1 class="text-3xl font-bold text-gray-800">
+                        {profesional.nombre}
+                    </h1>
+                    <p class="text-blue-600 font-medium text-lg">
+                        {profesional.rubro_principal}
+                        {profesional.zona ? `en ${profesional.zona}` : ""}
+                    </p>
+
+                    <div
+                        class="flex items-center justify-center md:justify-start gap-2 mt-2"
+                    >
+                        <div class="text-yellow-400 text-xl">
+                            {
+                                "★".repeat(
+                                    Math.round(profesional.puntuacion || 0),
+                                )
+                            }
+                            <span class="text-gray-300"
+                                >{
+                                    "★".repeat(
+                                        5 -
+                                            Math.round(
+                                                profesional.puntuacion || 0,
+                                            ),
+                                    )
+                                }</span
+                            >
+                        </div>
+                        <span class="text-gray-500 text-sm">
+                            ({profesional.total_valoraciones || 0} opiniones)
+                        </span>
+                    </div>
+                </div>
+
+                {
+                    profesional.telefono && (
+                        <a
+                            href={`https://wa.me/549${profesional.telefono}?text=Hola, te vi en DeOficios`}
+                            target="_blank"
+                            class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full shadow-md transition-transform transform hover:scale-105 flex items-center gap-2"
+                        >
+                            <span class="text-xl">💬</span> Contactar
+                        </a>
+                    )
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 max-w-4xl grid md:grid-cols-3 gap-8">
+        <div class="md:col-span-2 space-y-8">
+            <section
+                class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm"
+            >
+                <h3 class="font-bold text-lg mb-4 border-b pb-2">Sobre mí</h3>
+                <p class="text-gray-600 leading-relaxed whitespace-pre-line">
+                    {
+                        profesional.descripcion ||
+                            "Este profesional aún no ha agregado una descripción."
+                    }
+                </p>
+
+                {/* Etiquetas */}
+                {
+                    profesional.etiquetas && (
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            {profesional.etiquetas.map((tag) => (
+                                <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">
+                                    #{tag}
+                                </span>
+                            ))}
+                        </div>
+                    )
+                }
+            </section>
+
+            <section id="reviews-section">
+                <h3 class="font-bold text-xl mb-6 flex items-center gap-2">
+                    🌟 Opiniones y Calificaciones
+                </h3>
+
+                <div id="review-action-area" class="mb-10">
+                    <div id="guest-view">
+                        <LoginCliente />
+                    </div>
+
+                    <div
+                        id="user-view"
+                        class="hidden bg-white p-6 rounded-xl border border-blue-100 shadow-md"
+                    >
+                        <div class="flex items-center gap-3 mb-4">
+                            <img
+                                id="user-avatar"
+                                src=""
+                                class="w-10 h-10 rounded-full bg-gray-200"
+                            />
+                            <div>
+                                <p
+                                    class="font-bold text-sm"
+                                    id="user-name-display"
+                                >
+                                    Cargando...
+                                </p>
+                                <p class="text-xs text-green-600 font-semibold">
+                                    Cliente Verificado ✅
+                                </p>
+                            </div>
+                        </div>
+
+                        <label class="block font-bold mb-2 text-gray-700"
+                            >Califica tu experiencia:</label
+                        >
+
+                        <div
+                            class="flex gap-1 text-4xl mb-4 cursor-pointer"
+                            id="stars-selector"
+                        >
+                            <button
+                                type="button"
+                                class="star text-gray-300 hover:text-yellow-400 transition-colors"
+                                data-value="1">★</button
+                            >
+                            <button
+                                type="button"
+                                class="star text-gray-300 hover:text-yellow-400 transition-colors"
+                                data-value="2">★</button
+                            >
+                            <button
+                                type="button"
+                                class="star text-gray-300 hover:text-yellow-400 transition-colors"
+                                data-value="3">★</button
+                            >
+                            <button
+                                type="button"
+                                class="star text-gray-300 hover:text-yellow-400 transition-colors"
+                                data-value="4">★</button
+                            >
+                            <button
+                                type="button"
+                                class="star text-gray-300 hover:text-yellow-400 transition-colors"
+                                data-value="5">★</button
+                            >
+                        </div>
+                        <p
+                            id="rating-text"
+                            class="text-sm text-gray-500 mb-3 font-medium"
+                        >
+                            - Selecciona estrellas -
+                        </p>
+                        <input type="hidden" id="rating-value" value="0" />
+
+                        <textarea
+                            id="review-comment"
+                            class="w-full border border-gray-300 p-3 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 outline-none"
+                            rows="3"
+                            placeholder="¿Cumplió con lo pactado? ¿Fue puntual? Cuéntanos..."
+                        ></textarea>
+
+                        <button
+                            id="btn-submit-review"
+                            class="bg-blue-600 text-white font-bold py-2.5 px-6 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all w-full md:w-auto"
+                        >
+                            Publicar Reseña
+                        </button>
+                    </div>
+                </div>
+
+                <div id="reviews-list" class="space-y-4">
+                    <div class="animate-pulse flex space-x-4">
+                        <div class="h-10 w-10 bg-gray-200 rounded-full"></div>
+                        <div class="flex-1 space-y-2 py-1">
+                            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="space-y-6">
+            {
+                profesional.latitud && (
+                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                        <h4 class="font-bold text-sm mb-3 text-gray-500 uppercase">
+                            Zona de Trabajo
+                        </h4>
+                        <div class="bg-gray-100 h-48 rounded-lg flex items-center justify-center text-gray-400">
+                            📍 Mapa
+                        </div>
+                        <p class="text-sm mt-2 text-center">
+                            {profesional.zona}
+                        </p>
+                    </div>
+                )
+            }
+
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                <h4 class="font-bold text-blue-800 mb-2">Seguridad</h4>
+                <ul class="text-sm text-blue-700 space-y-2">
+                    <li class="flex items-center gap-2">
+                        <span>{profesional.verificado ? "✅" : "⏳"}</span>
+                        {
+                            profesional.verificado
+                                ? "Identidad Verificada"
+                                : "Validación Pendiente"
+                        }
+                    </li>
+                    <li class="flex items-center gap-2">
+                        📅 Miembro desde 2024
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script define:vars={{ idProfesional }}>
+    import { onAuthStateChanged } from "firebase/auth";
+    import { auth, db } from "../../firebase/client";
+    import {
+        doc,
+        getDoc,
+        addDoc,
+        collection,
+        updateDoc,
+        increment,
+        serverTimestamp,
+        query,
+        orderBy,
+        getDocs,
+        runTransaction,
+    } from "firebase/firestore";
+
+    const guestView = document.getElementById("guest-view");
+    const userView = document.getElementById("user-view");
+    let currentUser = null;
+
+    // 1. DETECTAR USUARIO (CLIENTE)
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            // Usuario Logueado -> Buscamos sus datos de Cliente
+            const docSnap = await getDoc(doc(db, "clientes", user.uid));
+
+            if (docSnap.exists()) {
+                const cliente = docSnap.data();
+                currentUser = { uid: user.uid, ...cliente };
+
+                guestView.classList.add("hidden");
+                userView.classList.remove("hidden");
+
+                document.getElementById("user-name-display").innerText =
+                    cliente.nombre;
+                const foto =
+                    cliente.foto ||
+                    `https://ui-avatars.com/api/?name=${cliente.nombre}&background=random`;
+                document.getElementById("user-avatar").src = foto;
+            } else {
+                // Es logueado pero NO es cliente (quizás es el mismo profesional)
+                if (user.uid === idProfesional) {
+                    guestView.innerHTML = `<div class="p-4 bg-yellow-50 text-yellow-800 rounded border border-yellow-200">👀 Estás viendo tu propio perfil.</div>`;
+                }
+            }
+        } else {
+            // Usuario No Logueado
+            guestView.classList.remove("hidden");
+            userView.classList.add("hidden");
+        }
+    });
+
+    // 2. LÓGICA DE ESTRELLAS
+    const stars = document.querySelectorAll("#stars-selector .star");
+    const ratingInput = document.getElementById("rating-value");
+    const ratingText = document.getElementById("rating-text");
+    const labels = [
+        "Malo 😡",
+        "Regular 😐",
+        "Bueno 🙂",
+        "Muy Bueno 😄",
+        "Excelente 🔥",
+    ];
+
+    stars.forEach((star, index) => {
+        star.addEventListener("click", () => {
+            const value = index + 1;
+            ratingInput.value = value;
+            ratingText.innerText = labels[index];
+
+            // Pintar estrellas
+            stars.forEach((s, i) => {
+                if (i < value) s.classList.add("text-yellow-400");
+                else s.classList.remove("text-yellow-400");
+            });
+        });
+    });
+
+    // 3. PUBLICAR RESEÑA
+    const btnSubmit = document.getElementById("btn-submit-review");
+    btnSubmit.addEventListener("click", async () => {
+        const rating = parseInt(ratingInput.value);
+        const comment = document.getElementById("review-comment").value;
+
+        if (rating === 0) return alert("Por favor selecciona las estrellas.");
+        if (comment.length < 5)
+            return alert("Escribe un comentario un poco más largo.");
+
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = "Publicando...";
+
+        try {
+            // TRANSACCIÓN: Guardar reseña + Actualizar promedio del profesional
+            await runTransaction(db, async (transaction) => {
+                const proRef = doc(db, "profesionales", idProfesional);
+                const proDoc = await transaction.get(proRef);
+
+                if (!proDoc.exists()) throw "Profesional no existe";
+
+                const data = proDoc.data();
+                const nuevoTotal = (data.total_valoraciones || 0) + 1;
+                const nuevaSuma = (data.suma_puntuacion || 0) + rating; // Necesitamos guardar la suma bruta
+                const nuevoPromedio = nuevaSuma / nuevoTotal;
+
+                // 1. Crear la reseña en subcolección
+                const reseñaRef = doc(
+                    collection(db, `profesionales/${idProfesional}/reseñas`),
+                );
+                transaction.set(reseñaRef, {
+                    clienteId: currentUser.uid,
+                    clienteNombre: currentUser.nombre,
+                    clienteFoto: currentUser.foto || null,
+                    estrellas: rating,
+                    comentario: comment,
+                    fecha: serverTimestamp(),
+                });
+
+                // 2. Actualizar promedio en el profesional
+                transaction.update(proRef, {
+                    total_valoraciones: nuevoTotal,
+                    suma_puntuacion: nuevaSuma, // Guardamos esto para cálculos precisos
+                    puntuacion: nuevoPromedio,
+                });
+            });
+
+            alert("¡Gracias! Tu opinión ayuda a la comunidad.");
+            window.location.reload(); // Recargar para ver la reseña nueva
+        } catch (error) {
+            console.error(error);
+            alert("Error al publicar. Intenta de nuevo.");
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = "Publicar Reseña";
+        }
+    });
+
+    // 4. CARGAR RESEÑAS EXISTENTES
+    async function loadReviews() {
+        const container = document.getElementById("reviews-list");
+        const q = query(
+            collection(db, `profesionales/${idProfesional}/reseñas`),
+            orderBy("fecha", "desc"),
+        );
+
+        const snapshot = await getDocs(q);
+
+        container.innerHTML = ""; // Limpiar skeleton
+
+        if (snapshot.empty) {
+            container.innerHTML = `<p class="text-gray-500 italic text-center py-4">Aún no hay opiniones. ¡Sé el primero!</p>`;
+            return;
+        }
+
+        snapshot.forEach((doc) => {
+            const r = doc.data();
+            const fecha = r.fecha
+                ? r.fecha.toDate().toLocaleDateString()
+                : "Reciente";
+
+            const html = `
+                <div class="border-b border-gray-100 pb-4 mb-4 last:border-0">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-3">
+                            <img src="${r.clienteFoto || `https://ui-avatars.com/api/?name=${r.clienteNombre}`}" class="w-8 h-8 rounded-full">
+                            <div>
+                                <p class="font-bold text-sm text-gray-800">${r.clienteNombre}</p>
+                                <div class="text-yellow-400 text-xs">
+                                    ${"★".repeat(r.estrellas)}${"☆".repeat(5 - r.estrellas)}
+                                </div>
+                            </div>
+                        </div>
+                        <span class="text-xs text-gray-400">${fecha}</span>
+                    </div>
+                    <p class="mt-2 text-gray-600 text-sm">${r.comentario}</p>
+                </div>
+            `;
+            container.innerHTML += html;
+        });
+    }
+
+    loadReviews();
+</script>

@@ -1,0 +1,431 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Configuración Global - Admin">
+    <div class="admin-container">
+        <header class="header-config">
+            <a href="/admin" class="btn-back">⬅ Volver</a>
+            <h1>Configuración del Sistema ⚙️</h1>
+        </header>
+
+        <div class="config-grid">
+            <div class="config-card">
+                <h3>🎁 Gestión de Giftcard</h3>
+                <p class="text-sm text-muted mb-4">
+                    Configura el código promocional para regalar planes premium.
+                </p>
+
+                <form id="form-giftcard">
+                    <div class="form-group">
+                        <label>Código Promocional</label>
+                        <input
+                            type="text"
+                            id="giftcard-code"
+                            placeholder="Ej: VERANO2026"
+                            class="uppercase font-bold tracking-widest"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Duración (días)</label>
+                        <input
+                            type="number"
+                            id="giftcard-duration"
+                            placeholder="60"
+                            min="1"
+                            required
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Plan Otorgado</label>
+                        <select id="giftcard-plan" required>
+                            <option value="mensual">Plan Mensual</option>
+                            <option value="experto">Plan Experto</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Límite de Usos (opcional)</label>
+                        <input
+                            type="number"
+                            id="giftcard-max-uses"
+                            placeholder="1000 (dejar vacío = ilimitado)"
+                            min="1"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                id="giftcard-active"
+                                class="w-5 h-5"
+                            />
+                            <span>Código Activo</span>
+                        </label>
+                    </div>
+
+                    <div class="stats-box">
+                        <div class="stat-item">
+                            <span class="stat-label">Usos Actuales:</span>
+                            <span id="current-uses" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Creado:</span>
+                            <span id="created-date" class="stat-value">-</span>
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn-action"
+                        style="background: #9333ea;"
+                    >
+                        ✨ Guardar Configuración
+                    </button>
+                </form>
+            </div>
+
+            <div class="config-card">
+                <h3>💰 Precios de Planes</h3>
+                <form id="form-precios">
+                    <div class="form-group">
+                        <label>Plan Mensual ($)</label>
+                        <input
+                            type="number"
+                            id="price-monthly"
+                            placeholder="30000"
+                            required
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label>Plan Experto ($)</label>
+                        <input
+                            type="number"
+                            id="price-semestral"
+                            placeholder="150000"
+                            required
+                        />
+                    </div>
+                    <button type="submit" class="btn-action"
+                        >Guardar Precios</button
+                    >
+                </form>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { db, auth } from "../../firebase/client";
+    import { doc, getDoc, setDoc } from "firebase/firestore";
+    import { onAuthStateChanged } from "firebase/auth";
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) window.location.href = "/admin/login";
+        else loadConfig();
+    });
+
+    async function loadConfig() {
+        try {
+            // Cargar configuración del giftcard
+            const giftcardRef = doc(db, "configuracion", "giftcard");
+            const giftcardSnap = await getDoc(giftcardRef);
+
+            if (giftcardSnap.exists()) {
+                const data = giftcardSnap.data();
+                // @ts-ignore
+                document.getElementById("giftcard-code").value =
+                    data.codigo || "";
+                // @ts-ignore
+                document.getElementById("giftcard-duration").value =
+                    data.duracionDias || 60;
+                // @ts-ignore
+                document.getElementById("giftcard-plan").value =
+                    data.planOtorgado || "experto";
+                // @ts-ignore
+                document.getElementById("giftcard-max-uses").value =
+                    data.maxUsos || "";
+                // @ts-ignore
+                document.getElementById("giftcard-active").checked =
+                    data.activo || false;
+                // @ts-ignore
+                document.getElementById("current-uses").innerText =
+                    data.usos || 0;
+
+                if (data.fechaCreacion) {
+                    const fecha = data.fechaCreacion.toDate();
+                    // @ts-ignore
+                    document.getElementById("created-date").innerText =
+                        fecha.toLocaleDateString();
+                }
+            }
+
+            // Cargar precios
+            const generalRef = doc(db, "configuracion", "general");
+            const generalSnap = await getDoc(generalRef);
+
+            if (generalSnap.exists()) {
+                const data = generalSnap.data();
+                // @ts-ignore
+                if (data.price_monthly)
+                    document.getElementById("price-monthly").value =
+                        data.price_monthly;
+                // @ts-ignore
+                if (data.price_semestral)
+                    document.getElementById("price-semestral").value =
+                        data.price_semestral;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // Guardar Giftcard
+    document
+        .getElementById("form-giftcard")
+        ?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            // @ts-ignore
+            const code = document
+                .getElementById("giftcard-code")
+                .value.trim()
+                .toUpperCase();
+            // @ts-ignore
+            const duration = parseInt(
+                document.getElementById("giftcard-duration").value,
+            );
+            // @ts-ignore
+            const plan = document.getElementById("giftcard-plan").value;
+            // @ts-ignore
+            const maxUses = document.getElementById("giftcard-max-uses").value;
+            // @ts-ignore
+            const active = document.getElementById("giftcard-active").checked;
+
+            if (code.length < 3)
+                return alert("Código muy corto (mínimo 3 caracteres)");
+            if (duration < 1) return alert("Duración debe ser al menos 1 día");
+
+            try {
+                const giftcardData = {
+                    codigo: code,
+                    duracionDias: duration,
+                    planOtorgado: plan,
+                    activo: active,
+                    fechaCreacion: new Date(),
+                };
+
+                // Solo agregar maxUsos si tiene valor
+                if (maxUses && parseInt(maxUses) > 0) {
+                    giftcardData.maxUsos = parseInt(maxUses);
+                }
+
+                // Preservar el contador de usos actual
+                const currentDoc = await getDoc(
+                    doc(db, "configuracion", "giftcard"),
+                );
+                if (currentDoc.exists()) {
+                    giftcardData.usos = currentDoc.data().usos || 0;
+                } else {
+                    giftcardData.usos = 0;
+                }
+
+                await setDoc(
+                    doc(db, "configuracion", "giftcard"),
+                    giftcardData,
+                    { merge: true },
+                );
+
+                alert(
+                    `✅ Giftcard actualizado:\n\nCódigo: ${code}\nDuración: ${duration} días\nPlan: ${plan}\nActivo: ${active ? "Sí" : "No"}`,
+                );
+                loadConfig(); // Recargar para mostrar datos actualizados
+            } catch (e) {
+                console.error(e);
+                alert("Error guardando giftcard");
+            }
+        });
+
+    document
+        .getElementById("form-precios")
+        ?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            // @ts-ignore
+            const monthly = document.getElementById("price-monthly").value;
+            // @ts-ignore
+            const semestral = document.getElementById("price-semestral").value;
+            try {
+                await setDoc(
+                    doc(db, "configuracion", "general"),
+                    { price_monthly: monthly, price_semestral: semestral },
+                    { merge: true },
+                );
+                alert("✅ Precios actualizados");
+            } catch (e) {
+                alert("Error guardando precios");
+            }
+        });
+</script>
+
+<style>
+    .admin-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        font-family: "Inter", sans-serif;
+    }
+    .header-config {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+    .btn-back {
+        text-decoration: none;
+        color: #64748b;
+        font-weight: bold;
+        padding: 8px 16px;
+        background: #f1f5f9;
+        border-radius: 8px;
+        transition: 0.2s;
+    }
+    .btn-back:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
+    h1 {
+        font-size: 2rem;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .config-grid {
+        display: grid;
+        grid-template-cols: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+    }
+    .config-card {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .config-card h3 {
+        margin-top: 0;
+        color: #334155;
+        font-size: 1.25rem;
+        margin-bottom: 10px;
+        border-bottom: 2px solid #f1f5f9;
+        padding-bottom: 10px;
+    }
+    .text-muted {
+        color: #64748b;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+    }
+    input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: 0.2s;
+        outline: none;
+    }
+    input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .btn-action {
+        width: 100%;
+        padding: 12px;
+        background: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .btn-action:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+
+    select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: 0.2s;
+        outline: none;
+        background: white;
+        cursor: pointer;
+    }
+    select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .stats-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+    }
+    .stat-item:not(:last-child) {
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .stat-label {
+        font-size: 0.875rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+    .stat-value {
+        font-size: 1rem;
+        color: #1e293b;
+        font-weight: bold;
+    }
+
+    .flex {
+        display: flex;
+    }
+    .items-center {
+        align-items: center;
+    }
+    .gap-2 {
+        gap: 0.5rem;
+    }
+    .cursor-pointer {
+        cursor: pointer;
+    }
+    .w-5 {
+        width: 1.25rem;
+    }
+    .h-5 {
+        height: 1.25rem;
+    }
+</style>

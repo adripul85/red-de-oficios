@@ -1,100 +1,237 @@
-<section class="hero">
-  <h1>Red de Oficios</h1>
-  <p>Conectamos expertos con soluciones.</p>
-  
-  <div class="search-box">
-    <select id="filtro-categoria">
-      <option value="">¿Qué servicio buscás?</option>
-      <option value="Plomería">Plomería</option>
-      <option value="Electricidad">Electricidad</option>
-      <option value="Gasista">Gasista</option>
-      <option value="Climatización">Climatización</option>
-      <option value="Albañilería">Albañilería</option>
-      <option value="Pintura">Pintura</option>
-      <option value="Carpintería">Carpintería</option>
-      <option value="Maquillaje">Maquillaje</option>
-      <option value="Sastrería">Sastrería</option>
-      <option value="Zapatería">Zapatería</option>
-      <option value="Jardinería">Jardinería</option>
-      <option value="Mecánica">Mecánica</option>
-    </select>
+---
+// Recibir tendencias como prop desde index.astro
+const { trends } = Astro.props;
 
-    <input type="text" id="filtro-zona" placeholder="Tu Barrio o Zona (ej. Palermo)" />
-    
-    <button id="btn-buscar" type="button">BUSCAR</button>
-  </div>
-</section>
+// --- TENDENCIAS ---
+let trendingTags = trends || [];
 
-<style>
-  .hero {
-    background: #f4f4f4;
-    padding: 80px 20px;
-    text-align: center;
-  }
-  .hero h1 { margin: 0 0 10px 0; font-size: 40px; color: #333; }
-  .hero p { font-size: 18px; color: #666; margin-bottom: 30px; }
-  
-  .search-box {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    max-width: 700px;
-    margin: 0 auto;
-  }
-
-  .search-box select, 
-  .search-box input {
-    padding: 15px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-    flex: 1;
-    min-width: 200px;
-  }
-
-  .search-box button {
-    padding: 15px 30px;
-    background: #0044cc;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    transition: background 0.2s;
-  }
-  .search-box button:hover {
-    background: #003399;
-  }
-  /* ... estilos anteriores ... */
-
-/* AGREGAR AL FINAL DEL STYLE */
-@media (max-width: 600px) {
-  .hero {
-    padding: 40px 15px !important; /* Menos relleno en celular */
-  }
-  
-  .hero h1 {
-    font-size: 28px !important; /* Texto un poco más chico */
-  }
-
-  .search-box {
-    flex-direction: column; /* Forzamos columna */
-    padding: 15px;
-  }
-
-  /* Que los inputs y el botón ocupen todo el ancho */
-  .search-box select, 
-  .search-box input, 
-  .search-box button {
-    width: 100%;
-    min-width: 100%; /* Asegura que no se achiquen */
-    margin-bottom: 10px;
-  }
+// Si no se pasaron trends como prop, usar fallback
+if (!trendingTags || trendingTags.length === 0) {
+  trendingTags = [
+    { term: "Plomero", link: "plomero" },
+    { term: "Electricista", link: "electricista" },
+    { term: "Pintor", link: "pintor" },
+    { term: "Gasista", link: "gasista" },
+    { term: "Albañil", link: "albañil" },
+  ];
 }
-</style>
+---
+
+<!-- Hero Search Premium -->
+<div
+  class="relative w-full min-h-[85vh] md:min-h-[90vh] bg-white flex flex-col md:flex-row overflow-hidden font-sans"
+>
+  <!-- Mobile: Imagen arriba con onda -->
+  <div class="md:hidden relative h-[250px] w-full">
+    <img
+      src="https://unsplash.com/es/fotos/una-cocina-con-encimera-de-marmol-y-armarios-de-madera-fio8T7t4AY8"
+      alt="Profesionales"
+      class="w-full h-full object-cover"
+    />
+    <!-- Onda bottom -->
+    <div class="absolute bottom-0 left-0 w-full">
+      <svg
+        viewBox="0 0 1200 120"
+        preserveAspectRatio="none"
+        class="w-full h-10"
+      >
+        <path d="M0,120 L0,30 Q600,120 1200,30 L1200,120 Z" fill="#ffffff"
+        ></path>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Contenido izquierdo -->
+  <div
+    class="w-full md:w-1/2 flex flex-col justify-center items-center px-6 md:px-20 py-8 md:py-12 z-10 bg-white -mt-12 md:-mt-20"
+  >
+    <div class="w-full max-w-xl">
+      <h1
+        class="text-4xl md:text-6xl font-extrabold text-slate-900 mb-4 leading-tight"
+      >
+        Encontrá al <span class="text-orange-600">experto</span>
+        <br /> que necesitás.
+      </h1>
+      <p class="text-slate-500 text-lg mb-8">
+        Plomeros, electricistas y más de <strong>62.000 profesionales</strong> verificados.
+      </p>
+
+      <!-- Buscador Premium con 2 inputs -->
+      <form
+        id="hero-search-form"
+        action="/resultados"
+        method="GET"
+        class="bg-white border border-slate-200 rounded-full shadow-2xl p-2 flex flex-col md:flex-row items-center relative z-20 mb-6"
+      >
+        <!-- Input 1: Servicio -->
+        <div
+          class="flex-1 w-full px-6 py-3 border-b md:border-b-0 md:border-r border-slate-100"
+        >
+          <label
+            class="block text-xs font-bold text-slate-800 uppercase tracking-wide mb-1"
+          >
+            ¿Qué servicio?
+          </label>
+          <input
+            type="text"
+            id="input-servicio"
+            placeholder="Ej: Gasista, Plomero..."
+            class="w-full outline-none text-slate-700 placeholder-slate-400 bg-transparent text-lg"
+            autocomplete="off"
+          />
+        </div>
+
+        <!-- Input 2: Barrio -->
+        <div class="flex-1 w-full px-6 py-3">
+          <label
+            class="block text-xs font-bold text-slate-800 uppercase tracking-wide mb-1"
+          >
+            ¿En dónde?
+          </label>
+          <input
+            type="text"
+            id="input-barrio"
+            placeholder="Barrio o Ciudad"
+            class="w-full outline-none text-slate-700 placeholder-slate-400 bg-transparent text-lg"
+            autocomplete="off"
+          />
+        </div>
+
+        <!-- Hidden input que recibe el query combinado -->
+        <input type="hidden" name="q" id="final-query" />
+
+        <!-- Botón Buscar -->
+        <button
+          type="submit"
+          class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full p-4 md:p-3 transition-all active:scale-95 shadow-xl shadow-orange-200 flex items-center justify-center gap-2 w-full md:w-auto mt-2 md:mt-0"
+        >
+          <span class="text-2xl">🔍</span>
+          <span class="md:hidden font-bold text-lg">Buscar</span>
+        </button>
+      </form>
+
+      <!-- Toggle 24hs + Tendencias -->
+      <div class="flex flex-col md:flex-row md:items-center gap-6">
+        <!-- Toggle 24hs moderno -->
+        <label class="flex items-center gap-3 cursor-pointer group">
+          <div class="relative">
+            <input type="checkbox" id="check-24hs" class="sr-only peer" />
+            <div
+              class="w-14 h-8 bg-slate-200 rounded-full peer-checked:bg-orange-500 transition-all duration-300 shadow-inner"
+            >
+            </div>
+            <div
+              class="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6 shadow-md"
+            >
+            </div>
+          </div>
+          <span
+            class="text-sm font-bold text-slate-700 group-hover:text-orange-600 transition flex items-center gap-1"
+          >
+            🚨 Urgencias 24hs
+          </span>
+        </label>
+
+        <!-- Tendencias -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-sm text-slate-500 font-medium">Tendencias:</span>
+          {
+            trendingTags.map((tag) => (
+              <a
+                href={`/resultados?q=${tag.link}`}
+                class="px-3 py-1 bg-slate-100 hover:bg-orange-100 text-slate-700 hover:text-orange-700 text-sm font-medium rounded-full transition-all shadow-sm hover:shadow-md"
+              >
+                {tag.term}
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Desktop: Imagen derecha con degradado -->
+  <div class="hidden md:block w-1/2 h-auto relative">
+    <img
+      src="https://plus.unsplash.com/premium_photo-1683141043361-b927d1cb8694?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      alt="Profesional trabajando"
+      class="w-full h-full object-cover"
+    />
+    <!-- Degradado sutil desde blanco -->
+    <div
+      class="absolute inset-0 bg-gradient-to-r from-white via-transparent to-transparent"
+    >
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("hero-search-form");
+    const inputServicio = document.getElementById("input-servicio");
+    const inputBarrio = document.getElementById("input-barrio");
+    const finalQuery = document.getElementById("final-query");
+    const check24hs = document.getElementById("check-24hs");
+
+    if (form) {
+      form.addEventListener("submit", (e) => {
+        // @ts-ignore
+        const servicio = inputServicio.value.trim();
+        // @ts-ignore
+        const barrio = inputBarrio.value.trim();
+
+        // VALIDACIÓN: Si ambos están vacíos, redirigir a /resultados sin query vacío
+        if (!servicio && !barrio) {
+          e.preventDefault();
+          window.location.href = "/resultados";
+          return;
+        }
+
+        // Combinar ambos inputs en un solo query (sin "todos")
+        // @ts-ignore
+        finalQuery.value = `${servicio} ${barrio}`.trim();
+
+        // Agregar parámetro 24hs si está marcado
+        // @ts-ignore
+        if (check24hs.checked) {
+          const hidden = document.createElement("input");
+          hidden.type = "hidden";
+          hidden.name = "urgencia";
+          hidden.value = "24hs";
+          // @ts-ignore
+          form.appendChild(hidden);
+        }
+
+        // Logging de búsqueda para tendencias
+        if (servicio && servicio.length > 2) {
+          const data = JSON.stringify({ term: servicio });
+
+          if (navigator.sendBeacon) {
+            const blob = new Blob([data], { type: "application/json" });
+            navigator.sendBeacon("/api/log-search", blob);
+          } else {
+            fetch("/api/log-search", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: data,
+              keepalive: true,
+            }).catch(() => {});
+          }
+        }
+      });
+    }
+  </script>
+
+  <style>
+    /* Ocultar checkbox visualmente pero mantener accesibilidad */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+  </style>
+</div>

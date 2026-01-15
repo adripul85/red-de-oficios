@@ -1,0 +1,105 @@
+---
+// Array con las categorías principales (Mismos nombres que en el registro)
+const categorias = [
+  { nombre: "Electricista", icono: "⚡", color: "#fef3c7", borde: "#f59e0b" },
+  { nombre: "Plomero", icono: "💧", color: "#dbeafe", borde: "#3b82f6" },
+  { nombre: "Gasista", icono: "🔥", color: "#fee2e2", borde: "#ef4444" },
+  { nombre: "Albañil", icono: "🧱", color: "#f3f4f6", borde: "#6b7280" },
+  { nombre: "Pintor", icono: "🎨", color: "#fce7f3", borde: "#ec4899" },
+  { nombre: "Carpintero", icono: "🪚", color: "#ffedd5", borde: "#f97316" },
+  { nombre: "Aire Acond.", icono: "❄️", color: "#e0f2fe", borde: "#0ea5e9" },
+  { nombre: "Fletes", icono: "🚚", color: "#ecfccb", borde: "#84cc16" },
+  { nombre: "Jardinero", icono: "🌿", color: "#dcfce7", borde: "#22c55e" },
+  { nombre: "Cerrajero", icono: "🔑", color: "#f3e8ff", borde: "#a855f7" },
+  { nombre: "Techista", icono: "🏠", color: "#ffedd5", borde: "#ea580c" },
+  { nombre: "Ver Todos", icono: "🔎", color: "#ffffff", borde: "#000000" },
+];
+---
+
+<section class="categorias-section">
+  <div class="header-cat">
+    <h2>¿Qué necesitas arreglar hoy? 🛠️</h2>
+    <p>Busca profesionales calificados por rubro</p>
+  </div>
+
+  <div class="grid-categorias">
+    {categorias.map((cat) => (
+      <a href={`/resultados?q=${cat.nombre === 'Ver Todos' ? '' : cat.nombre}`} class="cat-card">
+        <div class="icon-circle" style={`background-color: ${cat.color}; border-color: ${cat.borde}`}>
+          {cat.icono}
+        </div>
+        <span>{cat.nombre}</span>
+      </a>
+    ))}
+  </div>
+</section>
+
+<style>
+  .categorias-section {
+    padding: 40px 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .header-cat { margin-bottom: 40px; }
+  .header-cat h2 { font-size: 2rem; color: #1f2937; margin-bottom: 10px; }
+  .header-cat p { color: #6b7280; font-size: 1.1rem; }
+
+  /* GRILLA RESPONSIVA */
+  .grid-categorias {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* Tarjetas de 140px mínimo */
+    gap: 20px;
+  }
+
+  /* TARJETA */
+  .cat-card {
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    border-radius: 16px;
+    background: white;
+    border: 1px solid #f3f4f6;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .cat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    border-color: #e5e7eb;
+  }
+
+  /* CÍRCULO DEL ÍCONO */
+  .icon-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    border: 2px solid transparent; /* Para usar el color del borde dinámico */
+  }
+
+  .cat-card span {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.95rem;
+  }
+
+  /* MÓVIL */
+  @media (max-width: 600px) {
+    .grid-categorias {
+      grid-template-columns: repeat(3, 1fr); /* 3 columnas en celular */
+      gap: 10px;
+    }
+    .cat-card { padding: 10px; }
+    .icon-circle { width: 50px; height: 50px; font-size: 1.5rem; }
+    .cat-card span { font-size: 0.8rem; }
+  }
+</style>

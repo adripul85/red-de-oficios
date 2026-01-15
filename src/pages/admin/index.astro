@@ -1,0 +1,379 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Panel de Administración - Staff">
+    <div class="admin-container">
+        <header class="admin-header">
+            <div class="header-left">
+                <h1>Centro de Comando 👮‍♂️</h1>
+                <p>
+                    Hola, <span id="staff-name" class="font-bold">...</span>
+                    <span id="staff-role" class="role-badge">...</span>
+                </p>
+            </div>
+            <button id="btn-logout-admin" class="btn-logout"
+                >Cerrar Sesión</button
+            >
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="card-stat">
+                <div class="stat-icon">👥</div>
+                <div>
+                    <h3>Usuarios</h3>
+                    <p class="stat-number" id="count-users">...</p>
+                </div>
+            </div>
+
+            <div class="card-stat">
+                <div class="stat-icon">⚠️</div>
+                <div>
+                    <h3>Reportes</h3>
+                    <p class="stat-number warning" id="count-reports">0</p>
+                </div>
+            </div>
+
+            <div id="finance-card" class="card-stat finance hidden">
+                <div class="stat-icon">💰</div>
+                <div>
+                    <h3>Facturación</h3>
+                    <p class="stat-number text-green" id="revenue">$ 0</p>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Acciones Rápidas</h2>
+
+        <div class="buttons-grid">
+            <a href="/admin/usuarios" class="admin-btn">
+                <span class="btn-icon">🔍</span>
+                <span class="btn-label">Buscar Usuarios</span>
+            </a>
+
+            <a href="/admin/mensajes" class="admin-btn">
+                <span class="btn-icon">💬</span>
+                <span class="btn-label">Mensajes</span>
+            </a>
+
+            <a href="/admin/denuncias" class="admin-btn">
+                <span class="btn-icon">🚨</span>
+                <span class="btn-label">Denuncias</span>
+            </a>
+
+            <a href="/admin/pagos" class="admin-btn">
+                <span class="btn-icon">💳</span>
+                <span class="btn-label">Pagos</span>
+            </a>
+
+            <a
+                href="/admin/finanzas"
+                class="admin-btn restricted hidden"
+                id="admin-finanzas"
+            >
+                <span class="btn-icon">💰</span>
+                <span class="btn-label">Finanzas</span>
+            </a>
+
+            <a href="/admin/blog" class="admin-btn">
+                <span class="btn-icon">✍️</span>
+                <span class="btn-label">Blog</span>
+            </a>
+
+            <a href="/foro" class="admin-btn">
+                <span class="btn-icon">🏘️</span>
+                <span class="btn-label">Foro</span>
+                <a href="/admin/validaciones" class="admin-btn">
+                    <span class="btn-icon">✅</span>
+                    <span class="btn-label">Validaciones</span>
+                </a>
+            </a>
+
+            <a
+                href="/admin/configuracion"
+                id="admin-settings"
+                class="admin-btn restricted hidden"
+            >
+                <span class="btn-icon">⚙️</span>
+                <span class="btn-label">Configuración</span>
+            </a>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { auth, db } from "../../firebase/client";
+    import { onAuthStateChanged, signOut } from "firebase/auth";
+    import {
+        doc,
+        getDoc,
+        collection,
+        getCountFromServer,
+    } from "firebase/firestore";
+
+    const staffName = document.getElementById("staff-name");
+    const staffRole = document.getElementById("staff-role");
+    const financeCard = document.getElementById("finance-card");
+    const adminSettings = document.getElementById("admin-settings");
+    const countUsers = document.getElementById("count-users");
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            try {
+                const docRef = doc(db, "profesionales", user.uid);
+                const snap = await getDoc(docRef);
+
+                if (!snap.exists()) {
+                    window.location.href = "/";
+                    return;
+                }
+
+                const data = snap.data();
+                const rolRaw = data.rol || data.role || "profesional";
+                const rolLimpio = String(rolRaw).toLowerCase().trim();
+
+                if (
+                    rolLimpio !== "admin" &&
+                    rolLimpio !== "moderador" &&
+                    rolLimpio !== "moderator"
+                ) {
+                    alert("⛔ ACCESO DENEGADO");
+                    window.location.href = "/mi-perfil";
+                    return;
+                }
+
+                staffName.textContent = data.nombre || user.email;
+                staffRole.textContent = rolLimpio.toUpperCase();
+
+                if (rolLimpio === "admin") {
+                    financeCard.classList.remove("hidden");
+                    adminSettings.classList.remove("hidden");
+                    if (adminSettings) adminSettings.style.display = "flex";
+
+                    // Mostrar botón de Finanzas para admin
+                    const adminFinanzas =
+                        document.getElementById("admin-finanzas");
+                    if (adminFinanzas) {
+                        adminFinanzas.classList.remove("hidden");
+                        adminFinanzas.style.display = "flex";
+                    }
+                } else {
+                    staffRole.style.background = "#dbeafe";
+                    staffRole.style.color = "#1e40af";
+                }
+
+                // Stats
+                const coll = collection(db, "profesionales");
+                const snapshot = await getCountFromServer(coll);
+                countUsers.textContent = snapshot.data().count.toString();
+            } catch (e) {
+                console.error("Error admin", e);
+            }
+        } else {
+            window.location.href = "/ingresar";
+        }
+    });
+
+    document
+        .getElementById("btn-logout-admin")
+        ?.addEventListener("click", async () => {
+            await signOut(auth);
+            window.location.href = "/";
+        });
+</script>
+
+<style>
+    .admin-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background-color: #f8fafc; /* Fondo gris muy suave para toda la página */
+        min-height: 100vh;
+    }
+
+    /* HEADER */
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        background: white;
+        padding: 20px 25px;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    .admin-header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: #1f2937;
+        font-weight: 800;
+    }
+    .role-badge {
+        background: #ffedd5;
+        color: #c2410c;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        vertical-align: middle;
+        margin-left: 5px;
+    }
+    .btn-logout {
+        background: #fee2e2;
+        color: #991b1b;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: 0.2s;
+    }
+    .btn-logout:hover {
+        background: #fecaca;
+    }
+
+    /* STATS CARDS (Compactas) */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 40px;
+    }
+    .card-stat {
+        background: white;
+        padding: 15px 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .stat-icon {
+        font-size: 1.8rem;
+        background: #f1f5f9;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+    .card-stat h3 {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin: 0;
+        color: #0f172a;
+        line-height: 1.2;
+    }
+    .warning {
+        color: #d97706;
+    }
+    .text-green {
+        color: #16a34a;
+    }
+    .finance {
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+    }
+    .finance .stat-icon {
+        background: #dcfce7;
+    }
+
+    /* BOTONES DE ACCIÓN (NUEVO DISEÑO) */
+    .section-title {
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+        color: #334155;
+        font-weight: 700;
+        border-left: 4px solid #ea580c;
+        padding-left: 10px;
+    }
+
+    .buttons-grid {
+        display: grid;
+        /* Grid responsive: botones cuadrados */
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 20px;
+    }
+
+    .admin-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        padding: 25px 15px;
+        border-radius: 16px;
+        text-decoration: none;
+        color: #334155;
+        border: 2px solid transparent;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+        height: 140px; /* Altura fija para uniformidad */
+    }
+
+    .admin-btn:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        border-color: #ea580c;
+        color: #ea580c;
+    }
+
+    .btn-icon {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+        filter: grayscale(100%);
+        transition: 0.2s;
+    }
+
+    .admin-btn:hover .btn-icon {
+        filter: grayscale(0%);
+        transform: scale(1.1);
+    }
+
+    .btn-label {
+        font-weight: 700;
+        font-size: 0.95rem;
+        text-align: center;
+        line-height: 1.2;
+    }
+
+    .restricted {
+        background: #fff7ed;
+        border: 2px dashed #fdba74;
+    }
+    .restricted:hover {
+        background: #ffedd5;
+        border-style: solid;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    @media (max-width: 600px) {
+        .buttons-grid {
+            grid-template-columns: repeat(2, 1fr); /* 2 columnas en móvil */
+        }
+        .admin-btn {
+            padding: 15px;
+            height: 120px;
+        }
+        .btn-icon {
+            font-size: 2rem;
+        }
+    }
+</style>

@@ -1,0 +1,515 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Ingresar - DeOficios">
+  <div class="auth-container">
+    <div class="auth-banner">
+      <div class="banner-content">
+        <h1>¡Bienvenido Colega! 🛠️</h1>
+        <p>
+          Sumate a la red de oficios más grande del barrio. Conseguí clientes y
+          mostrá tu trabajo.
+        </p>
+      </div>
+      <div class="overlay"></div>
+    </div>
+
+    <div class="auth-form-wrapper">
+      <div class="form-header">
+        <a href="/" class="back-link">← Volver al inicio</a>
+        <img src="/favicon.svg" alt="Logo" class="logo-img" />
+      </div>
+
+      <div class="auth-tabs">
+        <button class="tab-btn active" id="tab-login">Ingresar</button>
+        <a
+          href="/registro-profesional"
+          class="tab-btn"
+          style="text-decoration: none; text-align: center; display: block;"
+          >Crear Cuenta</a
+        >
+      </div>
+
+      <form id="form-login" class="auth-form active">
+        <h2>Hola de nuevo 👋</h2>
+        <p class="subtitle">Ingresá tus datos para gestionar tu perfil.</p>
+
+        <div class="input-group">
+          <label>Email</label>
+          <input type="email" placeholder="ejemplo@correo.com" required />
+        </div>
+
+        <div class="input-group">
+          <label>Contraseña</label>
+          <input type="password" placeholder="••••••••" required />
+        </div>
+
+        <button type="submit" class="btn-primary">Ingresar</button>
+        <div style="text-align: right; margin-bottom: 15px;">
+          <a
+            href="/recuperar"
+            style="color: #6b7280; font-size: 0.9rem; text-decoration: none;"
+          >
+            ¿Olvidaste tu contraseña?
+          </a>
+        </div>
+        <div class="divider"><span>O ingresá con</span></div>
+
+        <button type="button" class="btn-google">
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="G"
+          />
+          Google
+        </button>
+      </form>
+
+      <form id="form-register" class="auth-form">
+        <h2>Crear Cuenta 🚀</h2>
+        <p class="subtitle">Registrate gratis y empezá a trabajar.</p>
+
+        <div class="input-group">
+          <label>Nombre Completo</label>
+          <input type="text" placeholder="Juan Perez" required />
+        </div>
+
+        <div class="input-group">
+          <label>Email</label>
+          <input type="email" placeholder="ejemplo@correo.com" required />
+        </div>
+
+        <div class="input-group">
+          <label>Contraseña</label>
+          <input
+            type="password"
+            placeholder="Crea una contraseña segura"
+            required
+          />
+        </div>
+
+        <button type="submit" class="btn-primary">Registrarme</button>
+
+        <div class="divider"><span>O registrate con</span></div>
+
+        <button type="button" class="btn-google">
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="G"
+          />
+          Google
+        </button>
+      </form>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { auth, db } from "../firebase/client"; // 👈 Importamos db también
+  import {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    sendEmailVerification, // <--- IMPORTANTE
+    GoogleAuthProvider,
+    signInWithPopup,
+  } from "firebase/auth";
+  import { doc, setDoc, getDoc } from "firebase/firestore"; // 👈 Herramientas para guardar datos
+
+  // --- LÓGICA VISUAL (PESTAÑAS) ---
+  const tabLogin = document.getElementById("tab-login");
+  const tabRegister = document.getElementById("tab-register");
+  const formLogin = document.getElementById("form-login");
+  const formRegister = document.getElementById("form-register");
+
+  tabLogin?.addEventListener("click", () => {
+    tabLogin.classList.add("active");
+    tabRegister.classList.remove("active");
+    formLogin.classList.add("active");
+    formRegister.classList.remove("active");
+  });
+
+  tabRegister?.addEventListener("click", () => {
+    tabRegister.classList.add("active");
+    tabLogin.classList.remove("active");
+    formRegister.classList.add("active");
+    formLogin.classList.remove("active");
+  });
+
+  // --- REGISTRO (CREAR USUARIO + PERFIL) ---
+  formRegister?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const nombreInput = formRegister.querySelector(
+      'input[placeholder="Juan Perez"]',
+    ); // Capturamos el nombre
+    const emailInput = formRegister.querySelector('input[type="email"]');
+    const passwordInput = formRegister.querySelector('input[type="password"]');
+    const btn = formRegister.querySelector('button[type="submit"]');
+
+    const nombre = (nombreInput as HTMLInputElement).value;
+    const email = (emailInput as HTMLInputElement).value;
+    const password = (passwordInput as HTMLInputElement).value;
+
+    try {
+      btn.textContent = "Creando perfil...";
+      (btn as HTMLButtonElement).disabled = true;
+
+      // 1. Crear usuario en Auth (La Llave)
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+      const user = userCredential.user;
+      await sendEmailVerification(user);
+
+      // 1. CALCULAMOS LAS FECHAS 📅
+      const fechaRegistro = new Date();
+      const fechaVencimiento = new Date();
+      // Le sumamos 10 días a la fecha de hoy
+      fechaVencimiento.setDate(fechaRegistro.getDate() + 10);
+
+      // 2. Crear ficha en Base de Datos (La Casa)
+      // Usamos el MISMO ID (uid) para que sean pareja
+      await setDoc(doc(db, "profesionales", user.uid), {
+        nombre: nombre,
+        email: email,
+        categoria: "Sin categoría", // Datos por defecto
+        zona: "Sin zona",
+        descripcion: "¡Hola! Soy nuevo en DeOficios.",
+        verificado: false,
+        es_24hs: false,
+
+        // 👇 DATOS NUEVOS DE SUSCRIPCIÓN 👇
+        plan: "prueba_gratis", // 'prueba_gratis', 'mensual', 'semestral'
+        vencimiento: fechaVencimiento,
+        estado: "activo", // 'activo', 'vencido'
+
+        contactos_gratis_usados: 0,
+        votos: 0,
+        fecha_registro: fechaRegistro,
+        rol: "profesional",
+      });
+
+      console.log("Perfil creado en DB para:", user.uid);
+      alert("¡Cuenta creada! Revisa tu email para verificarla.");
+
+      // 3. Redirigir a la página de edición (La crearemos luego)
+      window.location.href = "/mi-perfil";
+    } catch (error) {
+      console.error(error);
+      let mensaje = "Error al registrarse." + error.message;
+      if (error.code === "auth/email-already-in-use")
+        mensaje = "Ese email ya existe.";
+      if (error.code === "auth/weak-password")
+        mensaje = "La contraseña es muy corta.";
+      alert(mensaje);
+      btn.textContent = "Registrarme";
+      (btn as HTMLButtonElement).disabled = false;
+    }
+  });
+
+  // --- LOGIN (INGRESAR) ---
+  formLogin?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const email = (
+      formLogin.querySelector('input[type="email"]') as HTMLInputElement
+    ).value;
+    const password = (
+      formLogin.querySelector('input[type="password"]') as HTMLInputElement
+    ).value;
+    const btn = formLogin.querySelector('button[type="submit"]');
+
+    try {
+      btn.textContent = "Ingresando...";
+      (btn as HTMLButtonElement).disabled = true;
+
+      await signInWithEmailAndPassword(auth, email, password);
+
+      // Al entrar, lo mandamos a su panel
+      window.location.href = "/mi-perfil";
+    } catch (error) {
+      console.error(error);
+      alert("Datos incorrectos. Intenta de nuevo.");
+      btn.textContent = "Ingresar";
+      (btn as HTMLButtonElement).disabled = false;
+    }
+  });
+
+  // --- GOOGLE LOGIN (Botones) ---
+  const googleBtns = document.querySelectorAll(".btn-google");
+  googleBtns.forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+
+        // Check if user exists in DB, if not create basic profile
+        const docRef = doc(db, "profesionales", user.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (!docSnap.exists()) {
+          // Create profile for Google User
+          const fechaRegistro = new Date();
+          const fechaVencimiento = new Date();
+          fechaVencimiento.setDate(fechaRegistro.getDate() + 10);
+
+          await setDoc(docRef, {
+            nombre: user.displayName || "Usuario Google",
+            email: user.email,
+            categoria: "Sin categoría",
+            zona: "Sin zona",
+            descripcion: "¡Hola! Soy nuevo en DeOficios.",
+            verificado: false,
+            es_24hs: false,
+            plan: "prueba_gratis",
+            vencimiento: fechaVencimiento,
+            estado: "activo",
+            contactos_gratis_usados: 0,
+            votos: 0,
+            fecha_registro: fechaRegistro,
+            rol: "profesional",
+            foto: user.photoURL, // Use Google photo
+          });
+        }
+
+        window.location.href = "/mi-perfil";
+      } catch (error) {
+        console.error("Google Auth Error:", error);
+        // Avoid alerting if popup closed by user
+        if (error.code !== "auth/popup-closed-by-user") {
+          alert("Error ingresando con Google: " + error.message);
+        }
+      }
+    });
+  });
+</script>
+
+<style>
+  /* --- LAYOUT GENERAL --- */
+  .auth-container {
+    display: flex;
+    min-height: 100vh;
+    font-family: "Segoe UI", system-ui, sans-serif;
+  }
+
+  /* --- BANNER IZQUIERDO --- */
+  .auth-banner {
+    flex: 1;
+    background-image: url("https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=1000&auto=format&fit=crop");
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    padding: 40px;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1;
+  }
+
+  .banner-content {
+    position: relative;
+    z-index: 2;
+    max-width: 400px;
+  }
+  .banner-content h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  }
+  .banner-content p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+  }
+
+  /* --- FORMULARIO DERECHO --- */
+  .auth-form-wrapper {
+    flex: 1;
+    max-width: 600px; /* Ancho máximo del panel derecho */
+    background: white;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  .back-link {
+    color: #7f8c8d;
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+  .logo-img {
+    width: 40px;
+  }
+
+  /* TABS */
+  .auth-tabs {
+    display: flex;
+    background: #f3f4f6;
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 30px;
+  }
+  .tab-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #7f8c8d;
+    transition: 0.3s;
+  }
+  .tab-btn.active {
+    background: white;
+    color: #e67e22;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  }
+
+  /* FORMULARIOS */
+  .auth-form {
+    display: none;
+    animation: fadeIn 0.3s ease-out;
+  }
+  .auth-form.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+      display: none;
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      display: block;
+    }
+  }
+
+  h2 {
+    font-size: 2rem;
+    color: #2c3e50;
+    margin-bottom: 5px;
+  }
+  .subtitle {
+    color: #95a5a6;
+    margin-bottom: 30px;
+  }
+
+  .input-group {
+    margin-bottom: 20px;
+  }
+  .input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #34495e;
+    font-size: 0.9rem;
+  }
+  .input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+  .input-group input:focus {
+    outline: none;
+    border-color: #e67e22;
+    box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.1);
+  }
+
+  .btn-primary {
+    width: 100%;
+    background: #e67e22;
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.2s;
+    margin-bottom: 20px;
+  }
+  .btn-primary:hover {
+    background: #d35400;
+  }
+
+  .divider {
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .divider::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 1px;
+    background: #eee;
+    padding: 0; /* Fix potential margin issues */
+  }
+  .divider span {
+    background: white;
+    padding: 0 10px;
+    color: #999;
+    font-size: 0.8rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .btn-google {
+    width: 100%;
+    background: white;
+    border: 1px solid #ddd;
+    color: #333;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: 0.2s;
+  }
+  .btn-google:hover {
+    background: #f9fafb;
+    border-color: #ccc;
+  }
+  .btn-google img {
+    width: 20px;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .auth-banner {
+      display: none;
+    } /* En móvil ocultamos la imagen */
+    .auth-form-wrapper {
+      max-width: 100%;
+    }
+  }
+</style>

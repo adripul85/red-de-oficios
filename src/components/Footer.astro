@@ -2,17 +2,62 @@
 const year = new Date().getFullYear();
 ---
 
-<footer>
-  &copy; {year} Red de Oficios - Buenos Aires, Argentina
+<footer class="site-footer">
+  <div class="footer-content">
+    
+    <div class="footer-col">
+      <h3>🛠️ DeOficios<span class="dot">.com.ar</span></h3>
+      <p>Conectando vecinos con profesionales de confianza de forma rápida y segura.</p>
+    </div>
+
+    <div class="footer-col">
+      <h4>Navegación</h4>
+      <ul>
+        <li><a href="/">Inicio</a></li>
+        <li><a href="/blog">📰 Blog de Consejos</a></li>
+        <li><a href="/resultados">Buscar Profesional</a></li>
+        <li><a href="/planes">Planes para Profesionales</a></li>
+        <li><a href="/ingresar">Ingresar / Registrarse</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Soporte</h4>
+      <ul>
+        <li><a href="/terminos">Términos y Condiciones</a></li>
+<li><a href="/privacidad">Política de Privacidad</a></li>
+<li><a href="/contacto">Contacto</a></li>
+      </ul>
+    </div>
+
+  </div>
+  
+  <div class="footer-bottom">
+    <p>&copy; {year} DeOficios. Hecho con ❤️ en Buenos Aires.</p>
+  </div>
 </footer>
 
 <style>
-  footer {
-    background: #333;
-    color: #aaa;
-    text-align: center;
-    padding: 20px;
-    font-size: 14px;
-    margin-top: auto; /* Se asegura de quedarse abajo */
+  .site-footer { background: #1f2937; color: #d1d5db; padding: 60px 20px 20px; margin-top: auto; }
+  
+  .footer-content {
+    max-width: 1100px; margin: 0 auto; display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px;
+    margin-bottom: 40px;
+  }
+
+  .footer-col h3 { color: white; font-size: 1.5rem; margin-bottom: 15px; }
+  .dot { color: #e67e22; }
+  .footer-col p { line-height: 1.6; font-size: 0.95rem; }
+
+  .footer-col h4 { color: white; margin-bottom: 20px; font-size: 1.1rem; }
+  
+  .footer-col ul { list-style: none; padding: 0; }
+  .footer-col li { margin-bottom: 10px; }
+  .footer-col a { color: #9ca3af; text-decoration: none; transition: 0.2s; }
+  .footer-col a:hover { color: #e67e22; }
+
+  .footer-bottom {
+    border-top: 1px solid #374151; padding-top: 20px; text-align: center; font-size: 0.9rem; color: #6b7280;
   }
 </style>
