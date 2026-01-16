@@ -97,87 +97,103 @@ try {
     updateDoc,
   } from "firebase/firestore";
 
-  const wrapper = document.getElementById("reviews-wrapper");
-  const proId = wrapper?.dataset.proId; // Leemos ID del HTML
+  document.addEventListener("astro:page-load", () => {
+    console.log("🚀 [RESENAS] Página cargada/navegada");
 
-  const guestMsg = document.getElementById("guest-msg");
-  const form = document.getElementById("form-resena");
-  const feedback = document.getElementById("feedback-msg");
-  const btn = document.getElementById("btn-submit");
+    const wrapper = document.getElementById("reviews-wrapper");
+    const proId = wrapper?.dataset.proId; // Leemos ID del HTML
 
-  let currentUser = null;
+    const guestMsg = document.getElementById("guest-msg");
+    const form = document.getElementById("form-resena");
+    const feedback = document.getElementById("feedback-msg");
+    const btn = document.getElementById("btn-submit");
 
-  // 1. DETECTAR SI ESTÁ LOGUEADO
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      currentUser = user;
-      guestMsg.classList.add("hidden");
-      form.classList.remove("hidden");
-    } else {
-      guestMsg.classList.remove("hidden");
-      form.classList.add("hidden");
-    }
-  });
+    let currentUser = null;
 
-  // 2. ENVIAR RESEÑA
-  form?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!currentUser || !proId) return;
+    // 1. DETECTAR SI ESTÁ LOGUEADO
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        guestMsg?.classList.add("hidden");
+        form?.classList.remove("hidden");
+      } else {
+        guestMsg?.classList.remove("hidden");
+        form?.classList.add("hidden");
+      }
+    });
 
-    const ratingEl = document.querySelector('input[name="rating"]:checked');
-    const rating = ratingEl ? parseInt(ratingEl.value) : 0;
-    const comment = document.getElementById("comment-input").value;
+    // 2. ENVIAR RESEÑA
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!currentUser || !proId) return;
 
-    if (rating === 0) {
-      alert("¡Faltan las estrellas! ⭐");
-      return;
-    }
+      const ratingEl = document.querySelector(
+        'input[name="rating"]:checked',
+      ) as HTMLInputElement;
+      const rating = ratingEl ? parseInt(ratingEl.value) : 0;
+      // @ts-ignore
+      const comment = document.getElementById("comment-input").value;
 
-    btn.disabled = true;
-    btn.textContent = "Guardando...";
-
-    try {
-      // A. Guardar el documento de la reseña
-      await addDoc(collection(db, "profesionales", proId, "resenas"), {
-        clienteId: currentUser.uid,
-        clienteNombre: currentUser.displayName || "Cliente",
-        puntuacion: rating,
-        comentario: comment,
-        fecha: serverTimestamp(),
-      });
-
-      // B. Recalcular promedio del profesional
-      const profRef = doc(db, "profesionales", proId);
-      const profSnap = await getDoc(profRef);
-
-      if (profSnap.exists()) {
-        const d = profSnap.data();
-        // Aseguramos que existan valores base para no romper la matemática
-        const votosPrevios = d.total_votos || 0;
-        const promPrevio = d.promedio || 0;
-
-        const nuevoTotal = votosPrevios + 1;
-        // Fórmula matemática de promedio acumulado
-        const nuevoProm = (promPrevio * votosPrevios + rating) / nuevoTotal;
-
-        await updateDoc(profRef, {
-          total_votos: nuevoTotal,
-          promedio: nuevoProm,
-        });
+      if (rating === 0) {
+        alert("¡Faltan las estrellas! ⭐");
+        return;
       }
 
-      feedback.textContent = "✅ ¡Gracias por opinar!";
-      feedback.style.color = "green";
+      const submitBtn = btn as HTMLButtonElement;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Guardando...";
+      }
 
-      // Recargar página para ver la nueva reseña
-      setTimeout(() => window.location.reload(), 1500);
-    } catch (err) {
-      console.error(err);
-      feedback.textContent = "❌ Error (Revisa permisos en Firebase)";
-      feedback.style.color = "red";
-      btn.disabled = false;
-      btn.textContent = "Publicar Opinión 🚀";
-    }
+      try {
+        // A. Guardar el documento de la reseña
+        await addDoc(collection(db, "profesionales", proId, "resenas"), {
+          clienteId: currentUser.uid,
+          clienteNombre: currentUser.displayName || "Cliente",
+          puntuacion: rating,
+          comentario: comment,
+          fecha: serverTimestamp(),
+        });
+
+        // B. Recalcular promedio del profesional
+        const profRef = doc(db, "profesionales", proId);
+        const profSnap = await getDoc(profRef);
+
+        if (profSnap.exists()) {
+          const d = profSnap.data();
+          // Aseguramos que existan valores base para no romper la matemática
+          const votosPrevios = d.total_votos || 0;
+          const promPrevio = d.promedio || 0;
+
+          const nuevoTotal = votosPrevios + 1;
+          // Fórmula matemática de promedio acumulado
+          const nuevoProm = (promPrevio * votosPrevios + rating) / nuevoTotal;
+
+          await updateDoc(profRef, {
+            total_votos: nuevoTotal,
+            promedio: nuevoProm,
+          });
+        }
+
+        if (feedback) {
+          feedback.textContent = "✅ ¡Gracias por opinar!";
+          feedback.style.color = "green";
+        }
+
+        // Recargar página para ver la nueva reseña
+        setTimeout(() => window.location.reload(), 1500);
+      } catch (err) {
+        console.error(err);
+        if (feedback) {
+          feedback.textContent = "❌ Error (Revisa permisos en Firebase)";
+          feedback.style.color = "red";
+        }
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Publicar Opinión 🚀";
+        }
+      }
+    });
   });
 </script>
 

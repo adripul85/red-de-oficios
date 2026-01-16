@@ -124,150 +124,158 @@ import Layout from "../../layouts/Layout.astro";
     import { doc, getDoc, setDoc } from "firebase/firestore";
     import { onAuthStateChanged } from "firebase/auth";
 
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) window.location.href = "/admin/login";
-        else loadConfig();
-    });
+    document.addEventListener("astro:page-load", () => {
+        console.log("🚀 [ADMIN-CONFIG] Página cargada/navegada");
 
-    async function loadConfig() {
-        try {
-            // Cargar configuración del giftcard
-            const giftcardRef = doc(db, "configuracion", "giftcard");
-            const giftcardSnap = await getDoc(giftcardRef);
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) window.location.href = "/admin/login";
+            else loadConfig();
+        });
 
-            if (giftcardSnap.exists()) {
-                const data = giftcardSnap.data();
-                // @ts-ignore
-                document.getElementById("giftcard-code").value =
-                    data.codigo || "";
-                // @ts-ignore
-                document.getElementById("giftcard-duration").value =
-                    data.duracionDias || 60;
-                // @ts-ignore
-                document.getElementById("giftcard-plan").value =
-                    data.planOtorgado || "experto";
-                // @ts-ignore
-                document.getElementById("giftcard-max-uses").value =
-                    data.maxUsos || "";
-                // @ts-ignore
-                document.getElementById("giftcard-active").checked =
-                    data.activo || false;
-                // @ts-ignore
-                document.getElementById("current-uses").innerText =
-                    data.usos || 0;
-
-                if (data.fechaCreacion) {
-                    const fecha = data.fechaCreacion.toDate();
-                    // @ts-ignore
-                    document.getElementById("created-date").innerText =
-                        fecha.toLocaleDateString();
-                }
-            }
-
-            // Cargar precios
-            const generalRef = doc(db, "configuracion", "general");
-            const generalSnap = await getDoc(generalRef);
-
-            if (generalSnap.exists()) {
-                const data = generalSnap.data();
-                // @ts-ignore
-                if (data.price_monthly)
-                    document.getElementById("price-monthly").value =
-                        data.price_monthly;
-                // @ts-ignore
-                if (data.price_semestral)
-                    document.getElementById("price-semestral").value =
-                        data.price_semestral;
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    // Guardar Giftcard
-    document
-        .getElementById("form-giftcard")
-        ?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            // @ts-ignore
-            const code = document
-                .getElementById("giftcard-code")
-                .value.trim()
-                .toUpperCase();
-            // @ts-ignore
-            const duration = parseInt(
-                document.getElementById("giftcard-duration").value,
-            );
-            // @ts-ignore
-            const plan = document.getElementById("giftcard-plan").value;
-            // @ts-ignore
-            const maxUses = document.getElementById("giftcard-max-uses").value;
-            // @ts-ignore
-            const active = document.getElementById("giftcard-active").checked;
-
-            if (code.length < 3)
-                return alert("Código muy corto (mínimo 3 caracteres)");
-            if (duration < 1) return alert("Duración debe ser al menos 1 día");
-
+        async function loadConfig() {
             try {
-                const giftcardData = {
-                    codigo: code,
-                    duracionDias: duration,
-                    planOtorgado: plan,
-                    activo: active,
-                    fechaCreacion: new Date(),
-                };
+                // Cargar configuración del giftcard
+                const giftcardRef = doc(db, "configuracion", "giftcard");
+                const giftcardSnap = await getDoc(giftcardRef);
 
-                // Solo agregar maxUsos si tiene valor
-                if (maxUses && parseInt(maxUses) > 0) {
-                    giftcardData.maxUsos = parseInt(maxUses);
+                if (giftcardSnap.exists()) {
+                    const data = giftcardSnap.data();
+                    // @ts-ignore
+                    document.getElementById("giftcard-code").value =
+                        data.codigo || "";
+                    // @ts-ignore
+                    document.getElementById("giftcard-duration").value =
+                        data.duracionDias || 60;
+                    // @ts-ignore
+                    document.getElementById("giftcard-plan").value =
+                        data.planOtorgado || "experto";
+                    // @ts-ignore
+                    document.getElementById("giftcard-max-uses").value =
+                        data.maxUsos || "";
+                    // @ts-ignore
+                    document.getElementById("giftcard-active").checked =
+                        data.activo || false;
+                    // @ts-ignore
+                    document.getElementById("current-uses").innerText =
+                        data.usos || 0;
+
+                    if (data.fechaCreacion) {
+                        const fecha = data.fechaCreacion.toDate();
+                        // @ts-ignore
+                        document.getElementById("created-date").innerText =
+                            fecha.toLocaleDateString();
+                    }
                 }
 
-                // Preservar el contador de usos actual
-                const currentDoc = await getDoc(
-                    doc(db, "configuracion", "giftcard"),
-                );
-                if (currentDoc.exists()) {
-                    giftcardData.usos = currentDoc.data().usos || 0;
-                } else {
-                    giftcardData.usos = 0;
+                // Cargar precios
+                const generalRef = doc(db, "configuracion", "general");
+                const generalSnap = await getDoc(generalRef);
+
+                if (generalSnap.exists()) {
+                    const data = generalSnap.data();
+                    // @ts-ignore
+                    if (data.price_monthly)
+                        document.getElementById("price-monthly").value =
+                            data.price_monthly;
+                    // @ts-ignore
+                    if (data.price_semestral)
+                        document.getElementById("price-semestral").value =
+                            data.price_semestral;
                 }
-
-                await setDoc(
-                    doc(db, "configuracion", "giftcard"),
-                    giftcardData,
-                    { merge: true },
-                );
-
-                alert(
-                    `✅ Giftcard actualizado:\n\nCódigo: ${code}\nDuración: ${duration} días\nPlan: ${plan}\nActivo: ${active ? "Sí" : "No"}`,
-                );
-                loadConfig(); // Recargar para mostrar datos actualizados
             } catch (e) {
                 console.error(e);
-                alert("Error guardando giftcard");
             }
-        });
+        }
 
-    document
-        .getElementById("form-precios")
-        ?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            // @ts-ignore
-            const monthly = document.getElementById("price-monthly").value;
-            // @ts-ignore
-            const semestral = document.getElementById("price-semestral").value;
-            try {
-                await setDoc(
-                    doc(db, "configuracion", "general"),
-                    { price_monthly: monthly, price_semestral: semestral },
-                    { merge: true },
+        // Guardar Giftcard
+        document
+            .getElementById("form-giftcard")
+            ?.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                // @ts-ignore
+                const code = document
+                    .getElementById("giftcard-code")
+                    .value.trim()
+                    .toUpperCase();
+                // @ts-ignore
+                const duration = parseInt(
+                    document.getElementById("giftcard-duration").value,
                 );
-                alert("✅ Precios actualizados");
-            } catch (e) {
-                alert("Error guardando precios");
-            }
-        });
+                // @ts-ignore
+                const plan = document.getElementById("giftcard-plan").value;
+                // @ts-ignore
+                const maxUses =
+                    document.getElementById("giftcard-max-uses").value;
+                // @ts-ignore
+                const active =
+                    document.getElementById("giftcard-active").checked;
+
+                if (code.length < 3)
+                    return alert("Código muy corto (mínimo 3 caracteres)");
+                if (duration < 1)
+                    return alert("Duración debe ser al menos 1 día");
+
+                try {
+                    const giftcardData = {
+                        codigo: code,
+                        duracionDias: duration,
+                        planOtorgado: plan,
+                        activo: active,
+                        fechaCreacion: new Date(),
+                    };
+
+                    // Solo agregar maxUsos si tiene valor
+                    if (maxUses && parseInt(maxUses) > 0) {
+                        giftcardData.maxUsos = parseInt(maxUses);
+                    }
+
+                    // Preservar el contador de usos actual
+                    const currentDoc = await getDoc(
+                        doc(db, "configuracion", "giftcard"),
+                    );
+                    if (currentDoc.exists()) {
+                        giftcardData.usos = currentDoc.data().usos || 0;
+                    } else {
+                        giftcardData.usos = 0;
+                    }
+
+                    await setDoc(
+                        doc(db, "configuracion", "giftcard"),
+                        giftcardData,
+                        { merge: true },
+                    );
+
+                    alert(
+                        `✅ Giftcard actualizado:\n\nCódigo: ${code}\nDuración: ${duration} días\nPlan: ${plan}\nActivo: ${active ? "Sí" : "No"}`,
+                    );
+                    loadConfig(); // Recargar para mostrar datos actualizados
+                } catch (e) {
+                    console.error(e);
+                    alert("Error guardando giftcard");
+                }
+            });
+
+        document
+            .getElementById("form-precios")
+            ?.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                // @ts-ignore
+                const monthly = document.getElementById("price-monthly").value;
+                // @ts-ignore
+                const semestral =
+                    document.getElementById("price-semestral").value;
+                try {
+                    await setDoc(
+                        doc(db, "configuracion", "general"),
+                        { price_monthly: monthly, price_semestral: semestral },
+                        { merge: true },
+                    );
+                    alert("✅ Precios actualizados");
+                } catch (e) {
+                    alert("Error guardando precios");
+                }
+            });
+    }); // End of astro:page-load
 </script>
 
 <style>

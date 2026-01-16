@@ -1,4 +1,4 @@
-﻿---
+---
 import Layout from "../layouts/Layout.astro";
 import { db } from "../firebase/client";
 import { doc, getDoc, updateDoc, increment } from "firebase/firestore";
@@ -622,9 +622,8 @@ const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
     const proRubro = rubro;
     const proTel = tel;
     const proMat = matricula;
-    let currentIndex = 0;
-
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("astro:page-load", () => {
+        console.log("🚀 [PERFIL-INLINE] Página cargada/navegada");
         // LIGHTBOX
         const lightbox = document.getElementById("lightbox");
         const mainImg = document.getElementById("lightbox-img");
@@ -1018,6 +1017,7 @@ const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
             }).addTo(map);
         }
     });
+}); // End of astro:page-load
 </script>
 
 <script>
@@ -1037,7 +1037,11 @@ const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
         increment,
     } from "firebase/firestore";
 
-    window.trackClick = async () => {
+    document.addEventListener("astro:page-load", () => {
+        console.log("🚀 [PERFIL-IMPORT] Página cargada/navegada");
+
+        // @ts-ignore
+        window.trackClick = async () => {
         const urlParams = new URLSearchParams(window.location.search);
         const pid = urlParams.get("id");
         if (pid)
@@ -1332,4 +1336,5 @@ const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
             Swal.fire('Error', 'No se pudo generar la tarjeta', 'error');
         }
     });
+}); // End of astro:page-load
 </script>

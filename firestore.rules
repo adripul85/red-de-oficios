@@ -165,11 +165,17 @@ service cloud.firestore {
       // Crear: Cualquier usuario logueado puede crear solicitud
       allow create: if isSignedIn();
       
-      // Actualizar: El cliente que creó, profesionales en candidatos, o admin
+      // Actualizar: 
+      // 1. El cliente que creó la solicitud
+      // 2. Profesionales que están en la lista de candidatos
+      // 3. Admin/Staff
+      // 4. NUEVO: Cualquier profesional logueado puede SOLO actualizar contactadosPor/descartadosPor (postulación espontánea)
       allow update: if isSignedIn() && (
         request.auth.uid == resource.data.clienteId ||
         request.auth.uid in resource.data.candidatos ||
-        isStaff()
+        isStaff() ||
+        // Permitir que cualquier profesional actualice SOLO los arrays de contacto/descarte
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['contactadosPor', 'descartadosPor']))
       );
       
       // Eliminar: Solo el cliente o admin

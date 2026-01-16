@@ -218,22 +218,25 @@
     }
   }
 
-  // Listener de autenticación
-  onAuthStateChanged(auth, async (user) => {
-    currentUser = user;
-    await updateHeaderUI();
-  });
-
-  // Listener de navegación en Astro
   document.addEventListener("astro:page-load", async () => {
-    await updateHeaderUI();
-  });
+    console.log("🚀 [HEADER] Página cargada/navegada");
 
-  const menuBtn = document.getElementById("menu-toggle");
-  const mobileMenu = document.getElementById("mobile-menu");
-  menuBtn?.addEventListener("click", () =>
-    mobileMenu?.classList.toggle("hidden"),
-  );
+    // 1. AUTH LOGIC
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      await updateHeaderUI();
+    });
+
+    // 2. INITIAL UI RENDER (Manual trigger for first load or navigation)
+    await updateHeaderUI();
+
+    // 3. MENU TOGGLE
+    const menuBtn = document.getElementById("menu-toggle");
+    const mobileMenu = document.getElementById("mobile-menu");
+    menuBtn?.addEventListener("click", () =>
+      mobileMenu?.classList.toggle("hidden"),
+    );
+  });
 </script>
 
 <style>

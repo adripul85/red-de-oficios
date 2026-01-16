@@ -32,6 +32,46 @@ import { auth } from "../../firebase/client";
             ::-webkit-scrollbar-thumb:hover {
                 background: #94a3b8;
             }
+
+            /* Page Transitions */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .fade-in {
+                animation: fadeIn 0.3s ease-out;
+            }
+
+            /* Mobile Sidebar */
+            .mobile-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+            }
+
+            .mobile-sidebar.active {
+                transform: translateX(0);
+            }
+
+            /* Overlay */
+            .sidebar-overlay {
+                opacity: 0;
+                visibility: hidden;
+                transition:
+                    opacity 0.3s ease-in-out,
+                    visibility 0.3s ease-in-out;
+            }
+
+            .sidebar-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
             /* Modal Styles */
             .modal-overlay {
                 position: fixed;
@@ -159,9 +199,105 @@ import { auth } from "../../firebase/client";
                 </div>
             </aside>
 
+            <!-- Mobile Sidebar -->
+            <aside
+                id="mobile-sidebar"
+                class="mobile-sidebar md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col"
+            >
+                <div
+                    class="h-16 flex items-center justify-between px-6 border-b border-slate-100"
+                >
+                    <a href="/" class="text-xl font-bold text-slate-800">
+                        DeOficios<span class="text-orange-600">Pro</span>
+                    </a>
+                    <button
+                        id="close-sidebar"
+                        class="text-2xl text-slate-600 hover:text-slate-900"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto py-4">
+                    <nav class="px-3 space-y-1">
+                        <a
+                            href="/panel"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">📊</span>
+                            <span class="font-medium text-sm">Dashboard</span>
+                        </a>
+                        <a
+                            href="/panel/oportunidades"
+                            class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg"
+                        >
+                            <span class="text-xl">🎯</span>
+                            <span class="font-semibold text-sm"
+                                >Oportunidades</span
+                            >
+                        </a>
+                        <a
+                            href="/panel/presupuestos"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">📝</span>
+                            <span class="font-medium text-sm">Presupuestos</span
+                            >
+                        </a>
+                        <a
+                            href="/panel/finanzas"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">💰</span>
+                            <span class="font-medium text-sm">Finanzas</span>
+                        </a>
+                        <a
+                            href="/panel/mi-equipo"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">👷</span>
+                            <span class="font-medium text-sm">Mi Equipo</span>
+                        </a>
+                        <a
+                            href="/panel/clientes"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">👥</span>
+                            <span class="font-medium text-sm">Clientes</span>
+                        </a>
+                    </nav>
+                </div>
+
+                <div
+                    class="mt-auto pt-4 border-t border-slate-200 space-y-2 px-3 pb-4"
+                >
+                    <a
+                        href="/mi-perfil"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                    >
+                        <span>👤</span>
+                        <span class="font-medium text-sm">Mi Perfil</span>
+                    </a>
+                    <button
+                        id="btn-logout-mobile"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-red-600 transition-colors"
+                    >
+                        <span>🚪</span>
+                        <span class="font-medium text-sm">Cerrar Sesión</span>
+                    </button>
+                </div>
+            </aside>
+
             <!-- MAIN CONTENT (MOVU AL INTERIOR DEL FLEX) -->
             <main class="flex-1 overflow-y-auto md:ml-64 bg-slate-50">
                 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <!-- Mobile Menu Button -->
+                    <button
+                        id="open-sidebar"
+                        class="md:hidden text-2xl mb-4 p-2 bg-white rounded-lg shadow-sm"
+                        >☰</button
+                    >
+
                     <!-- HEADER -->
                     <div
                         class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4"
@@ -303,239 +439,335 @@ import { auth } from "../../firebase/client";
             } from "firebase/firestore";
             import { onAuthStateChanged } from "firebase/auth";
 
-            let currentUser = null;
-            let todasSolicitudes = [];
+            let currentUser: any = null;
+            let todasSolicitudes: any[] = [];
 
-            // Referencias DOM
-            const grid = document.getElementById("oportunidades-grid");
-            const loading = document.getElementById("loading");
-            const errorState = document.getElementById("error-state");
-            const emptyState = document.getElementById("empty-state");
-            const emptyTitle = document.getElementById("empty-title");
-            const emptyDesc = document.getElementById("empty-desc");
-            const tabs = document.querySelectorAll(".tab-btn");
+            // Wrap everything in astro:page-load for View Transitions compatibility
+            document.addEventListener("astro:page-load", () => {
+                console.log("🚀 [OPORTUNIDADES] Página cargada/navegada");
 
-            // Estado local
-            let activeTab = "nuevas"; // nuevas | contactadas | descartadas
+                // Referencias DOM
+                const grid = document.getElementById("oportunidades-grid");
+                const loading = document.getElementById("loading");
+                const errorState = document.getElementById("error-state");
+                const emptyState = document.getElementById("empty-state");
+                const emptyTitle = document.getElementById("empty-title");
+                const emptyDesc = document.getElementById("empty-desc");
+                const tabs = document.querySelectorAll(".tab-btn");
 
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    currentUser = user;
-                    await loadOportunidades();
-                } else {
-                    window.location.href = "/ingresar-profesional";
-                }
-            });
+                // Estado local
+                let activeTab = "nuevas"; // nuevas | contactadas | descartadas
 
-            // LOGOUT
-            document
-                .getElementById("btn-logout")
-                ?.addEventListener("click", () => {
-                    auth.signOut().then(() => (window.location.href = "/"));
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUser = user;
+                        await loadOportunidades();
+                    } else {
+                        window.location.href = "/ingresar-profesional";
+                    }
                 });
 
-            // TABS
-            tabs.forEach((btn) => {
-                btn.addEventListener("click", () => {
-                    // Update UI
-                    tabs.forEach((t) => {
-                        t.classList.remove(
+                // LOGOUT
+                document
+                    .getElementById("btn-logout")
+                    ?.addEventListener("click", () => {
+                        auth.signOut().then(() => (window.location.href = "/"));
+                    });
+
+                // TABS
+                tabs.forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        // Update UI
+                        tabs.forEach((t) => {
+                            t.classList.remove(
+                                "border-orange-500",
+                                "text-orange-600",
+                                "active",
+                            );
+                            t.classList.add(
+                                "border-transparent",
+                                "text-slate-500",
+                            );
+                        });
+                        btn.classList.add(
                             "border-orange-500",
                             "text-orange-600",
                             "active",
                         );
-                        t.classList.add("border-transparent", "text-slate-500");
+                        btn.classList.remove(
+                            "border-transparent",
+                            "text-slate-500",
+                        );
+
+                        // Update Logic
+                        activeTab = btn.id.split("-")[1]; // nuevas, contactadas, descartadas
+                        renderOportunidades();
                     });
-                    btn.classList.add(
-                        "border-orange-500",
-                        "text-orange-600",
-                        "active",
-                    );
-                    btn.classList.remove(
-                        "border-transparent",
-                        "text-slate-500",
-                    );
-
-                    // Update Logic
-                    activeTab = btn.id.split("-")[1]; // nuevas, contactadas, descartadas
-                    renderOportunidades();
-                });
-            });
-
-            async function loadOportunidades() {
-                console.log("🔍 [OPORTUNIDADES] Iniciando carga...");
-
-                // Ocultar todo inicialmente
-                [loading, grid, emptyState, errorState].forEach((el) => {
-                    if (el) {
-                        el.style.display = "none";
-                        el.classList.add("hidden");
-                    }
                 });
 
-                try {
-                    loading.style.display = "block";
-                    loading.classList.remove("hidden");
+                async function loadOportunidades() {
+                    console.log("🔍 [OPORTUNIDADES] Iniciando carga...");
 
-                    console.log(
-                        "🔍 [OPORTUNIDADES] Consultando Firestore para UID:",
-                        currentUser?.uid,
-                    );
+                    // Ocultar todo inicialmente
+                    [loading, grid, emptyState, errorState].forEach((el) => {
+                        if (el) {
+                            el.style.display = "none";
+                            el.classList.add("hidden");
+                        }
+                    });
 
-                    // MODO PRODUCCIÓN: Solo solicitudes donde eres candidato
-                    const q = query(
-                        collection(db, "solicitudes"),
-                        where("candidatos", "array-contains", currentUser.uid),
-                        orderBy("fecha", "desc"),
-                    );
+                    try {
+                        loading.style.display = "block";
+                        loading.classList.remove("hidden");
 
-                    /* 
-                // MODO DEBUG: Descomenta esto y comenta el bloque de arriba para ver TODAS las solicitudes
-                console.log("⚠️ MODO DEBUG: Cargando últimas 10 solicitudes sin filtro");
-                const q = query(
-                    collection(db, "solicitudes"),
-                    orderBy("fecha", "desc"),
-                    limit(10)
-                );
-                */
+                        console.log(
+                            "🔍 [OPORTUNIDADES] Consultando Firestore para UID:",
+                            currentUser?.uid,
+                        );
 
-                    console.log("🔍 [OPORTUNIDADES] Ejecutando query...");
-                    const snapshot = await getDocs(q);
-                    console.log(
-                        "🔍 [OPORTUNIDADES] Docs encontrados:",
-                        snapshot.size,
-                    );
+                        // 1. Primero, obtener el perfil del profesional para saber su rubro y zona
+                        const profDoc = await getDoc(
+                            doc(db, "profesionales", currentUser.uid),
+                        );
 
-                    todasSolicitudes = snapshot.docs.map((doc) => ({
-                        id: doc.id,
-                        ...doc.data(),
-                    }));
-
-                    renderOportunidades();
-                } catch (error) {
-                    console.error("❌ [OPORTUNIDADES] Error:", error);
-                    errorState.style.display = "block";
-                    errorState.classList.remove("hidden");
-                } finally {
-                    loading.style.display = "none";
-                    loading.classList.add("hidden");
-                    console.log("🔍 [OPORTUNIDADES] Carga finalizada");
-                }
-            }
-
-            function renderOportunidades() {
-                console.log("🎨 [RENDER] Iniciando renderOportunidades...");
-                console.log(
-                    "🎨 [RENDER] Total solicitudes:",
-                    todasSolicitudes.length,
-                );
-                console.log("🎨 [RENDER] Tab activo:", activeTab);
-
-                // Filtrar según Tab
-                const filtered = todasSolicitudes.filter((sol) => {
-                    const contactado = sol.contactadosPor?.includes(
-                        currentUser.uid,
-                    );
-                    const descartado = sol.descartadosPor?.includes(
-                        currentUser.uid,
-                    );
-
-                    if (activeTab === "nuevas")
-                        return !contactado && !descartado;
-                    if (activeTab === "contactadas") return contactado;
-                    if (activeTab === "descartadas") return descartado;
-                    return false;
-                });
-
-                console.log(
-                    "🎨 [RENDER] Solicitudes filtradas:",
-                    filtered.length,
-                );
-                console.log("🎨 [RENDER] Datos filtrados:", filtered);
-                if (filtered.length === 0) {
-                    console.log(
-                        "⚠️ [RENDER] No hay solicitudes filtradas - mostrando empty state",
-                    );
-                }
-
-                // Update count badge
-                const nuevasCount = todasSolicitudes.filter(
-                    (s) =>
-                        !s.contactadosPor?.includes(currentUser.uid) &&
-                        !s.descartadosPor?.includes(currentUser.uid),
-                ).length;
-
-                const badge = document.getElementById("badge-oportunidades");
-                if (badge) {
-                    badge.innerText = nuevasCount.toString();
-                    if (nuevasCount > 0) {
-                        badge.style.display = "inline-block";
-                        badge.classList.remove("hidden");
-                    } else {
-                        badge.style.display = "none";
-                        badge.classList.add("hidden");
-                    }
-                }
-
-                // Empty State Logic
-                if (filtered.length === 0) {
-                    console.log("⚠️ [RENDER] Mostrando empty state");
-                    grid.style.display = "none";
-                    emptyState.style.display = "";
-                    emptyState.classList.remove("hidden");
-
-                    if (activeTab === "nuevas") {
-                        emptyTitle.innerText = "No hay nuevas oportunidades";
-                        emptyDesc.innerText =
-                            "Te avisaremos cuando alguien busque un servicio en tu zona.";
-                    } else if (activeTab === "contactadas") {
-                        emptyTitle.innerText = "Aún no has contactado a nadie";
-                        emptyDesc.innerText =
-                            "Las oportunidades que contactes aparecerán aquí.";
-                    } else {
-                        emptyTitle.innerText = "Papelera vacía";
-                        emptyDesc.innerText =
-                            "Las oportunidades descartadas aparecerán aquí.";
-                    }
-                    return;
-                }
-
-                console.log("🎨 [RENDER] Mostrando grid...");
-                emptyState.style.display = "none";
-                grid.style.display = "grid";
-                grid.classList.remove("hidden");
-
-                console.log(
-                    "🎨 [RENDER] Generando HTML para",
-                    filtered.length,
-                    "items",
-                );
-                grid.innerHTML = filtered
-                    .map((sol) => {
-                        // Formatear fecha
-                        let fechaStr = "Reciente";
-                        if (sol.fecha && sol.fecha.seconds) {
-                            const date = new Date(sol.fecha.seconds * 1000);
-                            fechaStr = new Intl.DateTimeFormat("es-AR", {
-                                day: "numeric",
-                                month: "short",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                            }).format(date);
+                        if (!profDoc.exists()) {
+                            console.error(
+                                "❌ No se encontró el perfil del profesional",
+                            );
+                            errorState.style.display = "block";
+                            errorState.classList.remove("hidden");
+                            return;
                         }
 
-                        // Badges
-                        const urgenteBadge = sol.urgente
-                            ? `<span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">🚨 Urgente</span>`
-                            : "";
+                        const profData = profDoc.data();
+                        const miRubro = profData.rubro_principal;
+                        const miZona = profData.zona;
 
-                        const nuevoBadge =
-                            !sol.leidoPor?.includes(currentUser.uid) &&
-                            activeTab === "nuevas"
-                                ? `<span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-full">Nuevo</span>`
+                        console.log(
+                            "🔍 [OPORTUNIDADES] Mi rubro:",
+                            miRubro,
+                            "Mi zona:",
+                            miZona,
+                        );
+
+                        // 2. Buscar solicitudes que coincidan con mi rubro Y zona
+                        // ESTRATEGIA: Combinar dos queries
+                        //   a) Donde soy candidato (old way)
+                        //   b) Donde el rubro y zona coinciden (new way - para no perder oportunidades)
+
+                        const allSolicitudes = new Map(); // Usar Map para evitar duplicados
+
+                        // Query 1: Donde soy candidato (el sistema me seleccionó)
+                        const qCandidato = query(
+                            collection(db, "solicitudes"),
+                            where(
+                                "candidatos",
+                                "array-contains",
+                                currentUser.uid,
+                            ),
+                            orderBy("fecha", "desc"),
+                            limit(50),
+                        );
+
+                        console.log(
+                            "🔍 [OPORTUNIDADES] Ejecutando query candidatos...",
+                        );
+                        const snapCandidato = await getDocs(qCandidato);
+                        console.log(
+                            "🔍 [OPORTUNIDADES] Docs de candidatos:",
+                            snapCandidato.size,
+                        );
+
+                        snapCandidato.docs.forEach((doc) => {
+                            allSolicitudes.set(doc.id, {
+                                id: doc.id,
+                                ...doc.data(),
+                            });
+                        });
+
+                        // Query 2: Donde coincide mi rubro y zona (oportunidades que el sistema no me asignó pero son relevantes)
+                        if (miRubro && miZona) {
+                            const qRubroZona = query(
+                                collection(db, "solicitudes"),
+                                where("rubro", "==", miRubro),
+                                where("zona", "==", miZona),
+                                where("status", "==", "nueva"),
+                                orderBy("fecha", "desc"),
+                                limit(50),
+                            );
+
+                            console.log(
+                                "🔍 [OPORTUNIDADES] Ejecutando query rubro/zona...",
+                            );
+                            try {
+                                const snapRubroZona = await getDocs(qRubroZona);
+                                console.log(
+                                    "🔍 [OPORTUNIDADES] Docs de rubro/zona:",
+                                    snapRubroZona.size,
+                                );
+
+                                snapRubroZona.docs.forEach((doc) => {
+                                    if (!allSolicitudes.has(doc.id)) {
+                                        allSolicitudes.set(doc.id, {
+                                            id: doc.id,
+                                            ...doc.data(),
+                                        });
+                                    }
+                                });
+                            } catch (indexError) {
+                                // Si falla por falta de índice, solo usar query de candidatos
+                                console.warn(
+                                    "⚠️ Query rubro/zona falló (posible índice faltante):",
+                                    indexError,
+                                );
+                            }
+                        }
+
+                        // Convertir Map a Array y ordenar por fecha
+                        todasSolicitudes = Array.from(
+                            allSolicitudes.values(),
+                        ).sort((a, b) => {
+                            const fechaA =
+                                a.fecha?.toDate?.() || new Date(a.fecha);
+                            const fechaB =
+                                b.fecha?.toDate?.() || new Date(b.fecha);
+                            return fechaB - fechaA;
+                        });
+
+                        console.log(
+                            "🔍 [OPORTUNIDADES] Total docs combinados:",
+                            todasSolicitudes.length,
+                        );
+
+                        renderOportunidades();
+                    } catch (error) {
+                        console.error("❌ [OPORTUNIDADES] Error:", error);
+                        errorState.style.display = "block";
+                        errorState.classList.remove("hidden");
+                    } finally {
+                        loading.style.display = "none";
+                        loading.classList.add("hidden");
+                        console.log("🔍 [OPORTUNIDADES] Carga finalizada");
+                    }
+                }
+
+                function renderOportunidades() {
+                    console.log("🎨 [RENDER] Iniciando renderOportunidades...");
+                    console.log(
+                        "🎨 [RENDER] Total solicitudes:",
+                        todasSolicitudes.length,
+                    );
+                    console.log("🎨 [RENDER] Tab activo:", activeTab);
+
+                    // Filtrar según Tab
+                    const filtered = todasSolicitudes.filter((sol) => {
+                        const contactado = sol.contactadosPor?.includes(
+                            currentUser.uid,
+                        );
+                        const descartado = sol.descartadosPor?.includes(
+                            currentUser.uid,
+                        );
+
+                        if (activeTab === "nuevas")
+                            return !contactado && !descartado;
+                        if (activeTab === "contactadas") return contactado;
+                        if (activeTab === "descartadas") return descartado;
+                        return false;
+                    });
+
+                    console.log(
+                        "🎨 [RENDER] Solicitudes filtradas:",
+                        filtered.length,
+                    );
+                    console.log("🎨 [RENDER] Datos filtrados:", filtered);
+                    if (filtered.length === 0) {
+                        console.log(
+                            "⚠️ [RENDER] No hay solicitudes filtradas - mostrando empty state",
+                        );
+                    }
+
+                    // Update count badge
+                    const nuevasCount = todasSolicitudes.filter(
+                        (s) =>
+                            !s.contactadosPor?.includes(currentUser.uid) &&
+                            !s.descartadosPor?.includes(currentUser.uid),
+                    ).length;
+
+                    const badge = document.getElementById(
+                        "badge-oportunidades",
+                    );
+                    if (badge) {
+                        badge.innerText = nuevasCount.toString();
+                        if (nuevasCount > 0) {
+                            badge.style.display = "inline-block";
+                            badge.classList.remove("hidden");
+                        } else {
+                            badge.style.display = "none";
+                            badge.classList.add("hidden");
+                        }
+                    }
+
+                    // Empty State Logic
+                    if (filtered.length === 0) {
+                        console.log("⚠️ [RENDER] Mostrando empty state");
+                        grid.style.display = "none";
+                        emptyState.style.display = "";
+                        emptyState.classList.remove("hidden");
+
+                        if (activeTab === "nuevas") {
+                            emptyTitle.innerText =
+                                "No hay nuevas oportunidades";
+                            emptyDesc.innerText =
+                                "Te avisaremos cuando alguien busque un servicio en tu zona.";
+                        } else if (activeTab === "contactadas") {
+                            emptyTitle.innerText =
+                                "Aún no has contactado a nadie";
+                            emptyDesc.innerText =
+                                "Las oportunidades que contactes aparecerán aquí.";
+                        } else {
+                            emptyTitle.innerText = "Papelera vacía";
+                            emptyDesc.innerText =
+                                "Las oportunidades descartadas aparecerán aquí.";
+                        }
+                        return;
+                    }
+
+                    console.log("🎨 [RENDER] Mostrando grid...");
+                    emptyState.style.display = "none";
+                    grid.style.display = "grid";
+                    grid.classList.remove("hidden");
+
+                    console.log(
+                        "🎨 [RENDER] Generando HTML para",
+                        filtered.length,
+                        "items",
+                    );
+                    grid.innerHTML = filtered
+                        .map((sol) => {
+                            // Formatear fecha
+                            let fechaStr = "Reciente";
+                            if (sol.fecha && sol.fecha.seconds) {
+                                const date = new Date(sol.fecha.seconds * 1000);
+                                fechaStr = new Intl.DateTimeFormat("es-AR", {
+                                    day: "numeric",
+                                    month: "short",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                }).format(date);
+                            }
+
+                            // Badges
+                            const urgenteBadge = sol.urgente
+                                ? `<span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">🚨 Urgente</span>`
                                 : "";
 
-                        return `
+                            const nuevoBadge =
+                                !sol.leidoPor?.includes(currentUser.uid) &&
+                                activeTab === "nuevas"
+                                    ? `<span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-full">Nuevo</span>`
+                                    : "";
+
+                            return `
                         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 hover:shadow-md transition">
                             <!-- Info Principal -->
                             <div class="flex-1">
@@ -620,111 +852,119 @@ import { auth } from "../../firebase/client";
                             </div>
                         </div>
                     `;
-                    })
-                    .join("");
+                        })
+                        .join("");
 
-                console.log(
-                    "🎨 [RENDER] HTML generado, longitud:",
-                    grid.innerHTML.length,
-                );
-                console.log("🎨 [RENDER] Grid renderizado exitosamente");
-            }
-
-            // ACCIONES
-            async function contactarCliente(id, nombre, telefono) {
-                if (!currentUser) return;
-
-                if (!telefono) {
-                    alert(
-                        "Este cliente no dejó teléfono (versión antigua de solicitud).",
+                    console.log(
+                        "🎨 [RENDER] HTML generado, longitud:",
+                        grid.innerHTML.length,
                     );
-                    return;
+                    console.log("🎨 [RENDER] Grid renderizado exitosamente");
                 }
 
-                // 1. Marcar como contactado en DB
-                try {
-                    const solRef = doc(db, "solicitudes", id);
-                    await updateDoc(solRef, {
-                        contactadosPor: arrayUnion(currentUser.uid),
-                    });
+                // ACCIONES
+                async function contactarCliente(id, nombre, telefono) {
+                    if (!currentUser) return;
 
-                    // Actualizar estado local
-                    todasSolicitudes = todasSolicitudes.map((s) => {
-                        if (s.id === id) {
-                            const prev = s.contactadosPor || [];
-                            return {
-                                ...s,
-                                contactadosPor: [...prev, currentUser.uid],
-                            };
-                        }
-                        return s;
-                    });
+                    if (!telefono) {
+                        alert(
+                            "Este cliente no dejó teléfono (versión antigua de solicitud).",
+                        );
+                        return;
+                    }
 
-                    renderOportunidades();
+                    // 1. Marcar como contactado en DB
+                    try {
+                        const solRef = doc(db, "solicitudes", id);
+                        await updateDoc(solRef, {
+                            contactadosPor: arrayUnion(currentUser.uid),
+                        });
 
-                    // 2. Abrir WhatsApp
-                    const mensaje = `Hola ${nombre}, soy ${currentUser.displayName || "profesional"} de DeOficios. Vi tu pedido de ${todasSolicitudes.find((s) => s.id === id)?.rubro || "trabajo"} y me interesa pasarte un presupuesto.`;
-                    const url = `https://wa.me/549${telefono}?text=${encodeURIComponent(mensaje)}`;
-                    window.open(url, "_blank");
-                } catch (e) {
-                    console.error(e);
-                    alert("Error al procesar contacto");
+                        // Actualizar estado local
+                        todasSolicitudes = todasSolicitudes.map((s) => {
+                            if (s.id === id) {
+                                const prev = s.contactadosPor || [];
+                                return {
+                                    ...s,
+                                    contactadosPor: [...prev, currentUser.uid],
+                                };
+                            }
+                            return s;
+                        });
+
+                        renderOportunidades();
+
+                        // 2. Abrir WhatsApp
+                        const mensaje = `Hola ${nombre}, soy ${currentUser.displayName || "profesional"} de DeOficios. Vi tu pedido de ${todasSolicitudes.find((s) => s.id === id)?.rubro || "trabajo"} y me interesa pasarte un presupuesto.`;
+                        const url = `https://wa.me/549${telefono}?text=${encodeURIComponent(mensaje)}`;
+                        window.open(url, "_blank");
+                    } catch (e) {
+                        console.error(e);
+                        alert("Error al procesar contacto");
+                    }
                 }
-            }
 
-            async function descartarSolicitud(id) {
-                if (!confirm("¿Seguro que quieres descartar esta oportunidad?"))
-                    return;
+                async function descartarSolicitud(id) {
+                    if (
+                        !confirm(
+                            "¿Seguro que quieres descartar esta oportunidad?",
+                        )
+                    )
+                        return;
 
-                try {
-                    const solRef = doc(db, "solicitudes", id);
-                    await updateDoc(solRef, {
-                        descartadosPor: arrayUnion(currentUser.uid),
-                    });
+                    try {
+                        const solRef = doc(db, "solicitudes", id);
+                        await updateDoc(solRef, {
+                            descartadosPor: arrayUnion(currentUser.uid),
+                        });
 
-                    // Actualizar local
-                    todasSolicitudes = todasSolicitudes.map((s) => {
-                        if (s.id === id) {
-                            const prev = s.descartadosPor || [];
-                            return {
-                                ...s,
-                                descartadosPor: [...prev, currentUser.uid],
-                            };
-                        }
-                        return s;
-                    });
+                        // Actualizar local
+                        todasSolicitudes = todasSolicitudes.map((s) => {
+                            if (s.id === id) {
+                                const prev = s.descartadosPor || [];
+                                return {
+                                    ...s,
+                                    descartadosPor: [...prev, currentUser.uid],
+                                };
+                            }
+                            return s;
+                        });
 
-                    renderOportunidades();
-                } catch (e) {
-                    console.error(e);
-                    alert("Error al descartar");
+                        renderOportunidades();
+                    } catch (e) {
+                        console.error(e);
+                        alert("Error al descartar");
+                    }
                 }
-            }
 
-            // MODAL SYSTEM
-            function showAlert(title, message, icon = "✨") {
-                document.getElementById("alert-title").innerText = title;
-                document.getElementById("alert-message").innerText = message;
-                document.getElementById("alert-icon").innerText = icon;
-                document.getElementById("custom-alert").classList.add("active");
-            }
+                // MODAL SYSTEM
+                function showAlert(title, message, icon = "✨") {
+                    document.getElementById("alert-title").innerText = title;
+                    document.getElementById("alert-message").innerText =
+                        message;
+                    document.getElementById("alert-icon").innerText = icon;
+                    document
+                        .getElementById("custom-alert")
+                        .classList.add("active");
+                }
 
-            window.closeAlert = () => {
-                document
-                    .getElementById("custom-alert")
-                    .classList.remove("active");
-            };
+                window.closeAlert = () => {
+                    document
+                        .getElementById("custom-alert")
+                        .classList.remove("active");
+                };
 
-            // Exponer funciones globales
-            window.contactarCliente = contactarCliente;
-            window.descartarSolicitud = descartarSolicitud;
-            window.restaurarSolicitud = async function (id) {
-                showAlert(
-                    "Próximamente",
-                    "La funcionalidad de restaurar estará disponible pronto.",
-                    "⏳",
-                );
-            };
+                // Exponer funciones globales
+                window.contactarCliente = contactarCliente;
+                window.descartarSolicitud = descartarSolicitud;
+                window.restaurarSolicitud = async function (id: any) {
+                    showAlert(
+                        "Próximamente",
+                        "La funcionalidad de restaurar estará disponible pronto.",
+                        "⏳",
+                    );
+                };
+            }); // End of astro:page-load
         </script>
     </body>
 </html>

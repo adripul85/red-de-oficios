@@ -25,9 +25,56 @@ import { auth, db } from "../../firebase/client";
                 background: #cbd5e1;
                 border-radius: 3px;
             }
+
+            /* Page Transitions */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .fade-in {
+                animation: fadeIn 0.3s ease-out;
+            }
+
+            /* Mobile Sidebar */
+            .mobile-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+            }
+
+            .mobile-sidebar.active {
+                transform: translateX(0);
+            }
+
+            /* Overlay */
+            .sidebar-overlay {
+                opacity: 0;
+                visibility: hidden;
+                transition:
+                    opacity 0.3s ease-in-out,
+                    visibility 0.3s ease-in-out;
+            }
+
+            .sidebar-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
         </style>
     </head>
     <body class="text-slate-800">
+        <!-- Mobile Sidebar Overlay -->
+        <div
+            id="sidebar-overlay"
+            class="sidebar-overlay fixed inset-0 bg-black/50 z-40 md:hidden"
+        >
+        </div>
+
         <div class="flex h-screen overflow-hidden">
             <!-- SIDEBAR -->
             <aside
@@ -115,12 +162,104 @@ import { auth, db } from "../../firebase/client";
                 </div>
             </aside>
 
+            <!-- Mobile Sidebar -->
+            <aside
+                id="mobile-sidebar"
+                class="mobile-sidebar md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col"
+            >
+                <div
+                    class="h-16 flex items-center justify-between px-6 border-b border-slate-100"
+                >
+                    <a href="/" class="text-xl font-bold text-slate-800">
+                        DeOficios<span class="text-orange-600">Pro</span>
+                    </a>
+                    <button
+                        id="close-sidebar"
+                        class="text-2xl text-slate-600 hover:text-slate-900"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto py-4">
+                    <nav class="px-3 space-y-1">
+                        <a
+                            href="/panel"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">📊</span>
+                            <span class="font-medium text-sm">Dashboard</span>
+                        </a>
+                        <a
+                            href="/panel/oportunidades"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">🎯</span>
+                            <span class="font-medium text-sm"
+                                >Oportunidades</span
+                            >
+                        </a>
+                        <a
+                            href="/panel/presupuestos"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">📝</span>
+                            <span class="font-medium text-sm">Presupuestos</span
+                            >
+                        </a>
+                        <a
+                            href="/panel/finanzas"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">💰</span>
+                            <span class="font-medium text-sm">Finanzas</span>
+                        </a>
+                        <a
+                            href="/panel/mi-equipo"
+                            class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg"
+                        >
+                            <span class="text-xl">👷</span>
+                            <span class="font-semibold text-sm">Mi Equipo</span>
+                        </a>
+                        <a
+                            href="/panel/clientes"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">👥</span>
+                            <span class="font-medium text-sm">Clientes</span>
+                        </a>
+                    </nav>
+                </div>
+
+                <div
+                    class="mt-auto pt-4 border-t border-slate-200 space-y-2 px-3 pb-4"
+                >
+                    <a
+                        href="/mi-perfil"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                    >
+                        <span>👤</span>
+                        <span class="font-medium text-sm">Mi Perfil</span>
+                    </a>
+                    <button
+                        id="btn-logout-mobile"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-red-600 transition-colors"
+                    >
+                        <span>🚪</span>
+                        <span class="font-medium text-sm">Cerrar Sesión</span>
+                    </button>
+                </div>
+            </aside>
+
             <!-- MAIN CONTENT -->
             <main class="flex-1 flex flex-col h-screen overflow-hidden">
                 <!-- HEADER -->
                 <header
                     class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6"
                 >
+                    <button id="open-sidebar" class="md:hidden text-2xl mr-4"
+                        >☰</button
+                    >
                     <h2 class="text-lg font-bold text-slate-800">
                         Mi Equipo de Trabajo
                     </h2>
@@ -408,64 +547,71 @@ import { auth, db } from "../../firebase/client";
                 Timestamp,
             } from "firebase/firestore";
 
-            const logoutBtn = document.getElementById("btn-logout");
-            const btnAddMember = document.getElementById("btn-add-member");
-            const modalMember = document.getElementById("modal-member");
-            const formMember = document.getElementById("form-member");
-            const btnCancelMember =
-                document.getElementById("btn-cancel-member");
-            const emptyState = document.getElementById("empty-state");
-            const teamGrid = document.getElementById("team-grid");
+            document.addEventListener("astro:page-load", () => {
+                console.log("🚀 [MI EQUIPO] Página cargada/navegada");
 
-            let currentUser = null;
-            let teamData = [];
+                const logoutBtn = document.getElementById("btn-logout");
+                const btnAddMember = document.getElementById("btn-add-member");
+                const modalMember = document.getElementById("modal-member");
+                const formMember = document.getElementById("form-member");
+                const btnCancelMember =
+                    document.getElementById("btn-cancel-member");
+                const emptyState = document.getElementById("empty-state");
+                const teamGrid = document.getElementById("team-grid");
 
-            // AUTH
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    loadTeam(user.uid);
-                } else {
-                    window.location.href = "/ingresar";
+                let currentUser = null;
+                let teamData = [];
+
+                // AUTH
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        currentUser = user;
+                        loadTeam(user.uid);
+                    } else {
+                        window.location.href = "/ingresar";
+                    }
+                });
+
+                // LOAD TEAM
+                async function loadTeam(uid) {
+                    try {
+                        const q = query(
+                            collection(db, "profesionales", uid, "equipo"),
+                            where("activo", "==", true),
+                        );
+
+                        const snapshot = await getDocs(q);
+                        teamData = snapshot.docs.map((doc) => ({
+                            id: doc.id,
+                            ...doc.data(),
+                        }));
+
+                        renderTeam();
+                        updateStats();
+                    } catch (error) {
+                        console.error("Error cargando equipo:", error);
+                        showAlert(
+                            "Error",
+                            "No se pudo cargar el equipo",
+                            "error",
+                        );
+                    }
                 }
-            });
 
-            // LOAD TEAM
-            async function loadTeam(uid) {
-                try {
-                    const q = query(
-                        collection(db, "profesionales", uid, "equipo"),
-                        where("activo", "==", true),
-                    );
+                // RENDER TEAM
+                function renderTeam() {
+                    if (teamData.length === 0) {
+                        emptyState.classList.remove("hidden");
+                        teamGrid.classList.add("hidden");
+                        return;
+                    }
 
-                    const snapshot = await getDocs(q);
-                    teamData = snapshot.docs.map((doc) => ({
-                        id: doc.id,
-                        ...doc.data(),
-                    }));
+                    emptyState.classList.add("hidden");
+                    teamGrid.classList.remove("hidden");
 
-                    renderTeam();
-                    updateStats();
-                } catch (error) {
-                    console.error("Error cargando equipo:", error);
-                    showAlert("Error", "No se pudo cargar el equipo", "error");
-                }
-            }
-
-            // RENDER TEAM
-            function renderTeam() {
-                if (teamData.length === 0) {
-                    emptyState.classList.remove("hidden");
-                    teamGrid.classList.add("hidden");
-                    return;
-                }
-
-                emptyState.classList.add("hidden");
-                teamGrid.classList.remove("hidden");
-
-                teamGrid.innerHTML = teamData
-                    .map(
-                        (member) => `
+                    teamGrid.innerHTML = teamData
+                        .map(
+                            (member) => `
                     <div class="p-4 border border-slate-200 rounded-xl hover:border-orange-300 transition">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex-1">
@@ -495,295 +641,301 @@ import { auth, db } from "../../firebase/client";
                         </div>
                     </div>
                 `,
-                    )
-                    .join("");
-            }
+                        )
+                        .join("");
+                }
 
-            // UPDATE STATS
-            function updateStats() {
-                const totalMembers = teamData.length;
-                const totalPending = teamData.reduce(
-                    (sum, m) => sum + (m.pendientePago || 0),
-                    0,
-                );
-                const totalDerived = teamData.reduce(
-                    (sum, m) => sum + (m.totalDerivado || 0),
-                    0,
-                );
+                // UPDATE STATS
+                function updateStats() {
+                    const totalMembers = teamData.length;
+                    const totalPending = teamData.reduce(
+                        (sum, m) => sum + (m.pendientePago || 0),
+                        0,
+                    );
+                    const totalDerived = teamData.reduce(
+                        (sum, m) => sum + (m.totalDerivado || 0),
+                        0,
+                    );
 
-                document.getElementById("stat-total-members").textContent =
-                    totalMembers;
-                document.getElementById("stat-pending-payments").textContent =
-                    "$" + totalPending.toLocaleString();
-                document.getElementById("stat-total-derived").textContent =
-                    "$" + totalDerived.toLocaleString();
-            }
+                    document.getElementById("stat-total-members").textContent =
+                        totalMembers;
+                    document.getElementById(
+                        "stat-pending-payments",
+                    ).textContent = "$" + totalPending.toLocaleString();
+                    document.getElementById("stat-total-derived").textContent =
+                        "$" + totalDerived.toLocaleString();
+                }
 
-            // MODAL CONTROLS
-            btnAddMember.addEventListener("click", () => {
-                modalMember.classList.remove("hidden");
-            });
+                // MODAL CONTROLS
+                btnAddMember.addEventListener("click", () => {
+                    modalMember.classList.remove("hidden");
+                });
 
-            btnCancelMember.addEventListener("click", () => {
-                modalMember.classList.add("hidden");
-                formMember.reset();
-            });
+                btnCancelMember.addEventListener("click", () => {
+                    modalMember.classList.add("hidden");
+                    formMember.reset();
+                });
 
-            // TIPO PAGO CHANGE
-            document
-                .getElementById("member-tipo-pago")
-                .addEventListener("change", (e) => {
-                    const tipo = e.target.value;
-                    const label = document.getElementById("label-valor");
-                    const hint = document.getElementById("hint-valor");
+                // TIPO PAGO CHANGE
+                document
+                    .getElementById("member-tipo-pago")
+                    .addEventListener("change", (e) => {
+                        const tipo = e.target.value;
+                        const label = document.getElementById("label-valor");
+                        const hint = document.getElementById("hint-valor");
 
-                    if (tipo === "porcentaje") {
-                        label.textContent = "Porcentaje";
-                        hint.textContent =
-                            "Ingresa el porcentaje (ej: 30 para 30%)";
-                    } else {
-                        label.textContent = "Monto Fijo";
-                        hint.textContent =
-                            "Ingresa el monto fijo por trabajo (ej: 50000)";
+                        if (tipo === "porcentaje") {
+                            label.textContent = "Porcentaje";
+                            hint.textContent =
+                                "Ingresa el porcentaje (ej: 30 para 30%)";
+                        } else {
+                            label.textContent = "Monto Fijo";
+                            hint.textContent =
+                                "Ingresa el monto fijo por trabajo (ej: 50000)";
+                        }
+                    });
+
+                // ADD MEMBER
+                formMember.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+
+                    if (!currentUser) return;
+
+                    const nombre =
+                        document.getElementById("member-nombre").value;
+                    const rol = document.getElementById("member-rol").value;
+                    const tipoPago =
+                        document.getElementById("member-tipo-pago").value;
+                    const valor = parseFloat(
+                        document.getElementById("member-valor").value,
+                    );
+                    const telefono =
+                        document.getElementById("member-telefono").value;
+
+                    try {
+                        await addDoc(
+                            collection(
+                                db,
+                                "profesionales",
+                                currentUser.uid,
+                                "equipo",
+                            ),
+                            {
+                                nombre,
+                                rol,
+                                tipoPago,
+                                valor,
+                                telefono: telefono || "",
+                                activo: true,
+                                totalTrabajosJuntos: 0,
+                                totalDerivado: 0,
+                                pendientePago: 0,
+                                createdAt: Timestamp.now(),
+                            },
+                        );
+
+                        await showAlert(
+                            "¡Miembro Agregado!",
+                            `${nombre} ha sido agregado a tu equipo.`,
+                            "success",
+                        );
+
+                        modalMember.classList.add("hidden");
+                        formMember.reset();
+                        await loadTeam(currentUser.uid);
+                    } catch (error) {
+                        console.error(error);
+                        await showAlert(
+                            "Error",
+                            "No se pudo agregar el miembro.",
+                            "error",
+                        );
                     }
                 });
 
-            // ADD MEMBER
-            formMember.addEventListener("submit", async (e) => {
-                e.preventDefault();
-
-                if (!currentUser) return;
-
-                const nombre = document.getElementById("member-nombre").value;
-                const rol = document.getElementById("member-rol").value;
-                const tipoPago =
-                    document.getElementById("member-tipo-pago").value;
-                const valor = parseFloat(
-                    document.getElementById("member-valor").value,
-                );
-                const telefono =
-                    document.getElementById("member-telefono").value;
-
-                try {
-                    await addDoc(
-                        collection(
-                            db,
-                            "profesionales",
-                            currentUser.uid,
-                            "equipo",
-                        ),
-                        {
-                            nombre,
-                            rol,
-                            tipoPago,
-                            valor,
-                            telefono: telefono || "",
-                            activo: true,
-                            totalTrabajosJuntos: 0,
-                            totalDerivado: 0,
-                            pendientePago: 0,
-                            createdAt: Timestamp.now(),
-                        },
+                // DELETE MEMBER
+                window.deleteMember = async (memberId, nombre) => {
+                    const confirmed = await showConfirm(
+                        "Eliminar Miembro",
+                        `¿Estás seguro de eliminar a ${nombre} de tu equipo?\nEsto NO eliminará el historial de trabajos anteriores.`,
+                        "Eliminar",
+                        "bg-red-600",
                     );
 
-                    await showAlert(
-                        "¡Miembro Agregado!",
-                        `${nombre} ha sido agregado a tu equipo.`,
-                        "success",
+                    if (!confirmed) return;
+
+                    try {
+                        await deleteDoc(
+                            doc(
+                                db,
+                                "profesionales",
+                                currentUser.uid,
+                                "equipo",
+                                memberId,
+                            ),
+                        );
+                        await showAlert(
+                            "Miembro Eliminado",
+                            `${nombre} ha sido eliminado de tu equipo.`,
+                            "success",
+                        );
+                        await loadTeam(currentUser.uid);
+                    } catch (error) {
+                        console.error(error);
+                        await showAlert(
+                            "Error",
+                            "No se pudo eliminar al miembro.",
+                            "error",
+                        );
+                    }
+                };
+
+                // MARK AS PAID
+                window.markAsPaid = async (memberId) => {
+                    const confirmed = await showConfirm(
+                        "Confirmar Pago",
+                        "¿Confirmas que pagaste todas las derivaciones pendientes a este miembro?",
+                        "Sí, pagado",
+                        "bg-green-600",
                     );
 
-                    modalMember.classList.add("hidden");
-                    formMember.reset();
-                    await loadTeam(currentUser.uid);
-                } catch (error) {
-                    console.error(error);
-                    await showAlert(
-                        "Error",
-                        "No se pudo agregar el miembro.",
-                        "error",
-                    );
-                }
-            });
+                    if (!confirmed) return;
 
-            // DELETE MEMBER
-            window.deleteMember = async (memberId, nombre) => {
-                const confirmed = await showConfirm(
-                    "Eliminar Miembro",
-                    `¿Estás seguro de eliminar a ${nombre} de tu equipo?\nEsto NO eliminará el historial de trabajos anteriores.`,
-                    "Eliminar",
-                    "bg-red-600",
-                );
-
-                if (!confirmed) return;
-
-                try {
-                    await deleteDoc(
-                        doc(
+                    try {
+                        const memberDoc = doc(
                             db,
                             "profesionales",
                             currentUser.uid,
                             "equipo",
                             memberId,
-                        ),
-                    );
-                    await showAlert(
-                        "Miembro Eliminado",
-                        `${nombre} ha sido eliminado de tu equipo.`,
-                        "success",
-                    );
-                    await loadTeam(currentUser.uid);
-                } catch (error) {
-                    console.error(error);
-                    await showAlert(
-                        "Error",
-                        "No se pudo eliminar al miembro.",
-                        "error",
-                    );
-                }
-            };
+                        );
+                        await updateDoc(memberDoc, {
+                            pendientePago: 0,
+                        });
 
-            // MARK AS PAID
-            window.markAsPaid = async (memberId) => {
-                const confirmed = await showConfirm(
-                    "Confirmar Pago",
-                    "¿Confirmas que pagaste todas las derivaciones pendientes a este miembro?",
-                    "Sí, pagado",
-                    "bg-green-600",
-                );
+                        // Mark derivaciones as paid
+                        const derivacionesQuery = query(
+                            collection(
+                                db,
+                                "profesionales",
+                                currentUser.uid,
+                                "derivaciones",
+                            ),
+                            where("miembroId", "==", memberId),
+                            where("pagado", "==", false),
+                        );
+                        const derivacionesSnap =
+                            await getDocs(derivacionesQuery);
 
-                if (!confirmed) return;
+                        const updatePromises = derivacionesSnap.docs.map(
+                            (derivacionDoc) =>
+                                updateDoc(derivacionDoc.ref, {
+                                    pagado: true,
+                                    fechaPago: Timestamp.now(),
+                                }),
+                        );
+                        await Promise.all(updatePromises);
 
-                try {
-                    const memberDoc = doc(
-                        db,
-                        "profesionales",
-                        currentUser.uid,
-                        "equipo",
-                        memberId,
-                    );
-                    await updateDoc(memberDoc, {
-                        pendientePago: 0,
-                    });
-
-                    // Mark derivaciones as paid
-                    const derivacionesQuery = query(
-                        collection(
-                            db,
-                            "profesionales",
-                            currentUser.uid,
-                            "derivaciones",
-                        ),
-                        where("miembroId", "==", memberId),
-                        where("pagado", "==", false),
-                    );
-                    const derivacionesSnap = await getDocs(derivacionesQuery);
-
-                    const updatePromises = derivacionesSnap.docs.map(
-                        (derivacionDoc) =>
-                            updateDoc(derivacionDoc.ref, {
-                                pagado: true,
-                                fechaPago: Timestamp.now(),
-                            }),
-                    );
-                    await Promise.all(updatePromises);
-
-                    await showAlert(
-                        "Pago Registrado",
-                        "Has marcado las derivaciones como pagadas.",
-                        "success",
-                    );
-                    await loadTeam(currentUser.uid);
-                } catch (error) {
-                    console.error(error);
-                    await showAlert(
-                        "Error",
-                        "No se pudo registrar el pago.",
-                        "error",
-                    );
-                }
-            };
-
-            // ALERT SYSTEM
-            function showAlert(title, message, type = "info") {
-                return new Promise((resolve) => {
-                    const modal = document.getElementById("alert-modal");
-                    const titleEl = document.getElementById("alert-title");
-                    const msgEl = document.getElementById("alert-message");
-                    const iconEl = document.getElementById("alert-icon");
-                    const okBtn = document.getElementById("alert-ok");
-                    const cancelBtn = document.getElementById("alert-cancel");
-
-                    if (!modal) return resolve();
-
-                    titleEl.innerText = title;
-                    msgEl.innerText = message;
-                    cancelBtn.classList.add("hidden");
-                    okBtn.innerText = "Aceptar";
-                    okBtn.onclick = () => {
-                        modal.classList.add("hidden");
-                        resolve(true);
-                    };
-
-                    if (type === "success") {
-                        iconEl.innerText = "✅";
-                        okBtn.className =
-                            "flex-1 bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition shadow-lg shadow-green-200";
-                    } else if (type === "error") {
-                        iconEl.innerText = "❌";
-                        okBtn.className =
-                            "flex-1 bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition shadow-lg shadow-red-200";
-                    } else {
-                        iconEl.innerText = "ℹ️";
-                        okBtn.className =
-                            "flex-1 bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition shadow-lg shadow-indigo-200";
+                        await showAlert(
+                            "Pago Registrado",
+                            "Has marcado las derivaciones como pagadas.",
+                            "success",
+                        );
+                        await loadTeam(currentUser.uid);
+                    } catch (error) {
+                        console.error(error);
+                        await showAlert(
+                            "Error",
+                            "No se pudo registrar el pago.",
+                            "error",
+                        );
                     }
+                };
 
-                    modal.classList.remove("hidden");
+                // ALERT SYSTEM
+                function showAlert(title, message, type = "info") {
+                    return new Promise((resolve) => {
+                        const modal = document.getElementById("alert-modal");
+                        const titleEl = document.getElementById("alert-title");
+                        const msgEl = document.getElementById("alert-message");
+                        const iconEl = document.getElementById("alert-icon");
+                        const okBtn = document.getElementById("alert-ok");
+                        const cancelBtn =
+                            document.getElementById("alert-cancel");
+
+                        if (!modal) return resolve();
+
+                        titleEl.innerText = title;
+                        msgEl.innerText = message;
+                        cancelBtn.classList.add("hidden");
+                        okBtn.innerText = "Aceptar";
+                        okBtn.onclick = () => {
+                            modal.classList.add("hidden");
+                            resolve(true);
+                        };
+
+                        if (type === "success") {
+                            iconEl.innerText = "✅";
+                            okBtn.className =
+                                "flex-1 bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition shadow-lg shadow-green-200";
+                        } else if (type === "error") {
+                            iconEl.innerText = "❌";
+                            okBtn.className =
+                                "flex-1 bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition shadow-lg shadow-red-200";
+                        } else {
+                            iconEl.innerText = "ℹ️";
+                            okBtn.className =
+                                "flex-1 bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition shadow-lg shadow-indigo-200";
+                        }
+
+                        modal.classList.remove("hidden");
+                    });
+                }
+
+                function showConfirm(
+                    title,
+                    message,
+                    actionText = "Aceptar",
+                    actionClass = "bg-orange-600",
+                ) {
+                    return new Promise((resolve) => {
+                        const modal = document.getElementById("alert-modal");
+                        const titleEl = document.getElementById("alert-title");
+                        const msgEl = document.getElementById("alert-message");
+                        const iconEl = document.getElementById("alert-icon");
+                        const okBtn = document.getElementById("alert-ok");
+                        const cancelBtn =
+                            document.getElementById("alert-cancel");
+
+                        if (!modal) return resolve(false);
+
+                        titleEl.innerText = title;
+                        msgEl.innerText = message;
+                        iconEl.innerText = "🤔";
+
+                        cancelBtn.classList.remove("hidden");
+                        cancelBtn.onclick = () => {
+                            modal.classList.add("hidden");
+                            resolve(false);
+                        };
+
+                        okBtn.innerText = actionText;
+                        okBtn.className = `flex-1 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg ${actionClass}`;
+                        okBtn.onclick = () => {
+                            modal.classList.add("hidden");
+                            resolve(true);
+                        };
+
+                        modal.classList.remove("hidden");
+                    });
+                }
+
+                // LOGOUT
+                logoutBtn?.addEventListener("click", async () => {
+                    await signOut(auth);
+                    window.location.href = "/";
                 });
-            }
-
-            function showConfirm(
-                title,
-                message,
-                actionText = "Aceptar",
-                actionClass = "bg-orange-600",
-            ) {
-                return new Promise((resolve) => {
-                    const modal = document.getElementById("alert-modal");
-                    const titleEl = document.getElementById("alert-title");
-                    const msgEl = document.getElementById("alert-message");
-                    const iconEl = document.getElementById("alert-icon");
-                    const okBtn = document.getElementById("alert-ok");
-                    const cancelBtn = document.getElementById("alert-cancel");
-
-                    if (!modal) return resolve(false);
-
-                    titleEl.innerText = title;
-                    msgEl.innerText = message;
-                    iconEl.innerText = "🤔";
-
-                    cancelBtn.classList.remove("hidden");
-                    cancelBtn.onclick = () => {
-                        modal.classList.add("hidden");
-                        resolve(false);
-                    };
-
-                    okBtn.innerText = actionText;
-                    okBtn.className = `flex-1 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg ${actionClass}`;
-                    okBtn.onclick = () => {
-                        modal.classList.add("hidden");
-                        resolve(true);
-                    };
-
-                    modal.classList.remove("hidden");
-                });
-            }
-
-            // LOGOUT
-            logoutBtn?.addEventListener("click", async () => {
-                await signOut(auth);
-                window.location.href = "/";
-            });
+            }); // End of astro:page-load
         </script>
     </body>
 </html>

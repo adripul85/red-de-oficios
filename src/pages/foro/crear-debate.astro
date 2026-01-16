@@ -329,77 +329,84 @@ const groups = Object.keys(CATEGORY_MAP);
         Presupuestos: "negocios",
     };
 
-    let currentUser = null;
-    let selectedFiles: File[] = [];
+    document.addEventListener("astro:page-load", () => {
+        console.log("🚀 [FORO-NUEVO] Página cargada/navegada");
 
-    // Verificar autenticación
-    onAuthStateChanged(auth, (user) => {
-        if (!user) {
-            alert("⚠️ Debes iniciar sesión para crear debates");
-            window.location.href = "/ingresar";
-            return;
-        }
-        currentUser = user;
-        console.log("Usuario autenticado:", user.uid);
-    });
+        let currentUser = null;
+        let selectedFiles: File[] = [];
 
-    // Manejo de subida de archivos
-    const fileInput = document.getElementById("file-input") as HTMLInputElement;
-    const uploadArea = document.getElementById("upload-area");
-    const previewContainer = document.getElementById("preview-container");
-
-    uploadArea?.addEventListener("click", () => fileInput?.click());
-
-    // Drag and drop
-    uploadArea?.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        uploadArea.classList.add("border-[#FF5A5F]", "bg-rose-50");
-    });
-
-    uploadArea?.addEventListener("dragleave", () => {
-        uploadArea.classList.remove("border-[#FF5A5F]", "bg-rose-50");
-    });
-
-    uploadArea?.addEventListener("drop", (e) => {
-        e.preventDefault();
-        uploadArea.classList.remove("border-[#FF5A5F]", "bg-rose-50");
-        const files = Array.from(e.dataTransfer?.files || []);
-        handleFiles(files as File[]);
-    });
-
-    fileInput?.addEventListener("change", (e) => {
-        const files = Array.from((e.target as HTMLInputElement).files || []);
-        handleFiles(files);
-    });
-
-    function handleFiles(files: File[]) {
-        // Filtrar solo imágenes y limitar a 5MB
-        const validFiles = files.filter((file) => {
-            if (!file.type.startsWith("image/")) {
-                alert(`${file.name} no es una imagen válida`);
-                return false;
+        // Verificar autenticación
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                alert("⚠️ Debes iniciar sesión para crear debates");
+                window.location.href = "/ingresar";
+                return;
             }
-            if (file.size > 5 * 1024 * 1024) {
-                alert(`${file.name} es demasiado grande (máx 5MB)`);
-                return false;
-            }
-            return true;
+            currentUser = user;
+            console.log("Usuario autenticado:", user.uid);
         });
 
-        selectedFiles = [...selectedFiles, ...validFiles].slice(0, 5); // Máximo 5 fotos
-        updatePreview();
-    }
+        // Manejo de subida de archivos
+        const fileInput = document.getElementById(
+            "file-input",
+        ) as HTMLInputElement;
+        const uploadArea = document.getElementById("upload-area");
+        const previewContainer = document.getElementById("preview-container");
 
-    function updatePreview() {
-        if (!previewContainer) return;
+        uploadArea?.addEventListener("click", () => fileInput?.click());
 
-        previewContainer.innerHTML = "";
-        selectedFiles.forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const div = document.createElement("div");
-                div.className = "preview-image";
-                div.innerHTML = `
+        // Drag and drop
+        uploadArea?.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            uploadArea.classList.add("border-[#FF5A5F]", "bg-rose-50");
+        });
+
+        uploadArea?.addEventListener("dragleave", () => {
+            uploadArea.classList.remove("border-[#FF5A5F]", "bg-rose-50");
+        });
+
+        uploadArea?.addEventListener("drop", (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove("border-[#FF5A5F]", "bg-rose-50");
+            const files = Array.from(e.dataTransfer?.files || []);
+            handleFiles(files as File[]);
+        });
+
+        fileInput?.addEventListener("change", (e) => {
+            const files = Array.from(
+                (e.target as HTMLInputElement).files || [],
+            );
+            handleFiles(files);
+        });
+
+        function handleFiles(files: File[]) {
+            // Filtrar solo imágenes y limitar a 5MB
+            const validFiles = files.filter((file) => {
+                if (!file.type.startsWith("image/")) {
+                    alert(`${file.name} no es una imagen válida`);
+                    return false;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    alert(`${file.name} es demasiado grande (máx 5MB)`);
+                    return false;
+                }
+                return true;
+            });
+
+            selectedFiles = [...selectedFiles, ...validFiles].slice(0, 5); // Máximo 5 fotos
+            updatePreview();
+        }
+
+        function updatePreview() {
+            if (!previewContainer) return;
+
+            previewContainer.innerHTML = "";
+            selectedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const div = document.createElement("div");
+                    div.className = "preview-image";
+                    div.innerHTML = `
                     <img src="${e.target?.result}" alt="Preview">
                     <button type="button" data-index="${index}">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -407,132 +414,139 @@ const groups = Object.keys(CATEGORY_MAP);
                         </svg>
                     </button>
                 `;
-                previewContainer.appendChild(div);
+                    previewContainer.appendChild(div);
 
-                // Botón eliminar
-                div.querySelector("button")?.addEventListener("click", () => {
-                    selectedFiles.splice(index, 1);
-                    updatePreview();
-                });
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-
-    // Submit del formulario
-    const form = document.getElementById(
-        "create-debate-form",
-    ) as HTMLFormElement;
-    const submitBtn = document.getElementById(
-        "submit-btn",
-    ) as HTMLButtonElement;
-
-    form?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        if (!currentUser) {
-            alert("⚠️ Debes iniciar sesión");
-            return;
+                    // Botón eliminar
+                    div.querySelector("button")?.addEventListener(
+                        "click",
+                        () => {
+                            selectedFiles.splice(index, 1);
+                            updatePreview();
+                        },
+                    );
+                };
+                reader.readAsDataURL(file);
+            });
         }
 
-        const titleInput = document.getElementById("title") as HTMLInputElement;
-        const categorySelect = document.getElementById(
-            "category",
-        ) as HTMLSelectElement;
-        const contentTextarea = document.getElementById(
-            "content",
-        ) as HTMLTextAreaElement;
+        // Submit del formulario
+        const form = document.getElementById(
+            "create-debate-form",
+        ) as HTMLFormElement;
+        const submitBtn = document.getElementById(
+            "submit-btn",
+        ) as HTMLButtonElement;
 
-        const title = titleInput.value.trim();
-        const categoryDisplay = categorySelect.value;
-        const content = contentTextarea.value.trim();
+        form?.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-        if (!title || !categoryDisplay || !content) {
-            alert("Por favor completa todos los campos obligatorios");
-            return;
-        }
+            if (!currentUser) {
+                alert("⚠️ Debes iniciar sesión");
+                return;
+            }
 
-        if (title.length < 10) {
-            alert("El título debe tener al menos 10 caracteres");
-            return;
-        }
+            const titleInput = document.getElementById(
+                "title",
+            ) as HTMLInputElement;
+            const categorySelect = document.getElementById(
+                "category",
+            ) as HTMLSelectElement;
+            const contentTextarea = document.getElementById(
+                "content",
+            ) as HTMLTextAreaElement;
 
-        if (content.length < 20) {
-            alert("El mensaje debe tener al menos 20 caracteres");
-            return;
-        }
+            const title = titleInput.value.trim();
+            const categoryDisplay = categorySelect.value;
+            const content = contentTextarea.value.trim();
 
-        const category = CATEGORY_MAP[categoryDisplay];
-        if (!category) {
-            alert("Categoría no válida");
-            return;
-        }
+            if (!title || !categoryDisplay || !content) {
+                alert("Por favor completa todos los campos obligatorios");
+                return;
+            }
 
-        // Deshabilitar botón
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Publicando...";
+            if (title.length < 10) {
+                alert("El título debe tener al menos 10 caracteres");
+                return;
+            }
 
-        try {
-            // Subir imágenes si hay (opcional, no bloquea si falla)
-            const imageUrls: string[] = [];
+            if (content.length < 20) {
+                alert("El mensaje debe tener al menos 20 caracteres");
+                return;
+            }
 
-            if (selectedFiles.length > 0) {
-                console.log(
-                    `📸 Intentando subir ${selectedFiles.length} imágenes...`,
-                );
+            const category = CATEGORY_MAP[categoryDisplay];
+            if (!category) {
+                alert("Categoría no válida");
+                return;
+            }
 
-                for (const file of selectedFiles) {
-                    try {
-                        const fileName = `foro/${currentUser.uid}/${Date.now()}_${file.name}`;
-                        const storageRef = ref(storage, fileName);
-                        await uploadBytes(storageRef, file);
-                        const downloadURL = await getDownloadURL(storageRef);
-                        imageUrls.push(downloadURL);
-                        console.log(`✅ Imagen subida: ${file.name}`);
-                    } catch (imgError) {
+            // Deshabilitar botón
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Publicando...";
+
+            try {
+                // Subir imágenes si hay (opcional, no bloquea si falla)
+                const imageUrls: string[] = [];
+
+                if (selectedFiles.length > 0) {
+                    console.log(
+                        `📸 Intentando subir ${selectedFiles.length} imágenes...`,
+                    );
+
+                    for (const file of selectedFiles) {
+                        try {
+                            const fileName = `foro/${currentUser.uid}/${Date.now()}_${file.name}`;
+                            const storageRef = ref(storage, fileName);
+                            await uploadBytes(storageRef, file);
+                            const downloadURL =
+                                await getDownloadURL(storageRef);
+                            imageUrls.push(downloadURL);
+                            console.log(`✅ Imagen subida: ${file.name}`);
+                        } catch (imgError) {
+                            console.warn(
+                                `⚠️ No se pudo subir ${file.name}:`,
+                                imgError,
+                            );
+                            // Continuar sin esta imagen
+                        }
+                    }
+
+                    if (imageUrls.length === 0 && selectedFiles.length > 0) {
                         console.warn(
-                            `⚠️ No se pudo subir ${file.name}:`,
-                            imgError,
+                            "⚠️ No se pudieron subir las imágenes, continuando sin ellas",
                         );
-                        // Continuar sin esta imagen
+                        alert(
+                            "⚠️ No se pudieron subir las imágenes (verifica permisos de Storage), pero tu debate se publicará sin fotos.",
+                        );
                     }
                 }
 
-                if (imageUrls.length === 0 && selectedFiles.length > 0) {
-                    console.warn(
-                        "⚠️ No se pudieron subir las imágenes, continuando sin ellas",
-                    );
-                    alert(
-                        "⚠️ No se pudieron subir las imágenes (verifica permisos de Storage), pero tu debate se publicará sin fotos.",
-                    );
-                }
+                // Crear thread en Firebase
+                const docRef = await addDoc(collection(db, "foro_threads"), {
+                    title,
+                    category,
+                    content,
+                    authorId: currentUser.uid,
+                    authorName: currentUser.displayName || "Usuario",
+                    authorPhoto: currentUser.photoURL || null,
+                    createdAt: serverTimestamp(),
+                    lastReplyAt: serverTimestamp(),
+                    replyCount: 0,
+                    views: 0,
+                    likes: 0,
+                    images: imageUrls.length > 0 ? imageUrls : [],
+                    isOfficial: false,
+                });
+
+                console.log("✅ Thread creado:", docRef.id);
+                alert("✅ ¡Debate publicado exitosamente!");
+                window.location.href = `/foro/${docRef.id}`;
+            } catch (error) {
+                console.error("❌ Error al publicar:", error);
+                alert("❌ Error al publicar el debate: " + error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Publicar debate";
             }
-
-            // Crear thread en Firebase
-            const docRef = await addDoc(collection(db, "foro_threads"), {
-                title,
-                category,
-                content,
-                authorId: currentUser.uid,
-                authorName: currentUser.displayName || "Usuario",
-                authorPhoto: currentUser.photoURL || null,
-                createdAt: serverTimestamp(),
-                lastReplyAt: serverTimestamp(),
-                replyCount: 0,
-                views: 0,
-                likes: 0,
-                images: imageUrls.length > 0 ? imageUrls : [],
-                isOfficial: false,
-            });
-
-            console.log("✅ Thread creado:", docRef.id);
-            alert("✅ ¡Debate publicado exitosamente!");
-            window.location.href = `/foro/${docRef.id}`;
-        } catch (error) {
-            console.error("❌ Error al publicar:", error);
-            alert("❌ Error al publicar el debate: " + error.message);
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Publicar debate";
-        }
-    });
+        });
+    }); // End of astro:page-load
 </script>

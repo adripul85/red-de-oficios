@@ -927,18 +927,21 @@ import { auth, db } from "../../firebase/client";
                 Timestamp,
             } from "firebase/firestore";
 
-            const logoutBtn = document.getElementById("btn-logout");
-            const btnAddIncome = document.getElementById("btn-add-income");
-            const btnAddExpense = document.getElementById("btn-add-expense");
+            document.addEventListener('astro:page-load', () => {
+                console.log("🚀 [FINANZAS] Página cargada/navegada");
 
-            const modalIngreso = document.getElementById("modal-ingreso");
-            const modalGasto = document.getElementById("modal-gasto");
+                const logoutBtn = document.getElementById("btn-logout");
+                const btnAddIncome = document.getElementById("btn-add-income");
+                const btnAddExpense = document.getElementById("btn-add-expense");
 
-            const formIngreso = document.getElementById("form-ingreso");
-            const formGasto = document.getElementById("form-gasto");
+                const modalIngreso = document.getElementById("modal-ingreso");
+                const modalGasto = document.getElementById("modal-gasto");
 
-            let currentUser = null;
-            let equipoData = [];
+                const formIngreso = document.getElementById("form-ingreso");
+                const formGasto = document.getElementById("form-gasto");
+
+                let currentUser = null;
+                let equipoData = [];
 
             // === CUSTOM ALERTS & CONFIRMS ===
             function showAlert(
@@ -1969,6 +1972,7 @@ import { auth, db } from "../../firebase/client";
                 await signOut(auth);
                 window.location.href = "/";
             });
+            }); // End of astro:page-load
         </script>
     </body>
 </html>

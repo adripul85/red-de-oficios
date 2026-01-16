@@ -366,14 +366,27 @@ import Layout from "../layouts/Layout.astro";
                             </div>
                             <div>
                                 <h3 class="text-xl font-bold text-slate-900">
-                                    Actividad Reciente
+                                    Mis Solicitudes
                                 </h3>
                                 <p class="text-sm text-slate-500">
-                                    Próximamente
+                                    Historial de pedidos de presupuesto
                                 </p>
                             </div>
                         </div>
-                        <div class="text-center py-8 text-slate-400">
+
+                        <!-- Loading state para solicitudes -->
+                        <div id="solicitudes-loading" class="text-center py-4">
+                            <div
+                                class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"
+                            >
+                            </div>
+                        </div>
+
+                        <!-- Empty state para solicitudes -->
+                        <div
+                            id="solicitudes-empty"
+                            class="hidden text-center py-8 text-slate-400"
+                        >
                             <svg
                                 class="w-16 h-16 mx-auto mb-3 opacity-30"
                                 fill="none"
@@ -388,8 +401,17 @@ import Layout from "../layouts/Layout.astro";
                                 ></path>
                             </svg>
                             <p class="text-sm">
-                                Historial de contactos y reseñas
+                                No tienes solicitudes aún. <a
+                                    href="/solicitar"
+                                    class="text-orange-600 font-bold hover:underline"
+                                    >¡Pide tu primer presupuesto!</a
+                                >
                             </p>
+                        </div>
+
+                        <!-- Lista de solicitudes -->
+                        <div id="solicitudes-list" class="space-y-3">
+                            <!-- Las solicitudes se cargan dinámicamente aquí -->
                         </div>
                     </div>
                 </div>
@@ -403,85 +425,94 @@ import Layout from "../layouts/Layout.astro";
     import { onAuthStateChanged, signOut } from "firebase/auth";
     import { doc, getDoc, setDoc } from "firebase/firestore";
 
-    const loading = document.getElementById("loading");
-    const info = document.getElementById("client-info");
+    // Wrap everything in astro:page-load for View Transitions compatibility
+    document.addEventListener("astro:page-load", () => {
+        console.log("🚀 [MI-CUENTA] Página cargada/navegada");
 
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const docRef = doc(db, "clientes", user.uid);
-            let docSnap = await getDoc(docRef);
+        const loading = document.getElementById("loading");
+        const info = document.getElementById("client-info");
 
-            if (!docSnap.exists()) {
-                await setDoc(docRef, {
-                    nombre: user.displayName || "Usuario",
-                    email: user.email,
-                    foto:
-                        user.photoURL ||
-                        "https://ui-avatars.com/api/?name=" +
-                            (user.displayName || "U"),
-                    rol: "cliente",
-                    createdAt: new Date(),
-                });
-                docSnap = await getDoc(docRef);
-            }
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const docRef = doc(db, "clientes", user.uid);
+                let docSnap = await getDoc(docRef);
 
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                // @ts-ignore
-                document.getElementById("c-nombre").innerText = data.nombre;
-                // @ts-ignore
-                document.getElementById("c-email").innerText = data.email;
-                // @ts-ignore
-                document.getElementById("c-foto").src =
-                    data.foto ||
-                    "https://ui-avatars.com/api/?name=" + data.nombre;
+                if (!docSnap.exists()) {
+                    await setDoc(docRef, {
+                        nombre: user.displayName || "Usuario",
+                        email: user.email,
+                        foto:
+                            user.photoURL ||
+                            "https://ui-avatars.com/api/?name=" +
+                                (user.displayName || "U"),
+                        rol: "cliente",
+                        createdAt: new Date(),
+                    });
+                    docSnap = await getDoc(docRef);
+                }
 
-                // Favoritos - Cargar datos reales de profesionales
-                const favs = data.favoritos || [];
-                // @ts-ignore
-                document.getElementById("favorites-count").innerText =
-                    favs.length;
-
-                const favList = document.getElementById("favorites-list");
-                const emptyState = document.getElementById("empty-favorites");
-
-                if (favs.length === 0) {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
                     // @ts-ignore
-                    emptyState.classList.remove("hidden");
-                } else {
+                    document.getElementById("c-nombre").innerText = data.nombre;
                     // @ts-ignore
-                    emptyState.classList.add("hidden");
+                    document.getElementById("c-email").innerText = data.email;
+                    // @ts-ignore
+                    document.getElementById("c-foto").src =
+                        data.foto ||
+                        "https://ui-avatars.com/api/?name=" + data.nombre;
 
-                    // Cargar datos completos de cada profesional
-                    const favoritosPromises = favs.map(
-                        async (favId: string) => {
-                            try {
-                                const proDocRef = doc(
-                                    db,
-                                    "profesionales",
-                                    favId,
-                                );
-                                const proSnap = await getDoc(proDocRef);
-                                if (proSnap.exists()) {
-                                    return { id: favId, ...proSnap.data() };
+                    // Favoritos - Cargar datos reales de profesionales
+                    const favs = data.favoritos || [];
+                    // @ts-ignore
+                    document.getElementById("favorites-count").innerText =
+                        favs.length;
+
+                    const favList = document.getElementById("favorites-list");
+                    const emptyState =
+                        document.getElementById("empty-favorites");
+
+                    if (favs.length === 0) {
+                        // @ts-ignore
+                        emptyState.classList.remove("hidden");
+                    } else {
+                        // @ts-ignore
+                        emptyState.classList.add("hidden");
+
+                        // Cargar datos completos de cada profesional
+                        const favoritosPromises = favs.map(
+                            async (favId: string) => {
+                                try {
+                                    const proDocRef = doc(
+                                        db,
+                                        "profesionales",
+                                        favId,
+                                    );
+                                    const proSnap = await getDoc(proDocRef);
+                                    if (proSnap.exists()) {
+                                        return { id: favId, ...proSnap.data() };
+                                    }
+                                    return null;
+                                } catch (e) {
+                                    console.error(
+                                        "Error cargando profesional:",
+                                        e,
+                                    );
+                                    return null;
                                 }
-                                return null;
-                            } catch (e) {
-                                console.error("Error cargando profesional:", e);
-                                return null;
-                            }
-                        },
-                    );
+                            },
+                        );
 
-                    const favoritosData = await Promise.all(favoritosPromises);
-                    const validFavoritos = favoritosData.filter(
-                        (f) => f !== null,
-                    );
+                        const favoritosData =
+                            await Promise.all(favoritosPromises);
+                        const validFavoritos = favoritosData.filter(
+                            (f) => f !== null,
+                        );
 
-                    // @ts-ignore
-                    favList.innerHTML = validFavoritos
-                        .map(
-                            (fav: any) => `
+                        // @ts-ignore
+                        favList.innerHTML = validFavoritos
+                            .map(
+                                (fav: any) => `
               <a href="/perfil?id=${fav.id}" class="flex items-center gap-4 p-4 bg-slate-50 hover:bg-blue-50 rounded-2xl transition-all border border-transparent hover:border-blue-200 group">
                 <div class="relative">
                   <img src="${fav.foto || "https://ui-avatars.com/api/?name=" + fav.nombre}" class="w-14 h-14 rounded-xl object-cover border-2 border-white shadow-sm" alt="${fav.nombre}">
@@ -510,67 +541,69 @@ import Layout from "../layouts/Layout.astro";
                 </svg>
               </a>
             `,
-                        )
-                        .join("");
+                            )
+                            .join("");
+                    }
+
+                    // Cargar Reseñas del Cliente
+                    await loadClientReviews(user.uid);
+
+                    // Cargar Mis Solicitudes
+                    await loadMisSolicitudes(user.uid);
+                    // @ts-ignore
+                    loading.classList.add("hidden");
+                    // @ts-ignore
+                    info.classList.remove("hidden");
                 }
-
-                // Cargar Reseñas del Cliente
-                await loadClientReviews(user.uid);
-
-                // Cargar Actividad Reciente
-                await loadRecentActivity(user.uid);
-                // @ts-ignore
-                loading.classList.add("hidden");
-                // @ts-ignore
-                info.classList.remove("hidden");
-            }
-        } else {
-            window.location.href = "/ingresar-cliente";
-        }
-    });
-
-    // Función para cargar reseñas del cliente
-    async function loadClientReviews(userId: string) {
-        const reviewsList = document.getElementById("reviews-list");
-        const emptyReviews = document.getElementById("empty-reviews");
-
-        try {
-            const {
-                collectionGroup,
-                query: firestoreQuery,
-                where: firestoreWhere,
-                getDocs: firestoreGetDocs,
-            } = await import("firebase/firestore");
-
-            // Usar collectionGroup para buscar en TODAS las subcolecciones "resenas"
-            const reviewsRef = collectionGroup(db, "resenas");
-            const q = firestoreQuery(
-                reviewsRef,
-                firestoreWhere("clienteId", "==", userId),
-            );
-
-            const snapshot = await firestoreGetDocs(q);
-
-            if (snapshot.empty) {
-                // @ts-ignore
-                emptyReviews?.classList.remove("hidden");
             } else {
-                // @ts-ignore
-                emptyReviews?.classList.add("hidden");
+                window.location.href = "/ingresar-cliente";
+            }
+        });
 
-                const reviewsHTML = snapshot.docs
-                    .map((docSnap) => {
-                        const review = docSnap.data();
-                        const stars = "⭐".repeat(review.puntuacion || 0);
-                        const fecha = review.fecha?.toDate
-                            ? review.fecha.toDate().toLocaleDateString("es-AR")
-                            : "Fecha desconocida";
+        // Función para cargar reseñas del cliente
+        async function loadClientReviews(userId: string) {
+            const reviewsList = document.getElementById("reviews-list");
+            const emptyReviews = document.getElementById("empty-reviews");
 
-                        // Extraer el ID del profesional del path
-                        const profesionalId =
-                            docSnap.ref.parent.parent?.id || "";
+            try {
+                const {
+                    collectionGroup,
+                    query: firestoreQuery,
+                    where: firestoreWhere,
+                    getDocs: firestoreGetDocs,
+                } = await import("firebase/firestore");
 
-                        return `
+                // Usar collectionGroup para buscar en TODAS las subcolecciones "resenas"
+                const reviewsRef = collectionGroup(db, "resenas");
+                const q = firestoreQuery(
+                    reviewsRef,
+                    firestoreWhere("clienteId", "==", userId),
+                );
+
+                const snapshot = await firestoreGetDocs(q);
+
+                if (snapshot.empty) {
+                    // @ts-ignore
+                    emptyReviews?.classList.remove("hidden");
+                } else {
+                    // @ts-ignore
+                    emptyReviews?.classList.add("hidden");
+
+                    const reviewsHTML = snapshot.docs
+                        .map((docSnap) => {
+                            const review = docSnap.data();
+                            const stars = "⭐".repeat(review.puntuacion || 0);
+                            const fecha = review.fecha?.toDate
+                                ? review.fecha
+                                      .toDate()
+                                      .toLocaleDateString("es-AR")
+                                : "Fecha desconocida";
+
+                            // Extraer el ID del profesional del path
+                            const profesionalId =
+                                docSnap.ref.parent.parent?.id || "";
+
+                            return `
             <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
               <div class="flex justify-between items-start mb-2">
                 <div class="text-yellow-500 text-sm">${stars}</div>
@@ -582,151 +615,192 @@ import Layout from "../layouts/Layout.astro";
               </a>
             </div>
           `;
-                    })
-                    .join("");
+                        })
+                        .join("");
 
+                    // @ts-ignore
+                    if (reviewsList) reviewsList.innerHTML = reviewsHTML;
+                }
+            } catch (error: any) {
+                // Si hay error de permisos o la colección no existe, mostrar empty state sin error
+                console.log("Reseñas no disponibles:", error.code);
                 // @ts-ignore
-                if (reviewsList) reviewsList.innerHTML = reviewsHTML;
+                emptyReviews?.classList.remove("hidden");
             }
-        } catch (error: any) {
-            // Si hay error de permisos o la colección no existe, mostrar empty state sin error
-            console.log("Reseñas no disponibles:", error.code);
-            // @ts-ignore
-            emptyReviews?.classList.remove("hidden");
         }
-    }
 
-    // Función para cargar actividad reciente
-    async function loadRecentActivity(userId: string) {
-        const activityList = document.getElementById("activity-list");
-        const emptyActivity = document.getElementById("empty-activity");
+        // Función para cargar actividad reciente
+        // Cargar solicitudes del cliente
+        async function loadMisSolicitudes(userId: string) {
+            const loadingEl = document.getElementById("solicitudes-loading");
+            const emptyEl = document.getElementById("solicitudes-empty");
+            const listEl = document.getElementById("solicitudes-list");
 
-        try {
-            const {
-                collection: firestoreCollection,
-                query: firestoreQuery,
-                where: firestoreWhere,
-                getDocs: firestoreGetDocs,
-                limit: firestoreLimit,
-            } = await import("firebase/firestore");
+            try {
+                const {
+                    collection: firestoreCollection,
+                    query: firestoreQuery,
+                    where: firestoreWhere,
+                    getDocs: firestoreGetDocs,
+                    orderBy: firestoreOrderBy,
+                    limit: firestoreLimit,
+                } = await import("firebase/firestore");
 
-            // Intentar cargar desde colección de actividad (si existe)
-            const activityRef = firestoreCollection(db, "actividad_clientes");
-            const q = firestoreQuery(
-                activityRef,
-                firestoreWhere("cliente_uid", "==", userId),
-                firestoreLimit(5),
-            );
+                // Buscar solicitudes de este cliente
+                const q = firestoreQuery(
+                    firestoreCollection(db, "solicitudes"),
+                    firestoreWhere("clienteId", "==", userId),
+                    firestoreOrderBy("fecha", "desc"),
+                    firestoreLimit(10),
+                );
 
-            const snapshot = await firestoreGetDocs(q);
+                const snapshot = await firestoreGetDocs(q);
 
-            if (snapshot.empty) {
-                // @ts-ignore
-                emptyActivity?.classList.remove("hidden");
-            } else {
-                // @ts-ignore
-                emptyActivity?.classList.add("hidden");
+                // Ocultar loading
+                loadingEl?.classList.add("hidden");
 
-                const activityHTML = snapshot.docs
+                if (snapshot.empty) {
+                    emptyEl?.classList.remove("hidden");
+                    return;
+                }
+
+                // Generar HTML de solicitudes
+                const solicitudesHTML = snapshot.docs
                     .map((docSnap) => {
-                        const activity = docSnap.data();
-                        const fecha = activity.fecha?.toDate
-                            ? activity.fecha
-                                  .toDate()
-                                  .toLocaleDateString("es-AR")
-                            : "Hoy";
-                        const icon =
-                            activity.tipo === "whatsapp"
-                                ? "💬"
-                                : activity.tipo === "perfil"
-                                  ? "👁️"
-                                  : "📱";
+                        const sol = docSnap.data();
+                        const fecha = sol.fecha?.toDate
+                            ? sol.fecha.toDate().toLocaleDateString("es-AR", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                              })
+                            : "Reciente";
+
+                        // Determinar estado y estilo
+                        const numContactados = sol.contactados?.length || 0;
+                        const numCandidatos = sol.candidatos?.length || 0;
+
+                        let statusText, statusClass, statusIcon;
+                        if (
+                            sol.status === "completada" ||
+                            sol.status === "cerrada"
+                        ) {
+                            statusText = "Completada";
+                            statusClass = "bg-green-100 text-green-700";
+                            statusIcon = "✅";
+                        } else if (numContactados > 0) {
+                            statusText = `${numContactados} profesional${numContactados > 1 ? "es" : ""} te contactaron`;
+                            statusClass = "bg-blue-100 text-blue-700";
+                            statusIcon = "📞";
+                        } else if (numCandidatos > 0) {
+                            statusText = "Buscando profesionales";
+                            statusClass = "bg-yellow-100 text-yellow-700";
+                            statusIcon = "🔍";
+                        } else {
+                            statusText = "Nueva solicitud";
+                            statusClass = "bg-slate-100 text-slate-600";
+                            statusIcon = "📝";
+                        }
 
                         return `
-            <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl text-sm">
-              <span class="text-2xl">${icon}</span>
-              <div class="flex-1">
-                <p class="text-slate-700">${activity.descripcion || "Contacto con profesional"}</p>
-                <p class="text-xs text-slate-400">${fecha}</p>
-              </div>
-            </div>
-          `;
+                    <div class="bg-slate-50 hover:bg-slate-100 rounded-xl p-4 transition-colors cursor-pointer border border-slate-100">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-lg">${statusIcon}</span>
+                                    <h4 class="font-semibold text-slate-800 truncate">${sol.rubro || "Servicio"}</h4>
+                                </div>
+                                <p class="text-sm text-slate-500 truncate mb-2">📍 ${sol.zona || "Sin zona"}</p>
+                                ${sol.detalle ? `<p class="text-xs text-slate-400 line-clamp-2">${sol.detalle}</p>` : ""}
+                            </div>
+                            <div class="text-right flex-shrink-0">
+                                <span class="inline-block px-2 py-1 text-xs font-bold rounded-full ${statusClass}">${statusText}</span>
+                                <p class="text-xs text-slate-400 mt-2">${fecha}</p>
+                            </div>
+                        </div>
+                        ${sol.urgente ? `<div class="mt-2"><span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded-full">🔥 Urgente</span></div>` : ""}
+                    </div>
+                `;
                     })
                     .join("");
 
-                // @ts-ignore
-                if (activityList) activityList.innerHTML = activityHTML;
+                if (listEl) {
+                    listEl.innerHTML = solicitudesHTML;
+                }
+            } catch (error: any) {
+                console.error("Error cargando solicitudes:", error);
+                loadingEl?.classList.add("hidden");
+                emptyEl?.classList.remove("hidden");
             }
-        } catch (error: any) {
-            // Si hay error de permisos o la colección no existe, mostrar empty state sin error
-            console.log("Actividad no disponible:", error.code);
-            // @ts-ignore
-            emptyActivity?.classList.remove("hidden");
         }
-    }
 
-    // Logout
-    document
-        .getElementById("btn-logout")
-        ?.addEventListener("click", async () => {
-            try {
-                await signOut(auth);
-                window.location.href = "/";
-            } catch (e) {
-                console.error(e);
-            }
-        });
-
-    // Upload Avatar
-    document
-        .getElementById("upload-avatar")
-        ?.addEventListener("change", async (e) => {
-            // @ts-ignore
-            const file = e.target?.files?.[0];
-            if (!file || !auth.currentUser) return;
-
-            try {
-                // Importar storage dinámicamente
-                const { ref, uploadBytes, getDownloadURL } =
-                    await import("firebase/storage");
-                const { storage } = await import("../firebase/client");
-
-                // Mostrar feedback
-                const fotoEl = document.getElementById("c-foto");
-                if (fotoEl) {
-                    // @ts-ignore
-                    fotoEl.style.opacity = "0.5";
+        // Logout
+        document
+            .getElementById("btn-logout")
+            ?.addEventListener("click", async () => {
+                try {
+                    await signOut(auth);
+                    window.location.href = "/";
+                } catch (e) {
+                    console.error(e);
                 }
+            });
 
-                // Subir a Storage
-                const storageRef = ref(
-                    storage,
-                    `clientes/${auth.currentUser.uid}/avatar.jpg`,
-                );
-                await uploadBytes(storageRef, file);
-                const downloadURL = await getDownloadURL(storageRef);
+        // Upload Avatar
+        document
+            .getElementById("upload-avatar")
+            ?.addEventListener("change", async (e) => {
+                // @ts-ignore
+                const file = e.target?.files?.[0];
+                if (!file || !auth.currentUser) return;
 
-                // Actualizar Firestore
-                const userDocRef = doc(db, "clientes", auth.currentUser.uid);
-                await setDoc(
-                    userDocRef,
-                    { foto: downloadURL },
-                    { merge: true },
-                );
+                try {
+                    // Importar storage dinámicamente
+                    const { ref, uploadBytes, getDownloadURL } =
+                        await import("firebase/storage");
+                    const { storage } = await import("../firebase/client");
 
-                // Actualizar UI
-                if (fotoEl) {
-                    // @ts-ignore
-                    fotoEl.src = downloadURL;
-                    // @ts-ignore
-                    fotoEl.style.opacity = "1";
+                    // Mostrar feedback
+                    const fotoEl = document.getElementById("c-foto");
+                    if (fotoEl) {
+                        // @ts-ignore
+                        fotoEl.style.opacity = "0.5";
+                    }
+
+                    // Subir a Storage
+                    const storageRef = ref(
+                        storage,
+                        `clientes/${auth.currentUser.uid}/avatar.jpg`,
+                    );
+                    await uploadBytes(storageRef, file);
+                    const downloadURL = await getDownloadURL(storageRef);
+
+                    // Actualizar Firestore
+                    const userDocRef = doc(
+                        db,
+                        "clientes",
+                        auth.currentUser.uid,
+                    );
+                    await setDoc(
+                        userDocRef,
+                        { foto: downloadURL },
+                        { merge: true },
+                    );
+
+                    // Actualizar UI
+                    if (fotoEl) {
+                        // @ts-ignore
+                        fotoEl.src = downloadURL;
+                        // @ts-ignore
+                        fotoEl.style.opacity = "1";
+                    }
+
+                    // Notificación
+                    alert("✅ Foto actualizada correctamente");
+                } catch (error) {
+                    console.error("Error subiendo avatar:", error);
+                    alert("❌ Error al subir la foto. Intenta de nuevo.");
                 }
-
-                // Notificación
-                alert("✅ Foto actualizada correctamente");
-            } catch (error) {
-                console.error("Error subiendo avatar:", error);
-                alert("❌ Error al subir la foto. Intenta de nuevo.");
-            }
-        });
+            });
+    }); // End of astro:page-load
 </script>

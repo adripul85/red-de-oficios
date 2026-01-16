@@ -111,75 +111,79 @@ import Layout from "../../layouts/Layout.astro";
         getCountFromServer,
     } from "firebase/firestore";
 
-    const staffName = document.getElementById("staff-name");
-    const staffRole = document.getElementById("staff-role");
-    const financeCard = document.getElementById("finance-card");
-    const adminSettings = document.getElementById("admin-settings");
-    const countUsers = document.getElementById("count-users");
+    document.addEventListener("astro:page-load", () => {
+        console.log("🚀 [ADMIN] Página cargada/navegada");
 
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            try {
-                const docRef = doc(db, "profesionales", user.uid);
-                const snap = await getDoc(docRef);
+        const staffName = document.getElementById("staff-name");
+        const staffRole = document.getElementById("staff-role");
+        const financeCard = document.getElementById("finance-card");
+        const adminSettings = document.getElementById("admin-settings");
+        const countUsers = document.getElementById("count-users");
 
-                if (!snap.exists()) {
-                    window.location.href = "/";
-                    return;
-                }
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const docRef = doc(db, "profesionales", user.uid);
+                    const snap = await getDoc(docRef);
 
-                const data = snap.data();
-                const rolRaw = data.rol || data.role || "profesional";
-                const rolLimpio = String(rolRaw).toLowerCase().trim();
-
-                if (
-                    rolLimpio !== "admin" &&
-                    rolLimpio !== "moderador" &&
-                    rolLimpio !== "moderator"
-                ) {
-                    alert("⛔ ACCESO DENEGADO");
-                    window.location.href = "/mi-perfil";
-                    return;
-                }
-
-                staffName.textContent = data.nombre || user.email;
-                staffRole.textContent = rolLimpio.toUpperCase();
-
-                if (rolLimpio === "admin") {
-                    financeCard.classList.remove("hidden");
-                    adminSettings.classList.remove("hidden");
-                    if (adminSettings) adminSettings.style.display = "flex";
-
-                    // Mostrar botón de Finanzas para admin
-                    const adminFinanzas =
-                        document.getElementById("admin-finanzas");
-                    if (adminFinanzas) {
-                        adminFinanzas.classList.remove("hidden");
-                        adminFinanzas.style.display = "flex";
+                    if (!snap.exists()) {
+                        window.location.href = "/";
+                        return;
                     }
-                } else {
-                    staffRole.style.background = "#dbeafe";
-                    staffRole.style.color = "#1e40af";
+
+                    const data = snap.data();
+                    const rolRaw = data.rol || data.role || "profesional";
+                    const rolLimpio = String(rolRaw).toLowerCase().trim();
+
+                    if (
+                        rolLimpio !== "admin" &&
+                        rolLimpio !== "moderador" &&
+                        rolLimpio !== "moderator"
+                    ) {
+                        alert("⛔ ACCESO DENEGADO");
+                        window.location.href = "/mi-perfil";
+                        return;
+                    }
+
+                    staffName.textContent = data.nombre || user.email;
+                    staffRole.textContent = rolLimpio.toUpperCase();
+
+                    if (rolLimpio === "admin") {
+                        financeCard.classList.remove("hidden");
+                        adminSettings.classList.remove("hidden");
+                        if (adminSettings) adminSettings.style.display = "flex";
+
+                        // Mostrar botón de Finanzas para admin
+                        const adminFinanzas =
+                            document.getElementById("admin-finanzas");
+                        if (adminFinanzas) {
+                            adminFinanzas.classList.remove("hidden");
+                            adminFinanzas.style.display = "flex";
+                        }
+                    } else {
+                        staffRole.style.background = "#dbeafe";
+                        staffRole.style.color = "#1e40af";
+                    }
+
+                    // Stats
+                    const coll = collection(db, "profesionales");
+                    const snapshot = await getCountFromServer(coll);
+                    countUsers.textContent = snapshot.data().count.toString();
+                } catch (e) {
+                    console.error("Error admin", e);
                 }
-
-                // Stats
-                const coll = collection(db, "profesionales");
-                const snapshot = await getCountFromServer(coll);
-                countUsers.textContent = snapshot.data().count.toString();
-            } catch (e) {
-                console.error("Error admin", e);
+            } else {
+                window.location.href = "/ingresar";
             }
-        } else {
-            window.location.href = "/ingresar";
-        }
-    });
-
-    document
-        .getElementById("btn-logout-admin")
-        ?.addEventListener("click", async () => {
-            await signOut(auth);
-            window.location.href = "/";
         });
+
+        document
+            .getElementById("btn-logout-admin")
+            ?.addEventListener("click", async () => {
+                await signOut(auth);
+                window.location.href = "/";
+            });
+    }); // End of astro:page-load
 </script>
 
 <style>

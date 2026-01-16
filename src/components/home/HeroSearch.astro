@@ -56,57 +56,37 @@ if (!trendingTags || trendingTags.length === 0) {
         Plomeros, electricistas y más de <strong>62.000 profesionales</strong> verificados.
       </p>
 
-      <!-- Buscador Premium con 2 inputs -->
+      <!-- Buscador Premium simplificado - Solo Servicio -->
       <form
         id="hero-search-form"
         action="/resultados"
         method="GET"
-        class="bg-white border border-slate-200 rounded-full shadow-2xl p-2 flex flex-col md:flex-row items-center relative z-20 mb-6"
+        class="bg-white border border-slate-200 rounded-full shadow-2xl p-2 flex items-center relative z-20 mb-6"
       >
-        <!-- Input 1: Servicio -->
-        <div
-          class="flex-1 w-full px-6 py-3 border-b md:border-b-0 md:border-r border-slate-100"
-        >
-          <label
-            class="block text-xs font-bold text-slate-800 uppercase tracking-wide mb-1"
-          >
-            ¿Qué servicio?
-          </label>
-          <input
-            type="text"
-            id="input-servicio"
-            placeholder="Ej: Gasista, Plomero..."
-            class="w-full outline-none text-slate-700 placeholder-slate-400 bg-transparent text-lg"
-            autocomplete="off"
-          />
-        </div>
-
-        <!-- Input 2: Barrio -->
+        <!-- Input: Servicio -->
         <div class="flex-1 w-full px-6 py-3">
           <label
             class="block text-xs font-bold text-slate-800 uppercase tracking-wide mb-1"
           >
-            ¿En dónde?
+            ¿Qué servicio necesitás?
           </label>
           <input
             type="text"
-            id="input-barrio"
-            placeholder="Barrio o Ciudad"
+            name="q"
+            id="input-servicio"
+            placeholder="Ej: Gasista, Plomero, Electricista..."
             class="w-full outline-none text-slate-700 placeholder-slate-400 bg-transparent text-lg"
             autocomplete="off"
           />
         </div>
 
-        <!-- Hidden input que recibe el query combinado -->
-        <input type="hidden" name="q" id="final-query" />
-
         <!-- Botón Buscar -->
         <button
           type="submit"
-          class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full p-4 md:p-3 transition-all active:scale-95 shadow-xl shadow-orange-200 flex items-center justify-center gap-2 w-full md:w-auto mt-2 md:mt-0"
+          class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full p-4 md:p-3 transition-all active:scale-95 shadow-xl shadow-orange-200 flex items-center justify-center gap-2"
         >
           <span class="text-2xl">🔍</span>
-          <span class="md:hidden font-bold text-lg">Buscar</span>
+          <span class="hidden md:inline font-bold text-lg">Buscar</span>
         </button>
       </form>
 
@@ -167,31 +147,23 @@ if (!trendingTags || trendingTags.length === 0) {
   <script>
     const form = document.getElementById("hero-search-form");
     const inputServicio = document.getElementById("input-servicio");
-    const inputBarrio = document.getElementById("input-barrio");
-    const finalQuery = document.getElementById("final-query");
     const check24hs = document.getElementById("check-24hs");
 
     if (form) {
       form.addEventListener("submit", (e) => {
         // @ts-ignore
-        const servicio = inputServicio.value.trim();
-        // @ts-ignore
-        const barrio = inputBarrio.value.trim();
+        const servicio = inputServicio?.value?.trim() || "";
 
-        // VALIDACIÓN: Si ambos están vacíos, redirigir a /resultados sin query vacío
-        if (!servicio && !barrio) {
+        // VALIDACIÓN: Si está vacío, redirigir a /resultados
+        if (!servicio) {
           e.preventDefault();
           window.location.href = "/resultados";
           return;
         }
 
-        // Combinar ambos inputs en un solo query (sin "todos")
-        // @ts-ignore
-        finalQuery.value = `${servicio} ${barrio}`.trim();
-
         // Agregar parámetro 24hs si está marcado
         // @ts-ignore
-        if (check24hs.checked) {
+        if (check24hs?.checked) {
           const hidden = document.createElement("input");
           hidden.type = "hidden";
           hidden.name = "urgencia";
@@ -201,7 +173,7 @@ if (!trendingTags || trendingTags.length === 0) {
         }
 
         // Logging de búsqueda para tendencias
-        if (servicio && servicio.length > 2) {
+        if (servicio.length > 2) {
           const data = JSON.stringify({ term: servicio });
 
           if (navigator.sendBeacon) {

@@ -173,202 +173,227 @@ import { collection, getDocs } from "firebase/firestore";
     } from "firebase/firestore";
     import { onAuthStateChanged } from "firebase/auth";
 
-    const form = document.getElementById("blog-form");
-    const postsList = document.getElementById("posts-list");
-    const feedback = document.getElementById("feedback");
+    document.addEventListener("astro:page-load", () => {
+        console.log("🚀 [ADMIN-BLOG] Página cargada/navegada");
 
-    // Inputs
-    const titleInput = document.getElementById("post-title");
-    const slugInput = document.getElementById("post-slug");
-    const imageInput = document.getElementById("post-image");
-    const contentInput = document.getElementById("post-content");
-    const keywordInput = document.getElementById("keyword-input");
-    const keywordsList = document.getElementById("keywords-list");
-    const keywordsJson = document.getElementById("post-keywords-json");
+        const form = document.getElementById("blog-form") as HTMLFormElement;
+        const postsList = document.getElementById("posts-list");
+        const feedback = document.getElementById("feedback");
 
-    // Previews
-    const previewImgEl = document.getElementById("preview-img-el");
-    const previewPlaceholder = document.getElementById("preview-placeholder");
-    const textPreview = document.getElementById("text-preview");
+        // Inputs
+        const titleInput = document.getElementById(
+            "post-title",
+        ) as HTMLInputElement;
+        const slugInput = document.getElementById(
+            "post-slug",
+        ) as HTMLInputElement;
+        const imageInput = document.getElementById(
+            "post-image",
+        ) as HTMLInputElement;
+        const contentInput = document.getElementById(
+            "post-content",
+        ) as HTMLTextAreaElement;
+        const keywordInput = document.getElementById(
+            "keyword-input",
+        ) as HTMLInputElement;
+        const keywordsList = document.getElementById("keywords-list");
+        const keywordsJson = document.getElementById(
+            "post-keywords-json",
+        ) as HTMLInputElement;
 
-    // State
-    let keywords = [];
-    let editingId = null;
+        // Previews
+        const previewImgEl = document.getElementById(
+            "preview-img-el",
+        ) as HTMLImageElement;
+        const previewPlaceholder = document.getElementById(
+            "preview-placeholder",
+        );
+        const textPreview = document.getElementById("text-preview");
 
-    // 1. AUTH CHECK
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) window.location.href = "/";
-        loadPosts();
-    });
+        // State
+        let keywords = [];
+        let editingId = null;
 
-    // 2. SLUG AUTOMATION & PREVIEWS
-    titleInput?.addEventListener("input", (e) => {
-        const val = (e.target as HTMLInputElement).value;
-        // Simple slugify
-        const slug = val
-            .toLowerCase()
-            .trim()
-            .replace(/[^\w\s-]/g, "") // Remove special chars
-            .replace(/[\s_-]+/g, "-") // Replace spaces with dash
-            .replace(/^-+|-+$/g, "");
-        if (slugInput) (slugInput as HTMLInputElement).value = slug;
-
-        updateTextPreview();
-    });
-
-    contentInput?.addEventListener("input", updateTextPreview);
-
-    function updateTextPreview() {
-        if (!textPreview) return;
-        const title = (titleInput as HTMLInputElement).value || "Sin título";
-        if (
-            title === "Sin título" &&
-            !(contentInput as HTMLTextAreaElement).value
-        ) {
-            textPreview.innerHTML =
-                "<em>Escribe para ver la vista previa...</em>";
-            return;
-        }
-        textPreview.innerHTML = `<strong>${title}</strong><br/><br/>${(contentInput as HTMLTextAreaElement).value.substring(0, 100)}...`;
-    }
-
-    imageInput?.addEventListener("input", (e) => {
-        const url = (e.target as HTMLInputElement).value;
-        if (url) {
-            previewImgEl.src = url;
-            previewImgEl.classList.remove("hidden");
-            previewPlaceholder.classList.add("hidden");
-        } else {
-            previewImgEl.classList.add("hidden");
-            previewPlaceholder.classList.remove("hidden");
-        }
-    });
-
-    // 3. KEYWORDS LOGIC
-    keywordInput?.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === ",") {
-            e.preventDefault();
-            addKeyword();
-        }
-    });
-    document
-        .getElementById("btn-add-keyword")
-        ?.addEventListener("click", addKeyword);
-
-    function addKeyword() {
-        const val = (keywordInput as HTMLInputElement).value.trim();
-        if (val && !keywords.includes(val)) {
-            keywords.push(val);
-            renderKeywords();
-            (keywordInput as HTMLInputElement).value = "";
-        }
-    }
-
-    function removeKeyword(tag) {
-        keywords = keywords.filter((k) => k !== tag);
-        renderKeywords();
-    }
-
-    // Expose to window for inline onclicks
-    (window as any).removeKeyword = removeKeyword;
-
-    function renderKeywords() {
-        keywordsList.innerHTML = "";
-        keywords.forEach((tag) => {
-            const span = document.createElement("span");
-            span.className = "keyword-tag";
-            span.innerHTML = `${tag} <button onclick="removeKeyword('${tag}')">×</button>`;
-            keywordsList.appendChild(span);
-        });
-        (keywordsJson as HTMLInputElement).value = JSON.stringify(keywords);
-    }
-
-    // 4. PUBLISH (NOW USING SPANISH KEYS & 'blog' COLLECTION)
-    form?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById("btn-publish");
-        btn.disabled = true;
-        btn.textContent = editingId ? "Actualizando..." : "Publicando...";
-
-        try {
-            const docData = {
-                titulo: (titleInput as HTMLInputElement).value,
-                slug: (slugInput as HTMLInputElement).value,
-                contenido: (contentInput as HTMLTextAreaElement).value,
-                resumen: (
-                    document.getElementById(
-                        "post-description",
-                    ) as HTMLTextAreaElement
-                ).value,
-                imagen: (imageInput as HTMLInputElement).value,
-                categoria: (
-                    document.getElementById(
-                        "post-category",
-                    ) as HTMLSelectElement
-                ).value,
-                autor: (
-                    document.getElementById("post-author") as HTMLInputElement
-                ).value,
-                keywords: keywords,
-                fecha: serverTimestamp(), // Update timestamp on edit? Maybe yes to bump it up or keep original? Let's bump it.
-            };
-
-            if (editingId) {
-                await updateDoc(doc(db, "blog", editingId), docData);
-                feedback.textContent = "✅ Actualizado con éxito";
-                editingId = null;
-                btn.innerHTML = "✏️ Publicar Artículo";
-            } else {
-                await addDoc(collection(db, "blog"), docData);
-                feedback.textContent = "✅ Publicado con éxito";
-            }
-
-            feedback.style.color = "green";
-            form.reset();
-            keywords = [];
-            renderKeywords();
-
-            // Reset previews
-            previewImgEl.classList.add("hidden");
-            previewPlaceholder.classList.remove("hidden");
-            textPreview.innerHTML =
-                "<em>Escribe para ver la vista previa...</em>";
-
+        // 1. AUTH CHECK
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) window.location.href = "/";
             loadPosts();
-        } catch (error) {
-            console.error(error);
-            feedback.textContent = "❌ Error: " + error.message;
-            feedback.style.color = "red";
-        } finally {
-            btn.disabled = false;
-            if (!editingId) btn.innerHTML = "✏️ Publicar Artículo";
-        }
-    });
+        });
 
-    // 5. LIST & DELETE (NOW USING SPANISH KEYS)
-    async function loadPosts() {
-        postsList.innerHTML = "<p>Cargando posts...</p>";
-        try {
-            // Updated to 'blog' and 'fecha'
-            const q = query(collection(db, "blog"), orderBy("fecha", "desc"));
-            const snapshot = await getDocs(q);
+        // 2. SLUG AUTOMATION & PREVIEWS
+        titleInput?.addEventListener("input", (e) => {
+            const val = (e.target as HTMLInputElement).value;
+            // Simple slugify
+            const slug = val
+                .toLowerCase()
+                .trim()
+                .replace(/[^\w\s-]/g, "") // Remove special chars
+                .replace(/[\s_-]+/g, "-") // Replace spaces with dash
+                .replace(/^-+|-+$/g, "");
+            if (slugInput) (slugInput as HTMLInputElement).value = slug;
 
-            if (snapshot.empty) {
-                postsList.innerHTML = "<p>No hay artículos publicados.</p>";
+            updateTextPreview();
+        });
+
+        contentInput?.addEventListener("input", updateTextPreview);
+
+        function updateTextPreview() {
+            if (!textPreview) return;
+            const title =
+                (titleInput as HTMLInputElement).value || "Sin título";
+            if (
+                title === "Sin título" &&
+                !(contentInput as HTMLTextAreaElement).value
+            ) {
+                textPreview.innerHTML =
+                    "<em>Escribe para ver la vista previa...</em>";
                 return;
             }
+            textPreview.innerHTML = `<strong>${title}</strong><br/><br/>${(contentInput as HTMLTextAreaElement).value.substring(0, 100)}...`;
+        }
 
-            let html = "";
-            snapshot.forEach((docSnap) => {
-                const p = docSnap.data();
-                const id = docSnap.id;
-                // 'fecha' instead of 'date_created'
-                const date = p.fecha
-                    ? new Date(p.fecha.seconds * 1000).toLocaleDateString()
-                    : "-";
+        imageInput?.addEventListener("input", (e) => {
+            const url = (e.target as HTMLInputElement).value;
+            if (url) {
+                previewImgEl.src = url;
+                previewImgEl.classList.remove("hidden");
+                previewPlaceholder.classList.add("hidden");
+            } else {
+                previewImgEl.classList.add("hidden");
+                previewPlaceholder.classList.remove("hidden");
+            }
+        });
 
-                // Fields renamed: imagen, titulo, categoria
-                html += `
+        // 3. KEYWORDS LOGIC
+        keywordInput?.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === ",") {
+                e.preventDefault();
+                addKeyword();
+            }
+        });
+        document
+            .getElementById("btn-add-keyword")
+            ?.addEventListener("click", addKeyword);
+
+        function addKeyword() {
+            const val = (keywordInput as HTMLInputElement).value.trim();
+            if (val && !keywords.includes(val)) {
+                keywords.push(val);
+                renderKeywords();
+                (keywordInput as HTMLInputElement).value = "";
+            }
+        }
+
+        function removeKeyword(tag) {
+            keywords = keywords.filter((k) => k !== tag);
+            renderKeywords();
+        }
+
+        // Expose to window for inline onclicks
+        (window as any).removeKeyword = removeKeyword;
+
+        function renderKeywords() {
+            keywordsList.innerHTML = "";
+            keywords.forEach((tag) => {
+                const span = document.createElement("span");
+                span.className = "keyword-tag";
+                span.innerHTML = `${tag} <button onclick="removeKeyword('${tag}')">×</button>`;
+                keywordsList.appendChild(span);
+            });
+            (keywordsJson as HTMLInputElement).value = JSON.stringify(keywords);
+        }
+
+        // 4. PUBLISH (NOW USING SPANISH KEYS & 'blog' COLLECTION)
+        form?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById("btn-publish");
+            btn.disabled = true;
+            btn.textContent = editingId ? "Actualizando..." : "Publicando...";
+
+            try {
+                const docData = {
+                    titulo: (titleInput as HTMLInputElement).value,
+                    slug: (slugInput as HTMLInputElement).value,
+                    contenido: (contentInput as HTMLTextAreaElement).value,
+                    resumen: (
+                        document.getElementById(
+                            "post-description",
+                        ) as HTMLTextAreaElement
+                    ).value,
+                    imagen: (imageInput as HTMLInputElement).value,
+                    categoria: (
+                        document.getElementById(
+                            "post-category",
+                        ) as HTMLSelectElement
+                    ).value,
+                    autor: (
+                        document.getElementById(
+                            "post-author",
+                        ) as HTMLInputElement
+                    ).value,
+                    keywords: keywords,
+                    fecha: serverTimestamp(), // Update timestamp on edit? Maybe yes to bump it up or keep original? Let's bump it.
+                };
+
+                if (editingId) {
+                    await updateDoc(doc(db, "blog", editingId), docData);
+                    feedback.textContent = "✅ Actualizado con éxito";
+                    editingId = null;
+                    btn.innerHTML = "✏️ Publicar Artículo";
+                } else {
+                    await addDoc(collection(db, "blog"), docData);
+                    feedback.textContent = "✅ Publicado con éxito";
+                }
+
+                feedback.style.color = "green";
+                form.reset();
+                keywords = [];
+                renderKeywords();
+
+                // Reset previews
+                previewImgEl.classList.add("hidden");
+                previewPlaceholder.classList.remove("hidden");
+                textPreview.innerHTML =
+                    "<em>Escribe para ver la vista previa...</em>";
+
+                loadPosts();
+            } catch (error) {
+                console.error(error);
+                feedback.textContent = "❌ Error: " + error.message;
+                feedback.style.color = "red";
+            } finally {
+                btn.disabled = false;
+                if (!editingId) btn.innerHTML = "✏️ Publicar Artículo";
+            }
+        });
+
+        // 5. LIST & DELETE (NOW USING SPANISH KEYS)
+        async function loadPosts() {
+            postsList.innerHTML = "<p>Cargando posts...</p>";
+            try {
+                // Updated to 'blog' and 'fecha'
+                const q = query(
+                    collection(db, "blog"),
+                    orderBy("fecha", "desc"),
+                );
+                const snapshot = await getDocs(q);
+
+                if (snapshot.empty) {
+                    postsList.innerHTML = "<p>No hay artículos publicados.</p>";
+                    return;
+                }
+
+                let html = "";
+                snapshot.forEach((docSnap) => {
+                    const p = docSnap.data();
+                    const id = docSnap.id;
+                    // 'fecha' instead of 'date_created'
+                    const date = p.fecha
+                        ? new Date(p.fecha.seconds * 1000).toLocaleDateString()
+                        : "-";
+
+                    // Fields renamed: imagen, titulo, categoria
+                    html += `
                     <div class="post-item">
                         <img src="${p.imagen || "https://via.placeholder.com/50"}" alt="Thumb" class="post-thumb" />
                         <div class="post-info">
@@ -379,68 +404,72 @@ import { collection, getDocs } from "firebase/firestore";
                         <button class="btn-delete" onclick="deletePost('${id}')">🗑️</button>
                     </div>
                 `;
-            });
-            postsList.innerHTML = html;
-        } catch (e) {
-            console.error("Error loading posts:", e);
-            postsList.innerHTML =
-                "<p class='error'>Error al cargar (Ver consola)</p>";
-        }
-    }
-
-    (window as any).deletePost = async (id) => {
-        if (!confirm("¿Seguro que quieres borrar este post?")) return;
-        try {
-            await deleteDoc(doc(db, "blog", id));
-            loadPosts();
-        } catch (e) {
-            alert("Error al borrar: " + e.message);
-        }
-    };
-
-    (window as any).editPost = async (id) => {
-        try {
-            const docSnap = await getDoc(doc(db, "blog", id));
-            if (!docSnap.exists()) {
-                alert("El post no existe");
-                return;
+                });
+                postsList.innerHTML = html;
+            } catch (e) {
+                console.error("Error loading posts:", e);
+                postsList.innerHTML =
+                    "<p class='error'>Error al cargar (Ver consola)</p>";
             }
-            const data = docSnap.data();
-            editingId = id;
-
-            // Populate form
-            (titleInput as HTMLInputElement).value = data.titulo;
-            (slugInput as HTMLInputElement).value = data.slug;
-            (contentInput as HTMLTextAreaElement).value = data.contenido;
-            (
-                document.getElementById(
-                    "post-description",
-                ) as HTMLTextAreaElement
-            ).value = data.resumen;
-            (imageInput as HTMLInputElement).value = data.imagen;
-            (
-                document.getElementById("post-category") as HTMLSelectElement
-            ).value = data.categoria;
-            (document.getElementById("post-author") as HTMLInputElement).value =
-                data.autor;
-
-            // Keywords
-            keywords = data.keywords || [];
-            renderKeywords();
-
-            // Update UI
-            document.getElementById("btn-publish").innerHTML =
-                "💾 Actualizar Artículo";
-            window.scrollTo({ top: 0, behavior: "smooth" });
-
-            // Trigger events
-            imageInput.dispatchEvent(new Event("input"));
-            updateTextPreview();
-        } catch (e) {
-            console.error(e);
-            alert("Error al cargar post");
         }
-    };
+
+        (window as any).deletePost = async (id) => {
+            if (!confirm("¿Seguro que quieres borrar este post?")) return;
+            try {
+                await deleteDoc(doc(db, "blog", id));
+                loadPosts();
+            } catch (e) {
+                alert("Error al borrar: " + e.message);
+            }
+        };
+
+        (window as any).editPost = async (id) => {
+            try {
+                const docSnap = await getDoc(doc(db, "blog", id));
+                if (!docSnap.exists()) {
+                    alert("El post no existe");
+                    return;
+                }
+                const data = docSnap.data();
+                editingId = id;
+
+                // Populate form
+                (titleInput as HTMLInputElement).value = data.titulo;
+                (slugInput as HTMLInputElement).value = data.slug;
+                (contentInput as HTMLTextAreaElement).value = data.contenido;
+                (
+                    document.getElementById(
+                        "post-description",
+                    ) as HTMLTextAreaElement
+                ).value = data.resumen;
+                (imageInput as HTMLInputElement).value = data.imagen;
+                (
+                    document.getElementById(
+                        "post-category",
+                    ) as HTMLSelectElement
+                ).value = data.categoria;
+                (
+                    document.getElementById("post-author") as HTMLInputElement
+                ).value = data.autor;
+
+                // Keywords
+                keywords = data.keywords || [];
+                renderKeywords();
+
+                // Update UI
+                document.getElementById("btn-publish").innerHTML =
+                    "💾 Actualizar Artículo";
+                window.scrollTo({ top: 0, behavior: "smooth" });
+
+                // Trigger events
+                imageInput.dispatchEvent(new Event("input"));
+                updateTextPreview();
+            } catch (e) {
+                console.error(e);
+                alert("Error al cargar post");
+            }
+        };
+    }); // End of astro:page-load
 </script>
 
 <style>

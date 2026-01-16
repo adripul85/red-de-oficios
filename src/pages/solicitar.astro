@@ -150,101 +150,112 @@ import { LOCATIONS } from "../data/locations";
     } from "firebase/firestore";
     import { onAuthStateChanged } from "firebase/auth";
 
-    let currentUser = null;
-    onAuthStateChanged(auth, (user) => {
-        if (user) currentUser = user;
-        else {
-            // Guardar datos y redirigir si no está logueado (Lógica opcional)
-        }
-    });
+    // Wrap everything in astro:page-load for View Transitions compatibility
+    document.addEventListener("astro:page-load", () => {
+        console.log("🚀 [SOLICITAR] Página cargada/navegada");
 
-    const form = document.getElementById("solicitud-form");
-    const btn = document.getElementById("btn-enviar");
-
-    form?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        if (!currentUser)
-            return alert(
-                "Por favor, inicia sesión como cliente para pedir presupuestos.",
-            );
-
-        btn.disabled = true;
-        btn.innerText = "Buscando profesionales...";
-
-        const clienteNombre = document.getElementById("clienteNombre").value;
-        const rubro = document.getElementById("rubro").value;
-        const zona = document.getElementById("zona").value;
-        const telefonoInput = document.getElementById("telefono").value;
-        // Limpiar teléfono para guardarlo limpio (solo números)
-        const telefono = telefonoInput.replace(/[^0-9]/g, "");
-
-        const detalle = document.getElementById("detalle").value;
-        const urgente = document.getElementById("urgente").checked;
-
-        try {
-            // 1. MATCHING: Buscar profesionales Premium en esa zona y rubro
-            const qPros = query(
-                collection(db, "profesionales"),
-                where("rubro_principal", "==", rubro),
-                where("zona", "==", zona),
-                // Filtramos solo planes pagos para darles prioridad
-                where("plan", "in", ["profesional", "experto"]),
-                limit(10),
-            );
-
-            const snapPros = await getDocs(qPros);
-            const candidatos = snapPros.docs.map((d) => d.id);
-
-            if (candidatos.length === 0) {
-                alert(
-                    "Lo sentimos, no encontramos profesionales Premium en tu zona por el momento. Intenta buscar manualmente.",
-                );
-                btn.disabled = false;
-                btn.innerText = "Enviar Solicitud";
-                return;
+        let currentUser = null;
+        onAuthStateChanged(auth, (user) => {
+            if (user) currentUser = user;
+            else {
+                // Guardar datos y redirigir si no está logueado (Lógica opcional)
             }
+        });
 
-            // 2. CREAR LA SOLICITUD (LEAD)
-            const docRef = await addDoc(collection(db, "solicitudes"), {
-                clienteId: currentUser.uid,
-                clienteNombre: clienteNombre,
-                clienteAvatar: currentUser.photoURL || "",
-                rubro: rubro,
-                zona: zona,
-                telefono: telefono,
-                detalle: detalle,
-                urgente: urgente,
-                fecha: new Date(),
-                candidatos: candidatos, // Assuming 'candidatos' is the correct variable, not 'candidatosIds'
-                contactados: [],
-                descartados: [],
-                status: "nueva",
-            });
+        const form = document.getElementById("solicitud-form");
+        const btn = document.getElementById("btn-enviar");
 
-            // 3. NOTIFICACIONES (Crear alertas para cada profesional)
-            const batchPromesas = candidatos.map((proId) => {
-                return addDoc(
-                    collection(db, "profesionales", proId, "notificaciones"),
-                    {
-                        tipo: "lead_nuevo",
-                        titulo: `¡Nueva oportunidad de trabajo! 🤑`,
-                        mensaje: `Un cliente busca ${rubro} en ${zona}.`,
-                        link: `/panel/oportunidades?id=${solicitudRef.id}`,
-                        leido: false,
-                        fecha: serverTimestamp(),
-                    },
+        form?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (!currentUser)
+                return alert(
+                    "Por favor, inicia sesión como cliente para pedir presupuestos.",
                 );
-            });
-            await Promise.all(batchPromesas);
 
-            alert(
-                `¡Listo! Hemos notificado a ${candidatos.length} profesionales top. Te contactarán pronto.`,
-            );
-            window.location.href = "/mi-cuenta";
-        } catch (error) {
-            console.error(error);
-            alert("Hubo un error. Intenta nuevamente.");
-            btn.disabled = false;
-        }
-    });
+            btn.disabled = true;
+            btn.innerText = "Buscando profesionales...";
+
+            const clienteNombre =
+                document.getElementById("clienteNombre").value;
+            const rubro = document.getElementById("rubro").value;
+            const zona = document.getElementById("zona").value;
+            const telefonoInput = document.getElementById("telefono").value;
+            // Limpiar teléfono para guardarlo limpio (solo números)
+            const telefono = telefonoInput.replace(/[^0-9]/g, "");
+
+            const detalle = document.getElementById("detalle").value;
+            const urgente = document.getElementById("urgente").checked;
+
+            try {
+                // 1. MATCHING: Buscar profesionales Premium en esa zona y rubro
+                const qPros = query(
+                    collection(db, "profesionales"),
+                    where("rubro_principal", "==", rubro),
+                    where("zona", "==", zona),
+                    // Filtramos solo planes pagos para darles prioridad
+                    where("plan", "in", ["profesional", "experto"]),
+                    limit(10),
+                );
+
+                const snapPros = await getDocs(qPros);
+                const candidatos = snapPros.docs.map((d) => d.id);
+
+                if (candidatos.length === 0) {
+                    alert(
+                        "Lo sentimos, no encontramos profesionales Premium en tu zona por el momento. Intenta buscar manualmente.",
+                    );
+                    btn.disabled = false;
+                    btn.innerText = "Enviar Solicitud";
+                    return;
+                }
+
+                // 2. CREAR LA SOLICITUD (LEAD)
+                const docRef = await addDoc(collection(db, "solicitudes"), {
+                    clienteId: currentUser.uid,
+                    clienteNombre: clienteNombre,
+                    clienteAvatar: currentUser.photoURL || "",
+                    rubro: rubro,
+                    zona: zona,
+                    telefono: telefono,
+                    detalle: detalle,
+                    urgente: urgente,
+                    fecha: new Date(),
+                    candidatos: candidatos, // Assuming 'candidatos' is the correct variable, not 'candidatosIds'
+                    contactados: [],
+                    descartados: [],
+                    status: "nueva",
+                });
+
+                // 3. NOTIFICACIONES (Crear alertas para cada profesional)
+                const batchPromesas = candidatos.map((proId) => {
+                    return addDoc(
+                        collection(
+                            db,
+                            "profesionales",
+                            proId,
+                            "notificaciones",
+                        ),
+                        {
+                            tipo: "lead_nuevo",
+                            titulo: `¡Nueva oportunidad de trabajo! 🤑`,
+                            mensaje: `Un cliente busca ${rubro} en ${zona}.`,
+                            link: `/panel/oportunidades?id=${solicitudRef.id}`,
+                            leido: false,
+                            fecha: serverTimestamp(),
+                        },
+                    );
+                });
+                await Promise.all(batchPromesas);
+
+                alert(
+                    `¡Listo! Hemos notificado a ${candidatos.length} profesionales top. Te contactarán pronto.`,
+                );
+                window.location.href = "/mi-cuenta";
+            } catch (error) {
+                console.error(error);
+                alert("Hubo un error. Intenta nuevamente.");
+                btn.disabled = false;
+            }
+        });
+    }); // End of astro:page-load
 </script>

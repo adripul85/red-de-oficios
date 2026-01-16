@@ -339,80 +339,84 @@ function getRelativeTime(date) {
     import { onAuthStateChanged } from "firebase/auth";
     import { doc, deleteDoc } from "firebase/firestore";
 
-    // Detectar usuario y mostrar botones
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            const controls = document.querySelectorAll(".owner-controls");
-            controls.forEach((ctrl) => {
-                // @ts-ignore
-                const authorId = ctrl.dataset.authorId;
-                // Si el usuario actual es el autor, mostrar controles
-                if (authorId === user.uid) {
-                    ctrl.classList.remove("hidden");
-                }
-            });
-        }
-    });
+    document.addEventListener("astro:page-load", () => {
+        console.log("🚀 [FORO] Página cargada/navegada");
 
-    // Lógica de Eliminación
-    document.querySelectorAll(".btn-delete").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-            // Evitar que el click navegue al post
-            e.preventDefault();
-            e.stopPropagation();
-
-            // @ts-ignore
-            const parent = btn.closest(".owner-controls");
-            // @ts-ignore
-            const threadId = parent.dataset.threadId;
-
-            // @ts-ignore
-            const result = await Swal.fire({
-                title: "¿Eliminar debate?",
-                text: "No podrás revertir esto.",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#3085d6",
-                confirmButtonText: "Sí, borrar",
-                cancelButtonText: "Cancelar",
-            });
-
-            if (result.isConfirmed) {
-                try {
-                    await deleteDoc(doc(db, "foro_threads", threadId));
+        // Detectar usuario y mostrar botones
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const controls = document.querySelectorAll(".owner-controls");
+                controls.forEach((ctrl) => {
                     // @ts-ignore
-                    await Swal.fire(
-                        "Eliminado",
-                        "El debate ha sido eliminado.",
-                        "success",
-                    );
-                    window.location.reload();
-                } catch (error) {
-                    console.error(error);
-                    // @ts-ignore
-                    Swal.fire(
-                        "Error",
-                        "No se pudo eliminar el debate.",
-                        "error",
-                    );
-                }
+                    const authorId = ctrl.dataset.authorId;
+                    // Si el usuario actual es el autor, mostrar controles
+                    if (authorId === user.uid) {
+                        ctrl.classList.remove("hidden");
+                    }
+                });
             }
         });
-    });
 
-    // Lógica de Edición
-    document.querySelectorAll(".btn-edit").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            // @ts-ignore
-            const parent = btn.closest(".owner-controls");
-            // @ts-ignore
-            const threadId = parent.dataset.threadId;
+        // Lógica de Eliminación
+        document.querySelectorAll(".btn-delete").forEach((btn) => {
+            btn.addEventListener("click", async (e) => {
+                // Evitar que el click navegue al post
+                e.preventDefault();
+                e.stopPropagation();
 
-            // 🚀 REDIRECCIÓN REAL A LA PÁGINA DE EDICIÓN
-            window.location.href = `/foro/editar/${threadId}`;
+                // @ts-ignore
+                const parent = btn.closest(".owner-controls");
+                // @ts-ignore
+                const threadId = parent.dataset.threadId;
+
+                // @ts-ignore
+                const result = await Swal.fire({
+                    title: "¿Eliminar debate?",
+                    text: "No podrás revertir esto.",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Sí, borrar",
+                    cancelButtonText: "Cancelar",
+                });
+
+                if (result.isConfirmed) {
+                    try {
+                        await deleteDoc(doc(db, "foro_threads", threadId));
+                        // @ts-ignore
+                        await Swal.fire(
+                            "Eliminado",
+                            "El debate ha sido eliminado.",
+                            "success",
+                        );
+                        window.location.reload();
+                    } catch (error) {
+                        console.error(error);
+                        // @ts-ignore
+                        Swal.fire(
+                            "Error",
+                            "No se pudo eliminar el debate.",
+                            "error",
+                        );
+                    }
+                }
+            });
         });
-    });
+
+        // Lógica de Edición
+        document.querySelectorAll(".btn-edit").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // @ts-ignore
+                const parent = btn.closest(".owner-controls");
+                // @ts-ignore
+                const threadId = parent.dataset.threadId;
+
+                // 🚀 REDIRECCIÓN REAL A LA PÁGINA DE EDICIÓN
+                window.location.href = `/foro/editar/${threadId}`;
+            });
+        });
+    }); // End of astro:page-load
 </script>

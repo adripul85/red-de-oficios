@@ -95,64 +95,67 @@ import Layout from "../../layouts/Layout.astro";
         getDoc,
     } from "firebase/firestore";
 
-    const container = document.getElementById("cards-container");
-    const loading = document.getElementById("loading");
-    const empty = document.getElementById("empty-state");
+    document.addEventListener("astro:page-load", () => {
+        console.log("🚀 [ADMIN-VALIDACIONES] Página cargada/navegada");
 
-    // 1. VERIFICAR ADMIN
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) return (window.location.href = "/");
+        const container = document.getElementById("cards-container");
+        const loading = document.getElementById("loading");
+        const empty = document.getElementById("empty-state");
 
-        const docRef = doc(db, "profesionales", user.uid);
-        const docSnap = await getDoc(docRef);
+        // 1. VERIFICAR ADMIN
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) return (window.location.href = "/");
 
-        // AQUI DEFINES QUIÉN ES ADMIN (Reemplaza con tu lógica o mail si prefieres)
-        const data = docSnap.data();
-        const isAdmin =
-            data && (data.rol === "admin" || data.rol === "moderador");
+            const docRef = doc(db, "profesionales", user.uid);
+            const docSnap = await getDoc(docRef);
 
-        if (isAdmin) {
-            cargarSolicitudes();
-        } else {
-            alert("⛔ Acceso Denegado: Solo personal autorizado.");
-            window.location.href = "/";
-        }
-    });
+            // AQUI DEFINES QUIÉN ES ADMIN (Reemplaza con tu lógica o mail si prefieres)
+            const data = docSnap.data();
+            const isAdmin =
+                data && (data.rol === "admin" || data.rol === "moderador");
 
-    // 2. CARGAR SOLICITUDES
-    async function cargarSolicitudes() {
-        // Buscamos profesionales donde 'validacion_estado' sea 'pendiente'
-        const q = query(
-            collection(db, "profesionales"),
-            where("validacion_estado", "==", "pendiente"),
-        );
-
-        try {
-            const querySnapshot = await getDocs(q);
-            loading.classList.add("hidden");
-
-            if (querySnapshot.empty) {
-                empty.classList.remove("hidden");
-                return;
+            if (isAdmin) {
+                cargarSolicitudes();
+            } else {
+                alert("⛔ Acceso Denegado: Solo personal autorizado.");
+                window.location.href = "/";
             }
+        });
 
-            container.innerHTML = "";
-            querySnapshot.forEach((docSnap) => {
-                crearTarjeta(docSnap.id, docSnap.data());
-            });
-        } catch (error) {
-            console.error(error);
-            loading.innerHTML = `<div class="bg-red-100 text-red-700 p-4 rounded">Error cargando datos: ${error.message}</div>`;
+        // 2. CARGAR SOLICITUDES
+        async function cargarSolicitudes() {
+            // Buscamos profesionales donde 'validacion_estado' sea 'pendiente'
+            const q = query(
+                collection(db, "profesionales"),
+                where("validacion_estado", "==", "pendiente"),
+            );
+
+            try {
+                const querySnapshot = await getDocs(q);
+                loading.classList.add("hidden");
+
+                if (querySnapshot.empty) {
+                    empty.classList.remove("hidden");
+                    return;
+                }
+
+                container.innerHTML = "";
+                querySnapshot.forEach((docSnap) => {
+                    crearTarjeta(docSnap.id, docSnap.data());
+                });
+            } catch (error) {
+                console.error(error);
+                loading.innerHTML = `<div class="bg-red-100 text-red-700 p-4 rounded">Error cargando datos: ${error.message}</div>`;
+            }
         }
-    }
 
-    // 3. RENDERIZAR TARJETA
-    function crearTarjeta(uid, data) {
-        const card = document.createElement("div");
-        card.className =
-            "bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden flex flex-col hover:shadow-lg transition";
+        // 3. RENDERIZAR TARJETA
+        function crearTarjeta(uid, data) {
+            const card = document.createElement("div");
+            card.className =
+                "bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden flex flex-col hover:shadow-lg transition";
 
-        card.innerHTML = `
+            card.innerHTML = `
             <div class="p-5 border-b border-gray-100 flex items-center gap-4 bg-gray-50">
                 <img src="${data.foto || `https://ui-avatars.com/api/?name=${data.nombre}`}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm">
                 <div>
@@ -193,51 +196,53 @@ import Layout from "../../layouts/Layout.astro";
             </div>
         `;
 
-        // Lógica Botones
-        const btnApprove = card.querySelector(".btn-approve");
-        const btnReject = card.querySelector(".btn-reject");
+            // Lógica Botones
+            const btnApprove = card.querySelector(".btn-approve");
+            const btnReject = card.querySelector(".btn-reject");
 
-        btnApprove.onclick = async () => {
-            if (
-                !confirm(
-                    `¿Confirmas que los documentos de ${data.nombre} son válidos?`,
+            btnApprove.onclick = async () => {
+                if (
+                    !confirm(
+                        `¿Confirmas que los documentos de ${data.nombre} son válidos?`,
+                    )
                 )
-            )
-                return;
-            try {
-                await updateDoc(doc(db, "profesionales", uid), {
-                    verificado: true,
-                    validacion_estado: "aprobado",
-                });
-                animarSalida(card);
-            } catch (e) {
-                alert("Error: " + e.message);
-            }
-        };
+                    return;
+                try {
+                    await updateDoc(doc(db, "profesionales", uid), {
+                        verificado: true,
+                        validacion_estado: "aprobado",
+                    });
+                    animarSalida(card);
+                } catch (e) {
+                    alert("Error: " + e.message);
+                }
+            };
 
-        btnReject.onclick = async () => {
-            if (!confirm(`¿Rechazar documentación de ${data.nombre}?`)) return;
-            try {
-                await updateDoc(doc(db, "profesionales", uid), {
-                    verificado: false,
-                    validacion_estado: "rechazado",
-                });
-                animarSalida(card);
-            } catch (e) {
-                alert("Error: " + e.message);
-            }
-        };
+            btnReject.onclick = async () => {
+                if (!confirm(`¿Rechazar documentación de ${data.nombre}?`))
+                    return;
+                try {
+                    await updateDoc(doc(db, "profesionales", uid), {
+                        verificado: false,
+                        validacion_estado: "rechazado",
+                    });
+                    animarSalida(card);
+                } catch (e) {
+                    alert("Error: " + e.message);
+                }
+            };
 
-        container.appendChild(card);
-    }
+            container.appendChild(card);
+        }
 
-    function animarSalida(element) {
-        element.style.transform = "scale(0.9)";
-        element.style.opacity = "0";
-        setTimeout(() => {
-            element.remove();
-            if (container.children.length === 0)
-                empty.classList.remove("hidden");
-        }, 300);
-    }
+        function animarSalida(element) {
+            element.style.transform = "scale(0.9)";
+            element.style.opacity = "0";
+            setTimeout(() => {
+                element.remove();
+                if (container.children.length === 0)
+                    empty.classList.remove("hidden");
+            }, 300);
+        }
+    }); // End of astro:page-load
 </script>

@@ -175,248 +175,266 @@ import Header from "../components/Header.astro";
     // IMPORTAMOS EL PARSEADOR DE MARKDOWN
     import { marked } from "marked";
 
-    const loadingState = document.getElementById("loading-state");
-    const editorContent = document.getElementById("editor-content");
-    const form = document.getElementById("blog-form");
-    const titleInput = document.getElementById("titulo");
-    const slugInput = document.getElementById("slug");
-    const imgInput = document.getElementById("imagen");
-    const imgPreview = document.getElementById("img-preview");
-    const contentInput = document.getElementById("contenido");
-    const mdPreview = document.getElementById("markdown-preview");
-    const postsList = document.getElementById("posts-list");
-    const statusMsg = document.getElementById("status-msg");
-    const btnSubmit = form.querySelector(".btn-publish");
+    document.addEventListener("astro:page-load", () => {
+        console.log("🚀 [BLOG-EDITOR] Página cargada/navegada");
 
-    // KEYWORDS LOGIC
-    const keywordInput = document.getElementById("keyword-input");
-    const keywordsList = document.getElementById("keywords-list");
-    const btnAddKeyword = document.getElementById("btn-add-keyword");
-    let keywords = [];
+        const loadingState = document.getElementById("loading-state");
+        const editorContent = document.getElementById("editor-content");
+        const form = document.getElementById("blog-form");
+        const titleInput = document.getElementById(
+            "titulo",
+        ) as HTMLInputElement;
+        const slugInput = document.getElementById("slug") as HTMLInputElement;
+        const imgInput = document.getElementById("imagen") as HTMLInputElement;
+        const imgPreview = document.getElementById(
+            "img-preview",
+        ) as HTMLImageElement;
+        const contentInput = document.getElementById(
+            "contenido",
+        ) as HTMLTextAreaElement;
+        const mdPreview = document.getElementById("markdown-preview");
+        const postsList = document.getElementById("posts-list");
+        const statusMsg = document.getElementById("status-msg");
+        const btnSubmit = form?.querySelector(".btn-publish");
 
-    // EDIT STATE
-    let isEditing = false;
-    let currentDocId = null;
+        // KEYWORDS LOGIC
+        const keywordInput = document.getElementById("keyword-input");
+        const keywordsList = document.getElementById("keywords-list");
+        const btnAddKeyword = document.getElementById("btn-add-keyword");
+        let keywords = [];
 
-    // 1. SEGURIDAD
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
+        // EDIT STATE
+        let isEditing = false;
+        let currentDocId = null;
+
+        // 1. SEGURIDAD
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const userSnap = await getDoc(
+                        doc(db, "profesionales", user.uid),
+                    );
+                    if (userSnap.exists() && userSnap.data().rol === "admin") {
+                        iniciarEditor();
+                    } else {
+                        window.location.href = "/";
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            } else {
+                window.location.href = "/ingresar";
+            }
+        });
+
+        async function iniciarEditor() {
+            loadingState.style.display = "none";
+            editorContent.classList.remove("hidden");
+            cargarPosts();
+
+            // Check URL params for edit mode
+            const urlParams = new URLSearchParams(window.location.search);
+            const slugToEdit = urlParams.get("slug");
+            if (slugToEdit) {
+                cargarPostParaEditar(slugToEdit);
+            }
+        }
+
+        // Cargar datos para editar
+        async function cargarPostParaEditar(slug) {
+            statusMsg.innerText = "Cargando post para editar...";
             try {
-                const userSnap = await getDoc(
-                    doc(db, "profesionales", user.uid),
+                const q = query(
+                    collection(db, "blog"),
+                    where("slug", "==", slug),
                 );
-                if (userSnap.exists() && userSnap.data().rol === "admin") {
-                    iniciarEditor();
+                const snapshot = await getDocs(q);
+                if (!snapshot.empty) {
+                    const docSnap = snapshot.docs[0];
+                    const data = docSnap.data();
+
+                    isEditing = true;
+                    currentDocId = docSnap.id;
+
+                    // Fill form
+                    titleInput.value = data.titulo;
+                    slugInput.value = data.slug;
+                    document.getElementById("categoria").value = data.categoria;
+                    document.getElementById("autor").value = data.autor;
+                    imgInput.value = data.imagen;
+                    imgPreview.src = data.imagen;
+                    document.getElementById("resumen").value = data.resumen;
+                    contentInput.value = data.contenido;
+                    mdPreview.innerHTML = marked.parse(data.contenido || "");
+
+                    keywords = data.keywords || [];
+                    renderKeywords();
+
+                    btnSubmit.textContent = "💾 Actualizar Artículo";
+                    statusMsg.innerText = "Modo Edición Activado";
                 } else {
-                    window.location.href = "/";
+                    statusMsg.innerText = "Post no encontrado.";
                 }
             } catch (e) {
                 console.error(e);
+                statusMsg.innerText = "Error cargando post.";
             }
-        } else {
-            window.location.href = "/ingresar";
         }
-    });
 
-    async function iniciarEditor() {
-        loadingState.style.display = "none";
-        editorContent.classList.remove("hidden");
-        cargarPosts();
-
-        // Check URL params for edit mode
-        const urlParams = new URLSearchParams(window.location.search);
-        const slugToEdit = urlParams.get("slug");
-        if (slugToEdit) {
-            cargarPostParaEditar(slugToEdit);
-        }
-    }
-
-    // Cargar datos para editar
-    async function cargarPostParaEditar(slug) {
-        statusMsg.innerText = "Cargando post para editar...";
-        try {
-            const q = query(collection(db, "blog"), where("slug", "==", slug));
-            const snapshot = await getDocs(q);
-            if (!snapshot.empty) {
-                const docSnap = snapshot.docs[0];
-                const data = docSnap.data();
-
-                isEditing = true;
-                currentDocId = docSnap.id;
-
-                // Fill form
-                titleInput.value = data.titulo;
-                slugInput.value = data.slug;
-                document.getElementById("categoria").value = data.categoria;
-                document.getElementById("autor").value = data.autor;
-                imgInput.value = data.imagen;
-                imgPreview.src = data.imagen;
-                document.getElementById("resumen").value = data.resumen;
-                contentInput.value = data.contenido;
-                mdPreview.innerHTML = marked.parse(data.contenido || "");
-
-                keywords = data.keywords || [];
-                renderKeywords();
-
-                btnSubmit.textContent = "💾 Actualizar Artículo";
-                statusMsg.innerText = "Modo Edición Activado";
-            } else {
-                statusMsg.innerText = "Post no encontrado.";
+        // 2. SLUG AUTOMÁTICO (Solo si no estamos editando o si el usuario lo fuerza)
+        titleInput.addEventListener("input", (e) => {
+            if (!isEditing) {
+                const val = e.target.value;
+                const slug = val
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^\w\s-]/g, "")
+                    .replace(/[\s_-]+/g, "-")
+                    .replace(/^-+|-+$/g, "");
+                slugInput.value = slug;
             }
-        } catch (e) {
-            console.error(e);
-            statusMsg.innerText = "Error cargando post.";
-        }
-    }
-
-    // 2. SLUG AUTOMÁTICO (Solo si no estamos editando o si el usuario lo fuerza)
-    titleInput.addEventListener("input", (e) => {
-        if (!isEditing) {
-            const val = e.target.value;
-            const slug = val
-                .toLowerCase()
-                .trim()
-                .replace(/[^\w\s-]/g, "")
-                .replace(/[\s_-]+/g, "-")
-                .replace(/^-+|-+$/g, "");
-            slugInput.value = slug;
-        }
-    });
-
-    // 3. PREVIEW IMAGEN
-    imgInput.addEventListener("input", (e) => {
-        imgPreview.src =
-            e.target.value.length > 10
-                ? e.target.value
-                : "https://via.placeholder.com/300x150?text=Sin+Imagen";
-    });
-
-    // 4. PREVIEW MARKDOWN EN TIEMPO REAL
-    contentInput.addEventListener("input", (e) => {
-        const textoRaw = e.target.value;
-        // Convertimos Markdown a HTML
-        const html = marked.parse(textoRaw);
-        mdPreview.innerHTML = html;
-    });
-
-    // 5. LÓGICA DE KEYWORDS (FIX COMA)
-    function renderKeywords() {
-        keywordsList.innerHTML = "";
-        keywords.forEach((k, index) => {
-            const span = document.createElement("span");
-            span.className = "tag-pill";
-            span.innerHTML = `${k} <button type="button" onclick="window.removeKeyword(${index})">×</button>`;
-            keywordsList.appendChild(span);
         });
-    }
-    function addKeyword() {
-        // Limpiamos comas si se pegaron o escribieron
-        const val = keywordInput.value.replace(",", "").trim().toLowerCase();
-        if (val && !keywords.includes(val)) {
-            if (keywords.length >= 10) {
-                alert("Máximo 10 keywords");
-                return;
-            }
-            keywords.push(val);
-            renderKeywords();
-            keywordInput.value = "";
-        }
-    }
 
-    // Soporte para Enter y Coma
-    keywordInput.addEventListener("keyup", (e) => {
-        if (e.key === "Enter" || e.key === ",") {
+        // 3. PREVIEW IMAGEN
+        imgInput.addEventListener("input", (e) => {
+            imgPreview.src =
+                e.target.value.length > 10
+                    ? e.target.value
+                    : "https://via.placeholder.com/300x150?text=Sin+Imagen";
+        });
+
+        // 4. PREVIEW MARKDOWN EN TIEMPO REAL
+        contentInput.addEventListener("input", (e) => {
+            const textoRaw = e.target.value;
+            // Convertimos Markdown a HTML
+            const html = marked.parse(textoRaw);
+            mdPreview.innerHTML = html;
+        });
+
+        // 5. LÓGICA DE KEYWORDS (FIX COMA)
+        function renderKeywords() {
+            keywordsList.innerHTML = "";
+            keywords.forEach((k, index) => {
+                const span = document.createElement("span");
+                span.className = "tag-pill";
+                span.innerHTML = `${k} <button type="button" onclick="window.removeKeyword(${index})">×</button>`;
+                keywordsList.appendChild(span);
+            });
+        }
+        function addKeyword() {
+            // Limpiamos comas si se pegaron o escribieron
+            const val = keywordInput.value
+                .replace(",", "")
+                .trim()
+                .toLowerCase();
+            if (val && !keywords.includes(val)) {
+                if (keywords.length >= 10) {
+                    alert("Máximo 10 keywords");
+                    return;
+                }
+                keywords.push(val);
+                renderKeywords();
+                keywordInput.value = "";
+            }
+        }
+
+        // Soporte para Enter y Coma
+        keywordInput.addEventListener("keyup", (e) => {
+            if (e.key === "Enter" || e.key === ",") {
+                e.preventDefault();
+                addKeyword();
+            }
+        });
+
+        btnAddKeyword.addEventListener("click", (e) => {
             e.preventDefault();
             addKeyword();
-        }
-    });
+        });
+        window.removeKeyword = (i) => {
+            keywords.splice(i, 1);
+            renderKeywords();
+        };
 
-    btnAddKeyword.addEventListener("click", (e) => {
-        e.preventDefault();
-        addKeyword();
-    });
-    window.removeKeyword = (i) => {
-        keywords.splice(i, 1);
-        renderKeywords();
-    };
+        // 6. PUBLICAR / ACTUALIZAR
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = form.querySelector(".btn-publish");
+            btn.disabled = true;
+            btn.textContent = isEditing ? "Actualizando..." : "Publicando...";
+            statusMsg.textContent = "";
 
-    // 6. PUBLICAR / ACTUALIZAR
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const btn = form.querySelector(".btn-publish");
-        btn.disabled = true;
-        btn.textContent = isEditing ? "Actualizando..." : "Publicando...";
-        statusMsg.textContent = "";
+            try {
+                const postData = {
+                    titulo: document.getElementById("titulo").value,
+                    slug: document.getElementById("slug").value,
+                    categoria: document.getElementById("categoria").value,
+                    autor: document.getElementById("autor").value,
+                    imagen: document.getElementById("imagen").value,
+                    resumen: document.getElementById("resumen").value,
+                    contenido: document.getElementById("contenido").value, // Guardamos el Markdown puro
+                    keywords: keywords, // Guardamos array de SEO
+                };
 
-        try {
-            const postData = {
-                titulo: document.getElementById("titulo").value,
-                slug: document.getElementById("slug").value,
-                categoria: document.getElementById("categoria").value,
-                autor: document.getElementById("autor").value,
-                imagen: document.getElementById("imagen").value,
-                resumen: document.getElementById("resumen").value,
-                contenido: document.getElementById("contenido").value, // Guardamos el Markdown puro
-                keywords: keywords, // Guardamos array de SEO
-            };
+                if (isEditing && currentDocId) {
+                    // UPDATE
+                    await updateDoc(doc(db, "blog", currentDocId), {
+                        ...postData,
+                        ultima_actualizacion: new Date(),
+                    });
+                    statusMsg.textContent = "✅ ¡Actualizado correctamente!";
+                } else {
+                    // CREATE
+                    await addDoc(collection(db, "blog"), {
+                        ...postData,
+                        fecha: new Date(),
+                        vistas: 0,
+                    });
+                    statusMsg.textContent = "✅ ¡Publicado!";
+                    form.reset();
+                    keywords = [];
+                    renderKeywords();
+                    mdPreview.innerHTML = "<em>Escribe...</em>";
+                    imgPreview.src =
+                        "https://via.placeholder.com/300x150?text=Sin+Imagen";
+                }
 
-            if (isEditing && currentDocId) {
-                // UPDATE
-                await updateDoc(doc(db, "blog", currentDocId), {
-                    ...postData,
-                    ultima_actualizacion: new Date(),
-                });
-                statusMsg.textContent = "✅ ¡Actualizado correctamente!";
-            } else {
-                // CREATE
-                await addDoc(collection(db, "blog"), {
-                    ...postData,
-                    fecha: new Date(),
-                    vistas: 0,
-                });
-                statusMsg.textContent = "✅ ¡Publicado!";
-                form.reset();
-                keywords = [];
-                renderKeywords();
-                mdPreview.innerHTML = "<em>Escribe...</em>";
-                imgPreview.src =
-                    "https://via.placeholder.com/300x150?text=Sin+Imagen";
+                statusMsg.style.color = "green";
+                cargarPosts();
+            } catch (error) {
+                console.error(error);
+                statusMsg.textContent = "❌ Error: " + error.message;
+                statusMsg.style.color = "red";
+            } finally {
+                btn.disabled = false;
+                btn.textContent = isEditing
+                    ? "💾 Actualizar Artículo"
+                    : "🚀 Publicar Artículo";
             }
+        });
 
-            statusMsg.style.color = "green";
-            cargarPosts();
-        } catch (error) {
-            console.error(error);
-            statusMsg.textContent = "❌ Error: " + error.message;
-            statusMsg.style.color = "red";
-        } finally {
-            btn.disabled = false;
-            btn.textContent = isEditing
-                ? "💾 Actualizar Artículo"
-                : "🚀 Publicar Artículo";
-        }
-    });
+        // 7. LISTAR POSTS
+        async function cargarPosts() {
+            postsList.innerHTML =
+                '<p class="text-muted" style="text-align:center;">Cargando...</p>';
+            try {
+                const q = query(
+                    collection(db, "blog"),
+                    orderBy("fecha", "desc"),
+                );
+                const snapshot = await getDocs(q);
 
-    // 7. LISTAR POSTS
-    async function cargarPosts() {
-        postsList.innerHTML =
-            '<p class="text-muted" style="text-align:center;">Cargando...</p>';
-        try {
-            const q = query(collection(db, "blog"), orderBy("fecha", "desc"));
-            const snapshot = await getDocs(q);
+                if (snapshot.empty) {
+                    postsList.innerHTML = `<div style="text-align: center; padding: 20px; background: #f1f5f9; border-radius: 8px;"><p>📭 Sin artículos.</p></div>`;
+                    return;
+                }
 
-            if (snapshot.empty) {
-                postsList.innerHTML = `<div style="text-align: center; padding: 20px; background: #f1f5f9; border-radius: 8px;"><p>📭 Sin artículos.</p></div>`;
-                return;
-            }
-
-            let html = "";
-            snapshot.forEach((docSnap) => {
-                const p = docSnap.data();
-                const fecha = p.fecha
-                    ? new Date(p.fecha.seconds * 1000).toLocaleDateString()
-                    : "Fecha desc.";
-                html += `
+                let html = "";
+                snapshot.forEach((docSnap) => {
+                    const p = docSnap.data();
+                    const fecha = p.fecha
+                        ? new Date(p.fecha.seconds * 1000).toLocaleDateString()
+                        : "Fecha desc.";
+                    html += `
                 <div class="mini-post-card">
                     <img src="${p.imagen || "https://via.placeholder.com/60"}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px; flex-shrink: 0; border: 1px solid #e2e8f0;" onerror="this.src='https://via.placeholder.com/60?text=Error'" />
                     <div class="mini-post-info">
@@ -428,22 +446,23 @@ import Header from "../components/Header.astro";
                     <button class="btn-delete-post" onclick="window.borrarPost('${docSnap.id}')">🗑️</button>
                 </div>
             `;
-            });
-            postsList.innerHTML = html;
-        } catch (e) {
-            console.error(e);
+                });
+                postsList.innerHTML = html;
+            } catch (e) {
+                console.error(e);
+            }
         }
-    }
 
-    window.borrarPost = async (id) => {
-        if (!confirm("¿Borrar artículo?")) return;
-        try {
-            await deleteDoc(doc(db, "blog", id));
-            cargarPosts();
-        } catch (e) {
-            alert("Error");
-        }
-    };
+        window.borrarPost = async (id) => {
+            if (!confirm("¿Borrar artículo?")) return;
+            try {
+                await deleteDoc(doc(db, "blog", id));
+                cargarPosts();
+            } catch (e) {
+                alert("Error");
+            }
+        };
+    }); // End of astro:page-load
 </script>
 
 <style>

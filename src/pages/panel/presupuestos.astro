@@ -526,91 +526,99 @@ import { auth, db } from "../../firebase/client";
             } from "firebase/firestore";
             import { auth, db } from "../../firebase/client";
 
-            const loadingState = document.getElementById("loading-state");
-            const emptyState = document.getElementById("empty-state");
-            const contentTable = document.getElementById("content-table");
-            const listContainer = document.getElementById("presupuestos-list");
-            const modal = document.getElementById("modal-presupuesto");
-            const modalContent = document.getElementById("modal-content");
-            const form = document.getElementById("form-presupuesto");
+            document.addEventListener("astro:page-load", () => {
+                console.log("🚀 [PRESUPUESTOS] Página cargada/navegada");
 
-            let currentUser = null;
-            let items = [{ desc: "", cant: 1, precio: 0 }];
-            let allPresupuestos = {}; // Store fetched data by ID
+                const loadingState = document.getElementById("loading-state");
+                const emptyState = document.getElementById("empty-state");
+                const contentTable = document.getElementById("content-table");
+                const listContainer =
+                    document.getElementById("presupuestos-list");
+                const modal = document.getElementById("modal-presupuesto");
+                const modalContent = document.getElementById("modal-content");
+                const form = document.getElementById("form-presupuesto");
 
-            // AUTH CHECK
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    currentUser = user;
-                    loadPresupuestos(user.uid);
-                } else {
-                    window.location.href = "/";
+                let currentUser = null;
+                let items = [{ desc: "", cant: 1, precio: 0 }];
+                let allPresupuestos = {}; // Store fetched data by ID
+
+                // AUTH CHECK
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUser = user;
+                        loadPresupuestos(user.uid);
+                    } else {
+                        window.location.href = "/";
+                    }
+                });
+
+                // LOAD DATA
+                function loadPresupuestos(uid) {
+                    // UPDATE: Usar subcolección profesionales/{uid}/presupuestos para cumplir reglas de seguridad
+                    const q = query(
+                        collection(db, "profesionales", uid, "presupuestos"),
+                    );
+
+                    onSnapshot(
+                        q,
+                        (snapshot) => {
+                            loadingState.classList.add("hidden");
+
+                            if (snapshot.empty) {
+                                emptyState.classList.remove("hidden");
+                                contentTable.classList.add("hidden");
+                            } else {
+                                emptyState.classList.add("hidden");
+                                contentTable.classList.remove("hidden");
+
+                                // Update cache
+                                snapshot.docs.forEach(
+                                    (d) =>
+                                        (allPresupuestos[d.id] = {
+                                            id: d.id,
+                                            ...d.data(),
+                                        }),
+                                );
+
+                                renderList(
+                                    snapshot.docs.sort(
+                                        (a, b) =>
+                                            b.data().fecha - a.data().fecha,
+                                    ),
+                                );
+                            }
+                        },
+                        (error) => {
+                            console.error(
+                                "Error cargando presupuestos:",
+                                error,
+                            );
+                            loadingState.innerHTML =
+                                '<p class="text-red-500">Error cargando datos. Verifica tu conexión.</p>';
+                        },
+                    );
                 }
-            });
 
-            // LOAD DATA
-            function loadPresupuestos(uid) {
-                // UPDATE: Usar subcolección profesionales/{uid}/presupuestos para cumplir reglas de seguridad
-                const q = query(
-                    collection(db, "profesionales", uid, "presupuestos"),
-                );
+                function renderList(docs) {
+                    listContainer.innerHTML = "";
+                    docs.forEach((doc) => {
+                        const data = doc.data();
+                        const date = data.fecha
+                            ? new Date(
+                                  data.fecha.seconds * 1000,
+                              ).toLocaleDateString()
+                            : "Sin fecha";
+                        const statusColors = {
+                            Pendiente: "bg-yellow-100 text-yellow-700",
+                            Aprobado: "bg-blue-100 text-blue-700",
+                            Cobrado: "bg-green-100 text-green-700",
+                            Rechazado: "bg-red-100 text-red-700",
+                        };
 
-                onSnapshot(
-                    q,
-                    (snapshot) => {
-                        loadingState.classList.add("hidden");
-
-                        if (snapshot.empty) {
-                            emptyState.classList.remove("hidden");
-                            contentTable.classList.add("hidden");
-                        } else {
-                            emptyState.classList.add("hidden");
-                            contentTable.classList.remove("hidden");
-
-                            // Update cache
-                            snapshot.docs.forEach(
-                                (d) =>
-                                    (allPresupuestos[d.id] = {
-                                        id: d.id,
-                                        ...d.data(),
-                                    }),
-                            );
-
-                            renderList(
-                                snapshot.docs.sort(
-                                    (a, b) => b.data().fecha - a.data().fecha,
-                                ),
-                            );
-                        }
-                    },
-                    (error) => {
-                        console.error("Error cargando presupuestos:", error);
-                        loadingState.innerHTML =
-                            '<p class="text-red-500">Error cargando datos. Verifica tu conexión.</p>';
-                    },
-                );
-            }
-
-            function renderList(docs) {
-                listContainer.innerHTML = "";
-                docs.forEach((doc) => {
-                    const data = doc.data();
-                    const date = data.fecha
-                        ? new Date(
-                              data.fecha.seconds * 1000,
-                          ).toLocaleDateString()
-                        : "Sin fecha";
-                    const statusColors = {
-                        Pendiente: "bg-yellow-100 text-yellow-700",
-                        Aprobado: "bg-blue-100 text-blue-700",
-                        Cobrado: "bg-green-100 text-green-700",
-                        Rechazado: "bg-red-100 text-red-700",
-                    };
-
-                    const tr = document.createElement("tr");
-                    tr.className =
-                        "hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0";
-                    tr.innerHTML = `
+                        const tr = document.createElement("tr");
+                        tr.className =
+                            "hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0";
+                        tr.innerHTML = `
                         <td class="px-6 py-4 font-medium text-slate-800">${data.cliente}</td>
                         <td class="px-6 py-4">${data.titulo}</td>
                         <td class="px-6 py-4 text-slate-500">${date}</td>
@@ -634,404 +642,420 @@ import { auth, db } from "../../firebase/client";
                             </div>
                         </td>
                     `;
-                    listContainer.appendChild(tr);
-                });
-            }
+                        listContainer.appendChild(tr);
+                    });
+                }
 
-            // MODAL LOGIC
-            document
-                .getElementById("btn-nuevo")
-                .addEventListener("click", () => openModal());
-            document
-                .getElementById("btn-close-modal")
-                .addEventListener("click", closeModal);
-            document
-                .getElementById("btn-cancel")
-                .addEventListener("click", closeModal);
-            document
-                .getElementById("modal-overlay")
-                .addEventListener("click", closeModal);
+                // MODAL LOGIC
+                document
+                    .getElementById("btn-nuevo")
+                    .addEventListener("click", () => openModal());
+                document
+                    .getElementById("btn-close-modal")
+                    .addEventListener("click", closeModal);
+                document
+                    .getElementById("btn-cancel")
+                    .addEventListener("click", closeModal);
+                document
+                    .getElementById("modal-overlay")
+                    .addEventListener("click", closeModal);
 
-            document
-                .getElementById("btn-add-item")
-                .addEventListener("click", () => {
-                    items.push({ desc: "", cant: 1, precio: 0 });
+                document
+                    .getElementById("btn-add-item")
+                    .addEventListener("click", () => {
+                        items.push({ desc: "", cant: 1, precio: 0 });
+                        renderItems();
+                    });
+
+                function openModal() {
+                    modal.classList.remove(
+                        "hidden",
+                        "opacity-0",
+                        "pointer-events-none",
+                    );
+                    modalContent.classList.remove("scale-95");
+                    modalContent.classList.add("scale-100");
+                    items = [{ desc: "", cant: 1, precio: 0 }];
                     renderItems();
-                });
+                }
 
-            function openModal() {
-                modal.classList.remove(
-                    "hidden",
-                    "opacity-0",
-                    "pointer-events-none",
-                );
-                modalContent.classList.remove("scale-95");
-                modalContent.classList.add("scale-100");
-                items = [{ desc: "", cant: 1, precio: 0 }];
-                renderItems();
-            }
+                function closeModal() {
+                    modal.classList.add("opacity-0", "pointer-events-none");
+                    modalContent.classList.remove("scale-100");
+                    modalContent.classList.add("scale-95");
+                    setTimeout(() => modal.classList.add("hidden"), 300);
+                    form.reset();
+                }
 
-            function closeModal() {
-                modal.classList.add("opacity-0", "pointer-events-none");
-                modalContent.classList.remove("scale-100");
-                modalContent.classList.add("scale-95");
-                setTimeout(() => modal.classList.add("hidden"), 300);
-                form.reset();
-            }
+                // DYNAMIC ITEMS
+                function calculateTotal() {
+                    const total = items.reduce(
+                        (sum, i) => sum + i.cant * i.precio,
+                        0,
+                    );
+                    document.getElementById("total-display").innerText =
+                        `$${total.toLocaleString()}`;
+                }
 
-            // DYNAMIC ITEMS
-            function calculateTotal() {
-                const total = items.reduce(
-                    (sum, i) => sum + i.cant * i.precio,
-                    0,
-                );
-                document.getElementById("total-display").innerText =
-                    `$${total.toLocaleString()}`;
-            }
+                function renderItems() {
+                    const container =
+                        document.getElementById("items-container");
+                    container.innerHTML = "";
 
-            function renderItems() {
-                const container = document.getElementById("items-container");
-                container.innerHTML = "";
-
-                items.forEach((item, index) => {
-                    const div = document.createElement("div");
-                    div.className = "flex gap-2 items-start";
-                    div.innerHTML = `
+                    items.forEach((item, index) => {
+                        const div = document.createElement("div");
+                        div.className = "flex gap-2 items-start";
+                        div.innerHTML = `
                         <input type="text" placeholder="Descripción" value="${item.desc}" oninput="updateItem(${index}, 'desc', this.value)" class="flex-1 border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-orange-500">
                         <input type="number" placeholder="Cant." value="${item.cant}" oninput="updateItem(${index}, 'cant', this.value)" class="w-16 border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-orange-500">
                         <input type="number" placeholder="Precio" value="${item.precio}" oninput="updateItem(${index}, 'precio', this.value)" class="w-24 border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-orange-500">
                         <button type="button" onclick="removeItem(${index})" class="text-red-400 hover:text-red-600 px-1">✕</button>
                     `;
-                    container.appendChild(div);
-                });
+                        container.appendChild(div);
+                    });
 
-                calculateTotal();
-            }
-
-            window.updateItem = (index, field, value) => {
-                items[index][field] = field === "desc" ? value : Number(value);
-                // Solo recalculamos total, NO renderizamos todo para no perder foco
-                calculateTotal();
-            };
-
-            window.removeItem = (index) => {
-                if (items.length > 1) {
-                    items.splice(index, 1);
-                    renderItems();
+                    calculateTotal();
                 }
-            };
 
-            // CREATE BUDGET
-            form.addEventListener("submit", async (e) => {
-                e.preventDefault();
-                const formData = new FormData(form);
-                const total = items.reduce(
-                    (sum, i) => sum + i.cant * i.precio,
-                    0,
-                );
-
-                const newBudget = {
-                    uid: currentUser.uid,
-                    cliente: formData.get("cliente"),
-                    telefono: formData.get("telefono"),
-                    titulo: formData.get("titulo"),
-                    items: items,
-                    total: total,
-                    fecha: new Date(),
-                    estado: "Pendiente",
+                window.updateItem = (index, field, value) => {
+                    items[index][field] =
+                        field === "desc" ? value : Number(value);
+                    // Solo recalculamos total, NO renderizamos todo para no perder foco
+                    calculateTotal();
                 };
 
-                try {
-                    // UPDATE: Guardar en subcolección profesionales/{uid}/presupuestos
-                    await addDoc(
-                        collection(
-                            db,
-                            "profesionales",
-                            currentUser.uid,
-                            "presupuestos",
-                        ),
-                        newBudget,
-                    );
-                    await showAlert(
-                        "¡Éxito!",
-                        "El presupuesto se ha guardado correctamente",
-                        "success",
-                    );
-                    closeModal();
-                } catch (error) {
-                    console.error("Error creating budget:", error);
-                    await showAlert(
-                        "Error",
-                        "Error al guardar el presupuesto: " + error.message,
-                        "error",
-                    );
-                }
-            });
+                window.removeItem = (index) => {
+                    if (items.length > 1) {
+                        items.splice(index, 1);
+                        renderItems();
+                    }
+                };
 
-            // ACTIONS
-            window.updateStatus = async (id, newStatus) => {
-                try {
-                    // UPDATE: Referencia a subcolección
-                    const ref = doc(
-                        db,
-                        "profesionales",
-                        currentUser.uid,
-                        "presupuestos",
-                        id,
+                // CREATE BUDGET
+                form.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const total = items.reduce(
+                        (sum, i) => sum + i.cant * i.precio,
+                        0,
                     );
-                    await updateDoc(ref, { estado: newStatus });
 
-                    // Si se marca como cobrado, podría integrarse con Finanzas (opcional)
-                } catch (error) {
-                    console.error("Error updating status:", error);
-                }
-            };
+                    const newBudget = {
+                        uid: currentUser.uid,
+                        cliente: formData.get("cliente"),
+                        telefono: formData.get("telefono"),
+                        titulo: formData.get("titulo"),
+                        items: items,
+                        total: total,
+                        fecha: new Date(),
+                        estado: "Pendiente",
+                    };
 
-            window.deleteBudget = async (id) => {
-                const confirmed = await showConfirm(
-                    "Eliminar Presupuesto",
-                    "¿Estás seguro de que quieres eliminar este presupuesto? Esta acción no se puede deshacer.",
-                    "Eliminar",
-                    "bg-red-600",
-                );
-
-                if (confirmed) {
                     try {
-                        // UPDATE: Referencia a subcolección
-                        await deleteDoc(
-                            doc(
+                        // UPDATE: Guardar en subcolección profesionales/{uid}/presupuestos
+                        await addDoc(
+                            collection(
                                 db,
                                 "profesionales",
                                 currentUser.uid,
                                 "presupuestos",
-                                id,
                             ),
+                            newBudget,
                         );
                         await showAlert(
-                            "Eliminado",
-                            "El presupuesto ha sido eliminado correctamente",
+                            "¡Éxito!",
+                            "El presupuesto se ha guardado correctamente",
                             "success",
                         );
+                        closeModal();
                     } catch (error) {
-                        console.error("Error deleting:", error);
+                        console.error("Error creating budget:", error);
                         await showAlert(
                             "Error",
-                            "No se pudo eliminar el presupuesto",
+                            "Error al guardar el presupuesto: " + error.message,
                             "error",
                         );
                     }
-                }
-            };
+                });
 
-            window.printPDF = async (id) => {
-                const p = allPresupuestos[id];
-                if (!p)
-                    return showAlert(
-                        "Error",
-                        "Presupuesto no encontrado",
-                        "error",
+                // ACTIONS
+                window.updateStatus = async (id, newStatus) => {
+                    try {
+                        // UPDATE: Referencia a subcolección
+                        const ref = doc(
+                            db,
+                            "profesionales",
+                            currentUser.uid,
+                            "presupuestos",
+                            id,
+                        );
+                        await updateDoc(ref, { estado: newStatus });
+
+                        // Si se marca como cobrado, podría integrarse con Finanzas (opcional)
+                    } catch (error) {
+                        console.error("Error updating status:", error);
+                    }
+                };
+
+                window.deleteBudget = async (id) => {
+                    const confirmed = await showConfirm(
+                        "Eliminar Presupuesto",
+                        "¿Estás seguro de que quieres eliminar este presupuesto? Esta acción no se puede deshacer.",
+                        "Eliminar",
+                        "bg-red-600",
                     );
 
-                try {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF();
+                    if (confirmed) {
+                        try {
+                            // UPDATE: Referencia a subcolección
+                            await deleteDoc(
+                                doc(
+                                    db,
+                                    "profesionales",
+                                    currentUser.uid,
+                                    "presupuestos",
+                                    id,
+                                ),
+                            );
+                            await showAlert(
+                                "Eliminado",
+                                "El presupuesto ha sido eliminado correctamente",
+                                "success",
+                            );
+                        } catch (error) {
+                            console.error("Error deleting:", error);
+                            await showAlert(
+                                "Error",
+                                "No se pudo eliminar el presupuesto",
+                                "error",
+                            );
+                        }
+                    }
+                };
 
-                    // Header
-                    doc.setFillColor(234, 88, 12); // Orange
-                    doc.rect(0, 0, 210, 40, "F");
+                window.printPDF = async (id) => {
+                    const p = allPresupuestos[id];
+                    if (!p)
+                        return showAlert(
+                            "Error",
+                            "Presupuesto no encontrado",
+                            "error",
+                        );
 
-                    doc.setTextColor(255, 255, 255);
-                    doc.setFontSize(22);
-                    doc.text("PRESUPUESTO", 14, 25);
-                    doc.setFontSize(12);
-                    doc.text("DeOficios Pro", 160, 25);
+                    try {
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF();
 
-                    // Info
-                    doc.setTextColor(0, 0, 0);
-                    doc.setFontSize(10);
-                    doc.text(`Cliente: ${p.cliente}`, 14, 50);
-                    if (p.telefono) doc.text(`Teléfono: ${p.telefono}`, 14, 56);
+                        // Header
+                        doc.setFillColor(234, 88, 12); // Orange
+                        doc.rect(0, 0, 210, 40, "F");
 
-                    const fecha = p.fecha
-                        ? new Date(p.fecha.seconds * 1000).toLocaleDateString()
-                        : "N/A";
-                    doc.text(`Fecha: ${fecha}`, 160, 50);
-                    doc.text(`Ref: #${id.slice(0, 6).toUpperCase()}`, 160, 56);
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(22);
+                        doc.text("PRESUPUESTO", 14, 25);
+                        doc.setFontSize(12);
+                        doc.text("DeOficios Pro", 160, 25);
 
-                    // Titulo Trabajo
-                    doc.setFontSize(14);
-                    doc.setFont(undefined, "bold");
-                    doc.text(p.titulo || "Presupuesto de Trabajo", 14, 70);
+                        // Info
+                        doc.setTextColor(0, 0, 0);
+                        doc.setFontSize(10);
+                        doc.text(`Cliente: ${p.cliente}`, 14, 50);
+                        if (p.telefono)
+                            doc.text(`Teléfono: ${p.telefono}`, 14, 56);
 
-                    // Tabla items
-                    let y = 85;
-                    doc.setFillColor(245, 245, 245);
-                    doc.rect(14, y - 5, 180, 8, "F");
-                    doc.setFontSize(10);
-                    doc.text("Descripción", 16, y);
-                    doc.text("Cant.", 130, y);
-                    doc.text("Precio", 150, y);
-                    doc.text("Total", 180, y);
+                        const fecha = p.fecha
+                            ? new Date(
+                                  p.fecha.seconds * 1000,
+                              ).toLocaleDateString()
+                            : "N/A";
+                        doc.text(`Fecha: ${fecha}`, 160, 50);
+                        doc.text(
+                            `Ref: #${id.slice(0, 6).toUpperCase()}`,
+                            160,
+                            56,
+                        );
 
-                    doc.setFont(undefined, "normal");
-                    y += 10;
+                        // Titulo Trabajo
+                        doc.setFontSize(14);
+                        doc.setFont(undefined, "bold");
+                        doc.text(p.titulo || "Presupuesto de Trabajo", 14, 70);
 
-                    p.items.forEach((item) => {
-                        const subtotal = item.cant * item.precio;
-                        doc.text(item.desc || "Item", 16, y);
-                        doc.text(item.cant.toString(), 130, y);
-                        doc.text(`$${item.precio}`, 150, y);
-                        doc.text(`$${subtotal}`, 180, y);
-                        y += 8;
+                        // Tabla items
+                        let y = 85;
+                        doc.setFillColor(245, 245, 245);
+                        doc.rect(14, y - 5, 180, 8, "F");
+                        doc.setFontSize(10);
+                        doc.text("Descripción", 16, y);
+                        doc.text("Cant.", 130, y);
+                        doc.text("Precio", 150, y);
+                        doc.text("Total", 180, y);
+
+                        doc.setFont(undefined, "normal");
+                        y += 10;
+
+                        p.items.forEach((item) => {
+                            const subtotal = item.cant * item.precio;
+                            doc.text(item.desc || "Item", 16, y);
+                            doc.text(item.cant.toString(), 130, y);
+                            doc.text(`$${item.precio}`, 150, y);
+                            doc.text(`$${subtotal}`, 180, y);
+                            y += 8;
+                        });
+
+                        // Totales
+                        y += 5;
+                        doc.line(14, y, 194, y);
+                        y += 10;
+                        doc.setFont(undefined, "bold");
+                        doc.setFontSize(14);
+                        doc.text(
+                            `TOTAL: $${parseInt(p.total).toLocaleString()}`,
+                            150,
+                            y,
+                        );
+
+                        // Footer
+                        doc.setFontSize(8);
+                        doc.setTextColor(100);
+                        doc.text(
+                            "Presupuesto válido por 15 días. Documento generado con DeOficios.net",
+                            105,
+                            280,
+                            { align: "center" },
+                        );
+
+                        doc.save(
+                            `Presupuesto_${p.cliente}_${id.slice(0, 4)}.pdf`,
+                        );
+                    } catch (e) {
+                        console.error("PDF Error", e);
+                        showAlert(
+                            "Error PDF",
+                            "Hubo un error generando el PDF. Asegúrate de tener conexión para cargar las librerías.",
+                            "error",
+                        );
+                    }
+                };
+
+                // === ALERT SYSTEM ===
+                function showAlert(title, message, type = "info") {
+                    return new Promise((resolve) => {
+                        const modal = document.getElementById("alert-modal");
+                        const titleEl = document.getElementById("alert-title");
+                        const msgEl = document.getElementById("alert-message");
+                        const iconEl = document.getElementById("alert-icon");
+                        const okBtn = document.getElementById("alert-ok");
+                        const cancelBtn =
+                            document.getElementById("alert-cancel");
+                        const header = document.getElementById("alert-header");
+
+                        if (!modal) return resolve();
+
+                        // Config
+                        titleEl.innerText = title;
+                        msgEl.innerText = message;
+                        cancelBtn.classList.add("hidden");
+                        okBtn.innerText = "Aceptar";
+                        okBtn.onclick = () => {
+                            modal.classList.add("hidden");
+                            resolve(true);
+                        };
+
+                        // Styles
+                        if (type === "success") {
+                            iconEl.innerText = "✅";
+                            okBtn.className =
+                                "flex-1 bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition shadow-lg shadow-green-200";
+                        } else if (type === "error") {
+                            iconEl.innerText = "❌";
+                            okBtn.className =
+                                "flex-1 bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition shadow-lg shadow-red-200";
+                        } else {
+                            iconEl.innerText = "ℹ️";
+                            okBtn.className =
+                                "flex-1 bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition shadow-lg shadow-indigo-200";
+                        }
+
+                        modal.classList.remove("hidden");
+                    });
+                }
+
+                function showConfirm(
+                    title,
+                    message,
+                    actionText = "Aceptar",
+                    actionClass = "bg-orange-600",
+                ) {
+                    return new Promise((resolve) => {
+                        const modal = document.getElementById("alert-modal");
+                        const titleEl = document.getElementById("alert-title");
+                        const msgEl = document.getElementById("alert-message");
+                        const iconEl = document.getElementById("alert-icon");
+                        const okBtn = document.getElementById("alert-ok");
+                        const cancelBtn =
+                            document.getElementById("alert-cancel");
+
+                        if (!modal) return resolve(false);
+
+                        // Config
+                        titleEl.innerText = title;
+                        msgEl.innerText = message;
+                        iconEl.innerText = "🤔";
+
+                        cancelBtn.classList.remove("hidden");
+                        cancelBtn.onclick = () => {
+                            modal.classList.add("hidden");
+                            resolve(false);
+                        };
+
+                        okBtn.innerText = actionText;
+                        okBtn.className = `flex-1 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg ${actionClass}`;
+                        okBtn.onclick = () => {
+                            modal.classList.add("hidden");
+                            resolve(true);
+                        };
+
+                        modal.classList.remove("hidden");
+                    });
+                }
+
+                // Mobile Sidebar Toggle
+                const mobileSidebar = document.getElementById("mobile-sidebar");
+                const sidebarOverlay =
+                    document.getElementById("sidebar-overlay");
+                const openSidebarBtn = document.getElementById("open-sidebar");
+                const closeSidebarBtn =
+                    document.getElementById("close-sidebar");
+
+                function openMobileSidebar() {
+                    mobileSidebar?.classList.add("active");
+                    sidebarOverlay?.classList.add("active");
+                }
+
+                function closeMobileSidebar() {
+                    mobileSidebar?.classList.remove("active");
+                    sidebarOverlay?.classList.remove("active");
+                }
+
+                openSidebarBtn?.addEventListener("click", openMobileSidebar);
+                closeSidebarBtn?.addEventListener("click", closeMobileSidebar);
+                sidebarOverlay?.addEventListener("click", closeMobileSidebar);
+
+                // Mobile logout
+                document
+                    .getElementById("btn-logout-mobile")
+                    ?.addEventListener("click", async () => {
+                        try {
+                            await signOut(auth);
+                            window.location.href = "/ingresar";
+                        } catch (error) {
+                            console.error("Error al cerrar sesión:", error);
+                        }
                     });
 
-                    // Totales
-                    y += 5;
-                    doc.line(14, y, 194, y);
-                    y += 10;
-                    doc.setFont(undefined, "bold");
-                    doc.setFontSize(14);
-                    doc.text(
-                        `TOTAL: $${parseInt(p.total).toLocaleString()}`,
-                        150,
-                        y,
-                    );
-
-                    // Footer
-                    doc.setFontSize(8);
-                    doc.setTextColor(100);
-                    doc.text(
-                        "Presupuesto válido por 15 días. Documento generado con DeOficios.net",
-                        105,
-                        280,
-                        { align: "center" },
-                    );
-
-                    doc.save(`Presupuesto_${p.cliente}_${id.slice(0, 4)}.pdf`);
-                } catch (e) {
-                    console.error("PDF Error", e);
-                    showAlert(
-                        "Error PDF",
-                        "Hubo un error generando el PDF. Asegúrate de tener conexión para cargar las librerías.",
-                        "error",
-                    );
-                }
-            };
-
-            // === ALERT SYSTEM ===
-            function showAlert(title, message, type = "info") {
-                return new Promise((resolve) => {
-                    const modal = document.getElementById("alert-modal");
-                    const titleEl = document.getElementById("alert-title");
-                    const msgEl = document.getElementById("alert-message");
-                    const iconEl = document.getElementById("alert-icon");
-                    const okBtn = document.getElementById("alert-ok");
-                    const cancelBtn = document.getElementById("alert-cancel");
-                    const header = document.getElementById("alert-header");
-
-                    if (!modal) return resolve();
-
-                    // Config
-                    titleEl.innerText = title;
-                    msgEl.innerText = message;
-                    cancelBtn.classList.add("hidden");
-                    okBtn.innerText = "Aceptar";
-                    okBtn.onclick = () => {
-                        modal.classList.add("hidden");
-                        resolve(true);
-                    };
-
-                    // Styles
-                    if (type === "success") {
-                        iconEl.innerText = "✅";
-                        okBtn.className =
-                            "flex-1 bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition shadow-lg shadow-green-200";
-                    } else if (type === "error") {
-                        iconEl.innerText = "❌";
-                        okBtn.className =
-                            "flex-1 bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition shadow-lg shadow-red-200";
-                    } else {
-                        iconEl.innerText = "ℹ️";
-                        okBtn.className =
-                            "flex-1 bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition shadow-lg shadow-indigo-200";
-                    }
-
-                    modal.classList.remove("hidden");
-                });
-            }
-
-            function showConfirm(
-                title,
-                message,
-                actionText = "Aceptar",
-                actionClass = "bg-orange-600",
-            ) {
-                return new Promise((resolve) => {
-                    const modal = document.getElementById("alert-modal");
-                    const titleEl = document.getElementById("alert-title");
-                    const msgEl = document.getElementById("alert-message");
-                    const iconEl = document.getElementById("alert-icon");
-                    const okBtn = document.getElementById("alert-ok");
-                    const cancelBtn = document.getElementById("alert-cancel");
-
-                    if (!modal) return resolve(false);
-
-                    // Config
-                    titleEl.innerText = title;
-                    msgEl.innerText = message;
-                    iconEl.innerText = "🤔";
-
-                    cancelBtn.classList.remove("hidden");
-                    cancelBtn.onclick = () => {
-                        modal.classList.add("hidden");
-                        resolve(false);
-                    };
-
-                    okBtn.innerText = actionText;
-                    okBtn.className = `flex-1 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg ${actionClass}`;
-                    okBtn.onclick = () => {
-                        modal.classList.add("hidden");
-                        resolve(true);
-                    };
-
-                    modal.classList.remove("hidden");
-                });
-            }
-
-            // Mobile Sidebar Toggle
-            const mobileSidebar = document.getElementById("mobile-sidebar");
-            const sidebarOverlay = document.getElementById("sidebar-overlay");
-            const openSidebarBtn = document.getElementById("open-sidebar");
-            const closeSidebarBtn = document.getElementById("close-sidebar");
-
-            function openMobileSidebar() {
-                mobileSidebar?.classList.add("active");
-                sidebarOverlay?.classList.add("active");
-            }
-
-            function closeMobileSidebar() {
-                mobileSidebar?.classList.remove("active");
-                sidebarOverlay?.classList.remove("active");
-            }
-
-            openSidebarBtn?.addEventListener("click", openMobileSidebar);
-            closeSidebarBtn?.addEventListener("click", closeMobileSidebar);
-            sidebarOverlay?.addEventListener("click", closeMobileSidebar);
-
-            // Mobile logout
-            document
-                .getElementById("btn-logout-mobile")
-                ?.addEventListener("click", async () => {
-                    try {
-                        await signOut(auth);
-                        window.location.href = "/ingresar";
-                    } catch (error) {
-                        console.error("Error al cerrar sesión:", error);
-                    }
-                });
-
-            // Add fade-in animation to main content
-            document.querySelector("main")?.classList.add("fade-in");
+                // Add fade-in animation to main content
+                document.querySelector("main")?.classList.add("fade-in");
+            }); // End of astro:page-load
         </script>
     </body>
 </html>

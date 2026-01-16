@@ -25,24 +25,59 @@ const { title, hideHeader = false, hideFooter = false } = Astro.props;
 			name="description"
 			content="DeOficios - Conectando profesionales con vecinos."
 		/>
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/png" href="/icon-192.png" />
 		<link rel="manifest" href="/manifest.json" />
 		<meta name="theme-color" content="#ea580c" />
 
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<!-- Preload critical fonts for faster rendering -->
 		<link
-			href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap"
-			rel="stylesheet"
+			rel="preload"
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700&display=swap"
+			as="style"
+			onload="this.onload=null;this.rel='stylesheet'"
 		/>
+		<noscript>
+			<link
+				href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700&display=swap"
+				rel="stylesheet"
+			/>
+		</noscript>
 
 		<title>{title}</title>
 		<ClientRouter />
 	</head>
 	<body>
+		<!-- PREMIUM SPLASH SCREEN (Apple Music Style) -->
+		<div id="custom-splash-screen">
+			<img
+				src="/icon-512.png"
+				alt="Logo DeOficios"
+				width="120"
+				height="120"
+			/>
+		</div>
+
 		{!hideHeader && <Header />}
 		<slot />
 		{!hideFooter && <Footer />}
+
+		<!-- Splash Screen Script -->
+		<script is:inline>
+			// Splash Screen fade out - using DOMContentLoaded for faster response
+			document.addEventListener("DOMContentLoaded", () => {
+				const splash = document.getElementById("custom-splash-screen");
+				if (splash) {
+					// Fade rápido para no bloquear la experiencia
+					setTimeout(() => {
+						splash.classList.add("hidden");
+						setTimeout(() => splash.remove(), 400);
+					}, 300); // Solo 0.3 segundos de display
+				}
+			});
+		</script>
+
 		<script is:inline>
 			if ("serviceWorker" in navigator) {
 				window.addEventListener("load", () => {
@@ -64,6 +99,70 @@ const { title, hideHeader = false, hideFooter = false } = Astro.props;
 </html>
 
 <style is:global>
+	/* ========== PREMIUM SPLASH SCREEN (Apple Music Style) ========== */
+	#custom-splash-screen {
+		/* Cover entire screen and stay on top */
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100vh;
+		height: 100dvh; /* Dynamic viewport height for mobile */
+		z-index: 99999;
+
+		/* Center the logo */
+		display: flex;
+		justify-content: center;
+		align-items: center;
+
+		/* Apple Music style background with gradient fades */
+		background-color: #ea580c; /* Orange brand color */
+
+		/* Two overlapping gradients for white fades at top and bottom */
+		background-image:
+			linear-gradient(
+				to bottom,
+				rgba(255, 255, 255, 0.3) 0%,
+				rgba(255, 255, 255, 0) 25%
+			),
+			linear-gradient(
+				to top,
+				rgba(255, 255, 255, 0.3) 0%,
+				rgba(255, 255, 255, 0) 25%
+			);
+
+		/* Smooth fade-out animation */
+		transition:
+			opacity 0.5s ease-out,
+			visibility 0.5s;
+	}
+
+	#custom-splash-screen img {
+		/* Logo styling */
+		border-radius: 24px;
+		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+		animation: pulse-glow 1.5s ease-in-out infinite alternate;
+	}
+
+	@keyframes pulse-glow {
+		from {
+			transform: scale(1);
+			box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+		}
+		to {
+			transform: scale(1.05);
+			box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+		}
+	}
+
+	/* Hidden state for fade-out */
+	#custom-splash-screen.hidden {
+		opacity: 0;
+		visibility: hidden;
+		pointer-events: none;
+	}
+
+	/* ========== CSS VARIABLES ========== */
 	:root {
 		--primary: #ea580c;
 		--bg-light: #f9fafb;

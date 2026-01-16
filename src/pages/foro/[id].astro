@@ -275,69 +275,74 @@ try {
         deleteDoc,
     } from "firebase/firestore";
 
-    // @ts-ignore
-    const currentThreadId = window.location.pathname.split("/").pop();
+    document.addEventListener("astro:page-load", () => {
+        console.log("🚀 [FORO-POST] Página cargada/navegada");
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            document.querySelectorAll(".owner-controls").forEach((div) => {
-                // @ts-ignore
-                if (div.dataset.authorId === user.uid)
-                    div.classList.remove("hidden");
-            });
-        }
-    });
+        // @ts-ignore
+        const currentThreadId = window.location.pathname.split("/").pop();
 
-    document
-        .getElementById("btn-reply")
-        ?.addEventListener("click", async () => {
-            // @ts-ignore
-            const content = document.getElementById("reply-content").value;
-            if (!content.trim()) return alert("Escribe algo.");
-            const user = auth.currentUser;
-            if (!user) return (window.location.href = "/ingresar");
-
-            try {
-                await addDoc(collection(db, "foro_posts"), {
-                    threadId: currentThreadId,
-                    content: content,
-                    authorId: user.uid,
-                    authorName: user.displayName || "Usuario",
-                    authorPhoto: user.photoURL,
-                    createdAt: serverTimestamp(),
-                });
-                await updateDoc(doc(db, "foro_threads", currentThreadId), {
-                    replyCount: increment(1),
-                    lastReplyAt: serverTimestamp(),
-                });
-                window.location.reload();
-            } catch (e) {
-                alert("Error al publicar.");
-            }
-        });
-
-    document.querySelectorAll(".btn-delete").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-            // @ts-ignore
-            if (confirm("¿Borrar debate?")) {
-                try {
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.querySelectorAll(".owner-controls").forEach((div) => {
                     // @ts-ignore
-                    const id =
-                        e.target.closest(".owner-controls").dataset.threadId;
-                    await deleteDoc(doc(db, "foro_threads", id));
-                    window.location.href = "/foro";
-                } catch (e) {
-                    alert("Error al borrar");
-                }
+                    if (div.dataset.authorId === user.uid)
+                        div.classList.remove("hidden");
+                });
             }
         });
-    });
 
-    document.querySelectorAll(".btn-edit").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-            // @ts-ignore
-            const id = e.target.closest(".owner-controls").dataset.threadId;
-            window.location.href = `/foro/editar/${id}`;
+        document
+            .getElementById("btn-reply")
+            ?.addEventListener("click", async () => {
+                // @ts-ignore
+                const content = document.getElementById("reply-content").value;
+                if (!content.trim()) return alert("Escribe algo.");
+                const user = auth.currentUser;
+                if (!user) return (window.location.href = "/ingresar");
+
+                try {
+                    await addDoc(collection(db, "foro_posts"), {
+                        threadId: currentThreadId,
+                        content: content,
+                        authorId: user.uid,
+                        authorName: user.displayName || "Usuario",
+                        authorPhoto: user.photoURL,
+                        createdAt: serverTimestamp(),
+                    });
+                    await updateDoc(doc(db, "foro_threads", currentThreadId), {
+                        replyCount: increment(1),
+                        lastReplyAt: serverTimestamp(),
+                    });
+                    window.location.reload();
+                } catch (e) {
+                    alert("Error al publicar.");
+                }
+            });
+
+        document.querySelectorAll(".btn-delete").forEach((btn) => {
+            btn.addEventListener("click", async (e) => {
+                // @ts-ignore
+                if (confirm("¿Borrar debate?")) {
+                    try {
+                        // @ts-ignore
+                        const id =
+                            e.target.closest(".owner-controls").dataset
+                                .threadId;
+                        await deleteDoc(doc(db, "foro_threads", id));
+                        window.location.href = "/foro";
+                    } catch (e) {
+                        alert("Error al borrar");
+                    }
+                }
+            });
         });
-    });
+
+        document.querySelectorAll(".btn-edit").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+                // @ts-ignore
+                const id = e.target.closest(".owner-controls").dataset.threadId;
+                window.location.href = `/foro/editar/${id}`;
+            });
+        });
+    }); // End of astro:page-load
 </script>

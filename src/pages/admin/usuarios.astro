@@ -227,151 +227,163 @@ try {
     import { doc, updateDoc, getDoc, deleteDoc } from "firebase/firestore";
     import { onAuthStateChanged } from "firebase/auth";
 
-    // 1. SEGURIDAD
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) window.location.href = "/";
-        const snap = await getDoc(doc(db, "profesionales", user.uid));
-        if (!snap.exists() || snap.data().rol !== "admin")
-            window.location.href = "/";
-    });
+    document.addEventListener("astro:page-load", () => {
+        console.log("🚀 [ADMIN-USUARIOS] Página cargada/navegada");
 
-    // 2. BUSCADOR
-    const searchInput = document.getElementById("searchUser");
-    searchInput?.addEventListener("keyup", (e) => {
-        // @ts-ignore
-        const term = e.target.value.toLowerCase();
-        document.querySelectorAll(".user-row").forEach((row) => {
-            const name = row.querySelector(".u-name").textContent.toLowerCase();
-            const email = row
-                .querySelector(".u-email")
-                .textContent.toLowerCase();
-            // @ts-ignore
-            row.style.display =
-                name.includes(term) || email.includes(term) ? "" : "none";
+        // 1. SEGURIDAD
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) window.location.href = "/";
+            const snap = await getDoc(doc(db, "profesionales", user.uid));
+            if (!snap.exists() || snap.data().rol !== "admin")
+                window.location.href = "/";
         });
-    });
 
-    // 3. LÓGICA DEL MODAL
-    const modal = document.getElementById("userModal");
-    const closeBtn = document.getElementById("btn-close-modal");
-    let currentUserId = null;
-
-    // Cerrar modal
-    closeBtn?.addEventListener("click", () => modal.close());
-    modal?.addEventListener("click", (e) => {
-        if (e.target === modal) modal.close();
-    });
-
-    // Abrir modal (Delegación de eventos para botones "Gestionar")
-    document.querySelectorAll(".btn-manage").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
+        // 2. BUSCADOR
+        const searchInput = document.getElementById("searchUser");
+        searchInput?.addEventListener("keyup", (e) => {
             // @ts-ignore
-            const userData = JSON.parse(e.currentTarget.dataset.user);
-            openModal(userData);
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll(".user-row").forEach((row) => {
+                const name = row
+                    .querySelector(".u-name")
+                    .textContent.toLowerCase();
+                const email = row
+                    .querySelector(".u-email")
+                    .textContent.toLowerCase();
+                // @ts-ignore
+                row.style.display =
+                    name.includes(term) || email.includes(term) ? "" : "none";
+            });
         });
-    });
 
-    function openModal(u) {
-        currentUserId = u.id;
+        // 3. LÓGICA DEL MODAL
+        const modal = document.getElementById("userModal") as HTMLDialogElement;
+        const closeBtn = document.getElementById("btn-close-modal");
+        let currentUserId = null;
 
-        // Llenar datos básicos
-        document.getElementById("m-nombre").textContent = u.nombre;
-        document.getElementById("m-id").textContent = "ID: " + u.id;
-        document.getElementById("m-dni").textContent = u.dni || "No cargado";
-        document.getElementById("m-cuit").textContent = u.cuit || "No cargado";
+        // Cerrar modal
+        closeBtn?.addEventListener("click", () => modal.close());
+        modal?.addEventListener("click", (e) => {
+            if (e.target === modal) modal.close();
+        });
 
-        // Certificado
-        const certLink = document.getElementById("m-cert-link");
-        const noCert = document.getElementById("m-no-cert");
-        if (u.certificado_url) {
+        // Abrir modal (Delegación de eventos para botones "Gestionar")
+        document.querySelectorAll(".btn-manage").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+                // @ts-ignore
+                const userData = JSON.parse(e.currentTarget.dataset.user);
+                openModal(userData);
+            });
+        });
+
+        function openModal(u) {
+            currentUserId = u.id;
+
+            // Llenar datos básicos
+            document.getElementById("m-nombre").textContent = u.nombre;
+            document.getElementById("m-id").textContent = "ID: " + u.id;
+            document.getElementById("m-dni").textContent =
+                u.dni || "No cargado";
+            document.getElementById("m-cuit").textContent =
+                u.cuit || "No cargado";
+
+            // Certificado
+            const certLink = document.getElementById("m-cert-link");
+            const noCert = document.getElementById("m-no-cert");
+            if (u.certificado_url) {
+                // @ts-ignore
+                certLink.href = u.certificado_url;
+                certLink.classList.remove("hidden");
+                noCert.classList.add("hidden");
+            } else {
+                certLink.classList.add("hidden");
+                noCert.classList.remove("hidden");
+            }
+
+            // Planes y Roles
             // @ts-ignore
-            certLink.href = u.certificado_url;
-            certLink.classList.remove("hidden");
-            noCert.classList.add("hidden");
-        } else {
-            certLink.classList.add("hidden");
-            noCert.classList.remove("hidden");
+            document.getElementById("m-plan-select").value =
+                u.plan || "gratuito";
+
+            const currentRol = u.rol || "profesional";
+            document.getElementById("m-rol-display").textContent =
+                currentRol.toUpperCase();
+            // @ts-ignore
+            document.getElementById("m-rol-select").value = currentRol;
+
+            // @ts-ignore
+            modal.showModal();
         }
 
-        // Planes y Roles
-        // @ts-ignore
-        document.getElementById("m-plan-select").value = u.plan || "gratuito";
+        // 4. ACCIONES DE BOTONES
 
-        const currentRol = u.rol || "profesional";
-        document.getElementById("m-rol-display").textContent =
-            currentRol.toUpperCase();
-        // @ts-ignore
-        document.getElementById("m-rol-select").value = currentRol;
-
-        // @ts-ignore
-        modal.showModal();
-    }
-
-    // 4. ACCIONES DE BOTONES
-
-    // Verificar
-    document
-        .getElementById("btn-verify")
-        ?.addEventListener("click", async () => {
-            if (!confirm("¿Confirmas que el documento es válido?")) return;
-            await updateDoc(doc(db, "profesionales", currentUserId), {
-                verificado: true,
-            });
-            alert("¡Usuario Verificado! ✅");
-            window.location.reload();
-        });
-
-    // Quitar Verificación
-    document
-        .getElementById("btn-unverify")
-        ?.addEventListener("click", async () => {
-            await updateDoc(doc(db, "profesionales", currentUserId), {
-                verificado: false,
-            });
-            alert("Verificación revocada.");
-            window.location.reload();
-        });
-
-    // Actualizar Rol
-    document
-        .getElementById("btn-save-rol")
-        ?.addEventListener("click", async () => {
-            // @ts-ignore
-            const nuevoRol = document.getElementById("m-rol-select").value;
-            if (confirm(`¿Cambiar rol a ${nuevoRol.toUpperCase()}?`)) {
+        // Verificar
+        document
+            .getElementById("btn-verify")
+            ?.addEventListener("click", async () => {
+                if (!confirm("¿Confirmas que el documento es válido?")) return;
                 await updateDoc(doc(db, "profesionales", currentUserId), {
-                    rol: nuevoRol,
+                    verificado: true,
                 });
-                alert("Rol actualizado.");
+                alert("¡Usuario Verificado! ✅");
                 window.location.reload();
-            }
-        });
-
-    // Actualizar Plan
-    document
-        .getElementById("btn-save-plan")
-        ?.addEventListener("click", async () => {
-            // @ts-ignore
-            const nuevoPlan = document.getElementById("m-plan-select").value;
-            await updateDoc(doc(db, "profesionales", currentUserId), {
-                plan: nuevoPlan,
             });
-            alert(`Plan actualizado a: ${nuevoPlan.toUpperCase()}`);
-            window.location.reload();
-        });
 
-    // Eliminar Usuario
-    document
-        .getElementById("btn-delete-user")
-        ?.addEventListener("click", async () => {
-            if (
-                confirm("⚠ PELIGRO: Esto borrará al usuario permanentemente.")
-            ) {
-                await deleteDoc(doc(db, "profesionales", currentUserId));
-                alert("Usuario eliminado.");
+        // Quitar Verificación
+        document
+            .getElementById("btn-unverify")
+            ?.addEventListener("click", async () => {
+                await updateDoc(doc(db, "profesionales", currentUserId), {
+                    verificado: false,
+                });
+                alert("Verificación revocada.");
                 window.location.reload();
-            }
-        });
+            });
+
+        // Actualizar Rol
+        document
+            .getElementById("btn-save-rol")
+            ?.addEventListener("click", async () => {
+                // @ts-ignore
+                const nuevoRol = document.getElementById("m-rol-select").value;
+                if (confirm(`¿Cambiar rol a ${nuevoRol.toUpperCase()}?`)) {
+                    await updateDoc(doc(db, "profesionales", currentUserId), {
+                        rol: nuevoRol,
+                    });
+                    alert("Rol actualizado.");
+                    window.location.reload();
+                }
+            });
+
+        // Actualizar Plan
+        document
+            .getElementById("btn-save-plan")
+            ?.addEventListener("click", async () => {
+                // @ts-ignore
+                const nuevoPlan =
+                    document.getElementById("m-plan-select").value;
+                await updateDoc(doc(db, "profesionales", currentUserId), {
+                    plan: nuevoPlan,
+                });
+                alert(`Plan actualizado a: ${nuevoPlan.toUpperCase()}`);
+                window.location.reload();
+            });
+
+        // Eliminar Usuario
+        document
+            .getElementById("btn-delete-user")
+            ?.addEventListener("click", async () => {
+                if (
+                    confirm(
+                        "⚠ PELIGRO: Esto borrará al usuario permanentemente.",
+                    )
+                ) {
+                    await deleteDoc(doc(db, "profesionales", currentUserId));
+                    alert("Usuario eliminado.");
+                    window.location.reload();
+                }
+            });
+    }); // End of astro:page-load
 </script>
 
 <style>

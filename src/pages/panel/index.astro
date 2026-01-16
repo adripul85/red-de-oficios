@@ -452,64 +452,38 @@ import { auth } from "../../firebase/client";
                                     >
                                         Rendimiento Mensual
                                     </h3>
-                                    <select
-                                        class="bg-slate-50 border border-slate-200 text-sm rounded-lg p-2 outline-none"
-                                    >
-                                        <option>Últimos 6 meses</option>
-                                        <option>Este año</option>
-                                    </select>
+                                    <div class="flex items-center gap-2">
+                                        <span
+                                            id="chart-total"
+                                            class="text-sm font-bold text-green-600"
+                                        ></span>
+                                        <select
+                                            id="chart-period-select"
+                                            class="bg-slate-50 border border-slate-200 text-sm rounded-lg p-2 outline-none"
+                                        >
+                                            <option value="6"
+                                                >Últimos 6 meses</option
+                                            >
+                                            <option value="12">Este año</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div
+                                    id="performance-chart"
                                     class="h-64 flex items-end justify-between gap-2 px-4"
                                 >
+                                    <!-- Dynamic bars will be inserted here -->
                                     <div
-                                        class="w-full bg-orange-100 rounded-t-lg hover:bg-orange-200 transition-all h-[40%] relative group"
+                                        class="w-full h-full flex items-center justify-center text-slate-400 text-sm"
                                     >
-                                        <span
-                                            class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded"
-                                            >Ene</span
-                                        >
+                                        Cargando datos...
                                     </div>
-                                    <div
-                                        class="w-full bg-orange-100 rounded-t-lg hover:bg-orange-200 transition-all h-[55%] relative group"
-                                    >
-                                        <span
-                                            class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded"
-                                            >Feb</span
-                                        >
-                                    </div>
-                                    <div
-                                        class="w-full bg-orange-100 rounded-t-lg hover:bg-orange-200 transition-all h-[35%] relative group"
-                                    >
-                                        <span
-                                            class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded"
-                                            >Mar</span
-                                        >
-                                    </div>
-                                    <div
-                                        class="w-full bg-orange-100 rounded-t-lg hover:bg-orange-200 transition-all h-[70%] relative group"
-                                    >
-                                        <span
-                                            class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded"
-                                            >Abr</span
-                                        >
-                                    </div>
-                                    <div
-                                        class="w-full bg-orange-500 rounded-t-lg shadow-lg shadow-orange-200 h-[85%] relative group"
-                                    >
-                                        <span
-                                            class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded"
-                                            >May</span
-                                        >
-                                    </div>
-                                    <div
-                                        class="w-full bg-orange-100 rounded-t-lg hover:bg-orange-200 transition-all h-[60%] relative group"
-                                    >
-                                        <span
-                                            class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded"
-                                            >Jun</span
-                                        >
-                                    </div>
+                                </div>
+                                <div
+                                    id="chart-labels"
+                                    class="flex justify-between px-4 mt-2 text-xs text-slate-500"
+                                >
+                                    <!-- Month labels will be inserted here -->
                                 </div>
                             </div>
 
@@ -667,193 +641,384 @@ import { auth } from "../../firebase/client";
                     Timestamp,
                 } from "firebase/firestore";
 
-                const nameEl = document.getElementById("user-name");
-                const avatarEl = document.getElementById("user-avatar");
-                const logoutBtn = document.getElementById("btn-logout");
-                const badgeOportunidades = document.getElementById(
-                    "badge-oportunidades",
-                );
+                // Wrap everything in astro:page-load for View Transitions compatibility
+                document.addEventListener("astro:page-load", () => {
+                    console.log("🚀 [DASHBOARD] Página cargada/navegada");
 
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
+                    const nameEl = document.getElementById("user-name");
+                    const avatarEl = document.getElementById("user-avatar");
+                    const logoutBtn = document.getElementById("btn-logout");
+                    const badgeOportunidades = document.getElementById(
+                        "badge-oportunidades",
+                    );
+
+                    onAuthStateChanged(auth, async (user) => {
+                        if (user) {
+                            try {
+                                // Verificar si es profesional (seguridad básica frontend)
+                                const docRef = doc(
+                                    db,
+                                    "profesionales",
+                                    user.uid,
+                                );
+                                // Usar getDocFromServer para evitar problemas de snapshot listener
+                                const docSnap = await getDocFromServer(docRef);
+
+                                if (docSnap.exists()) {
+                                    const data = docSnap.data();
+                                    if (nameEl)
+                                        nameEl.textContent = data.nombre;
+                                    if (avatarEl)
+                                        avatarEl.src =
+                                            data.foto ||
+                                            `https://ui-avatars.com/api/?name=${data.nombre}`;
+
+                                    // Cargar datos del dashboard
+                                    await loadDashboardData(user.uid, data);
+
+                                    // GAMIFICACION
+                                    calculateGamification(user.uid, data);
+
+                                    // === SISTEMA DE NOTIFICACIONES ===
+                                    setupNotifications(user.uid);
+                                } else {
+                                    window.location.href = "/";
+                                }
+                            } catch (error) {
+                                console.error("Error cargando perfil:", error);
+                                // Si hay error de permisos, intentar recargar después de un delay
+                                if (error.code === "permission-denied") {
+                                    console.log(
+                                        "Error de permisos detectado. Reintentando en 2 segundos...",
+                                    );
+                                    setTimeout(() => {
+                                        window.location.reload();
+                                    }, 2000);
+                                }
+                            }
+                        } else {
+                            // No logueado
+                            window.location.href = "/ingresar";
+                        }
+                    });
+
+                    // === FUNCIÓN PARA CARGAR DATOS DEL DASHBOARD ===
+                    async function loadDashboardData(
+                        uid: string,
+                        userData: any,
+                    ) {
+                        const { collection, query, where, getDocs, Timestamp } =
+                            await import("firebase/firestore");
+
                         try {
-                            // Verificar si es profesional (seguridad básica frontend)
-                            const docRef = doc(db, "profesionales", user.uid);
-                            // Usar getDocFromServer para evitar problemas de snapshot listener
-                            const docSnap = await getDocFromServer(docRef);
+                            // 1. KPI: Visitas al perfil
+                            const visitas = userData.vistas_perfil || 0;
+                            const kpiVisitas =
+                                document.getElementById("kpi-visitas");
+                            if (kpiVisitas) {
+                                kpiVisitas.textContent =
+                                    visitas.toLocaleString();
+                            }
 
-                            if (docSnap.exists()) {
-                                const data = docSnap.data();
-                                if (nameEl) nameEl.textContent = data.nombre;
-                                if (avatarEl)
-                                    avatarEl.src =
-                                        data.foto ||
-                                        `https://ui-avatars.com/api/?name=${data.nombre}`;
+                            // 2. KPI: Ingresos del mes
+                            const now = new Date();
+                            const firstDayOfMonth = new Date(
+                                now.getFullYear(),
+                                now.getMonth(),
+                                1,
+                            );
 
-                                // Cargar datos del dashboard
-                                await loadDashboardData(user.uid, data);
+                            const qFinanzas = query(
+                                collection(
+                                    db,
+                                    "profesionales",
+                                    uid,
+                                    "finanzas",
+                                ),
+                                where("tipo", "==", "ingreso"),
+                                where(
+                                    "fecha",
+                                    ">=",
+                                    Timestamp.fromDate(firstDayOfMonth),
+                                ),
+                            );
 
-                                // GAMIFICACION
-                                calculateGamification(user.uid, data);
+                            const finanzasSnap = await getDocs(qFinanzas);
+                            let totalIngresos = 0;
+                            finanzasSnap.forEach((doc) => {
+                                const data = doc.data();
+                                totalIngresos += data.monto || 0;
+                            });
 
-                                // === SISTEMA DE NOTIFICACIONES ===
-                                setupNotifications(user.uid);
-                            } else {
-                                window.location.href = "/";
+                            const kpiIngresos =
+                                document.getElementById("kpi-ingresos");
+                            if (kpiIngresos) {
+                                kpiIngresos.textContent =
+                                    "$" + totalIngresos.toLocaleString();
+                            }
+
+                            // 3. KPI: Presupuestos activos
+                            const qPresupuestos = query(
+                                collection(
+                                    db,
+                                    "profesionales",
+                                    uid,
+                                    "presupuestos",
+                                ),
+                                where("estado", "in", [
+                                    "Pendiente",
+                                    "Aprobado",
+                                ]),
+                            );
+
+                            const presupuestosSnap =
+                                await getDocs(qPresupuestos);
+                            const totalPresupuestos = presupuestosSnap.size;
+
+                            const kpiPresupuestos =
+                                document.getElementById("kpi-presupuestos");
+                            if (kpiPresupuestos) {
+                                kpiPresupuestos.textContent =
+                                    totalPresupuestos.toString();
+                            }
+
+                            // 4. Cargar últimos presupuestos (tabla)
+                            await loadLatestBudgets(uid);
+
+                            // 5. Cargar widget de equipo
+                            await loadTeamWidget(uid);
+
+                            // 6. Cargar gráfico de rendimiento mensual
+                            await loadPerformanceChart(uid, 6);
+
+                            // Event listener para cambio de período
+                            const periodSelect = document.getElementById(
+                                "chart-period-select",
+                            );
+                            periodSelect?.addEventListener(
+                                "change",
+                                async (e) => {
+                                    const months = parseInt(
+                                        (e.target as HTMLSelectElement).value,
+                                    );
+                                    await loadPerformanceChart(uid, months);
+                                },
+                            );
+                        } catch (error) {
+                            console.error(
+                                "Error cargando datos del dashboard:",
+                                error,
+                            );
+                        }
+                    }
+
+                    // === FUNCIÓN PARA CARGAR EL GRÁFICO DE RENDIMIENTO ===
+                    async function loadPerformanceChart(
+                        uid: string,
+                        months: number,
+                    ) {
+                        const { collection, query, where, getDocs, orderBy } =
+                            await import("firebase/firestore");
+
+                        try {
+                            const chartContainer =
+                                document.getElementById("performance-chart");
+                            const labelsContainer =
+                                document.getElementById("chart-labels");
+                            const totalEl =
+                                document.getElementById("chart-total");
+
+                            if (!chartContainer) return;
+
+                            // Calcular fecha de inicio según los meses seleccionados
+                            const startDate = new Date();
+                            startDate.setMonth(
+                                startDate.getMonth() - months + 1,
+                            );
+                            startDate.setDate(1);
+                            startDate.setHours(0, 0, 0, 0);
+
+                            // Obtener finanzas del período
+                            const q = query(
+                                collection(
+                                    db,
+                                    "profesionales",
+                                    uid,
+                                    "finanzas",
+                                ),
+                                where("fecha", ">=", startDate),
+                                where("tipo", "==", "ingreso"),
+                            );
+
+                            const snapshot = await getDocs(q);
+
+                            // Agrupar por mes
+                            const monthlyData: { [key: string]: number } = {};
+                            const monthNames = [
+                                "Ene",
+                                "Feb",
+                                "Mar",
+                                "Abr",
+                                "May",
+                                "Jun",
+                                "Jul",
+                                "Ago",
+                                "Sep",
+                                "Oct",
+                                "Nov",
+                                "Dic",
+                            ];
+
+                            // Inicializar todos los meses con 0
+                            for (let i = 0; i < months; i++) {
+                                const d = new Date();
+                                d.setMonth(d.getMonth() - (months - 1 - i));
+                                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+                                monthlyData[key] = 0;
+                            }
+
+                            // Sumar ingresos por mes
+                            let totalEarnings = 0;
+                            snapshot.docs.forEach((doc) => {
+                                const data = doc.data();
+                                const fecha =
+                                    data.fecha?.toDate?.() ||
+                                    new Date(data.fecha);
+                                const key = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}`;
+                                if (monthlyData.hasOwnProperty(key)) {
+                                    monthlyData[key] += data.monto || 0;
+                                }
+                                totalEarnings += data.monto || 0;
+                            });
+
+                            // Encontrar el máximo para escalar las barras
+                            const values = Object.values(monthlyData);
+                            const maxValue = Math.max(...values, 1); // Evitar división por 0
+
+                            // Encontrar el mes actual para resaltarlo
+                            const currentMonth = new Date();
+                            const currentKey = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}`;
+
+                            // Generar barras del gráfico
+                            const sortedKeys = Object.keys(monthlyData).sort();
+                            const barsHTML = sortedKeys
+                                .map((key) => {
+                                    const value = monthlyData[key];
+                                    const heightPercent = Math.max(
+                                        (value / maxValue) * 100,
+                                        5,
+                                    ); // Mínimo 5% para visualización
+                                    const isCurrentMonth = key === currentKey;
+                                    const [year, month] = key.split("-");
+                                    const monthLabel =
+                                        monthNames[parseInt(month) - 1];
+
+                                    const barClass = isCurrentMonth
+                                        ? "w-full bg-orange-500 rounded-t-lg shadow-lg shadow-orange-200 relative group cursor-pointer transition-all"
+                                        : "w-full bg-orange-100 rounded-t-lg hover:bg-orange-200 transition-all relative group cursor-pointer";
+
+                                    return `
+                                <div class="${barClass}" style="height: ${heightPercent}%">
+                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
+                                        $${value.toLocaleString()}
+                                    </span>
+                                </div>
+                            `;
+                                })
+                                .join("");
+
+                            // Generar labels de meses
+                            const labelsHTML =
+                                sortedKeys
+                                    .map((key) => {
+                                        const [year, month] = key.split("-");
+                                        return monthNames[parseInt(month) - 1];
+                                    })
+                                    .join("</span><span>") || "";
+
+                            // Renderizar
+                            chartContainer.innerHTML =
+                                barsHTML ||
+                                '<div class="w-full h-full flex items-center justify-center text-slate-400">Sin datos de ingresos</div>';
+
+                            if (labelsContainer) {
+                                labelsContainer.innerHTML = labelsHTML
+                                    ? `<span>${labelsHTML}</span>`
+                                    : "";
+                            }
+
+                            if (totalEl) {
+                                totalEl.textContent = `$${totalEarnings.toLocaleString()} total`;
                             }
                         } catch (error) {
-                            console.error("Error cargando perfil:", error);
-                            // Si hay error de permisos, intentar recargar después de un delay
-                            if (error.code === "permission-denied") {
-                                console.log(
-                                    "Error de permisos detectado. Reintentando en 2 segundos...",
-                                );
-                                setTimeout(() => {
-                                    window.location.reload();
-                                }, 2000);
+                            console.error(
+                                "Error cargando gráfico de rendimiento:",
+                                error,
+                            );
+                            const chartContainer =
+                                document.getElementById("performance-chart");
+                            if (chartContainer) {
+                                chartContainer.innerHTML =
+                                    '<div class="w-full h-full flex items-center justify-center text-slate-400">Error cargando datos</div>';
                             }
                         }
-                    } else {
-                        // No logueado
-                        window.location.href = "/ingresar";
                     }
-                });
 
-                // === FUNCIÓN PARA CARGAR DATOS DEL DASHBOARD ===
-                async function loadDashboardData(uid: string, userData: any) {
-                    const { collection, query, where, getDocs, Timestamp } =
-                        await import("firebase/firestore");
+                    // === FUNCIÓN PARA CARGAR ÚLTIMOS PRESUPUESTOS ===
+                    async function loadLatestBudgets(uid: string) {
+                        const { collection, query, orderBy, limit, getDocs } =
+                            await import("firebase/firestore");
 
-                    try {
-                        // 1. KPI: Visitas al perfil
-                        const visitas = userData.vistas_perfil || 0;
-                        const kpiVisitas =
-                            document.getElementById("kpi-visitas");
-                        if (kpiVisitas) {
-                            kpiVisitas.textContent = visitas.toLocaleString();
-                        }
+                        try {
+                            const q = query(
+                                collection(
+                                    db,
+                                    "profesionales",
+                                    uid,
+                                    "presupuestos",
+                                ),
+                                orderBy("createdAt", "desc"),
+                                limit(5),
+                            );
 
-                        // 2. KPI: Ingresos del mes
-                        const now = new Date();
-                        const firstDayOfMonth = new Date(
-                            now.getFullYear(),
-                            now.getMonth(),
-                            1,
-                        );
+                            const snapshot = await getDocs(q);
+                            const tbody = document.getElementById(
+                                "latest-budgets-tbody",
+                            );
 
-                        const qFinanzas = query(
-                            collection(db, "profesionales", uid, "finanzas"),
-                            where("tipo", "==", "ingreso"),
-                            where(
-                                "fecha",
-                                ">=",
-                                Timestamp.fromDate(firstDayOfMonth),
-                            ),
-                        );
+                            if (!tbody) return;
 
-                        const finanzasSnap = await getDocs(qFinanzas);
-                        let totalIngresos = 0;
-                        finanzasSnap.forEach((doc) => {
-                            const data = doc.data();
-                            totalIngresos += data.monto || 0;
-                        });
-
-                        const kpiIngresos =
-                            document.getElementById("kpi-ingresos");
-                        if (kpiIngresos) {
-                            kpiIngresos.textContent =
-                                "$" + totalIngresos.toLocaleString();
-                        }
-
-                        // 3. KPI: Presupuestos activos
-                        const qPresupuestos = query(
-                            collection(
-                                db,
-                                "profesionales",
-                                uid,
-                                "presupuestos",
-                            ),
-                            where("estado", "in", ["Pendiente", "Aprobado"]),
-                        );
-
-                        const presupuestosSnap = await getDocs(qPresupuestos);
-                        const totalPresupuestos = presupuestosSnap.size;
-
-                        const kpiPresupuestos =
-                            document.getElementById("kpi-presupuestos");
-                        if (kpiPresupuestos) {
-                            kpiPresupuestos.textContent =
-                                totalPresupuestos.toString();
-                        }
-
-                        // 4. Cargar últimos presupuestos (tabla)
-                        await loadLatestBudgets(uid);
-
-                        // 5. Cargar widget de equipo
-                        await loadTeamWidget(uid);
-                    } catch (error) {
-                        console.error(
-                            "Error cargando datos del dashboard:",
-                            error,
-                        );
-                    }
-                }
-
-                // === FUNCIÓN PARA CARGAR ÚLTIMOS PRESUPUESTOS ===
-                async function loadLatestBudgets(uid: string) {
-                    const { collection, query, orderBy, limit, getDocs } =
-                        await import("firebase/firestore");
-
-                    try {
-                        const q = query(
-                            collection(
-                                db,
-                                "profesionales",
-                                uid,
-                                "presupuestos",
-                            ),
-                            orderBy("createdAt", "desc"),
-                            limit(5),
-                        );
-
-                        const snapshot = await getDocs(q);
-                        const tbody = document.getElementById(
-                            "latest-budgets-tbody",
-                        );
-
-                        if (!tbody) return;
-
-                        if (snapshot.empty) {
-                            tbody.innerHTML = `
+                            if (snapshot.empty) {
+                                tbody.innerHTML = `
                             <tr>
                                 <td colspan="4" class="text-center py-8 text-slate-500">
                                     No tienes presupuestos aún. <a href="/panel/presupuestos" class="text-orange-600 font-bold hover:underline">Crear uno</a>
                                 </td>
                             </tr>
                         `;
-                            return;
-                        }
+                                return;
+                            }
 
-                        const statusColors = {
-                            Pendiente: "bg-yellow-100 text-yellow-700",
-                            Aprobado: "bg-green-100 text-green-700",
-                            Cobrado: "bg-blue-100 text-blue-700",
-                            Rechazado: "bg-red-100 text-red-700",
-                        };
+                            const statusColors = {
+                                Pendiente: "bg-yellow-100 text-yellow-700",
+                                Aprobado: "bg-green-100 text-green-700",
+                                Cobrado: "bg-blue-100 text-blue-700",
+                                Rechazado: "bg-red-100 text-red-700",
+                            };
 
-                        tbody.innerHTML = snapshot.docs
-                            .map((doc) => {
-                                const data = doc.data();
-                                const fecha = data.createdAt
-                                    ? new Date(
-                                          data.createdAt.seconds * 1000,
-                                      ).toLocaleDateString()
-                                    : "Sin fecha";
-                                const statusClass =
-                                    statusColors[data.estado] ||
-                                    "bg-slate-100 text-slate-700";
+                            tbody.innerHTML = snapshot.docs
+                                .map((doc) => {
+                                    const data = doc.data();
+                                    const fecha = data.createdAt
+                                        ? new Date(
+                                              data.createdAt.seconds * 1000,
+                                          ).toLocaleDateString()
+                                        : "Sin fecha";
+                                    const statusClass =
+                                        statusColors[data.estado] ||
+                                        "bg-slate-100 text-slate-700";
 
-                                return `
+                                    return `
                                 <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
                                     <td class="py-3 px-4 font-medium text-slate-800">${data.cliente}</td>
                                     <td class="py-3 px-4 text-slate-600">$${(data.total || 0).toLocaleString()}</td>
@@ -865,47 +1030,50 @@ import { auth } from "../../firebase/client";
                                     <td class="py-3 px-4 text-slate-500 text-sm">${fecha}</td>
                                 </tr>
                             `;
-                            })
-                            .join("");
-                    } catch (error) {
-                        console.error("Error cargando presupuestos:", error);
+                                })
+                                .join("");
+                        } catch (error) {
+                            console.error(
+                                "Error cargando presupuestos:",
+                                error,
+                            );
+                        }
                     }
-                }
 
-                // === FUNCIÓN PARA CARGAR WIDGET DE EQUIPO ===
-                async function loadTeamWidget(uid: string) {
-                    const { collection, query, where, getDocs } =
-                        await import("firebase/firestore");
+                    // === FUNCIÓN PARA CARGAR WIDGET DE EQUIPO ===
+                    async function loadTeamWidget(uid: string) {
+                        const { collection, query, where, getDocs } =
+                            await import("firebase/firestore");
 
-                    try {
-                        const q = query(
-                            collection(db, "profesionales", uid, "equipo"),
-                            where("activo", "==", true),
-                        );
+                        try {
+                            const q = query(
+                                collection(db, "profesionales", uid, "equipo"),
+                                where("activo", "==", true),
+                            );
 
-                        const snapshot = await getDocs(q);
-                        const teamList =
-                            document.getElementById("team-members-list");
+                            const snapshot = await getDocs(q);
+                            const teamList =
+                                document.getElementById("team-members-list");
 
-                        if (!teamList) return;
+                            if (!teamList) return;
 
-                        if (snapshot.empty) {
-                            teamList.innerHTML = `
+                            if (snapshot.empty) {
+                                teamList.innerHTML = `
                             <p class="text-slate-500 text-sm text-center py-4">
                                 No tienes miembros en tu equipo. <a href="/panel/mi-equipo" class="text-orange-600 font-bold hover:underline">Agregar</a>
                             </p>
                         `;
-                            return;
-                        }
+                                return;
+                            }
 
-                        let totalPendiente = 0;
-                        const membersHTML = snapshot.docs
-                            .slice(0, 3)
-                            .map((doc) => {
-                                const data = doc.data();
-                                totalPendiente += data.pendientePago || 0;
+                            let totalPendiente = 0;
+                            const membersHTML = snapshot.docs
+                                .slice(0, 3)
+                                .map((doc) => {
+                                    const data = doc.data();
+                                    totalPendiente += data.pendientePago || 0;
 
-                                return `
+                                    return `
                                 <div class="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
                                     <div>
                                         <p class="font-medium text-slate-800 text-sm">${data.nombre}</p>
@@ -920,204 +1088,223 @@ import { auth } from "../../firebase/client";
                                     </div>
                                 </div>
                             `;
-                            })
-                            .join("");
+                                })
+                                .join("");
 
-                        teamList.innerHTML = membersHTML;
+                            teamList.innerHTML = membersHTML;
 
-                        // Actualizar total pendiente
-                        const totalPendienteEl =
-                            document.getElementById("team-total-pending");
-                        if (totalPendienteEl) {
-                            totalPendienteEl.textContent =
-                                "$" + totalPendiente.toLocaleString();
-                        }
-                    } catch (error) {
-                        console.error("Error cargando equipo:", error);
-                    }
-                }
-
-                // === FUNCIÓN DE NOTIFICACIONES ===
-                async function setupNotifications(uid: string) {
-                    const { collection, query, where, onSnapshot, getDocs } =
-                        await import("firebase/firestore");
-
-                    // 1. Registrar Service Worker
-                    if ("serviceWorker" in navigator) {
-                        try {
-                            const registration =
-                                await navigator.serviceWorker.register(
-                                    "/sw.js",
-                                );
-                            console.log("[Panel] Service Worker registrado");
-                        } catch (error) {
-                            console.error(
-                                "[Panel] Error registrando SW:",
-                                error,
-                            );
-                        }
-                    }
-
-                    // 2. Escuchar notificaciones en tiempo real
-                    const qNotifs = query(
-                        collection(db, "profesionales", uid, "notificaciones"),
-                        where("leido", "==", false),
-                    );
-
-                    onSnapshot(qNotifs, (snapshot) => {
-                        const count = snapshot.size;
-
-                        // Actualizar badge
-                        if (count > 0 && badgeOportunidades) {
-                            badgeOportunidades.textContent = count.toString();
-                            badgeOportunidades.classList.remove("hidden");
-                        } else if (badgeOportunidades) {
-                            badgeOportunidades.classList.add("hidden");
-                        }
-
-                        // Mostrar notificación del navegador para nuevas
-                        snapshot.docChanges().forEach((change) => {
-                            if (change.type === "added") {
-                                const notif = change.doc.data();
-
-                                // Pedir permiso si no lo tiene
-                                if (Notification.permission === "default") {
-                                    Notification.requestPermission();
-                                }
-
-                                // Mostrar notificación si tiene permiso
-                                if (Notification.permission === "granted") {
-                                    new Notification(
-                                        notif.titulo || "¡Nueva oportunidad!",
-                                        {
-                                            body:
-                                                notif.mensaje ||
-                                                "Tienes una nueva solicitud",
-                                            icon: "/icon-192.png",
-                                            badge: "/favicon.svg",
-                                            tag: "oportunidad-" + change.doc.id,
-                                            requireInteraction: false,
-                                        },
-                                    );
-                                }
+                            // Actualizar total pendiente
+                            const totalPendienteEl =
+                                document.getElementById("team-total-pending");
+                            if (totalPendienteEl) {
+                                totalPendienteEl.textContent =
+                                    "$" + totalPendiente.toLocaleString();
                             }
-                        });
-                    });
-
-                    // 3. Contar oportunidades abiertas
-                    const qOportunidades = query(
-                        collection(db, "solicitudes"),
-                        where("candidatos", "array-contains", uid),
-                        where("estado", "==", "abierta"),
-                    );
-
-                    const snapshotOportunidades = await getDocs(qOportunidades);
-                    const countOportunidades = snapshotOportunidades.size;
-
-                    if (countOportunidades > 0 && badgeOportunidades) {
-                        badgeOportunidades.textContent =
-                            countOportunidades.toString();
-                        badgeOportunidades.classList.remove("hidden");
-                    }
-                }
-
-                logoutBtn?.addEventListener("click", async () => {
-                    await signOut(auth);
-                    window.location.href = "/";
-                });
-
-                // GAMIFICATION LOGIC
-                async function calculateGamification(uid, userData) {
-                    // 1. Calcular Puntos base
-                    let xp = 0;
-
-                    // Perfil
-                    const hasPhoto =
-                        userData.foto && !userData.foto.includes("ui-avatars");
-                    const hasRubro = !!userData.rubro;
-                    const hasZona = !!userData.zona;
-
-                    if (hasPhoto) xp += 100;
-                    if (hasRubro) xp += 50;
-                    if (hasZona) xp += 50;
-
-                    // Misiones Mockeadas (para MVP)
-                    const dailyMissions = [
-                        {
-                            id: "profile",
-                            text: "Completa tu perfil",
-                            xp: 200,
-                            done: hasPhoto && hasRubro && hasZona,
-                        },
-                        {
-                            id: "photos",
-                            text: "Sube 3 fotos a Galería",
-                            xp: 150,
-                            done: false,
-                        }, // Placeholder
-                        {
-                            id: "review",
-                            text: "Consigue 5 estrellas",
-                            xp: 300,
-                            done: userData.rating >= 4.5,
-                        },
-                    ];
-
-                    // Sumar XP
-                    dailyMissions.forEach((m) => {
-                        if (m.done) xp += m.xp;
-                    });
-
-                    // 2. Determinar Nivel
-                    const levels = [
-                        { name: "Novato 🌱", threshold: 0 },
-                        { name: "Aprendiz 🔨", threshold: 500 },
-                        { name: "Profesional 👷", threshold: 1500 },
-                        { name: "Experto 🦁", threshold: 5000 },
-                        { name: "Maestro 👑", threshold: 50000 },
-                    ];
-
-                    let currentLevel = levels[0];
-                    let nextLevel = levels[1];
-
-                    for (let i = 0; i < levels.length; i++) {
-                        if (xp >= levels[i].threshold) {
-                            currentLevel = levels[i];
-                            nextLevel = levels[i + 1] || {
-                                name: "Leyenda",
-                                threshold: 100000,
-                            };
+                        } catch (error) {
+                            console.error("Error cargando equipo:", error);
                         }
                     }
 
-                    // 3. Renderizar UI
-                    // Sidebar
-                    const progressPct = Math.min(
-                        100,
-                        (xp / nextLevel.threshold) * 100,
-                    );
+                    // === FUNCIÓN DE NOTIFICACIONES ===
+                    async function setupNotifications(uid: string) {
+                        const {
+                            collection,
+                            query,
+                            where,
+                            onSnapshot,
+                            getDocs,
+                        } = await import("firebase/firestore");
 
-                    const lvlName = document.getElementById("level-name");
-                    const lvlNum = document.getElementById("level-number");
-                    const lvlProg = document.getElementById("level-progress");
-                    const lvlNext = document.getElementById("level-next");
+                        // 1. Registrar Service Worker
+                        if ("serviceWorker" in navigator) {
+                            try {
+                                const registration =
+                                    await navigator.serviceWorker.register(
+                                        "/sw.js",
+                                    );
+                                console.log(
+                                    "[Panel] Service Worker registrado",
+                                );
+                            } catch (error) {
+                                console.error(
+                                    "[Panel] Error registrando SW:",
+                                    error,
+                                );
+                            }
+                        }
 
-                    if (lvlName) lvlName.innerText = currentLevel.name;
-                    if (lvlNum)
-                        lvlNum.innerText = `Lvl ${levels.indexOf(currentLevel) + 1}`;
-                    if (lvlProg) lvlProg.style.width = `${progressPct}%`;
-                    if (lvlNext)
-                        lvlNext.innerText = `Faltan ${nextLevel.threshold - xp} pts para ${nextLevel.name.split(" ")[0]}`;
+                        // 2. Escuchar notificaciones en tiempo real
+                        const qNotifs = query(
+                            collection(
+                                db,
+                                "profesionales",
+                                uid,
+                                "notificaciones",
+                            ),
+                            where("leido", "==", false),
+                        );
 
-                    // Card total
-                    const cardTotal =
-                        document.getElementById("total-points-card");
-                    if (cardTotal) cardTotal.innerText = `${xp} pts`;
+                        onSnapshot(qNotifs, (snapshot) => {
+                            const count = snapshot.size;
 
-                    // Misiones Widget
-                    const missionsHtml = dailyMissions
-                        .map(
-                            (m) => `
+                            // Actualizar badge
+                            if (count > 0 && badgeOportunidades) {
+                                badgeOportunidades.textContent =
+                                    count.toString();
+                                badgeOportunidades.classList.remove("hidden");
+                            } else if (badgeOportunidades) {
+                                badgeOportunidades.classList.add("hidden");
+                            }
+
+                            // Mostrar notificación del navegador para nuevas
+                            snapshot.docChanges().forEach((change) => {
+                                if (change.type === "added") {
+                                    const notif = change.doc.data();
+
+                                    // Pedir permiso si no lo tiene
+                                    if (Notification.permission === "default") {
+                                        Notification.requestPermission();
+                                    }
+
+                                    // Mostrar notificación si tiene permiso
+                                    if (Notification.permission === "granted") {
+                                        new Notification(
+                                            notif.titulo ||
+                                                "¡Nueva oportunidad!",
+                                            {
+                                                body:
+                                                    notif.mensaje ||
+                                                    "Tienes una nueva solicitud",
+                                                icon: "/icon-192.png",
+                                                badge: "/favicon.svg",
+                                                tag:
+                                                    "oportunidad-" +
+                                                    change.doc.id,
+                                                requireInteraction: false,
+                                            },
+                                        );
+                                    }
+                                }
+                            });
+                        });
+
+                        // 3. Contar oportunidades abiertas
+                        const qOportunidades = query(
+                            collection(db, "solicitudes"),
+                            where("candidatos", "array-contains", uid),
+                            where("estado", "==", "abierta"),
+                        );
+
+                        const snapshotOportunidades =
+                            await getDocs(qOportunidades);
+                        const countOportunidades = snapshotOportunidades.size;
+
+                        if (countOportunidades > 0 && badgeOportunidades) {
+                            badgeOportunidades.textContent =
+                                countOportunidades.toString();
+                            badgeOportunidades.classList.remove("hidden");
+                        }
+                    }
+
+                    logoutBtn?.addEventListener("click", async () => {
+                        await signOut(auth);
+                        window.location.href = "/";
+                    });
+
+                    // GAMIFICATION LOGIC
+                    async function calculateGamification(uid, userData) {
+                        // 1. Calcular Puntos base
+                        let xp = 0;
+
+                        // Perfil
+                        const hasPhoto =
+                            userData.foto &&
+                            !userData.foto.includes("ui-avatars");
+                        const hasRubro = !!userData.rubro;
+                        const hasZona = !!userData.zona;
+
+                        if (hasPhoto) xp += 100;
+                        if (hasRubro) xp += 50;
+                        if (hasZona) xp += 50;
+
+                        // Misiones Mockeadas (para MVP)
+                        const dailyMissions = [
+                            {
+                                id: "profile",
+                                text: "Completa tu perfil",
+                                xp: 200,
+                                done: hasPhoto && hasRubro && hasZona,
+                            },
+                            {
+                                id: "photos",
+                                text: "Sube 3 fotos a Galería",
+                                xp: 150,
+                                done: false,
+                            }, // Placeholder
+                            {
+                                id: "review",
+                                text: "Consigue 5 estrellas",
+                                xp: 300,
+                                done: userData.rating >= 4.5,
+                            },
+                        ];
+
+                        // Sumar XP
+                        dailyMissions.forEach((m) => {
+                            if (m.done) xp += m.xp;
+                        });
+
+                        // 2. Determinar Nivel
+                        const levels = [
+                            { name: "Novato 🌱", threshold: 0 },
+                            { name: "Aprendiz 🔨", threshold: 500 },
+                            { name: "Profesional 👷", threshold: 1500 },
+                            { name: "Experto 🦁", threshold: 5000 },
+                            { name: "Maestro 👑", threshold: 50000 },
+                        ];
+
+                        let currentLevel = levels[0];
+                        let nextLevel = levels[1];
+
+                        for (let i = 0; i < levels.length; i++) {
+                            if (xp >= levels[i].threshold) {
+                                currentLevel = levels[i];
+                                nextLevel = levels[i + 1] || {
+                                    name: "Leyenda",
+                                    threshold: 100000,
+                                };
+                            }
+                        }
+
+                        // 3. Renderizar UI
+                        // Sidebar
+                        const progressPct = Math.min(
+                            100,
+                            (xp / nextLevel.threshold) * 100,
+                        );
+
+                        const lvlName = document.getElementById("level-name");
+                        const lvlNum = document.getElementById("level-number");
+                        const lvlProg =
+                            document.getElementById("level-progress");
+                        const lvlNext = document.getElementById("level-next");
+
+                        if (lvlName) lvlName.innerText = currentLevel.name;
+                        if (lvlNum)
+                            lvlNum.innerText = `Lvl ${levels.indexOf(currentLevel) + 1}`;
+                        if (lvlProg) lvlProg.style.width = `${progressPct}%`;
+                        if (lvlNext)
+                            lvlNext.innerText = `Faltan ${nextLevel.threshold - xp} pts para ${nextLevel.name.split(" ")[0]}`;
+
+                        // Card total
+                        const cardTotal =
+                            document.getElementById("total-points-card");
+                        if (cardTotal) cardTotal.innerText = `${xp} pts`;
+
+                        // Misiones Widget
+                        const missionsHtml = dailyMissions
+                            .map(
+                                (m) => `
                     <div class="flex items-center gap-3">
                          <div class="w-5 h-5 rounded-full border-2 ${m.done ? "border-green-400 bg-green-400" : "border-white/30"} flex items-center justify-center text-indigo-900 text-xs font-bold">
                             ${m.done ? "✓" : ""}
@@ -1127,13 +1314,14 @@ import { auth } from "../../firebase/client";
                          </p>
                     </div>
                 `,
-                        )
-                        .join("");
+                            )
+                            .join("");
 
-                    const missionsList =
-                        document.getElementById("misiones-list");
-                    if (missionsList) missionsList.innerHTML = missionsHtml;
-                }
+                        const missionsList =
+                            document.getElementById("misiones-list");
+                        if (missionsList) missionsList.innerHTML = missionsHtml;
+                    }
+                }); // End of astro:page-load
             </script>
 
             <script>

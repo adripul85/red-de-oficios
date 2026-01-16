@@ -296,149 +296,156 @@ if (!profesional) return Astro.redirect("/404");
         runTransaction,
     } from "firebase/firestore";
 
-    const guestView = document.getElementById("guest-view");
-    const userView = document.getElementById("user-view");
-    let currentUser = null;
+    document.addEventListener("astro:page-load", () => {
+        console.log("🚀 [PERFIL] Página cargada/navegada");
 
-    // 1. DETECTAR USUARIO (CLIENTE)
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            // Usuario Logueado -> Buscamos sus datos de Cliente
-            const docSnap = await getDoc(doc(db, "clientes", user.uid));
+        const guestView = document.getElementById("guest-view");
+        const userView = document.getElementById("user-view");
+        let currentUser = null;
 
-            if (docSnap.exists()) {
-                const cliente = docSnap.data();
-                currentUser = { uid: user.uid, ...cliente };
+        // 1. DETECTAR USUARIO (CLIENTE)
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Usuario Logueado -> Buscamos sus datos de Cliente
+                const docSnap = await getDoc(doc(db, "clientes", user.uid));
 
-                guestView.classList.add("hidden");
-                userView.classList.remove("hidden");
+                if (docSnap.exists()) {
+                    const cliente = docSnap.data();
+                    currentUser = { uid: user.uid, ...cliente };
 
-                document.getElementById("user-name-display").innerText =
-                    cliente.nombre;
-                const foto =
-                    cliente.foto ||
-                    `https://ui-avatars.com/api/?name=${cliente.nombre}&background=random`;
-                document.getElementById("user-avatar").src = foto;
-            } else {
-                // Es logueado pero NO es cliente (quizás es el mismo profesional)
-                if (user.uid === idProfesional) {
-                    guestView.innerHTML = `<div class="p-4 bg-yellow-50 text-yellow-800 rounded border border-yellow-200">👀 Estás viendo tu propio perfil.</div>`;
+                    guestView.classList.add("hidden");
+                    userView.classList.remove("hidden");
+
+                    document.getElementById("user-name-display").innerText =
+                        cliente.nombre;
+                    const foto =
+                        cliente.foto ||
+                        `https://ui-avatars.com/api/?name=${cliente.nombre}&background=random`;
+                    document.getElementById("user-avatar").src = foto;
+                } else {
+                    // Es logueado pero NO es cliente (quizás es el mismo profesional)
+                    if (user.uid === idProfesional) {
+                        guestView.innerHTML = `<div class="p-4 bg-yellow-50 text-yellow-800 rounded border border-yellow-200">👀 Estás viendo tu propio perfil.</div>`;
+                    }
                 }
+            } else {
+                // Usuario No Logueado
+                guestView.classList.remove("hidden");
+                userView.classList.add("hidden");
             }
-        } else {
-            // Usuario No Logueado
-            guestView.classList.remove("hidden");
-            userView.classList.add("hidden");
-        }
-    });
+        });
 
-    // 2. LÓGICA DE ESTRELLAS
-    const stars = document.querySelectorAll("#stars-selector .star");
-    const ratingInput = document.getElementById("rating-value");
-    const ratingText = document.getElementById("rating-text");
-    const labels = [
-        "Malo 😡",
-        "Regular 😐",
-        "Bueno 🙂",
-        "Muy Bueno 😄",
-        "Excelente 🔥",
-    ];
+        // 2. LÓGICA DE ESTRELLAS
+        const stars = document.querySelectorAll("#stars-selector .star");
+        const ratingInput = document.getElementById("rating-value");
+        const ratingText = document.getElementById("rating-text");
+        const labels = [
+            "Malo 😡",
+            "Regular 😐",
+            "Bueno 🙂",
+            "Muy Bueno 😄",
+            "Excelente 🔥",
+        ];
 
-    stars.forEach((star, index) => {
-        star.addEventListener("click", () => {
-            const value = index + 1;
-            ratingInput.value = value;
-            ratingText.innerText = labels[index];
+        stars.forEach((star, index) => {
+            star.addEventListener("click", () => {
+                const value = index + 1;
+                ratingInput.value = value;
+                ratingText.innerText = labels[index];
 
-            // Pintar estrellas
-            stars.forEach((s, i) => {
-                if (i < value) s.classList.add("text-yellow-400");
-                else s.classList.remove("text-yellow-400");
+                // Pintar estrellas
+                stars.forEach((s, i) => {
+                    if (i < value) s.classList.add("text-yellow-400");
+                    else s.classList.remove("text-yellow-400");
+                });
             });
         });
-    });
 
-    // 3. PUBLICAR RESEÑA
-    const btnSubmit = document.getElementById("btn-submit-review");
-    btnSubmit.addEventListener("click", async () => {
-        const rating = parseInt(ratingInput.value);
-        const comment = document.getElementById("review-comment").value;
+        // 3. PUBLICAR RESEÑA
+        const btnSubmit = document.getElementById("btn-submit-review");
+        btnSubmit.addEventListener("click", async () => {
+            const rating = parseInt(ratingInput.value);
+            const comment = document.getElementById("review-comment").value;
 
-        if (rating === 0) return alert("Por favor selecciona las estrellas.");
-        if (comment.length < 5)
-            return alert("Escribe un comentario un poco más largo.");
+            if (rating === 0)
+                return alert("Por favor selecciona las estrellas.");
+            if (comment.length < 5)
+                return alert("Escribe un comentario un poco más largo.");
 
-        btnSubmit.disabled = true;
-        btnSubmit.innerText = "Publicando...";
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = "Publicando...";
 
-        try {
-            // TRANSACCIÓN: Guardar reseña + Actualizar promedio del profesional
-            await runTransaction(db, async (transaction) => {
-                const proRef = doc(db, "profesionales", idProfesional);
-                const proDoc = await transaction.get(proRef);
+            try {
+                // TRANSACCIÓN: Guardar reseña + Actualizar promedio del profesional
+                await runTransaction(db, async (transaction) => {
+                    const proRef = doc(db, "profesionales", idProfesional);
+                    const proDoc = await transaction.get(proRef);
 
-                if (!proDoc.exists()) throw "Profesional no existe";
+                    if (!proDoc.exists()) throw "Profesional no existe";
 
-                const data = proDoc.data();
-                const nuevoTotal = (data.total_valoraciones || 0) + 1;
-                const nuevaSuma = (data.suma_puntuacion || 0) + rating; // Necesitamos guardar la suma bruta
-                const nuevoPromedio = nuevaSuma / nuevoTotal;
+                    const data = proDoc.data();
+                    const nuevoTotal = (data.total_valoraciones || 0) + 1;
+                    const nuevaSuma = (data.suma_puntuacion || 0) + rating; // Necesitamos guardar la suma bruta
+                    const nuevoPromedio = nuevaSuma / nuevoTotal;
 
-                // 1. Crear la reseña en subcolección
-                const reseñaRef = doc(
-                    collection(db, `profesionales/${idProfesional}/reseñas`),
-                );
-                transaction.set(reseñaRef, {
-                    clienteId: currentUser.uid,
-                    clienteNombre: currentUser.nombre,
-                    clienteFoto: currentUser.foto || null,
-                    estrellas: rating,
-                    comentario: comment,
-                    fecha: serverTimestamp(),
+                    // 1. Crear la reseña en subcolección
+                    const reseñaRef = doc(
+                        collection(
+                            db,
+                            `profesionales/${idProfesional}/reseñas`,
+                        ),
+                    );
+                    transaction.set(reseñaRef, {
+                        clienteId: currentUser.uid,
+                        clienteNombre: currentUser.nombre,
+                        clienteFoto: currentUser.foto || null,
+                        estrellas: rating,
+                        comentario: comment,
+                        fecha: serverTimestamp(),
+                    });
+
+                    // 2. Actualizar promedio en el profesional
+                    transaction.update(proRef, {
+                        total_valoraciones: nuevoTotal,
+                        suma_puntuacion: nuevaSuma, // Guardamos esto para cálculos precisos
+                        puntuacion: nuevoPromedio,
+                    });
                 });
 
-                // 2. Actualizar promedio en el profesional
-                transaction.update(proRef, {
-                    total_valoraciones: nuevoTotal,
-                    suma_puntuacion: nuevaSuma, // Guardamos esto para cálculos precisos
-                    puntuacion: nuevoPromedio,
-                });
-            });
+                alert("¡Gracias! Tu opinión ayuda a la comunidad.");
+                window.location.reload(); // Recargar para ver la reseña nueva
+            } catch (error) {
+                console.error(error);
+                alert("Error al publicar. Intenta de nuevo.");
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "Publicar Reseña";
+            }
+        });
 
-            alert("¡Gracias! Tu opinión ayuda a la comunidad.");
-            window.location.reload(); // Recargar para ver la reseña nueva
-        } catch (error) {
-            console.error(error);
-            alert("Error al publicar. Intenta de nuevo.");
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = "Publicar Reseña";
-        }
-    });
+        // 4. CARGAR RESEÑAS EXISTENTES
+        async function loadReviews() {
+            const container = document.getElementById("reviews-list");
+            const q = query(
+                collection(db, `profesionales/${idProfesional}/reseñas`),
+                orderBy("fecha", "desc"),
+            );
 
-    // 4. CARGAR RESEÑAS EXISTENTES
-    async function loadReviews() {
-        const container = document.getElementById("reviews-list");
-        const q = query(
-            collection(db, `profesionales/${idProfesional}/reseñas`),
-            orderBy("fecha", "desc"),
-        );
+            const snapshot = await getDocs(q);
 
-        const snapshot = await getDocs(q);
+            container.innerHTML = ""; // Limpiar skeleton
 
-        container.innerHTML = ""; // Limpiar skeleton
+            if (snapshot.empty) {
+                container.innerHTML = `<p class="text-gray-500 italic text-center py-4">Aún no hay opiniones. ¡Sé el primero!</p>`;
+                return;
+            }
 
-        if (snapshot.empty) {
-            container.innerHTML = `<p class="text-gray-500 italic text-center py-4">Aún no hay opiniones. ¡Sé el primero!</p>`;
-            return;
-        }
+            snapshot.forEach((doc) => {
+                const r = doc.data();
+                const fecha = r.fecha
+                    ? r.fecha.toDate().toLocaleDateString()
+                    : "Reciente";
 
-        snapshot.forEach((doc) => {
-            const r = doc.data();
-            const fecha = r.fecha
-                ? r.fecha.toDate().toLocaleDateString()
-                : "Reciente";
-
-            const html = `
+                const html = `
                 <div class="border-b border-gray-100 pb-4 mb-4 last:border-0">
                     <div class="flex justify-between items-start">
                         <div class="flex items-center gap-3">
@@ -455,9 +462,10 @@ if (!profesional) return Astro.redirect("/404");
                     <p class="mt-2 text-gray-600 text-sm">${r.comentario}</p>
                 </div>
             `;
-            container.innerHTML += html;
-        });
-    }
+                container.innerHTML += html;
+            });
+        }
 
-    loadReviews();
+        loadReviews();
+    }); // End of astro:page-load
 </script>
