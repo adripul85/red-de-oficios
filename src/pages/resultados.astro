@@ -11,7 +11,7 @@ const q = searchParams.get("q") || "";
 const snapshot = await getDocs(collection(db, "profesionales"));
 const todos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
-// 3. FILTRADO DE TEXTO (LÓGICA "TODOS")
+// 3. FILTRADO DE TEXTO (LÓGICA MEJORADA PARA BÚSQUEDA COMBINADA)
 const resultados = todos.filter((pro: any) => {
   const termino = q.toLowerCase().trim();
 
@@ -24,19 +24,24 @@ const resultados = todos.filter((pro: any) => {
     return true;
   }
 
-  const matchNombre = pro.nombre?.toLowerCase().includes(termino);
-  const matchRubro = pro.rubro_principal?.toLowerCase().includes(termino);
-  // Búsqueda de zona: primero exacta, luego parcial solo si no hay match exacto
-  const zonaLower = pro.zona?.toLowerCase() || "";
-  const matchZonaExacta = zonaLower === termino;
-  const matchZonaParcial = zonaLower.includes(termino) && termino.length > 3;
-  const matchZona = matchZonaExacta || matchZonaParcial;
+  // Dividir el término en palabras para búsqueda combinada
+  const palabras = termino.split(/\s+/).filter((p) => p.length > 0);
 
-  const matchTags = pro.etiquetas?.some((t: string) =>
-    t.toLowerCase().includes(termino),
-  );
+  // Para cada palabra, verificar si coincide con algún campo
+  const matches = palabras.map((palabra) => {
+    const matchNombre = pro.nombre?.toLowerCase().includes(palabra);
+    const matchRubro = pro.rubro_principal?.toLowerCase().includes(palabra);
+    const zonaLower = pro.zona?.toLowerCase() || "";
+    const matchZona = zonaLower.includes(palabra);
+    const matchTags = pro.etiquetas?.some((t: string) =>
+      t.toLowerCase().includes(palabra),
+    );
 
-  return matchNombre || matchRubro || matchZona || matchTags;
+    return matchNombre || matchRubro || matchZona || matchTags;
+  });
+
+  // Retornar true si TODAS las palabras tienen al menos un match
+  return matches.every((m) => m === true);
 });
 
 // Ordenar: Premium primero (Experto > Impulso > Free)

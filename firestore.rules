@@ -12,11 +12,14 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
     
+    
     // Verifica si es Admin o Moderador leyendo su perfil de profesional
+    // NOTA: Deshabilitado temporalmente para evitar problemas de permisos recursivos
     function isStaff() {
-       return isSignedIn() && (
-         get(/databases/$(database)/documents/profesionales/$(request.auth.uid)).data.rol in ['admin', 'moderador', 'moderator']
-       );
+       return false; // Temporalmente deshabilitado
+       // return isSignedIn() && (
+       //   get(/databases/$(database)/documents/profesionales/$(request.auth.uid)).data.rol in ['admin', 'moderador', 'moderator']
+       // );
     }
 
     // --- 1. PERFILES DE PROFESIONALES ---
@@ -45,6 +48,37 @@ service cloud.firestore {
         allow read: if true;
         allow create: if isSignedIn();
         allow delete: if isStaff() || (isSignedIn() && request.auth.uid == resource.data.clienteId);
+      }
+
+      // Presupuestos
+      match /presupuestos/{presupuestoId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Mi Equipo
+      match /equipo/{memberId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Clientes
+      match /clientes/{clientId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Finanzas
+      match /finanzas/{transactionId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Derivaciones
+      match /derivaciones/{derivacionId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Notificaciones
+      match /notificaciones/{notificationId} {
+        allow read, update, delete: if isOwner(userId);
+        allow create: if true; // Permitir que el sistema o usuarios creen notificaciones
       }
     }
 
@@ -120,6 +154,29 @@ service cloud.firestore {
     match /gift_cards/{cardId} { 
       allow read: if isSignedIn();
       allow update: if isStaff();
+    }
+
+    // --- 7. SOLICITUDES / OPORTUNIDADES ---
+    match /solicitudes/{solicitudId} {
+      // Leer: Permitir queries para usuarios logueados (el where filtrará en el cliente)
+      // NOTA: resource.data solo funciona para get(), no para list/query
+      allow read: if isSignedIn();
+      
+      // Crear: Cualquier usuario logueado puede crear solicitud
+      allow create: if isSignedIn();
+      
+      // Actualizar: El cliente que creó, profesionales en candidatos, o admin
+      allow update: if isSignedIn() && (
+        request.auth.uid == resource.data.clienteId ||
+        request.auth.uid in resource.data.candidatos ||
+        isStaff()
+      );
+      
+      // Eliminar: Solo el cliente o admin
+      allow delete: if isSignedIn() && (
+        request.auth.uid == resource.data.clienteId ||
+        isStaff()
+      );
     }
 
     // --- ESTA LÍNEA DEBE ESTAR AL FINAL (Bloqueo por defecto) ---

@@ -1,0 +1,250 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { CATEGORIES } from "../data/categories";
+import { LOCATIONS } from "../data/locations";
+---
+
+<Layout title="Pedir Presupuesto - DeOficios">
+    <div class="max-w-2xl mx-auto px-4 py-10">
+        <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    ¡Pedí presupuesto gratis! 🚀
+                </h1>
+                <p class="text-gray-500">
+                    Contanos qué necesitás y avisaremos a los <span
+                        class="text-orange-600 font-bold"
+                        >mejores profesionales</span
+                    > de tu zona.
+                </p>
+            </div>
+
+            <form id="solicitud-form" class="space-y-5">
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1"
+                        >Tu Nombre Completo</label
+                    >
+                    <input
+                        type="text"
+                        id="clienteNombre"
+                        class="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-orange-500 outline-none"
+                        placeholder="Ej: Juan Pérez"
+                        required
+                    />
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1"
+                        >¿Qué servicio buscás?</label
+                    >
+                    <select
+                        id="rubro"
+                        class="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-orange-500 outline-none"
+                        required
+                    >
+                        <option value="">Selecciona una categoría...</option>
+                        {
+                            CATEGORIES.map((cat) => (
+                                <optgroup label={cat.group}>
+                                    {cat.trades.map((t) => (
+                                        <option value={t.name}>{t.name}</option>
+                                    ))}
+                                </optgroup>
+                            ))
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1"
+                        >¿En qué barrio?</label
+                    >
+                    <select
+                        id="zona"
+                        class="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-orange-500 outline-none"
+                        required
+                    >
+                        <option value="">Selecciona tu zona...</option>
+                        {
+                            LOCATIONS.map((l) => (
+                                <optgroup label={l.group}>
+                                    {l.zones.map((z) => (
+                                        <option value={z}>{z}</option>
+                                    ))}
+                                </optgroup>
+                            ))
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1"
+                        >Tu WhatsApp (para que te contacten)</label
+                    >
+                    <div class="flex">
+                        <span
+                            class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500"
+                        >
+                            +54 9
+                        </span>
+                        <input
+                            type="tel"
+                            id="telefono"
+                            class="w-full p-3 border rounded-r-lg bg-gray-50 focus:ring-2 focus:ring-orange-500 outline-none"
+                            placeholder="11 1234 5678"
+                            pattern="[0-9\s]+"
+                            required
+                        />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-gray-700 mb-1"
+                        >Detalles del trabajo</label
+                    >
+                    <textarea
+                        id="detalle"
+                        rows="4"
+                        class="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-orange-500 outline-none"
+                        placeholder="Ej: Necesito pintar un living de 4x4, paredes y techo..."
+                        required></textarea>
+                </div>
+
+                <div
+                    class="flex items-center gap-3 p-4 bg-orange-50 rounded-lg border border-orange-100"
+                >
+                    <input
+                        type="checkbox"
+                        id="urgente"
+                        class="w-5 h-5 text-orange-600 accent-orange-600"
+                    />
+                    <label
+                        for="urgente"
+                        class="font-bold text-orange-800 cursor-pointer"
+                        >¡Es una urgencia! (Servicio 24hs)</label
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    id="btn-enviar"
+                    class="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold py-4 rounded-xl shadow-lg transform transition hover:scale-[1.02]"
+                >
+                    Enviar Solicitud a Expertos 📨
+                </button>
+            </form>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { db, auth } from "../firebase/client";
+    import {
+        collection,
+        addDoc,
+        query,
+        where,
+        getDocs,
+        serverTimestamp,
+        orderBy,
+        limit,
+    } from "firebase/firestore";
+    import { onAuthStateChanged } from "firebase/auth";
+
+    let currentUser = null;
+    onAuthStateChanged(auth, (user) => {
+        if (user) currentUser = user;
+        else {
+            // Guardar datos y redirigir si no está logueado (Lógica opcional)
+        }
+    });
+
+    const form = document.getElementById("solicitud-form");
+    const btn = document.getElementById("btn-enviar");
+
+    form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (!currentUser)
+            return alert(
+                "Por favor, inicia sesión como cliente para pedir presupuestos.",
+            );
+
+        btn.disabled = true;
+        btn.innerText = "Buscando profesionales...";
+
+        const clienteNombre = document.getElementById("clienteNombre").value;
+        const rubro = document.getElementById("rubro").value;
+        const zona = document.getElementById("zona").value;
+        const telefonoInput = document.getElementById("telefono").value;
+        // Limpiar teléfono para guardarlo limpio (solo números)
+        const telefono = telefonoInput.replace(/[^0-9]/g, "");
+
+        const detalle = document.getElementById("detalle").value;
+        const urgente = document.getElementById("urgente").checked;
+
+        try {
+            // 1. MATCHING: Buscar profesionales Premium en esa zona y rubro
+            const qPros = query(
+                collection(db, "profesionales"),
+                where("rubro_principal", "==", rubro),
+                where("zona", "==", zona),
+                // Filtramos solo planes pagos para darles prioridad
+                where("plan", "in", ["profesional", "experto"]),
+                limit(10),
+            );
+
+            const snapPros = await getDocs(qPros);
+            const candidatos = snapPros.docs.map((d) => d.id);
+
+            if (candidatos.length === 0) {
+                alert(
+                    "Lo sentimos, no encontramos profesionales Premium en tu zona por el momento. Intenta buscar manualmente.",
+                );
+                btn.disabled = false;
+                btn.innerText = "Enviar Solicitud";
+                return;
+            }
+
+            // 2. CREAR LA SOLICITUD (LEAD)
+            const docRef = await addDoc(collection(db, "solicitudes"), {
+                clienteId: currentUser.uid,
+                clienteNombre: clienteNombre,
+                clienteAvatar: currentUser.photoURL || "",
+                rubro: rubro,
+                zona: zona,
+                telefono: telefono,
+                detalle: detalle,
+                urgente: urgente,
+                fecha: new Date(),
+                candidatos: candidatos, // Assuming 'candidatos' is the correct variable, not 'candidatosIds'
+                contactados: [],
+                descartados: [],
+                status: "nueva",
+            });
+
+            // 3. NOTIFICACIONES (Crear alertas para cada profesional)
+            const batchPromesas = candidatos.map((proId) => {
+                return addDoc(
+                    collection(db, "profesionales", proId, "notificaciones"),
+                    {
+                        tipo: "lead_nuevo",
+                        titulo: `¡Nueva oportunidad de trabajo! 🤑`,
+                        mensaje: `Un cliente busca ${rubro} en ${zona}.`,
+                        link: `/panel/oportunidades?id=${solicitudRef.id}`,
+                        leido: false,
+                        fecha: serverTimestamp(),
+                    },
+                );
+            });
+            await Promise.all(batchPromesas);
+
+            alert(
+                `¡Listo! Hemos notificado a ${candidatos.length} profesionales top. Te contactarán pronto.`,
+            );
+            window.location.href = "/mi-cuenta";
+        } catch (error) {
+            console.error(error);
+            alert("Hubo un error. Intenta nuevamente.");
+            btn.disabled = false;
+        }
+    });
+</script>

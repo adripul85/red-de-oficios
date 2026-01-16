@@ -1,0 +1,1196 @@
+---
+import { auth } from "../../firebase/client";
+// Aquí irían los imports de base de datos para traer metricas reales
+---
+
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Panel Profesional - DeOficios</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            body {
+                font-family: "Inter", sans-serif;
+                background-color: #f8fafc;
+            }
+            /* Scrollbar personalizada */
+            ::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: #cbd5e1;
+                border-radius: 3px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
+            }
+
+            /* Page Transitions */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .fade-in {
+                animation: fadeIn 0.3s ease-out;
+            }
+
+            /* Mobile Sidebar */
+            .mobile-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+            }
+
+            .mobile-sidebar.active {
+                transform: translateX(0);
+            }
+
+            /* Overlay */
+            .sidebar-overlay {
+                opacity: 0;
+                visibility: hidden;
+                transition:
+                    opacity 0.3s ease-in-out,
+                    visibility 0.3s ease-in-out;
+            }
+
+            .sidebar-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+        </style>
+    </head>
+    <body class="text-slate-800">
+        <!-- Mobile Sidebar Overlay -->
+        <div
+            id="sidebar-overlay"
+            class="sidebar-overlay fixed inset-0 bg-black/50 z-40 md:hidden"
+        >
+        </div>
+
+        <div class="flex h-screen overflow-hidden">
+            <!-- Desktop Sidebar -->
+            <aside
+                class="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 h-full"
+            >
+                <div
+                    class="h-16 flex items-center px-6 border-b border-slate-100"
+                >
+                    <a href="/" class="text-xl font-bold text-slate-800">
+                        DeOficios<span class="text-orange-600">Pro</span>
+                    </a>
+                </div>
+
+                <div class="flex-1 overflow-y-auto py-4">
+                    <nav class="px-3 space-y-1">
+                        <a
+                            href="/panel"
+                            class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">📊</span>
+                            <span class="font-semibold text-sm">Dashboard</span>
+                        </a>
+
+                        <a
+                            href="/panel/oportunidades"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors relative"
+                        >
+                            <span class="text-xl">🎯</span>
+                            <span class="font-medium text-sm"
+                                >Oportunidades</span
+                            >
+                            <span
+                                id="badge-oportunidades"
+                                class="ml-auto bg-orange-600 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden"
+                            ></span>
+                        </a>
+
+                        <a
+                            href="/panel/presupuestos"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">📝</span>
+                            <span class="font-medium text-sm">Presupuestos</span
+                            >
+                        </a>
+
+                        <a
+                            href="/panel/finanzas"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">💰</span>
+                            <span class="font-medium text-sm">Finanzas</span>
+                        </a>
+
+                        <a
+                            href="/panel/mi-equipo"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">👷</span>
+                            <span class="font-medium text-sm">Mi Equipo</span>
+                        </a>
+
+                        <a
+                            href="/panel/clientes"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">👥</span>
+                            <span class="font-medium text-sm">Clientes</span>
+                        </a>
+                    </nav>
+
+                    <div class="px-6 mt-8 mb-2">
+                        <h4
+                            class="text-xs font-bold text-slate-400 uppercase tracking-wider"
+                        >
+                            Tu Nivel
+                        </h4>
+                    </div>
+                    <div class="px-6">
+                        <div
+                            class="bg-slate-100 rounded-xl p-4 border border-slate-200"
+                        >
+                            <div class="flex justify-between items-center mb-2">
+                                <span
+                                    id="level-name"
+                                    class="font-bold text-sm text-indigo-600"
+                                    >Cargando...</span
+                                >
+                                <span
+                                    id="level-number"
+                                    class="text-xs text-slate-500">Lvl ?</span
+                                >
+                            </div>
+                            <div
+                                class="w-full bg-slate-200 rounded-full h-2 mb-2"
+                            >
+                                <div
+                                    id="level-progress"
+                                    class="bg-indigo-600 h-2 rounded-full transition-all duration-1000"
+                                    style="width: 0%"
+                                >
+                                </div>
+                            </div>
+                            <p id="level-next" class="text-xs text-slate-500">
+                                Calculando puntos...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-4 border-t border-slate-200 space-y-2">
+                    <a
+                        href="/mi-perfil"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                    >
+                        <span>👤</span>
+                        <span class="font-medium text-sm">Mi Perfil</span>
+                    </a>
+
+                    <button
+                        id="btn-logout"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-red-600 transition-colors"
+                    >
+                        <span>🚪</span>
+                        <span class="font-medium text-sm">Cerrar Sesión</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Mobile Sidebar -->
+            <aside
+                id="mobile-sidebar"
+                class="mobile-sidebar md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col"
+            >
+                <div
+                    class="h-16 flex items-center justify-between px-6 border-b border-slate-100"
+                >
+                    <a href="/" class="text-xl font-bold text-slate-800">
+                        DeOficios<span class="text-orange-600">Pro</span>
+                    </a>
+                    <button
+                        id="close-sidebar"
+                        class="text-2xl text-slate-600 hover:text-slate-900"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto py-4">
+                    <nav class="px-3 space-y-1">
+                        <a
+                            href="/panel"
+                            class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg"
+                        >
+                            <span class="text-xl">📊</span>
+                            <span class="font-semibold text-sm">Dashboard</span>
+                        </a>
+                        <a
+                            href="/panel/oportunidades"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">🎯</span>
+                            <span class="font-medium text-sm"
+                                >Oportunidades</span
+                            >
+                        </a>
+                        <a
+                            href="/panel/presupuestos"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">📝</span>
+                            <span class="font-medium text-sm">Presupuestos</span
+                            >
+                        </a>
+                        <a
+                            href="/panel/finanzas"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">💰</span>
+                            <span class="font-medium text-sm">Finanzas</span>
+                        </a>
+                        <a
+                            href="/panel/mi-equipo"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">👷</span>
+                            <span class="font-medium text-sm">Mi Equipo</span>
+                        </a>
+                        <a
+                            href="/panel/clientes"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">👥</span>
+                            <span class="font-medium text-sm">Clientes</span>
+                        </a>
+                    </nav>
+                </div>
+
+                <div
+                    class="mt-auto pt-4 border-t border-slate-200 space-y-2 px-3 pb-4"
+                >
+                    <a
+                        href="/mi-perfil"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                    >
+                        <span>👤</span>
+                        <span class="font-medium text-sm">Mi Perfil</span>
+                    </a>
+                    <button
+                        id="btn-logout-mobile"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-red-600 transition-colors"
+                    >
+                        <span>🚪</span>
+                        <span class="font-medium text-sm">Cerrar Sesión</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- MAIN CONTENT -->
+            <main
+                class="flex-1 flex flex-col h-screen overflow-hidden relative"
+            >
+                <header
+                    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10"
+                >
+                    <button id="open-sidebar" class="md:hidden text-2xl mr-4"
+                        >☰</button
+                    >
+
+                    <h2 class="text-lg font-bold text-slate-800">
+                        Resumen General
+                    </h2>
+
+                    <div class="flex items-center gap-4">
+                        <button
+                            class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200"
+                        >
+                            🔔
+                        </button>
+                        <div
+                            class="flex items-center gap-3 pl-4 border-l border-slate-200"
+                        >
+                            <div class="text-right hidden sm:block">
+                                <p
+                                    class="text-sm font-bold text-slate-800"
+                                    id="user-name"
+                                >
+                                    Cargando...
+                                </p>
+                                <p class="text-xs text-slate-500">
+                                    Plan Profesional
+                                </p>
+                            </div>
+                            <img
+                                id="user-avatar"
+                                src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
+                                class="w-9 h-9 rounded-full bg-slate-200 object-cover border border-slate-200"
+                            />
+                        </div>
+                    </div>
+                </header>
+
+                <div class="flex-1 overflow-y-auto p-6 bg-slate-50">
+                    <div
+                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+                    >
+                        <div
+                            class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100"
+                        >
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="p-2 bg-green-50 rounded-lg text-xl">
+                                    💰
+                                </div>
+                                <span
+                                    class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full"
+                                    >+12%</span
+                                >
+                            </div>
+                            <p class="text-slate-500 text-sm font-medium">
+                                Ingresos este mes
+                            </p>
+                            <h3
+                                id="kpi-ingresos"
+                                class="text-2xl font-bold text-slate-800"
+                            >
+                                $0
+                            </h3>
+                        </div>
+
+                        <div
+                            class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100"
+                        >
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="p-2 bg-blue-50 rounded-lg text-xl">
+                                    📄
+                                </div>
+                                <span class="text-slate-400 text-xs font-medium"
+                                    >Activos</span
+                                >
+                            </div>
+                            <p class="text-slate-500 text-sm font-medium">
+                                Presupuestos
+                            </p>
+                            <h3
+                                id="kpi-presupuestos"
+                                class="text-2xl font-bold text-slate-800"
+                            >
+                                0
+                            </h3>
+                        </div>
+
+                        <div
+                            class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100"
+                        >
+                            <div class="flex justify-between items-start mb-4">
+                                <div
+                                    class="p-2 bg-orange-50 rounded-lg text-xl"
+                                >
+                                    👁️
+                                </div>
+                                <span
+                                    class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full"
+                                    >+5%</span
+                                >
+                            </div>
+                            <p class="text-slate-500 text-sm font-medium">
+                                Visitas Perfil
+                            </p>
+                            <h3
+                                id="kpi-visitas"
+                                class="text-2xl font-bold text-slate-800"
+                            >
+                                0
+                            </h3>
+                        </div>
+
+                        <div
+                            class="bg-gradient-to-br from-indigo-600 to-purple-700 p-5 rounded-2xl shadow-lg text-white"
+                        >
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="p-2 bg-white/20 rounded-lg text-xl">
+                                    🏆
+                                </div>
+                            </div>
+                            <p class="text-indigo-100 text-sm font-medium">
+                                Puntos Totales
+                            </p>
+                            <h3
+                                id="total-points-card"
+                                class="text-2xl font-bold"
+                            >
+                                --- pts
+                            </h3>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 space-y-8">
+                            <div
+                                class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                            >
+                                <div
+                                    class="flex justify-between items-center mb-6"
+                                >
+                                    <h3
+                                        class="font-bold text-lg text-slate-800"
+                                    >
+                                        Rendimiento Mensual
+                                    </h3>
+                                    <select
+                                        class="bg-slate-50 border border-slate-200 text-sm rounded-lg p-2 outline-none"
+                                    >
+                                        <option>Últimos 6 meses</option>
+                                        <option>Este año</option>
+                                    </select>
+                                </div>
+                                <div
+                                    class="h-64 flex items-end justify-between gap-2 px-4"
+                                >
+                                    <div
+                                        class="w-full bg-orange-100 rounded-t-lg hover:bg-orange-200 transition-all h-[40%] relative group"
+                                    >
+                                        <span
+                                            class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded"
+                                            >Ene</span
+                                        >
+                                    </div>
+                                    <div
+                                        class="w-full bg-orange-100 rounded-t-lg hover:bg-orange-200 transition-all h-[55%] relative group"
+                                    >
+                                        <span
+                                            class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded"
+                                            >Feb</span
+                                        >
+                                    </div>
+                                    <div
+                                        class="w-full bg-orange-100 rounded-t-lg hover:bg-orange-200 transition-all h-[35%] relative group"
+                                    >
+                                        <span
+                                            class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded"
+                                            >Mar</span
+                                        >
+                                    </div>
+                                    <div
+                                        class="w-full bg-orange-100 rounded-t-lg hover:bg-orange-200 transition-all h-[70%] relative group"
+                                    >
+                                        <span
+                                            class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded"
+                                            >Abr</span
+                                        >
+                                    </div>
+                                    <div
+                                        class="w-full bg-orange-500 rounded-t-lg shadow-lg shadow-orange-200 h-[85%] relative group"
+                                    >
+                                        <span
+                                            class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded"
+                                            >May</span
+                                        >
+                                    </div>
+                                    <div
+                                        class="w-full bg-orange-100 rounded-t-lg hover:bg-orange-200 transition-all h-[60%] relative group"
+                                    >
+                                        <span
+                                            class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded"
+                                            >Jun</span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden"
+                            >
+                                <div
+                                    class="p-6 border-b border-slate-100 flex justify-between items-center"
+                                >
+                                    <h3
+                                        class="font-bold text-lg text-slate-800"
+                                    >
+                                        Últimos Presupuestos
+                                    </h3>
+                                    <button
+                                        class="text-orange-600 text-sm font-bold hover:underline"
+                                        >Ver todos</button
+                                    >
+                                </div>
+                                <table
+                                    class="w-full text-left text-sm text-slate-600"
+                                >
+                                    <thead
+                                        class="bg-slate-50 text-slate-500 uppercase font-bold text-xs"
+                                    >
+                                        <tr>
+                                            <th class="px-6 py-3">Cliente</th>
+                                            <th class="px-6 py-3">Monto</th>
+                                            <th class="px-6 py-3">Estado</th>
+                                            <th class="px-6 py-3">Fecha</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody
+                                        id="latest-budgets-tbody"
+                                        class="divide-y divide-slate-100"
+                                    >
+                                        <tr>
+                                            <td
+                                                colspan="4"
+                                                class="text-center py-8 text-slate-500"
+                                            >
+                                                Cargando presupuestos...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="space-y-8">
+                            <div
+                                class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                            >
+                                <div
+                                    class="flex justify-between items-center mb-4"
+                                >
+                                    <h3
+                                        class="font-bold text-lg text-slate-800"
+                                        <h3
+                                        class="font-bold text-lg mb-4"
+                                    >
+                                        Mi Equipo
+                                    </h3>
+                                    <div
+                                        id="team-members-list"
+                                        class="space-y-3"
+                                    >
+                                        <p
+                                            class="text-slate-500 text-sm text-center py-4"
+                                        >
+                                            Cargando equipo...
+                                        </p>
+                                    </div>
+                                    <div
+                                        class="mt-4 pt-4 border-t border-slate-200"
+                                    >
+                                        <div
+                                            class="flex justify-between items-center"
+                                        >
+                                            <p class="text-sm text-slate-600">
+                                                Total Pendiente
+                                            </p>
+                                            <p
+                                                id="team-total-pending"
+                                                class="font-bold text-orange-600"
+                                            >
+                                                $0
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <a
+                                        href="/panel/mi-equipo"
+                                        class="block w-full mt-4 py-2 border border-dashed border-slate-300 rounded-xl text-slate-500 text-sm hover:border-orange-400 hover:text-orange-600 transition-colors text-center"
+                                    >
+                                        Gestionar Equipo
+                                    </a>
+                                </div>
+
+                                <div
+                                    class="bg-indigo-900 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden"
+                                >
+                                    <div
+                                        class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"
+                                    >
+                                    </div>
+
+                                    <h3
+                                        class="font-bold text-lg mb-4 relative z-10"
+                                    >
+                                        Misiones Diarias 🎯
+                                    </h3>
+
+                                    <div
+                                        id="misiones-list"
+                                        class="space-y-3 relative z-10"
+                                    >
+                                        <!-- Rendered by JS -->
+                                        <div
+                                            class="text-indigo-200 text-sm animate-pulse"
+                                        >
+                                            Cargando misiones...
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="mt-6 pt-4 border-t border-white/10"
+                                    >
+                                        <p class="text-xs text-indigo-300">
+                                            Próxima recompensa: <strong
+                                                >Insignia Experto</strong
+                                            >
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="h-10"></div>
+                    </div>
+                </div>
+            </main>
+
+            <script>
+                import { auth, db } from "../../firebase/client";
+                import { onAuthStateChanged, signOut } from "firebase/auth";
+                import {
+                    doc,
+                    getDoc,
+                    getDocFromServer,
+                    collection,
+                    query,
+                    where,
+                    getDocs,
+                    orderBy,
+                    limit,
+                    Timestamp,
+                } from "firebase/firestore";
+
+                const nameEl = document.getElementById("user-name");
+                const avatarEl = document.getElementById("user-avatar");
+                const logoutBtn = document.getElementById("btn-logout");
+                const badgeOportunidades = document.getElementById(
+                    "badge-oportunidades",
+                );
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        try {
+                            // Verificar si es profesional (seguridad básica frontend)
+                            const docRef = doc(db, "profesionales", user.uid);
+                            // Usar getDocFromServer para evitar problemas de snapshot listener
+                            const docSnap = await getDocFromServer(docRef);
+
+                            if (docSnap.exists()) {
+                                const data = docSnap.data();
+                                if (nameEl) nameEl.textContent = data.nombre;
+                                if (avatarEl)
+                                    avatarEl.src =
+                                        data.foto ||
+                                        `https://ui-avatars.com/api/?name=${data.nombre}`;
+
+                                // Cargar datos del dashboard
+                                await loadDashboardData(user.uid, data);
+
+                                // GAMIFICACION
+                                calculateGamification(user.uid, data);
+
+                                // === SISTEMA DE NOTIFICACIONES ===
+                                setupNotifications(user.uid);
+                            } else {
+                                window.location.href = "/";
+                            }
+                        } catch (error) {
+                            console.error("Error cargando perfil:", error);
+                            // Si hay error de permisos, intentar recargar después de un delay
+                            if (error.code === "permission-denied") {
+                                console.log(
+                                    "Error de permisos detectado. Reintentando en 2 segundos...",
+                                );
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 2000);
+                            }
+                        }
+                    } else {
+                        // No logueado
+                        window.location.href = "/ingresar";
+                    }
+                });
+
+                // === FUNCIÓN PARA CARGAR DATOS DEL DASHBOARD ===
+                async function loadDashboardData(uid: string, userData: any) {
+                    const { collection, query, where, getDocs, Timestamp } =
+                        await import("firebase/firestore");
+
+                    try {
+                        // 1. KPI: Visitas al perfil
+                        const visitas = userData.vistas_perfil || 0;
+                        const kpiVisitas =
+                            document.getElementById("kpi-visitas");
+                        if (kpiVisitas) {
+                            kpiVisitas.textContent = visitas.toLocaleString();
+                        }
+
+                        // 2. KPI: Ingresos del mes
+                        const now = new Date();
+                        const firstDayOfMonth = new Date(
+                            now.getFullYear(),
+                            now.getMonth(),
+                            1,
+                        );
+
+                        const qFinanzas = query(
+                            collection(db, "profesionales", uid, "finanzas"),
+                            where("tipo", "==", "ingreso"),
+                            where(
+                                "fecha",
+                                ">=",
+                                Timestamp.fromDate(firstDayOfMonth),
+                            ),
+                        );
+
+                        const finanzasSnap = await getDocs(qFinanzas);
+                        let totalIngresos = 0;
+                        finanzasSnap.forEach((doc) => {
+                            const data = doc.data();
+                            totalIngresos += data.monto || 0;
+                        });
+
+                        const kpiIngresos =
+                            document.getElementById("kpi-ingresos");
+                        if (kpiIngresos) {
+                            kpiIngresos.textContent =
+                                "$" + totalIngresos.toLocaleString();
+                        }
+
+                        // 3. KPI: Presupuestos activos
+                        const qPresupuestos = query(
+                            collection(
+                                db,
+                                "profesionales",
+                                uid,
+                                "presupuestos",
+                            ),
+                            where("estado", "in", ["Pendiente", "Aprobado"]),
+                        );
+
+                        const presupuestosSnap = await getDocs(qPresupuestos);
+                        const totalPresupuestos = presupuestosSnap.size;
+
+                        const kpiPresupuestos =
+                            document.getElementById("kpi-presupuestos");
+                        if (kpiPresupuestos) {
+                            kpiPresupuestos.textContent =
+                                totalPresupuestos.toString();
+                        }
+
+                        // 4. Cargar últimos presupuestos (tabla)
+                        await loadLatestBudgets(uid);
+
+                        // 5. Cargar widget de equipo
+                        await loadTeamWidget(uid);
+                    } catch (error) {
+                        console.error(
+                            "Error cargando datos del dashboard:",
+                            error,
+                        );
+                    }
+                }
+
+                // === FUNCIÓN PARA CARGAR ÚLTIMOS PRESUPUESTOS ===
+                async function loadLatestBudgets(uid: string) {
+                    const { collection, query, orderBy, limit, getDocs } =
+                        await import("firebase/firestore");
+
+                    try {
+                        const q = query(
+                            collection(
+                                db,
+                                "profesionales",
+                                uid,
+                                "presupuestos",
+                            ),
+                            orderBy("createdAt", "desc"),
+                            limit(5),
+                        );
+
+                        const snapshot = await getDocs(q);
+                        const tbody = document.getElementById(
+                            "latest-budgets-tbody",
+                        );
+
+                        if (!tbody) return;
+
+                        if (snapshot.empty) {
+                            tbody.innerHTML = `
+                            <tr>
+                                <td colspan="4" class="text-center py-8 text-slate-500">
+                                    No tienes presupuestos aún. <a href="/panel/presupuestos" class="text-orange-600 font-bold hover:underline">Crear uno</a>
+                                </td>
+                            </tr>
+                        `;
+                            return;
+                        }
+
+                        const statusColors = {
+                            Pendiente: "bg-yellow-100 text-yellow-700",
+                            Aprobado: "bg-green-100 text-green-700",
+                            Cobrado: "bg-blue-100 text-blue-700",
+                            Rechazado: "bg-red-100 text-red-700",
+                        };
+
+                        tbody.innerHTML = snapshot.docs
+                            .map((doc) => {
+                                const data = doc.data();
+                                const fecha = data.createdAt
+                                    ? new Date(
+                                          data.createdAt.seconds * 1000,
+                                      ).toLocaleDateString()
+                                    : "Sin fecha";
+                                const statusClass =
+                                    statusColors[data.estado] ||
+                                    "bg-slate-100 text-slate-700";
+
+                                return `
+                                <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                                    <td class="py-3 px-4 font-medium text-slate-800">${data.cliente}</td>
+                                    <td class="py-3 px-4 text-slate-600">$${(data.total || 0).toLocaleString()}</td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-2 py-1 rounded-full text-xs font-bold ${statusClass}">
+                                            ${data.estado}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4 text-slate-500 text-sm">${fecha}</td>
+                                </tr>
+                            `;
+                            })
+                            .join("");
+                    } catch (error) {
+                        console.error("Error cargando presupuestos:", error);
+                    }
+                }
+
+                // === FUNCIÓN PARA CARGAR WIDGET DE EQUIPO ===
+                async function loadTeamWidget(uid: string) {
+                    const { collection, query, where, getDocs } =
+                        await import("firebase/firestore");
+
+                    try {
+                        const q = query(
+                            collection(db, "profesionales", uid, "equipo"),
+                            where("activo", "==", true),
+                        );
+
+                        const snapshot = await getDocs(q);
+                        const teamList =
+                            document.getElementById("team-members-list");
+
+                        if (!teamList) return;
+
+                        if (snapshot.empty) {
+                            teamList.innerHTML = `
+                            <p class="text-slate-500 text-sm text-center py-4">
+                                No tienes miembros en tu equipo. <a href="/panel/mi-equipo" class="text-orange-600 font-bold hover:underline">Agregar</a>
+                            </p>
+                        `;
+                            return;
+                        }
+
+                        let totalPendiente = 0;
+                        const membersHTML = snapshot.docs
+                            .slice(0, 3)
+                            .map((doc) => {
+                                const data = doc.data();
+                                totalPendiente += data.pendientePago || 0;
+
+                                return `
+                                <div class="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+                                    <div>
+                                        <p class="font-medium text-slate-800 text-sm">${data.nombre}</p>
+                                        <p class="text-xs text-slate-500 capitalize">${data.rol}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        ${
+                                            data.pendientePago > 0
+                                                ? `<p class="text-xs font-bold text-orange-600">$${data.pendientePago.toLocaleString()}</p>`
+                                                : `<p class="text-xs text-green-600">✓ Al día</p>`
+                                        }
+                                    </div>
+                                </div>
+                            `;
+                            })
+                            .join("");
+
+                        teamList.innerHTML = membersHTML;
+
+                        // Actualizar total pendiente
+                        const totalPendienteEl =
+                            document.getElementById("team-total-pending");
+                        if (totalPendienteEl) {
+                            totalPendienteEl.textContent =
+                                "$" + totalPendiente.toLocaleString();
+                        }
+                    } catch (error) {
+                        console.error("Error cargando equipo:", error);
+                    }
+                }
+
+                // === FUNCIÓN DE NOTIFICACIONES ===
+                async function setupNotifications(uid: string) {
+                    const { collection, query, where, onSnapshot, getDocs } =
+                        await import("firebase/firestore");
+
+                    // 1. Registrar Service Worker
+                    if ("serviceWorker" in navigator) {
+                        try {
+                            const registration =
+                                await navigator.serviceWorker.register(
+                                    "/sw.js",
+                                );
+                            console.log("[Panel] Service Worker registrado");
+                        } catch (error) {
+                            console.error(
+                                "[Panel] Error registrando SW:",
+                                error,
+                            );
+                        }
+                    }
+
+                    // 2. Escuchar notificaciones en tiempo real
+                    const qNotifs = query(
+                        collection(db, "profesionales", uid, "notificaciones"),
+                        where("leido", "==", false),
+                    );
+
+                    onSnapshot(qNotifs, (snapshot) => {
+                        const count = snapshot.size;
+
+                        // Actualizar badge
+                        if (count > 0 && badgeOportunidades) {
+                            badgeOportunidades.textContent = count.toString();
+                            badgeOportunidades.classList.remove("hidden");
+                        } else if (badgeOportunidades) {
+                            badgeOportunidades.classList.add("hidden");
+                        }
+
+                        // Mostrar notificación del navegador para nuevas
+                        snapshot.docChanges().forEach((change) => {
+                            if (change.type === "added") {
+                                const notif = change.doc.data();
+
+                                // Pedir permiso si no lo tiene
+                                if (Notification.permission === "default") {
+                                    Notification.requestPermission();
+                                }
+
+                                // Mostrar notificación si tiene permiso
+                                if (Notification.permission === "granted") {
+                                    new Notification(
+                                        notif.titulo || "¡Nueva oportunidad!",
+                                        {
+                                            body:
+                                                notif.mensaje ||
+                                                "Tienes una nueva solicitud",
+                                            icon: "/icon-192.png",
+                                            badge: "/favicon.svg",
+                                            tag: "oportunidad-" + change.doc.id,
+                                            requireInteraction: false,
+                                        },
+                                    );
+                                }
+                            }
+                        });
+                    });
+
+                    // 3. Contar oportunidades abiertas
+                    const qOportunidades = query(
+                        collection(db, "solicitudes"),
+                        where("candidatos", "array-contains", uid),
+                        where("estado", "==", "abierta"),
+                    );
+
+                    const snapshotOportunidades = await getDocs(qOportunidades);
+                    const countOportunidades = snapshotOportunidades.size;
+
+                    if (countOportunidades > 0 && badgeOportunidades) {
+                        badgeOportunidades.textContent =
+                            countOportunidades.toString();
+                        badgeOportunidades.classList.remove("hidden");
+                    }
+                }
+
+                logoutBtn?.addEventListener("click", async () => {
+                    await signOut(auth);
+                    window.location.href = "/";
+                });
+
+                // GAMIFICATION LOGIC
+                async function calculateGamification(uid, userData) {
+                    // 1. Calcular Puntos base
+                    let xp = 0;
+
+                    // Perfil
+                    const hasPhoto =
+                        userData.foto && !userData.foto.includes("ui-avatars");
+                    const hasRubro = !!userData.rubro;
+                    const hasZona = !!userData.zona;
+
+                    if (hasPhoto) xp += 100;
+                    if (hasRubro) xp += 50;
+                    if (hasZona) xp += 50;
+
+                    // Misiones Mockeadas (para MVP)
+                    const dailyMissions = [
+                        {
+                            id: "profile",
+                            text: "Completa tu perfil",
+                            xp: 200,
+                            done: hasPhoto && hasRubro && hasZona,
+                        },
+                        {
+                            id: "photos",
+                            text: "Sube 3 fotos a Galería",
+                            xp: 150,
+                            done: false,
+                        }, // Placeholder
+                        {
+                            id: "review",
+                            text: "Consigue 5 estrellas",
+                            xp: 300,
+                            done: userData.rating >= 4.5,
+                        },
+                    ];
+
+                    // Sumar XP
+                    dailyMissions.forEach((m) => {
+                        if (m.done) xp += m.xp;
+                    });
+
+                    // 2. Determinar Nivel
+                    const levels = [
+                        { name: "Novato 🌱", threshold: 0 },
+                        { name: "Aprendiz 🔨", threshold: 500 },
+                        { name: "Profesional 👷", threshold: 1500 },
+                        { name: "Experto 🦁", threshold: 5000 },
+                        { name: "Maestro 👑", threshold: 50000 },
+                    ];
+
+                    let currentLevel = levels[0];
+                    let nextLevel = levels[1];
+
+                    for (let i = 0; i < levels.length; i++) {
+                        if (xp >= levels[i].threshold) {
+                            currentLevel = levels[i];
+                            nextLevel = levels[i + 1] || {
+                                name: "Leyenda",
+                                threshold: 100000,
+                            };
+                        }
+                    }
+
+                    // 3. Renderizar UI
+                    // Sidebar
+                    const progressPct = Math.min(
+                        100,
+                        (xp / nextLevel.threshold) * 100,
+                    );
+
+                    const lvlName = document.getElementById("level-name");
+                    const lvlNum = document.getElementById("level-number");
+                    const lvlProg = document.getElementById("level-progress");
+                    const lvlNext = document.getElementById("level-next");
+
+                    if (lvlName) lvlName.innerText = currentLevel.name;
+                    if (lvlNum)
+                        lvlNum.innerText = `Lvl ${levels.indexOf(currentLevel) + 1}`;
+                    if (lvlProg) lvlProg.style.width = `${progressPct}%`;
+                    if (lvlNext)
+                        lvlNext.innerText = `Faltan ${nextLevel.threshold - xp} pts para ${nextLevel.name.split(" ")[0]}`;
+
+                    // Card total
+                    const cardTotal =
+                        document.getElementById("total-points-card");
+                    if (cardTotal) cardTotal.innerText = `${xp} pts`;
+
+                    // Misiones Widget
+                    const missionsHtml = dailyMissions
+                        .map(
+                            (m) => `
+                    <div class="flex items-center gap-3">
+                         <div class="w-5 h-5 rounded-full border-2 ${m.done ? "border-green-400 bg-green-400" : "border-white/30"} flex items-center justify-center text-indigo-900 text-xs font-bold">
+                            ${m.done ? "✓" : ""}
+                         </div>
+                         <p class="text-sm ${m.done ? "text-indigo-200 line-through" : "text-white"}">
+                             ${m.text} (+${m.xp}xp)
+                         </p>
+                    </div>
+                `,
+                        )
+                        .join("");
+
+                    const missionsList =
+                        document.getElementById("misiones-list");
+                    if (missionsList) missionsList.innerHTML = missionsHtml;
+                }
+            </script>
+
+            <script>
+                // Mobile Sidebar Toggle
+                const mobileSidebar = document.getElementById("mobile-sidebar");
+                const sidebarOverlay =
+                    document.getElementById("sidebar-overlay");
+                const openSidebarBtn = document.getElementById("open-sidebar");
+                const closeSidebarBtn =
+                    document.getElementById("close-sidebar");
+
+                function openMobileSidebar() {
+                    mobileSidebar?.classList.add("active");
+                    sidebarOverlay?.classList.add("active");
+                }
+
+                function closeMobileSidebar() {
+                    mobileSidebar?.classList.remove("active");
+                    sidebarOverlay?.classList.remove("active");
+                }
+
+                openSidebarBtn?.addEventListener("click", openMobileSidebar);
+                closeSidebarBtn?.addEventListener("click", closeMobileSidebar);
+                sidebarOverlay?.addEventListener("click", closeMobileSidebar);
+
+                // Mobile logout
+                document
+                    .getElementById("btn-logout-mobile")
+                    ?.addEventListener("click", async () => {
+                        try {
+                            await signOut(auth);
+                            window.location.href = "/ingresar";
+                        } catch (error) {
+                            console.error("Error al cerrar sesión:", error);
+                        }
+                    });
+
+                // Add fade-in animation to main content
+                document.querySelector("main")?.classList.add("fade-in");
+
+                // Service Worker
+                if ("serviceWorker" in navigator) {
+                    window.addEventListener("load", () => {
+                        navigator.serviceWorker
+                            .register("/sw.js")
+                            .then((reg) =>
+                                console.log(
+                                    "✅ SW registrado en Panel:",
+                                    reg.scope,
+                                ),
+                            )
+                            .catch((err) =>
+                                console.log("❌ Error SW Panel:", err),
+                            );
+                    });
+                }
+            </script>
+        </div>
+    </body>
+</html>

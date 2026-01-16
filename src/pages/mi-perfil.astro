@@ -3,1264 +3,1375 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Mi Panel Profesional - DeOficios">
-  <script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script
-    is:inline
-    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
-  ></script>
+    <script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
+    ></script>
+    <script
+        is:inline
+        src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+    ></script>
 
-  <div class="profile-page-wrapper bg-gray-50 min-h-screen pb-20 font-sans">
-    <div class="container mx-auto px-4 py-8 max-w-7xl">
-      <div
-        id="loading-overlay"
-        class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center"
-        style="display: flex;"
-      >
-        <div
-          class="animate-spin rounded-full h-16 w-16 border-t-4 border-orange-500 border-gray-200"
-        >
-        </div>
-        <p class="mt-4 text-gray-500 font-medium animate-pulse">
-          Cargando tu perfil...
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <aside class="lg:col-span-1 space-y-6">
-          <div
-            class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-center sticky top-24"
-          >
-            <div class="relative w-32 h-32 mx-auto mb-4 group cursor-pointer">
-              <img
-                id="avatar-img"
-                src=""
-                class="w-full h-full rounded-full object-cover border-4 border-white shadow-md bg-gray-100 hidden"
-              />
-              <div
-                class="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-white text-xs font-bold"
-                onclick="document.getElementById('file-foto').click()"
-              >
-                📸 Cambiar
-              </div>
-              <input
-                type="file"
-                id="file-foto"
-                class="hidden"
-                accept="image/*"
-              />
-            </div>
-
-            <h3
-              id="sidebar-name"
-              class="text-xl font-bold text-gray-900 leading-tight"
-            >
-              ...
-            </h3>
+    <div class="profile-page-wrapper bg-gray-50 min-h-screen pb-20 font-sans">
+        <div class="container mx-auto px-4 py-8 max-w-7xl">
             <div
-              id="badges-container"
-              class="flex flex-wrap justify-center gap-2 mt-2 mb-4"
+                id="loading-overlay"
+                class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center"
+                style="display: flex;"
             >
-            </div>
-
-            <div
-              class="bg-orange-50 rounded-xl p-5 border border-orange-200 text-left relative overflow-hidden mb-4"
-            >
-              <div class="text-center mb-2">
-                <span
-                  class="text-[10px] text-orange-600 font-bold uppercase tracking-widest"
-                  >TU PLAN ACTUAL</span
-                >
                 <div
-                  id="plan-display"
-                  class="font-black text-gray-900 text-xl mt-1"
+                    class="animate-spin rounded-full h-16 w-16 border-t-4 border-orange-500 border-gray-200"
                 >
-                  ...
                 </div>
-              </div>
-
-              <div
-                id="click-counter"
-                class="hidden mt-3 bg-white p-3 rounded-lg border border-orange-100"
-              >
-                <div class="flex justify-between text-xs font-bold mb-1">
-                  <span class="text-gray-600">Contactos este mes:</span>
-                  <span class="text-orange-600"
-                    ><span id="clicks-current">0</span>/20</span
-                  >
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                  <div
-                    id="clicks-progress"
-                    class="bg-orange-500 h-2.5 rounded-full"
-                    style="width: 0%"
-                  >
-                  </div>
-                </div>
-              </div>
-
-              <ul
-                id="plan-benefits"
-                class="space-y-2 text-sm text-gray-700 mt-4 mb-4"
-              >
-              </ul>
-              <a
-                href="/planes"
-                class="block w-full py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-bold rounded-lg text-center hover:shadow-lg transition text-shadow"
-                >⭐ Mejorar Plan</a
-              >
-            </div>
-
-            <div class="mt-6 space-y-2">
-              <a
-                href="#"
-                id="btn-ver-perfil"
-                target="_blank"
-                class="block w-full py-2 px-4 border border-gray-200 text-gray-600 font-bold rounded-lg hover:bg-gray-50 transition text-sm text-center"
-              >
-                👀 Ver perfil público
-              </a>
-
-              <button
-                id="btn-giftcard"
-                class="block w-full py-2 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-lg hover:from-purple-700 hover:to-indigo-700 transition text-sm text-center shadow-md transform hover:-translate-y-0.5"
-              >
-                🎁 Canjear Código
-              </button>
-
-              <!-- Herramientas Premium - Solo para planes pagos -->
-              <div id="premium-tools" class="hidden space-y-2">
-                <button
-                  id="btn-show-qr-profile"
-                  class="block w-full py-2 px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-lg hover:from-purple-600 hover:to-pink-600 transition text-sm text-center shadow-md flex items-center justify-center gap-2"
-                >
-                  <span>📱</span> Ver Código QR
-                </button>
-
-                <button
-                  id="btn-download-card-profile"
-                  class="block w-full py-2 px-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg hover:from-indigo-600 hover:to-purple-600 transition text-sm text-center shadow-md flex items-center justify-center gap-2"
-                >
-                  <span>💳</span> Tarjeta Digital
-                </button>
-              </div>
-
-              <a
-                href="/admin/"
-                id="btn-admin-panel"
-                class="hidden block w-full py-2 px-4 bg-gray-800 text-white font-bold rounded-lg hover:bg-black transition text-sm text-center"
-              >
-                🛡️ Panel Admin
-              </a>
-
-              <a
-                href="/foro"
-                class="block w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-sm text-center shadow-sm"
-              >
-                👥 Comunidad
-              </a>
-
-              <hr class="border-gray-100 my-2" />
-
-              <button
-                id="btn-logout"
-                class="block w-full py-2 px-4 text-gray-500 font-medium hover:text-gray-800 rounded-lg text-sm transition"
-              >
-                🚪 Cerrar Sesión
-              </button>
-              <button
-                id="btn-delete-account"
-                class="block w-full py-2 px-4 text-red-300 hover:text-red-600 font-medium rounded-lg text-xs transition"
-              >
-                ❌ Eliminar Cuenta
-              </button>
-            </div>
-          </div>
-        </aside>
-
-        <div class="lg:col-span-3 space-y-6">
-          <div
-            class="bg-white p-6 rounded-2xl shadow-md border-l-4 border-blue-600 flex flex-col md:flex-row justify-between items-center gap-4"
-          >
-            <div class="flex items-center gap-4">
-              <div class="bg-blue-100 p-3 rounded-full text-2xl">🛡️</div>
-              <div>
-                <h3 class="font-bold text-lg text-gray-900">
-                  Blindaje de Identidad
-                </h3><p class="text-sm text-gray-500">
-                  Sube DNI y Antecedentes para activar tu perfil.
+                <p class="mt-4 text-gray-500 font-medium animate-pulse">
+                    Cargando tu perfil...
                 </p>
-              </div>
-            </div>
-            <div class="flex gap-3">
-              <div class="text-center">
-                <label
-                  for="file-dni"
-                  class="cursor-pointer text-xs font-bold bg-gray-100 px-3 py-2 rounded hover:bg-gray-200 block text-gray-700"
-                  >📄 DNI</label
-                ><span
-                  id="status-dni"
-                  class="text-[10px] text-red-500 font-bold block mt-1"
-                  >Pendiente</span
-                ><input
-                  type="file"
-                  id="file-dni"
-                  class="hidden"
-                  accept="image/*,application/pdf"
-                />
-              </div>
-              <div class="text-center">
-                <label
-                  for="file-ant"
-                  class="cursor-pointer text-xs font-bold bg-gray-100 px-3 py-2 rounded hover:bg-gray-200 block text-gray-700"
-                  >⚖️ Antecedentes</label
-                ><span
-                  id="status-ant"
-                  class="text-[10px] text-red-500 font-bold block mt-1"
-                  >Pendiente</span
-                ><input
-                  type="file"
-                  id="file-ant"
-                  class="hidden"
-                  accept="image/*,application/pdf"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div
-            class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden relative"
-          >
-            <div
-              id="overlay-lock"
-              class="absolute inset-0 bg-white/90 z-50 hidden flex flex-col items-center justify-center text-center p-6 backdrop-blur-sm"
-            >
-              <div class="text-6xl mb-4">⏳</div>
-              <h3 class="text-2xl font-bold text-gray-800">
-                Perfil en Revisión
-              </h3>
-              <p class="text-gray-600 mb-6 max-w-md">
-                Tu documentación está siendo validada por nuestro equipo.
-              </p>
             </div>
 
-            <div
-              class="flex border-b border-gray-200 overflow-x-auto no-scrollbar bg-gray-50"
-            >
-              <button
-                class="tab-btn active px-6 py-4 font-bold text-gray-700 border-b-2 border-orange-500 bg-white"
-                data-tab="datos">📝 Datos</button
-              >
-              <button
-                id="tab-seo"
-                class="tab-btn px-6 py-4 font-bold text-gray-500 hover:text-orange-600 border-b-2 border-transparent relative group"
-                data-tab="seo"
-              >
-                🌐 Web & SEO <span
-                  class="text-[10px] bg-gray-200 text-gray-600 px-1 rounded ml-1 premium-lock"
-                  >🔒</span
-                >
-              </button>
-              <button
-                class="tab-btn px-6 py-4 font-bold text-gray-500 hover:text-orange-600 border-b-2 border-transparent relative group"
-                data-tab="galeria"
-              >
-                📸 Galería <span
-                  class="text-[10px] bg-gray-200 text-gray-600 px-1 rounded ml-1 premium-lock"
-                  >🔒</span
-                >
-              </button>
-              <button
-                id="tab-presupuestos"
-                class="tab-btn px-6 py-4 font-bold text-gray-500 hover:text-orange-600 border-b-2 border-transparent relative group"
-                data-tab="presupuestos"
-              >
-                💰 Presupuestos <span
-                  class="text-[10px] bg-gray-200 text-gray-600 px-1 rounded ml-1 premium-lock"
-                  >🔒</span
-                >
-              </button>
-            </div>
-
-            <form id="form-perfil" class="p-6 md:p-8">
-              <div id="tab-datos" class="tab-content block">
-                <div class="grid md:grid-cols-2 gap-6 mb-4">
-                  <div>
-                    <label class="label-input">Nombre y Apellido</label><input
-                      type="text"
-                      id="nombre"
-                      class="input-field"
-                      data-allow-free
-                    />
-                  </div>
-                  <div>
-                    <label class="label-input"
-                      >Nombre de Fantasía (Opcional)</label
-                    ><input
-                      type="text"
-                      id="nombre_fantasia"
-                      class="input-field"
-                      placeholder="Ej: Plomería El Rayo"
-                      data-allow-free
-                    />
-                  </div>
-                </div>
-
-                <div class="grid md:grid-cols-2 gap-6 mb-4">
-                  <div>
-                    <label class="label-input">CUIT / CUIL</label><input
-                      type="text"
-                      id="cuit"
-                      class="input-field"
-                      placeholder="20-12345678-9"
-                      data-allow-free
-                    />
-                  </div>
-                  <div>
-                    <label class="label-input">N° Matrícula (Opcional)</label
-                    ><input
-                      type="text"
-                      id="numero_matricula"
-                      class="input-field"
-                      placeholder="Ej: 12345"
-                      data-allow-free
-                    />
-                  </div>
-                </div>
-
-                <div class="grid md:grid-cols-2 gap-6 mb-4">
-                  <div>
-                    <label class="label-input">Rubro Principal</label><select
-                      id="rubro_principal"
-                      class="input-field"
-                      data-allow-free></select>
-                  </div>
-                  <div>
-                    <label class="label-input">Zona / Provincia</label><select
-                      id="zona"
-                      class="input-field"
-                      data-allow-free></select>
-                  </div>
-                </div>
-
-                <div class="grid md:grid-cols-2 gap-6 mb-4">
-                  <div>
-                    <label class="label-input">WhatsApp (Sin 0 ni 15)</label
-                    ><input
-                      type="text"
-                      id="telefono"
-                      class="input-field"
-                      placeholder="11 1234 5678"
-                      data-allow-free
-                    />
-                  </div>
-
-                  <div class="relative">
-                    <label class="label-input flex justify-between"
-                      ><span>Dirección Exacta (Auto) 🇦🇷</span><span
-                        id="geo-status"
-                        class="text-xs text-gray-400">...</span
-                      ></label
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <aside class="lg:col-span-1 space-y-6">
+                    <div
+                        class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-center sticky top-24"
                     >
-                    <input
-                      type="text"
-                      id="direccion_input"
-                      class="input-field"
-                      placeholder="Calle, Altura, Ciudad..."
-                      autocomplete="off"
-                      data-allow-free
-                    />
-                    <ul
-                      id="geo-suggestions"
-                      class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden max-h-48 overflow-y-auto"
-                    >
-                    </ul>
-                    <input type="hidden" id="latitud" /><input
-                      type="hidden"
-                      id="longitud"
-                    />
-                  </div>
-                </div>
+                        <div
+                            class="relative w-32 h-32 mx-auto mb-4 group cursor-pointer"
+                        >
+                            <img
+                                id="avatar-img"
+                                src=""
+                                class="w-full h-full rounded-full object-cover border-4 border-white shadow-md bg-gray-100 hidden"
+                            />
+                            <div
+                                class="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-white text-xs font-bold"
+                                onclick="document.getElementById('file-foto').click()"
+                            >
+                                📸 Cambiar
+                            </div>
+                            <input
+                                type="file"
+                                id="file-foto"
+                                class="hidden"
+                                accept="image/*"
+                            />
+                        </div>
 
-                <div class="mb-4 relative">
-                  <label class="label-input flex justify-between items-center">
-                    Biografía / Descripción
-                    <button
-                      type="button"
-                      id="btn-ai-bio"
-                      class="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded-full border border-purple-200 hover:bg-purple-200 transition flex items-center gap-1"
-                      data-allow-free
-                    >
-                      <span>✨</span> Mejorar con IA
-                    </button>
-                  </label>
-                  <textarea
-                    id="descripcion"
-                    rows="4"
-                    class="input-field"
-                    placeholder="Cuenta tu experiencia..."
-                    data-allow-free></textarea>
-                </div>
+                        <h3
+                            id="sidebar-name"
+                            class="text-xl font-bold text-gray-900 leading-tight"
+                        >
+                            ...
+                        </h3>
+                        <div
+                            id="badges-container"
+                            class="flex flex-wrap justify-center gap-2 mt-2 mb-4"
+                        >
+                        </div>
 
-                <div
-                  class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200"
-                >
-                  <h4 class="font-bold text-sm text-gray-700 mb-2">
-                    💰 Datos de Cobro (Visible en Perfil)
-                  </h4>
-                  <div class="flex flex-wrap gap-4">
-                    <label
-                      class="flex items-center gap-2 text-sm cursor-pointer select-none"
-                    >
-                      <input
-                        type="checkbox"
-                        id="emite_factura"
-                        class="w-4 h-4 text-blue-600 rounded"
-                        data-allow-free
-                      />
-                      <span class="font-medium text-gray-700"
-                        >🧾 Emite Factura</span
-                      >
-                    </label>
-                    <label
-                      class="flex items-center gap-2 text-sm cursor-pointer select-none"
-                    >
-                      <input
-                        type="checkbox"
-                        id="no_emite_factura"
-                        class="w-4 h-4 text-red-500 rounded"
-                        data-allow-free
-                      />
-                      <span class="font-medium text-gray-700"
-                        >❌ No Emite Factura</span
-                      >
-                    </label>
-                    <div class="w-full border-t border-gray-200 my-1"></div>
-                    <label class="flex items-center gap-2 text-sm"
-                      ><input
-                        type="checkbox"
-                        class="pago-check w-4 h-4 text-green-600 rounded"
-                        value="Efectivo"
-                        data-allow-free
-                      /> Efectivo</label
-                    >
-                    <label class="flex items-center gap-2 text-sm"
-                      ><input
-                        type="checkbox"
-                        class="pago-check w-4 h-4 text-blue-600 rounded"
-                        value="Transferencia"
-                        data-allow-free
-                      /> Transferencia</label
-                    >
-                    <label class="flex items-center gap-2 text-sm"
-                      ><input
-                        type="checkbox"
-                        class="pago-check w-4 h-4 text-sky-500 rounded"
-                        value="MercadoPago"
-                        data-allow-free
-                      /> MercadoPago</label
-                    >
-                    <label class="flex items-center gap-2 text-sm"
-                      ><input
-                        type="checkbox"
-                        class="pago-check w-4 h-4 text-indigo-500 rounded"
-                        value="Tarjeta"
-                        data-allow-free
-                      /> Tarjeta</label
-                    >
-                  </div>
-                </div>
+                        <div
+                            class="bg-orange-50 rounded-xl p-5 border border-orange-200 text-left relative overflow-hidden mb-4"
+                        >
+                            <div class="text-center mb-2">
+                                <span
+                                    class="text-[10px] text-orange-600 font-bold uppercase tracking-widest"
+                                    >TU PLAN ACTUAL</span
+                                >
+                                <div
+                                    id="plan-display"
+                                    class="font-black text-gray-900 text-xl mt-1"
+                                >
+                                    ...
+                                </div>
+                            </div>
 
-                <div class="mb-4">
-                  <label class="label-input">Etiquetas</label>
-                  <div class="flex gap-2 mb-2">
-                    <input
-                      type="text"
-                      id="tag-input"
-                      class="input-field"
-                      placeholder="Ej: urgencias..."
-                      data-allow-free
-                    /><button
-                      type="button"
-                      id="btn-add-tag"
-                      class="bg-gray-800 text-white px-4 rounded-lg font-bold"
-                      data-allow-free>Agregar +</button
-                    >
-                  </div>
-                  <div id="tags-container" class="flex flex-wrap gap-2"></div>
-                </div>
+                            <div
+                                id="click-counter"
+                                class="hidden mt-3 bg-white p-3 rounded-lg border border-orange-100"
+                            >
+                                <div
+                                    class="flex justify-between text-xs font-bold mb-1"
+                                >
+                                    <span class="text-gray-600"
+                                        >Contactos este mes:</span
+                                    >
+                                    <span class="text-orange-600"
+                                        ><span id="clicks-current">0</span
+                                        >/20</span
+                                    >
+                                </div>
+                                <div
+                                    class="w-full bg-gray-200 rounded-full h-2.5"
+                                >
+                                    <div
+                                        id="clicks-progress"
+                                        class="bg-orange-500 h-2.5 rounded-full"
+                                        style="width: 0%"
+                                    >
+                                    </div>
+                                </div>
+                            </div>
 
-                <div
-                  class="flex items-center gap-3 bg-red-50 p-4 rounded-lg border border-red-100"
-                >
-                  <input
-                    type="checkbox"
-                    id="es_24hs"
-                    class="w-5 h-5 text-red-600 rounded"
-                    data-allow-free
-                  />
-                  <div>
-                    <p class="font-bold text-red-800 text-sm">
-                      🚨 Servicio de Urgencia 24hs
-                    </p>
-                  </div>
-                </div>
+                            <ul
+                                id="plan-benefits"
+                                class="space-y-2 text-sm text-gray-700 mt-4 mb-4"
+                            >
+                            </ul>
+                            <a
+                                href="/planes"
+                                class="block w-full py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-bold rounded-lg text-center hover:shadow-lg transition text-shadow"
+                                >⭐ Mejorar Plan</a
+                            >
+                        </div>
 
-                <input type="hidden" id="foto-url" /><input
-                  type="hidden"
-                  id="slug"
-                />
-              </div>
+                        <div class="mt-6 space-y-2">
+                            <a
+                                href="#"
+                                id="btn-ver-perfil"
+                                target="_blank"
+                                class="block w-full py-2 px-4 border border-gray-200 text-gray-600 font-bold rounded-lg hover:bg-gray-50 transition text-sm text-center"
+                            >
+                                👀 Ver perfil público
+                            </a>
 
-              <div id="tab-seo" class="tab-content hidden">
-                <div
-                  class="premium-overlay hidden absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center"
-                >
-                  <div class="text-4xl mb-2">🔒</div>
-                  <h3 class="font-bold text-gray-800">Función Premium</h3>
-                  <p class="text-sm text-gray-500 mb-4">
-                    Actualiza tu plan para tener tu propia Web.
-                  </p>
-                  <a
-                    href="/planes"
-                    class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700"
-                    >Ver Planes</a
-                  >
-                </div>
-                <div
-                  class="bg-gray-900 text-white p-6 rounded-xl mb-6 relative overflow-hidden"
-                >
-                  <h3 class="text-xl font-bold mb-2">🌐 Tu Web Profesional</h3>
-                  <label class="flex items-center gap-3 cursor-pointer"
-                    ><input
-                      type="checkbox"
-                      id="web_propia"
-                      class="w-5 h-5 rounded text-blue-600"
-                    /><span class="font-bold text-sm">Activar Modo Landing</span
-                    ></label
-                  >
-                </div>
-                <div class="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label class="label-input">Instagram</label><div
-                      class="flex"
-                    >
-                      <span
-                        class="bg-gray-100 border border-r-0 p-2 rounded-l text-gray-500"
-                        >@</span
-                      ><input
-                        type="text"
-                        id="instagram"
-                        class="input-field rounded-l-none"
-                        placeholder="usuario"
-                      />
+                            <a
+                                href="/panel"
+                                id="btn-panel-pro"
+                                class="hidden w-full py-2 px-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-lg hover:from-orange-600 hover:to-orange-700 transition text-sm text-center shadow-md transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                            >
+                                <span>📊</span> Panel Pro
+                            </a>
+
+                            <button
+                                id="btn-giftcard"
+                                class="block w-full py-2 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-lg hover:from-purple-700 hover:to-indigo-700 transition text-sm text-center shadow-md transform hover:-translate-y-0.5"
+                            >
+                                🎁 Canjear Código
+                            </button>
+
+                            <div id="premium-tools" class="hidden space-y-2">
+                                <button
+                                    id="btn-show-qr-profile"
+                                    class="block w-full py-2 px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-lg hover:from-purple-600 hover:to-pink-600 transition text-sm text-center shadow-md flex items-center justify-center gap-2"
+                                >
+                                    <span>📱</span> Ver Código QR
+                                </button>
+
+                                <button
+                                    id="btn-download-card-profile"
+                                    class="block w-full py-2 px-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg hover:from-indigo-600 hover:to-purple-600 transition text-sm text-center shadow-md flex items-center justify-center gap-2"
+                                >
+                                    <span>💳</span> Tarjeta Digital
+                                </button>
+                            </div>
+
+                            <a
+                                href="/admin/"
+                                id="btn-admin-panel"
+                                class="hidden block w-full py-2 px-4 bg-gray-800 text-white font-bold rounded-lg hover:bg-black transition text-sm text-center"
+                            >
+                                🛡️ Panel Admin
+                            </a>
+
+                            <a
+                                href="/foro"
+                                class="block w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-sm text-center shadow-sm"
+                            >
+                                👥 Comunidad
+                            </a>
+
+                            <hr class="my-4 border-gray-100" />
+
+                            <button
+                                id="btn-logout"
+                                class="w-full py-2 px-4 text-slate-400 hover:text-red-500 transition text-sm font-bold flex items-center justify-center gap-2"
+                            >
+                                <span>🚪</span> Cerrar Sesión
+                            </button>
+                            <button
+                                id="btn-delete-account"
+                                class="block w-full py-2 px-4 text-red-300 hover:text-red-600 font-medium rounded-lg text-xs transition"
+                            >
+                                ❌ Eliminar Cuenta
+                            </button>
+                        </div>
                     </div>
-                  </div>
-                  <div>
-                    <label class="label-input">Web</label><input
-                      type="url"
-                      id="website"
-                      class="input-field"
-                      placeholder="https://"
-                    />
-                  </div>
-                </div>
-              </div>
+                </aside>
 
-              <div id="tab-galeria" class="tab-content hidden relative">
-                <div
-                  class="premium-overlay hidden absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center"
-                >
-                  <div class="text-4xl mb-2">📸</div>
-                  <h3 class="font-bold text-gray-800">Galería de Fotos</h3>
-                  <p class="text-sm text-gray-500 mb-4">
-                    Muestra tus trabajos con un plan superior.
-                  </p>
-                  <a
-                    href="/planes"
-                    class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700"
-                    >Actualizar</a
-                  >
-                </div>
-                <div class="flex justify-between items-center mb-4">
-                  <h3 class="font-bold text-gray-700">
-                    Portfolio <span
-                      id="gallery-limit-text"
-                      class="text-xs text-gray-400 font-normal ml-2"></span>
-                  </h3>
-                  <label
-                    for="input-portfolio"
-                    class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold cursor-pointer hover:bg-blue-700 shadow-sm flex items-center gap-2"
-                    >➕ Subir</label
-                  >
-                  <input
-                    type="file"
-                    id="input-portfolio"
-                    class="hidden"
-                    accept="image/*"
-                  />
-                </div>
-                <div
-                  id="gallery-grid"
-                  class="grid grid-cols-2 md:grid-cols-4 gap-3"
-                >
-                </div>
-              </div>
+                <div class="lg:col-span-3 space-y-6">
+                    <div
+                        class="bg-white p-6 rounded-2xl shadow-md border-l-4 border-blue-600 flex flex-col md:flex-row justify-between items-center gap-4"
+                    >
+                        <div class="flex items-center gap-4">
+                            <div class="bg-blue-100 p-3 rounded-full text-2xl">
+                                🛡️
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-gray-900">
+                                    Blindaje de Identidad
+                                </h3><p class="text-sm text-gray-500">
+                                    Sube DNI y Antecedentes para activar tu
+                                    perfil.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <div class="text-center">
+                                <label
+                                    for="file-dni"
+                                    class="cursor-pointer text-xs font-bold bg-gray-100 px-3 py-2 rounded hover:bg-gray-200 block text-gray-700"
+                                    >📄 DNI</label
+                                ><span
+                                    id="status-dni"
+                                    class="text-[10px] text-red-500 font-bold block mt-1"
+                                    >Pendiente</span
+                                ><input
+                                    type="file"
+                                    id="file-dni"
+                                    class="hidden"
+                                    accept="image/*,application/pdf"
+                                />
+                            </div>
+                            <div class="text-center">
+                                <label
+                                    for="file-ant"
+                                    class="cursor-pointer text-xs font-bold bg-gray-100 px-3 py-2 rounded hover:bg-gray-200 block text-gray-700"
+                                    >⚖️ Antecedentes</label
+                                ><span
+                                    id="status-ant"
+                                    class="text-[10px] text-red-500 font-bold block mt-1"
+                                    >Pendiente</span
+                                ><input
+                                    type="file"
+                                    id="file-ant"
+                                    class="hidden"
+                                    accept="image/*,application/pdf"
+                                />
+                            </div>
+                        </div>
+                    </div>
 
-              <div id="tab-presupuestos" class="tab-content hidden relative">
-                <div
-                  class="premium-overlay hidden absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center"
-                >
-                  <div class="text-4xl mb-2">💰</div>
-                  <h3 class="font-bold text-gray-800">Cotizador PDF</h3>
-                  <p class="text-sm text-gray-500 mb-4">
-                    Envía presupuestos profesionales automáticamente.
-                  </p>
-                  <a
-                    href="/planes"
-                    class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700"
-                    >Desbloquear</a
-                  >
-                </div>
-                <div
-                  class="bg-orange-50 p-4 rounded-xl border border-orange-200 mb-6 flex justify-between items-center"
-                >
-                  <div>
-                    <h3 class="font-bold text-orange-800">
-                      💰 Sistema de Presupuestos
-                    </h3>
-                  </div><label class="flex items-center gap-2"
-                    ><input
-                      type="checkbox"
-                      id="presupuestos_activo"
-                      class="w-5 h-5 text-orange-600"
-                    /><span class="text-xs font-bold text-orange-800"
-                      >Activar</span
-                    ></label
-                  >
-                </div>
-                <div class="bg-gray-50 p-4 rounded-lg border mb-4">
-                  <h4 class="font-bold text-sm mb-3">➕ Agregar Servicio</h4>
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                    <input
-                      type="text"
-                      id="serv-nombre"
-                      placeholder="Nombre"
-                      class="border p-2 rounded text-sm w-full"
-                    /><input
-                      type="number"
-                      id="serv-min"
-                      placeholder="$ Min"
-                      class="border p-2 rounded text-sm w-full"
-                    /><input
-                      type="number"
-                      id="serv-max"
-                      placeholder="$ Max"
-                      class="border p-2 rounded text-sm w-full"
-                    />
-                  </div>
-                  <textarea
-                    id="serv-desc"
-                    class="border p-2 rounded text-sm w-full mb-3"
-                    placeholder="Descripción breve..."></textarea>
-                  <button
-                    type="button"
-                    id="btn-add-service"
-                    class="w-full bg-gray-800 text-white font-bold py-2 rounded text-sm"
-                    >Agregar a Lista</button
-                  >
-                </div>
-                <div class="border rounded overflow-hidden mb-4">
-                  <table class="w-full text-sm text-left">
-                    <thead
-                      class="bg-gray-100 text-gray-600 font-bold text-xs uppercase"
-                      ><tr
-                        ><th class="p-3">Servicio</th><th class="p-3"
-                          >Descripción</th
-                        ><th class="p-3">Rango $</th><th class="p-3 text-right"
-                        ></th></tr
-                      ></thead
-                    ><tbody id="services-list" class="divide-y"></tbody>
-                  </table>
-                </div>
-                <button
-                  type="button"
-                  id="btn-generate-pdf"
-                  class="w-full bg-red-600 text-white font-bold py-3 rounded hover:bg-red-700 transition"
-                  >📄 Generar PDF Profesional</button
-                >
-              </div>
+                    <div
+                        class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden relative"
+                    >
+                        <div
+                            id="overlay-lock"
+                            class="absolute inset-0 bg-white/90 z-50 hidden flex flex-col items-center justify-center text-center p-6 backdrop-blur-sm"
+                        >
+                            <div class="text-6xl mb-4">⏳</div>
+                            <h3 class="text-2xl font-bold text-gray-800">
+                                Perfil en Revisión
+                            </h3>
+                            <p class="text-gray-600 mb-6 max-w-md">
+                                Tu documentación está siendo validada por
+                                nuestro equipo.
+                            </p>
+                        </div>
 
-              <div
-                class="pt-6 mt-6 border-t border-gray-100 flex justify-end sticky bottom-0 bg-white z-10 pb-4"
-              >
-                <button
-                  type="button"
-                  id="btn-top-save"
-                  class="bg-green-600 text-white px-8 py-3 rounded-lg font-bold shadow hover:bg-green-700 transition"
-                  data-allow-free>💾 Guardar Todo</button
-                >
-              </div>
-            </form>
-          </div>
+                        <div
+                            class="flex border-b border-gray-200 overflow-x-auto no-scrollbar bg-gray-50"
+                        >
+                            <button
+                                class="tab-btn active px-6 py-4 font-bold text-gray-700 border-b-2 border-orange-500 bg-white"
+                                data-tab="datos">📝 Datos</button
+                            >
+                            <button
+                                id="btn-seo"
+                                class="tab-btn px-6 py-4 font-bold text-gray-500 hover:text-orange-600 border-b-2 border-transparent relative group"
+                                data-tab="seo"
+                            >
+                                🌐 Web & SEO <span
+                                    class="text-[10px] bg-gray-200 text-gray-600 px-1 rounded ml-1 premium-lock"
+                                    >🔒</span
+                                >
+                            </button>
+                            <button
+                                id="btn-galeria"
+                                class="tab-btn px-6 py-4 font-bold text-gray-500 hover:text-orange-600 border-b-2 border-transparent relative group"
+                                data-tab="galeria"
+                            >
+                                📸 Galería <span
+                                    class="text-[10px] bg-gray-200 text-gray-600 px-1 rounded ml-1 premium-lock"
+                                    >🔒</span
+                                >
+                            </button>
+                            <button
+                                id="btn-presupuestos"
+                                class="tab-btn px-6 py-4 font-bold text-gray-500 hover:text-orange-600 border-b-2 border-transparent relative group"
+                                data-tab="presupuestos"
+                            >
+                                💰 Presupuestos <span
+                                    class="text-[10px] bg-gray-200 text-gray-600 px-1 rounded ml-1 premium-lock"
+                                    >🔒</span
+                                >
+                            </button>
+                        </div>
+
+                        <form id="form-perfil" class="p-6 md:p-8">
+                            <div id="tab-datos" class="tab-content block">
+                                <div class="grid md:grid-cols-2 gap-6 mb-4">
+                                    <div>
+                                        <label class="label-input"
+                                            >Nombre y Apellido</label
+                                        ><input
+                                            type="text"
+                                            id="nombre"
+                                            class="input-field"
+                                            data-allow-free
+                                        />
+                                    </div>
+                                    <div>
+                                        <label class="label-input"
+                                            >Nombre de Fantasía (Opcional)</label
+                                        ><input
+                                            type="text"
+                                            id="nombre_fantasia"
+                                            class="input-field"
+                                            placeholder="Ej: Plomería El Rayo"
+                                            data-allow-free
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class="grid md:grid-cols-2 gap-6 mb-4">
+                                    <div>
+                                        <label class="label-input"
+                                            >CUIT / CUIL</label
+                                        ><input
+                                            type="text"
+                                            id="cuit"
+                                            class="input-field"
+                                            placeholder="20-12345678-9"
+                                            data-allow-free
+                                        />
+                                    </div>
+                                    <div>
+                                        <label class="label-input"
+                                            >N° Matrícula (Opcional)</label
+                                        ><input
+                                            type="text"
+                                            id="numero_matricula"
+                                            class="input-field"
+                                            placeholder="Ej: 12345"
+                                            data-allow-free
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class="grid md:grid-cols-2 gap-6 mb-4">
+                                    <div>
+                                        <label class="label-input"
+                                            >Rubro Principal</label
+                                        ><select
+                                            id="rubro_principal"
+                                            class="input-field"
+                                            data-allow-free></select>
+                                    </div>
+                                    <div>
+                                        <label class="label-input"
+                                            >Zona / Provincia</label
+                                        ><select
+                                            id="zona"
+                                            class="input-field"
+                                            data-allow-free></select>
+                                    </div>
+                                </div>
+
+                                <div class="grid md:grid-cols-2 gap-6 mb-4">
+                                    <div>
+                                        <label class="label-input"
+                                            >WhatsApp (Sin 0 ni 15)</label
+                                        ><input
+                                            type="text"
+                                            id="telefono"
+                                            class="input-field"
+                                            placeholder="11 1234 5678"
+                                            data-allow-free
+                                        />
+                                    </div>
+
+                                    <div class="relative">
+                                        <label
+                                            class="label-input flex justify-between"
+                                            ><span
+                                                >Dirección Exacta (Auto) 🇦🇷</span
+                                            ><span
+                                                id="geo-status"
+                                                class="text-xs text-gray-400"
+                                                >...</span
+                                            ></label
+                                        >
+                                        <input
+                                            type="text"
+                                            id="direccion_input"
+                                            class="input-field"
+                                            placeholder="Calle, Altura, Ciudad..."
+                                            autocomplete="off"
+                                            data-allow-free
+                                        />
+                                        <ul
+                                            id="geo-suggestions"
+                                            class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden max-h-48 overflow-y-auto"
+                                        >
+                                        </ul>
+                                        <input
+                                            type="hidden"
+                                            id="latitud"
+                                        /><input type="hidden" id="longitud" />
+                                    </div>
+                                </div>
+
+                                <div class="mb-4 relative">
+                                    <label
+                                        class="label-input flex justify-between items-center"
+                                    >
+                                        Biografía / Descripción
+                                        <button
+                                            type="button"
+                                            id="btn-ai-bio"
+                                            class="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded-full border border-purple-200 hover:bg-purple-200 transition flex items-center gap-1"
+                                            data-allow-free
+                                        >
+                                            <span>✨</span> Mejorar con IA
+                                        </button>
+                                    </label>
+                                    <textarea
+                                        id="descripcion"
+                                        rows="4"
+                                        class="input-field"
+                                        placeholder="Cuenta tu experiencia..."
+                                        data-allow-free></textarea>
+                                </div>
+
+                                <div
+                                    class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200"
+                                >
+                                    <h4
+                                        class="font-bold text-sm text-gray-700 mb-2"
+                                    >
+                                        💰 Datos de Cobro (Visible en Perfil)
+                                    </h4>
+                                    <div class="flex flex-wrap gap-4">
+                                        <label
+                                            class="flex items-center gap-2 text-sm cursor-pointer select-none"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                id="emite_factura"
+                                                class="w-4 h-4 text-blue-600 rounded"
+                                                data-allow-free
+                                            />
+                                            <span
+                                                class="font-medium text-gray-700"
+                                                >🧾 Emite Factura</span
+                                            >
+                                        </label>
+                                        <label
+                                            class="flex items-center gap-2 text-sm cursor-pointer select-none"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                id="no_emite_factura"
+                                                class="w-4 h-4 text-red-500 rounded"
+                                                data-allow-free
+                                            />
+                                            <span
+                                                class="font-medium text-gray-700"
+                                                >❌ No Emite Factura</span
+                                            >
+                                        </label>
+                                        <div
+                                            class="w-full border-t border-gray-200 my-1"
+                                        >
+                                        </div>
+                                        <label
+                                            class="flex items-center gap-2 text-sm"
+                                            ><input
+                                                type="checkbox"
+                                                class="pago-check w-4 h-4 text-green-600 rounded"
+                                                value="Efectivo"
+                                                data-allow-free
+                                            /> Efectivo</label
+                                        >
+                                        <label
+                                            class="flex items-center gap-2 text-sm"
+                                            ><input
+                                                type="checkbox"
+                                                class="pago-check w-4 h-4 text-blue-600 rounded"
+                                                value="Transferencia"
+                                                data-allow-free
+                                            /> Transferencia</label
+                                        >
+                                        <label
+                                            class="flex items-center gap-2 text-sm"
+                                            ><input
+                                                type="checkbox"
+                                                class="pago-check w-4 h-4 text-sky-500 rounded"
+                                                value="MercadoPago"
+                                                data-allow-free
+                                            /> MercadoPago</label
+                                        >
+                                        <label
+                                            class="flex items-center gap-2 text-sm"
+                                            ><input
+                                                type="checkbox"
+                                                class="pago-check w-4 h-4 text-indigo-500 rounded"
+                                                value="Tarjeta"
+                                                data-allow-free
+                                            /> Tarjeta</label
+                                        >
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="label-input">Etiquetas</label>
+                                    <div class="flex gap-2 mb-2">
+                                        <input
+                                            type="text"
+                                            id="tag-input"
+                                            class="input-field"
+                                            placeholder="Ej: urgencias..."
+                                            data-allow-free
+                                        /><button
+                                            type="button"
+                                            id="btn-add-tag"
+                                            class="bg-gray-800 text-white px-4 rounded-lg font-bold"
+                                            data-allow-free>Agregar +</button
+                                        >
+                                    </div>
+                                    <div
+                                        id="tags-container"
+                                        class="flex flex-wrap gap-2"
+                                    >
+                                    </div>
+                                </div>
+
+                                <div
+                                    class="flex items-center gap-3 bg-red-50 p-4 rounded-lg border border-red-100"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        id="es_24hs"
+                                        class="w-5 h-5 text-red-600 rounded"
+                                        data-allow-free
+                                    />
+                                    <div>
+                                        <p
+                                            class="font-bold text-red-800 text-sm"
+                                        >
+                                            🚨 Servicio de Urgencia 24hs
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <input type="hidden" id="foto-url" /><input
+                                    type="hidden"
+                                    id="slug"
+                                />
+                            </div>
+
+                            <div id="tab-seo" class="tab-content hidden">
+                                <div
+                                    class="premium-overlay hidden absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center"
+                                >
+                                    <div class="text-4xl mb-2">🔒</div>
+                                    <h3 class="font-bold text-gray-800">
+                                        Función Premium
+                                    </h3>
+                                    <p class="text-sm text-gray-500 mb-4">
+                                        Actualiza tu plan para tener tu propia
+                                        Web.
+                                    </p>
+                                    <a
+                                        href="/planes"
+                                        class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700"
+                                        >Ver Planes</a
+                                    >
+                                </div>
+                                <div
+                                    class="bg-gray-900 text-white p-6 rounded-xl mb-6 relative overflow-hidden"
+                                >
+                                    <h3 class="text-xl font-bold mb-2">
+                                        🌐 Tu Web Profesional
+                                    </h3>
+                                    <label
+                                        class="flex items-center gap-3 cursor-pointer"
+                                        ><input
+                                            type="checkbox"
+                                            id="web_propia"
+                                            class="w-5 h-5 rounded text-blue-600"
+                                        /><span class="font-bold text-sm"
+                                            >Activar Modo Landing</span
+                                        ></label
+                                    >
+                                </div>
+                                <div class="grid md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="label-input"
+                                            >Instagram</label
+                                        ><div class="flex">
+                                            <span
+                                                class="bg-gray-100 border border-r-0 p-2 rounded-l text-gray-500"
+                                                >@</span
+                                            ><input
+                                                type="text"
+                                                id="instagram"
+                                                class="input-field rounded-l-none"
+                                                placeholder="usuario"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="label-input">Web</label
+                                        ><input
+                                            type="url"
+                                            id="website"
+                                            class="input-field"
+                                            placeholder="https://"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                id="tab-galeria"
+                                class="tab-content hidden relative"
+                            >
+                                <div
+                                    class="premium-overlay hidden absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center"
+                                >
+                                    <div class="text-4xl mb-2">📸</div>
+                                    <h3 class="font-bold text-gray-800">
+                                        Galería de Fotos
+                                    </h3>
+                                    <p class="text-sm text-gray-500 mb-4">
+                                        Muestra tus trabajos con un plan
+                                        superior.
+                                    </p>
+                                    <a
+                                        href="/planes"
+                                        class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700"
+                                        >Actualizar</a
+                                    >
+                                </div>
+                                <div
+                                    class="flex justify-between items-center mb-4"
+                                >
+                                    <h3 class="font-bold text-gray-700">
+                                        Portfolio <span
+                                            id="gallery-limit-text"
+                                            class="text-xs text-gray-400 font-normal ml-2"
+                                        ></span>
+                                    </h3>
+                                    <label
+                                        for="input-portfolio"
+                                        class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold cursor-pointer hover:bg-blue-700 shadow-sm flex items-center gap-2"
+                                        >➕ Subir</label
+                                    >
+                                    <input
+                                        type="file"
+                                        id="input-portfolio"
+                                        class="hidden"
+                                        accept="image/*"
+                                    />
+                                </div>
+                                <div
+                                    id="gallery-grid"
+                                    class="grid grid-cols-2 md:grid-cols-4 gap-3"
+                                >
+                                </div>
+                            </div>
+
+                            <div
+                                id="tab-presupuestos"
+                                class="tab-content hidden relative"
+                            >
+                                <div
+                                    class="premium-overlay hidden absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center"
+                                >
+                                    <div class="text-4xl mb-2">💰</div>
+                                    <h3 class="font-bold text-gray-800">
+                                        Cotizador PDF
+                                    </h3>
+                                    <p class="text-sm text-gray-500 mb-4">
+                                        Envía presupuestos profesionales
+                                        automáticamente.
+                                    </p>
+                                    <a
+                                        href="/planes"
+                                        class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700"
+                                        >Desbloquear</a
+                                    >
+                                </div>
+                                <div
+                                    class="bg-orange-50 p-4 rounded-xl border border-orange-200 mb-6 flex justify-between items-center"
+                                >
+                                    <div>
+                                        <h3 class="font-bold text-orange-800">
+                                            💰 Sistema de Presupuestos
+                                        </h3>
+                                    </div><label class="flex items-center gap-2"
+                                        ><input
+                                            type="checkbox"
+                                            id="presupuestos_activo"
+                                            class="w-5 h-5 text-orange-600"
+                                        /><span
+                                            class="text-xs font-bold text-orange-800"
+                                            >Activar</span
+                                        ></label
+                                    >
+                                </div>
+                                <div
+                                    class="bg-gray-50 p-4 rounded-lg border mb-4"
+                                >
+                                    <h4 class="font-bold text-sm mb-3">
+                                        ➕ Agregar Servicio
+                                    </h4>
+                                    <div
+                                        class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3"
+                                    >
+                                        <input
+                                            type="text"
+                                            id="serv-nombre"
+                                            placeholder="Nombre"
+                                            class="border p-2 rounded text-sm w-full"
+                                        /><input
+                                            type="number"
+                                            id="serv-min"
+                                            placeholder="$ Min"
+                                            class="border p-2 rounded text-sm w-full"
+                                        /><input
+                                            type="number"
+                                            id="serv-max"
+                                            placeholder="$ Max"
+                                            class="border p-2 rounded text-sm w-full"
+                                        />
+                                    </div>
+                                    <textarea
+                                        id="serv-desc"
+                                        class="border p-2 rounded text-sm w-full mb-3"
+                                        placeholder="Descripción breve..."
+                                    ></textarea>
+                                    <button
+                                        type="button"
+                                        id="btn-add-service"
+                                        class="w-full bg-gray-800 text-white font-bold py-2 rounded text-sm"
+                                        >Agregar a Lista</button
+                                    >
+                                </div>
+                                <div
+                                    class="border rounded overflow-hidden mb-4"
+                                >
+                                    <table class="w-full text-sm text-left">
+                                        <thead
+                                            class="bg-gray-100 text-gray-600 font-bold text-xs uppercase"
+                                            ><tr
+                                                ><th class="p-3">Servicio</th
+                                                ><th class="p-3">Descripción</th
+                                                ><th class="p-3">Rango $</th><th
+                                                    class="p-3 text-right"
+                                                ></th></tr
+                                            ></thead
+                                        ><tbody
+                                            id="services-list"
+                                            class="divide-y"></tbody>
+                                    </table>
+                                </div>
+                                <button
+                                    type="button"
+                                    id="btn-generate-pdf"
+                                    class="w-full bg-red-600 text-white font-bold py-3 rounded hover:bg-red-700 transition"
+                                    >📄 Generar PDF Profesional</button
+                                >
+                            </div>
+
+                            <div
+                                class="pt-6 mt-6 border-t border-gray-100 flex justify-end sticky bottom-0 bg-white z-10 pb-4"
+                            >
+                                <button
+                                    type="button"
+                                    id="btn-top-save"
+                                    class="bg-green-600 text-white px-8 py-3 rounded-lg font-bold shadow hover:bg-green-700 transition"
+                                    data-allow-free>💾 Guardar Todo</button
+                                >
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
-</Layout>
 
-<style>
-  .label-input {
-    @apply block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide;
-  }
-  .input-field {
-    @apply w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition;
-  }
-  .tab-btn.active {
-    @apply text-orange-600 border-orange-500 bg-white;
-  }
-  .hidden {
-    display: none !important;
-  }
-</style>
-
-<script>
-  import { auth, db, storage } from "../firebase/client";
-  import { onAuthStateChanged, signOut, deleteUser } from "firebase/auth";
-  import {
-    doc,
-    getDoc,
-    updateDoc,
-    arrayUnion,
-    arrayRemove,
-    deleteDoc,
-  } from "firebase/firestore";
-  import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-  // --- 1. HELPERS Y RENDER FUNCTIONS (HOISTING FIX) ---
-  const setVal = (id, v) => {
-    const el = document.getElementById(id);
-    if (el) el.value = v || "";
-  };
-  const setText = (id, t) => {
-    const el = document.getElementById(id);
-    if (el) el.innerText = t || "";
-  };
-  const setSrc = (id, s) => {
-    const el = document.getElementById(id);
-    if (el) el.src = s || "";
-  };
-
-  // Definir render functions aquí arriba para que existan cuando se llaman
-  function renderServices() {
-    const list = document.getElementById("services-list");
-    if (!list) return;
-    list.innerHTML = "";
-    userServices.forEach((s, i) => {
-      list.innerHTML += `<tr class="border-b"><td class="p-3 font-bold">${s.nombre}</td><td class="p-3 text-xs text-gray-500">${s.descripcion || "-"}</td><td class="p-3">$${s.min} - $${s.max}</td><td class="p-3 text-right"><button type="button" class="text-red-500 font-bold remove-service-btn" data-index="${i}">×</button></td></tr>`;
-    });
-    list.querySelectorAll(".remove-service-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        // @ts-ignore
-        const idx = parseInt(e.target.dataset.index);
-        userServices.splice(idx, 1);
-        renderServices();
-      });
-    });
-  }
-
-  function renderTags() {
-    const container = document.getElementById("tags-container");
-    if (!container) return;
-    container.innerHTML = "";
-    userTags.forEach((t, i) => {
-      container.innerHTML += `<span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2">${t} <button type="button" class="text-red-500 font-bold remove-tag-btn" data-index="${i}">×</button></span>`;
-    });
-    container.querySelectorAll(".remove-tag-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        // @ts-ignore
-        const idx = parseInt(e.target.dataset.index);
-        userTags.splice(idx, 1);
-        renderTags();
-      });
-    });
-  }
-
-  function renderGallery(images) {
-    const grid = document.getElementById("gallery-grid");
-    if (!grid) return;
-    grid.innerHTML = "";
-
-    // Actualizar contador de fotos
-    const planLimits = {
-      gratuito: 0,
-      semilla: 0,
-      basico: 3,
-      mensual: 6, // Plan Impulso/Mensual
-      impulso: 6,
-      experto: 12,
-      semestral: 12,
-    };
-    const userPlan = userData?.plan || "gratuito";
-    const maxPhotos = planLimits[userPlan] || 0;
-    const currentCount = images?.length || 0;
-    const limitText = document.getElementById("gallery-limit-text");
-    if (limitText) {
-      limitText.textContent = `(${currentCount} de ${maxPhotos})`;
-      limitText.style.color = currentCount >= maxPhotos ? "red" : "";
-    }
-
-    images.forEach((img) => {
-      grid.innerHTML += `<div class="relative group aspect-square rounded overflow-hidden border"><img src="${img}" class="w-full h-full object-cover"><button type="button" class="absolute top-1 right-1 bg-red-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition shadow-md delete-img-btn" data-url="${img}">🗑️</button></div>`;
-    });
-    grid.querySelectorAll(".delete-img-btn").forEach((btn) => {
-      btn.addEventListener("click", async (e) => {
-        // @ts-ignore
-        const url = e.target.dataset.url;
-        if (confirm("¿Borrar foto?")) {
-          await updateDoc(doc(db, "profesionales", currentUserUid), {
-            portfolio: arrayRemove(url),
-          });
-          const newSnap = await getDoc(
-            doc(db, "profesionales", currentUserUid),
-          );
-          renderGallery(newSnap.data().portfolio || []);
+    <style>
+        .label-input {
+            @apply block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide;
         }
-      });
-    });
-  }
-
-  function renderPlanInfo(planKey) {
-    const config = PLAN_DETAILS[planKey] || PLAN_DETAILS["semilla"];
-    const container = document.getElementById("plan-display");
-    const benefitsList = document.getElementById("plan-benefits");
-    if (container) {
-      container.innerHTML = config.label;
-      container.className = `font-black text-xl mt-1 ${config.class}`;
-
-      // Agregar badge de días restantes si hay vencimiento
-      if (userData.plan_vencimiento && planKey !== "semilla") {
-        const vencimiento = userData.plan_vencimiento.toDate();
-        const ahora = new Date();
-        const diasRestantes = Math.ceil(
-          (vencimiento - ahora) / (1000 * 60 * 60 * 24),
-        );
-
-        if (diasRestantes > 0) {
-          const badgeColor =
-            diasRestantes <= 10
-              ? "text-orange-600 bg-orange-50"
-              : "text-gray-500 bg-gray-100";
-          const badge = document.createElement("div");
-          badge.className = `mt-2 text-xs text-center font-bold px-2 py-1 rounded ${badgeColor}`;
-          badge.innerHTML = `⏰ ${diasRestantes} día${diasRestantes > 1 ? "s" : ""} restante${diasRestantes > 1 ? "s" : ""}`;
-          container.parentElement?.appendChild(badge);
+        .input-field {
+            @apply w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition;
         }
-      }
-    }
-    if (benefitsList)
-      benefitsList.innerHTML = config.benefits
-        .map(
-          (i) =>
-            `<li class="flex gap-2 text-xs ${i.active ? "text-gray-700" : "text-gray-400"}"><span class="${!i.active ? "grayscale opacity-50" : ""}">${i.icon}</span> ${i.text}</li>`,
-        )
-        .join("");
-  }
-
-  function renderBadges(data) {
-    const c = document.getElementById("badges-container");
-    if (!c) return;
-    c.innerHTML = "";
-    if (data.verificado)
-      c.innerHTML += `<span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded">✅ Verificado</span>`;
-    if ((data.promedio || 0) > 4.5)
-      c.innerHTML += `<span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded">⭐ Top</span>`;
-  }
-
-  function updateClickCounter(clicks) {
-    const counter = document.getElementById("click-counter");
-    if (userPlan !== "semilla") {
-      counter.classList.add("hidden");
-      return;
-    }
-    counter.classList.remove("hidden");
-    document.getElementById("clicks-current").innerText = clicks;
-    const pct = Math.min((clicks / 20) * 100, 100);
-    document.getElementById("clicks-progress").style.width = `${pct}%`;
-  }
-
-  // --- 2. CONFIGURACIÓN ---
-  const PLAN_DETAILS = {
-    semilla: {
-      label: "🌱 Semilla (Gratis)",
-      class: "text-gray-700",
-      benefits: [
-        { icon: "✅", text: "Perfil Básico", active: true },
-        { icon: "🔒", text: "Sin Fotos", active: false },
-      ],
-    },
-    mensual: {
-      label: "🚀 Impulso",
-      class: "text-blue-600",
-      benefits: [
-        { icon: "✅", text: "6 Fotos", active: true },
-        { icon: "🗺️", text: "Mapa", active: true },
-      ],
-    },
-    experto: {
-      label: "👑 Experto",
-      class: "text-orange-600",
-      benefits: [
-        { icon: "✅", text: "12 Fotos", active: true },
-        { icon: "⭐", text: "Destacado", active: true },
-      ],
-    },
-  };
-
-  const ZONAS = {
-    "Capital Federal (CABA)": [
-      "Agronomía",
-      "Almagro",
-      "Balvanera",
-      "Barracas",
-      "Belgrano",
-      "Boedo",
-      "Caballito",
-      "Chacarita",
-      "Coghlan",
-      "Colegiales",
-      "Constitución",
-      "Flores",
-      "Floresta",
-      "La Boca",
-      "La Paternal",
-      "Liniers",
-      "Mataderos",
-      "Monte Castro",
-      "Montserrat",
-      "Nueva Pompeya",
-      "Núñez",
-      "Palermo",
-      "Parque Avellaneda",
-      "Parque Chacabuco",
-      "Parque Chas",
-      "Parque Patricios",
-      "Puerto Madero",
-      "Recoleta",
-      "Retiro",
-      "Saavedra",
-      "San Cristóbal",
-      "San Nicolás",
-      "San Telmo",
-      "Versalles",
-      "Villa Crespo",
-      "Villa Devoto",
-      "Villa General Mitre",
-      "Villa Lugano",
-      "Villa Luro",
-      "Villa Ortúzar",
-      "Villa Pueyrredón",
-      "Villa Real",
-      "Villa Riachuelo",
-      "Villa Santa Rita",
-      "Villa Soldati",
-      "Villa Urquiza",
-      "Villa del Parque",
-      "Vélez Sársfield",
-    ],
-    "GBA Norte": [
-      "Vicente López",
-      "Olivos",
-      "San Isidro",
-      "Martínez",
-      "Tigre",
-      "Nordelta",
-      "San Fernando",
-      "Pilar",
-      "Escobar",
-      "San Martín",
-    ],
-    "GBA Sur": [
-      "Avellaneda",
-      "Lanús",
-      "Lomas de Zamora",
-      "Quilmes",
-      "Bernal",
-      "Adrogué",
-      "Temperley",
-      "Ezeiza",
-      "Canning",
-      "Berazategui",
-      "Florencio Varela",
-    ],
-    "GBA Oeste": [
-      "Ramos Mejía",
-      "Morón",
-      "Haedo",
-      "Castelar",
-      "Ituzaingó",
-      "Merlo",
-      "Moreno",
-      "San Justo",
-      "La Matanza",
-      "Hurlingham",
-    ],
-    "Buenos Aires (Interior)": [
-      "La Plata",
-      "Mar del Plata",
-      "Bahía Blanca",
-      "Tandil",
-      "San Nicolás",
-      "Pergamino",
-      "Olavarría",
-      "Junín",
-    ],
-    Córdoba: [
-      "Córdoba Capital",
-      "Villa Carlos Paz",
-      "Río Cuarto",
-      "Villa María",
-      "Alta Gracia",
-    ],
-    "Santa Fe": [
-      "Rosario",
-      "Santa Fe Capital",
-      "Rafaela",
-      "Venado Tuerto",
-      "Reconquista",
-    ],
-    Mendoza: [
-      "Mendoza Capital",
-      "Guaymallén",
-      "Godoy Cruz",
-      "Las Heras",
-      "San Rafael",
-    ],
-    Tucumán: ["San Miguel de Tucumán", "Yerba Buena", "Tafí Viejo"],
-    "Resto del País": [
-      "Salta",
-      "Misiones",
-      "Chaco",
-      "Corrientes",
-      "Entre Ríos",
-      "San Juan",
-      "San Luis",
-      "Neuquén",
-      "Río Negro",
-      "Chubut",
-      "Santa Cruz",
-      "Tierra del Fuego",
-      "La Pampa",
-      "Santiago del Estero",
-      "Catamarca",
-      "La Rioja",
-      "Jujuy",
-      "Formosa",
-    ],
-  };
-
-  const RUBROS = {
-    "Construcción y Reformas": [
-      "Albañil",
-      "Pintor",
-      "Techista",
-      "Colocador de Pisos/Ceramista",
-      "Durlockero",
-      "Herrero",
-      "Carpintero",
-    ],
-    "Instalaciones y Mantenimiento": [
-      "Plomero",
-      "Electricista Matriculado",
-      "Gasista Matriculado",
-      "Cerrajero",
-      "Técnico de Aire Acondicionado",
-      "Destapaciones",
-    ],
-    "Carpintería Metálica y Vidriería": ["Vidriero", "Persianista"],
-    "Exteriores y Logística": ["Jardinero", "Piletero", "Fletero", "Fumigador"],
-    "Servicios Especializados": [
-      "Tapicero",
-      "Técnico de Electrodomésticos",
-      "Instalador de Cámaras de Seguridad",
-    ],
-    "Estética y Cuidado Personal": [
-      "Peinador/Estilista",
-      "Maquillador/Maquilladora",
-      "Barbero",
-      "Manicura/Pedicura",
-    ],
-    "Oficios Clásicos": ["Zapatero", "Sastre/Modista", "Relojero"],
-  };
-
-  // --- 3. ESTADO GLOBAL ---
-  let currentUserUid = null;
-  let userPlan = "semilla";
-  let userServices = [];
-  let userTags = [];
-  let userData = {};
-  let docDniUrl = null;
-  let docAntUrl = null;
-  let isVerified = false;
-
-  // --- 4. DURACIONES DE PLANES ---
-  /**
-   * Calcula la duración en días según el tipo de plan
-   * - Plan Impulso/Mensual: 30 días
-   * - Plan Experto/Semestral: 180 días (6 meses)
-   * - Plan Semilla: Sin vencimiento
-   */
-  function getPlanDuration(planType) {
-    const duraciones = {
-      semilla: 0, // Sin vencimiento
-      gratuito: 0,
-      mensual: 30, // 30 días
-      impulso: 30, // 30 días
-      experto: 180, // 6 meses
-      semestral: 180, // 6 meses
-    };
-    return duraciones[planType] || 30;
-  }
-
-  // --- 4. INICIO SEGURO ---
-  document.addEventListener("astro:page-load", () => {
-    console.log("🚀 [MI-PERFIL] DOM Loaded - Iniciando...");
-    initSelects();
-    setupGeo();
-    setupTabs();
-    setupButtons();
-    setupAIBio();
-
-    // Función helper para ocultar loading
-    function hideLoadingOverlay() {
-      const overlay = document.getElementById("loading-overlay");
-      if (overlay) {
-        overlay.style.display = "none";
-        overlay.classList.add("hidden");
-      }
-    }
-
-    // Timeout de seguridad: 3 segundos máximo
-    setTimeout(() => {
-      hideLoadingOverlay();
-      console.warn("Loading forzado a ocultar después de 3seg");
-    }, 3000);
-
-    onAuthStateChanged(auth, async (user) => {
-      try {
-        if (user) {
-          console.log("✅ [AUTH] Usuario autenticado:", user.uid);
-          currentUserUid = user.uid;
-          console.log("📥 [DATA] Cargando perfil desde Firestore...");
-          await loadUserProfile(user.uid);
-          console.log("✅ [DATA] Perfil cargado exitosamente");
-          hideLoadingOverlay();
-        } else {
-          console.warn("⚠️ [AUTH] No hay usuario - Redirigiendo a /ingresar");
-          window.location.href = "/ingresar";
+        .tab-btn.active {
+            @apply text-orange-600 border-orange-500 bg-white;
         }
-      } catch (error) {
-        console.error("❌ [ERROR] Error cargando perfil:", error);
-        console.error("❌ [ERROR] Stack:", error.stack);
-        hideLoadingOverlay();
-        alert("Error cargando tu perfil. Por favor recarga la página.");
-      }
-    });
-  });
+        .hidden {
+            display: none !important;
+        }
+    </style>
 
-  function initSelects() {
-    const selRubro = document.getElementById("rubro_principal");
-    const selZona = document.getElementById("zona");
-    if (selRubro && selRubro.options.length <= 1) {
-      for (const [cat, items] of Object.entries(RUBROS)) {
-        const grp = document.createElement("optgroup");
-        grp.label = cat;
-        items.forEach((i) => {
-          const opt = document.createElement("option");
-          opt.value = i;
-          opt.innerText = i;
-          grp.appendChild(opt);
+    <script>
+        import { auth, db, storage } from "../firebase/client";
+        import { onAuthStateChanged, signOut, deleteUser } from "firebase/auth";
+        import {
+            doc,
+            getDoc,
+            updateDoc,
+            arrayUnion,
+            arrayRemove,
+            deleteDoc,
+        } from "firebase/firestore";
+        import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+        // --- 1. HELPERS Y RENDER FUNCTIONS (HOISTING FIX) ---
+        const setVal = (id, v) => {
+            const el = document.getElementById(id);
+            if (el) el.value = v || "";
+        };
+        const setText = (id, t) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = t || "";
+        };
+        const setSrc = (id, s) => {
+            const el = document.getElementById(id);
+            if (el) el.src = s || "";
+        };
+
+        // Definir render functions aquí arriba para que existan cuando se llaman
+        function renderServices() {
+            const list = document.getElementById("services-list");
+            if (!list) return;
+            list.innerHTML = "";
+            userServices.forEach((s, i) => {
+                list.innerHTML += `<tr class="border-b"><td class="p-3 font-bold">${s.nombre}</td><td class="p-3 text-xs text-gray-500">${s.descripcion || "-"}</td><td class="p-3">$${s.min} - $${s.max}</td><td class="p-3 text-right"><button type="button" class="text-red-500 font-bold remove-service-btn" data-index="${i}">×</button></td></tr>`;
+            });
+            list.querySelectorAll(".remove-service-btn").forEach((btn) => {
+                btn.addEventListener("click", (e) => {
+                    // @ts-ignore
+                    const idx = parseInt(e.target.dataset.index);
+                    userServices.splice(idx, 1);
+                    renderServices();
+                });
+            });
+        }
+
+        function renderTags() {
+            const container = document.getElementById("tags-container");
+            if (!container) return;
+            container.innerHTML = "";
+            userTags.forEach((t, i) => {
+                container.innerHTML += `<span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2">${t} <button type="button" class="text-red-500 font-bold remove-tag-btn" data-index="${i}">×</button></span>`;
+            });
+            container.querySelectorAll(".remove-tag-btn").forEach((btn) => {
+                btn.addEventListener("click", (e) => {
+                    // @ts-ignore
+                    const idx = parseInt(e.target.dataset.index);
+                    userTags.splice(idx, 1);
+                    renderTags();
+                });
+            });
+        }
+
+        function renderGallery(images) {
+            const grid = document.getElementById("gallery-grid");
+            if (!grid) return;
+            grid.innerHTML = "";
+
+            // Actualizar contador de fotos
+            const planLimits = {
+                gratuito: 0,
+                semilla: 0,
+                basico: 3,
+                mensual: 6, // Plan Impulso/Mensual
+                impulso: 6,
+                experto: 12,
+                semestral: 12,
+            };
+            const userPlan = userData?.plan || "gratuito";
+            const maxPhotos = planLimits[userPlan] || 0;
+            const currentCount = images?.length || 0;
+            const limitText = document.getElementById("gallery-limit-text");
+            if (limitText) {
+                limitText.textContent = `(${currentCount} de ${maxPhotos})`;
+                limitText.style.color = currentCount >= maxPhotos ? "red" : "";
+            }
+
+            images.forEach((img) => {
+                grid.innerHTML += `<div class="relative group aspect-square rounded overflow-hidden border"><img src="${img}" class="w-full h-full object-cover"><button type="button" class="absolute top-1 right-1 bg-red-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition shadow-md delete-img-btn" data-url="${img}">🗑️</button></div>`;
+            });
+            grid.querySelectorAll(".delete-img-btn").forEach((btn) => {
+                btn.addEventListener("click", async (e) => {
+                    // @ts-ignore
+                    const url = e.target.dataset.url;
+                    if (confirm("¿Borrar foto?")) {
+                        await updateDoc(
+                            doc(db, "profesionales", currentUserUid),
+                            {
+                                portfolio: arrayRemove(url),
+                            },
+                        );
+                        const newSnap = await getDoc(
+                            doc(db, "profesionales", currentUserUid),
+                        );
+                        renderGallery(newSnap.data().portfolio || []);
+                    }
+                });
+            });
+        }
+
+        function renderPlanInfo(planKey) {
+            const config = PLAN_DETAILS[planKey] || PLAN_DETAILS["semilla"];
+            const container = document.getElementById("plan-display");
+            const benefitsList = document.getElementById("plan-benefits");
+            if (container) {
+                container.innerHTML = config.label;
+                container.className = `font-black text-xl mt-1 ${config.class}`;
+
+                // Agregar badge de días restantes si hay vencimiento
+                if (userData.plan_vencimiento && planKey !== "semilla") {
+                    const vencimiento = userData.plan_vencimiento.toDate();
+                    const ahora = new Date();
+                    const diasRestantes = Math.ceil(
+                        (vencimiento - ahora) / (1000 * 60 * 60 * 24),
+                    );
+
+                    if (diasRestantes > 0) {
+                        const badgeColor =
+                            diasRestantes <= 10
+                                ? "text-orange-600 bg-orange-50"
+                                : "text-gray-500 bg-gray-100";
+                        const badge = document.createElement("div");
+                        badge.className = `mt-2 text-xs text-center font-bold px-2 py-1 rounded ${badgeColor}`;
+                        badge.innerHTML = `⏰ ${diasRestantes} día${diasRestantes > 1 ? "s" : ""} restante${diasRestantes > 1 ? "s" : ""}`;
+                        container.parentElement?.appendChild(badge);
+                    }
+                }
+            }
+            if (benefitsList)
+                benefitsList.innerHTML = config.benefits
+                    .map(
+                        (i) =>
+                            `<li class="flex gap-2 text-xs ${i.active ? "text-gray-700" : "text-gray-400"}"><span class="${!i.active ? "grayscale opacity-50" : ""}">${i.icon}</span> ${i.text}</li>`,
+                    )
+                    .join("");
+        }
+
+        function renderBadges(data) {
+            const c = document.getElementById("badges-container");
+            if (!c) return;
+            c.innerHTML = "";
+            if (data.verificado)
+                c.innerHTML += `<span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded">✅ Verificado</span>`;
+            if ((data.promedio || 0) > 4.5)
+                c.innerHTML += `<span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded">⭐ Top</span>`;
+        }
+
+        function updateClickCounter(clicks) {
+            const counter = document.getElementById("click-counter");
+            if (userPlan !== "semilla") {
+                counter.classList.add("hidden");
+                return;
+            }
+            counter.classList.remove("hidden");
+            document.getElementById("clicks-current").innerText = clicks;
+            const pct = Math.min((clicks / 20) * 100, 100);
+            document.getElementById("clicks-progress").style.width = `${pct}%`;
+        }
+
+        // --- 2. CONFIGURACIÓN ---
+        const PLAN_DETAILS = {
+            semilla: {
+                label: "🌱 Semilla (Gratis)",
+                class: "text-gray-700",
+                benefits: [
+                    { icon: "✅", text: "Perfil Básico", active: true },
+                    { icon: "🔒", text: "Sin Fotos", active: false },
+                ],
+            },
+            mensual: {
+                label: "🚀 Impulso",
+                class: "text-blue-600",
+                benefits: [
+                    { icon: "✅", text: "6 Fotos", active: true },
+                    { icon: "🗺️", text: "Mapa", active: true },
+                ],
+            },
+            experto: {
+                label: "👑 Experto",
+                class: "text-orange-600",
+                benefits: [
+                    { icon: "✅", text: "12 Fotos", active: true },
+                    { icon: "⭐", text: "Destacado", active: true },
+                ],
+            },
+        };
+
+        const ZONAS = {
+            "Capital Federal (CABA)": [
+                "Agronomía",
+                "Almagro",
+                "Balvanera",
+                "Barracas",
+                "Belgrano",
+                "Boedo",
+                "Caballito",
+                "Chacarita",
+                "Coghlan",
+                "Colegiales",
+                "Constitución",
+                "Flores",
+                "Floresta",
+                "La Boca",
+                "La Paternal",
+                "Liniers",
+                "Mataderos",
+                "Monte Castro",
+                "Montserrat",
+                "Nueva Pompeya",
+                "Núñez",
+                "Palermo",
+                "Parque Avellaneda",
+                "Parque Chacabuco",
+                "Parque Chas",
+                "Parque Patricios",
+                "Puerto Madero",
+                "Recoleta",
+                "Retiro",
+                "Saavedra",
+                "San Cristóbal",
+                "San Nicolás",
+                "San Telmo",
+                "Versalles",
+                "Villa Crespo",
+                "Villa Devoto",
+                "Villa General Mitre",
+                "Villa Lugano",
+                "Villa Luro",
+                "Villa Ortúzar",
+                "Villa Pueyrredón",
+                "Villa Real",
+                "Villa Riachuelo",
+                "Villa Santa Rita",
+                "Villa Soldati",
+                "Villa Urquiza",
+                "Villa del Parque",
+                "Vélez Sársfield",
+            ],
+            "GBA Norte": [
+                "Vicente López",
+                "Olivos",
+                "San Isidro",
+                "Martínez",
+                "Tigre",
+                "Nordelta",
+                "San Fernando",
+                "Pilar",
+                "Escobar",
+                "San Martín",
+            ],
+            "GBA Sur": [
+                "Avellaneda",
+                "Lanús",
+                "Lomas de Zamora",
+                "Quilmes",
+                "Bernal",
+                "Adrogué",
+                "Temperley",
+                "Ezeiza",
+                "Canning",
+                "Berazategui",
+                "Florencio Varela",
+            ],
+            "GBA Oeste": [
+                "Ramos Mejía",
+                "Morón",
+                "Haedo",
+                "Castelar",
+                "Ituzaingó",
+                "Merlo",
+                "Moreno",
+                "San Justo",
+                "La Matanza",
+                "Hurlingham",
+            ],
+            "Buenos Aires (Interior)": [
+                "La Plata",
+                "Mar del Plata",
+                "Bahía Blanca",
+                "Tandil",
+                "San Nicolás",
+                "Pergamino",
+                "Olavarría",
+                "Junín",
+            ],
+            Córdoba: [
+                "Córdoba Capital",
+                "Villa Carlos Paz",
+                "Río Cuarto",
+                "Villa María",
+                "Alta Gracia",
+            ],
+            "Santa Fe": [
+                "Rosario",
+                "Santa Fe Capital",
+                "Rafaela",
+                "Venado Tuerto",
+                "Reconquista",
+            ],
+            Mendoza: [
+                "Mendoza Capital",
+                "Guaymallén",
+                "Godoy Cruz",
+                "Las Heras",
+                "San Rafael",
+            ],
+            Tucumán: ["San Miguel de Tucumán", "Yerba Buena", "Tafí Viejo"],
+            "Resto del País": [
+                "Salta",
+                "Misiones",
+                "Chaco",
+                "Corrientes",
+                "Entre Ríos",
+                "San Juan",
+                "San Luis",
+                "Neuquén",
+                "Río Negro",
+                "Chubut",
+                "Santa Cruz",
+                "Tierra del Fuego",
+                "La Pampa",
+                "Santiago del Estero",
+                "Catamarca",
+                "La Rioja",
+                "Jujuy",
+                "Formosa",
+            ],
+        };
+
+        const RUBROS = {
+            "Construcción y Reformas": [
+                "Albañil",
+                "Pintor",
+                "Techista",
+                "Colocador de Pisos/Ceramista",
+                "Durlockero",
+                "Herrero",
+                "Carpintero",
+            ],
+            "Instalaciones y Mantenimiento": [
+                "Plomero",
+                "Electricista Matriculado",
+                "Gasista Matriculado",
+                "Cerrajero",
+                "Técnico de Aire Acondicionado",
+                "Destapaciones",
+            ],
+            "Carpintería Metálica y Vidriería": ["Vidriero", "Persianista"],
+            "Exteriores y Logística": [
+                "Jardinero",
+                "Piletero",
+                "Fletero",
+                "Fumigador",
+            ],
+            "Servicios Especializados": [
+                "Tapicero",
+                "Técnico de Electrodomésticos",
+                "Instalador de Cámaras de Seguridad",
+            ],
+            "Estética y Cuidado Personal": [
+                "Peinador/Estilista",
+                "Maquillador/Maquilladora",
+                "Barbero",
+                "Manicura/Pedicura",
+            ],
+            "Oficios Clásicos": ["Zapatero", "Sastre/Modista", "Relojero"],
+        };
+
+        // --- 3. ESTADO GLOBAL ---
+        let currentUserUid = null;
+        let userPlan = "semilla";
+        let userServices = [];
+        let userTags = [];
+        let userData = {};
+        let docDniUrl = null;
+        let docAntUrl = null;
+        let isVerified = false;
+
+        // --- 4. DURACIONES DE PLANES ---
+        /**
+         * Calcula la duración en días según el tipo de plan
+         * - Plan Impulso/Mensual: 30 días
+         * - Plan Experto/Semestral: 180 días (6 meses)
+         * - Plan Semilla: Sin vencimiento
+         */
+        function getPlanDuration(planType) {
+            const duraciones = {
+                semilla: 0, // Sin vencimiento
+                gratuito: 0,
+                mensual: 30, // 30 días
+                impulso: 30, // 30 días
+                experto: 180, // 6 meses
+                semestral: 180, // 6 meses
+            };
+            return duraciones[planType] || 30;
+        }
+
+        // --- 4. INICIO SEGURO ---
+        document.addEventListener("astro:page-load", () => {
+            console.log("🚀 [MI-PERFIL] DOM Loaded - Iniciando...");
+            initSelects();
+            setupGeo();
+            setupTabs();
+            setupButtons();
+            setupAIBio();
+
+            // Función helper para ocultar loading
+            function hideLoadingOverlay() {
+                const overlay = document.getElementById("loading-overlay");
+                if (overlay) {
+                    overlay.style.display = "none";
+                    overlay.classList.add("hidden");
+                }
+            }
+
+            // Timeout de seguridad: 3 segundos máximo
+            setTimeout(() => {
+                hideLoadingOverlay();
+                console.warn("Loading forzado a ocultar después de 3seg");
+            }, 3000);
+
+            onAuthStateChanged(auth, async (user) => {
+                try {
+                    if (user) {
+                        console.log("✅ [AUTH] Usuario autenticado:", user.uid);
+                        currentUserUid = user.uid;
+                        console.log(
+                            "📥 [DATA] Cargando perfil desde Firestore...",
+                        );
+                        await loadUserProfile(user.uid);
+                        console.log("✅ [DATA] Perfil cargado exitosamente");
+                        hideLoadingOverlay();
+                    } else {
+                        console.warn(
+                            "⚠️ [AUTH] No hay usuario - Redirigiendo a /ingresar",
+                        );
+                        window.location.href = "/ingresar";
+                    }
+                } catch (error) {
+                    console.error("❌ [ERROR] Error cargando perfil:", error);
+                    console.error("❌ [ERROR] Stack:", error.stack);
+                    hideLoadingOverlay();
+                    alert(
+                        "Error cargando tu perfil. Por favor recarga la página.",
+                    );
+                }
+            });
         });
-        selRubro.appendChild(grp);
-      }
-    }
-    if (selZona && selZona.options.length <= 1) {
-      for (const [region, locs] of Object.entries(ZONAS)) {
-        const grp = document.createElement("optgroup");
-        grp.label = region;
-        locs.forEach((l) => {
-          const opt = document.createElement("option");
-          opt.value = l;
-          opt.innerText = l;
-          grp.appendChild(opt);
-        });
-        selZona.appendChild(grp);
-      }
-    }
-  }
 
-  async function loadUserProfile(uid) {
-    try {
-      console.log("📡 [FIRESTORE] Consultando documento:", uid);
-      const docRef = doc(db, "profesionales", uid);
-      const snap = await getDoc(docRef);
-      if (!snap.exists()) {
-        console.error("❌ [FIRESTORE] Documento no existe para uid:", uid);
-        alert("Perfil no encontrado.");
-        window.location.href = "/mi-cuenta";
-        return;
-      }
+        function initSelects() {
+            const selRubro = document.getElementById("rubro_principal");
+            const selZona = document.getElementById("zona");
+            if (selRubro && selRubro.options.length <= 1) {
+                for (const [cat, items] of Object.entries(RUBROS)) {
+                    const grp = document.createElement("optgroup");
+                    grp.label = cat;
+                    items.forEach((i) => {
+                        const opt = document.createElement("option");
+                        opt.value = i;
+                        opt.innerText = i;
+                        grp.appendChild(opt);
+                    });
+                    selRubro.appendChild(grp);
+                }
+            }
+            if (selZona && selZona.options.length <= 1) {
+                for (const [region, locs] of Object.entries(ZONAS)) {
+                    const grp = document.createElement("optgroup");
+                    grp.label = region;
+                    locs.forEach((l) => {
+                        const opt = document.createElement("option");
+                        opt.value = l;
+                        opt.innerText = l;
+                        grp.appendChild(opt);
+                    });
+                    selZona.appendChild(grp);
+                }
+            }
+        }
 
-      let data = snap.data();
-      console.log("✅ [FIRESTORE] Datos recibidos:", {
-        nombre: data.nombre,
-        plan: data.plan,
-        verificado: data.verificado,
-        campos: Object.keys(data).length,
-      });
-      userData = data;
+        async function loadUserProfile(uid) {
+            try {
+                console.log("📡 [FIRESTORE] Consultando documento:", uid);
+                const docRef = doc(db, "profesionales", uid);
+                const snap = await getDoc(docRef);
+                if (!snap.exists()) {
+                    console.error(
+                        "❌ [FIRESTORE] Documento no existe para uid:",
+                        uid,
+                    );
+                    alert("Perfil no encontrado.");
+                    window.location.href = "/mi-cuenta";
+                    return;
+                }
 
-      // ⏰ VERIFICAR EXPIRACIÓN DEL PLAN
-      if (data.plan_vencimiento && data.plan !== "semilla") {
-        const vencimiento = data.plan_vencimiento.toDate();
-        const ahora = new Date();
-        const diasRestantes = Math.ceil(
-          (vencimiento - ahora) / (1000 * 60 * 60 * 24),
-        );
+                let data = snap.data();
+                console.log("✅ [FIRESTORE] Datos recibidos:", {
+                    nombre: data.nombre,
+                    plan: data.plan,
+                    verificado: data.verificado,
+                    campos: Object.keys(data).length,
+                });
+                userData = data;
 
-        // Plan expirado - Downgrade automático
-        if (ahora > vencimiento) {
-          console.warn("⚠️ [PLAN] Plan expirado, haciendo downgrade...");
-          await updateDoc(doc(db, "profesionales", uid), {
-            plan: "semilla",
-            plan_anterior: data.plan,
-            fecha_downgrade: new Date(),
-          });
+                // ⏰ VERIFICAR EXPIRACIÓN DEL PLAN
+                if (data.plan_vencimiento && data.plan !== "semilla") {
+                    const vencimiento = data.plan_vencimiento.toDate();
+                    const ahora = new Date();
+                    const diasRestantes = Math.ceil(
+                        (vencimiento - ahora) / (1000 * 60 * 60 * 24),
+                    );
 
-          // @ts-ignore
-          Swal.fire({
-            icon: "warning",
-            title: "Plan Expirado",
-            html: `
+                    // Plan expirado - Downgrade automático
+                    if (ahora > vencimiento) {
+                        console.warn(
+                            "⚠️ [PLAN] Plan expirado, haciendo downgrade...",
+                        );
+                        await updateDoc(doc(db, "profesionales", uid), {
+                            plan: "semilla",
+                            plan_anterior: data.plan,
+                            fecha_downgrade: new Date(),
+                        });
+
+                        // @ts-ignore
+                        Swal.fire({
+                            icon: "warning",
+                            title: "Plan Expirado",
+                            html: `
               <p class="mb-4">Tu plan <strong>${data.plan}</strong> ha vencido.</p>
               <p class="text-gray-600">Ahora estás en <strong>Plan Semilla</strong>.</p>
             `,
-            confirmButtonText: "Ver Planes",
-            confirmButtonColor: "#ea580c",
-          }).then(() => {
-            window.location.href = "/planes";
-          });
-          return;
-        }
+                            confirmButtonText: "Ver Planes",
+                            confirmButtonColor: "#ea580c",
+                        }).then(() => {
+                            window.location.href = "/planes";
+                        });
+                        return;
+                    }
 
-        // Advertencia 10 días antes
-        if (diasRestantes <= 10 && diasRestantes > 0) {
-          console.log(`⏰ [PLAN] ${diasRestantes} días restantes`);
+                    // Advertencia 10 días antes
+                    if (diasRestantes <= 10 && diasRestantes > 0) {
+                        console.log(
+                            `⏰ [PLAN] ${diasRestantes} días restantes`,
+                        );
 
-          // Banner de advertencia
-          const banner = document.createElement("div");
-          banner.className =
-            "bg-orange-100 border-l-4 border-orange-500 p-4 mb-6 rounded-r shadow-sm";
-          banner.innerHTML = `
+                        // Banner de advertencia
+                        const banner = document.createElement("div");
+                        banner.className =
+                            "bg-orange-100 border-l-4 border-orange-500 p-4 mb-6 rounded-r shadow-sm";
+                        banner.innerHTML = `
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
                 <span class="text-3xl">⚠️</span>
@@ -1274,845 +1385,1027 @@ import Layout from "../layouts/Layout.astro";
               </a>
             </div>
           `;
-          document.querySelector(".profile-page-wrapper")?.prepend(banner);
-        }
-      }
+                        document
+                            .querySelector(".profile-page-wrapper")
+                            ?.prepend(banner);
+                    }
+                }
 
-      // 🔧 CORREGIR DURACIÓN DEL PLAN SI ES NECESARIA
-      // Si el plan tiene una duración incorrecta, la corregimos
-      if (
-        data.plan_inicio &&
-        data.plan_vencimiento &&
-        data.plan !== "semilla"
-      ) {
-        const planInicio = data.plan_inicio.toDate();
-        const vencimientoActual = data.plan_vencimiento.toDate();
-        const duracionEsperada = getPlanDuration(data.plan);
+                // 🔧 CORREGIR DURACIÓN DEL PLAN SI ES NECESARIA
+                // Si el plan tiene una duración incorrecta, la corregimos
+                if (
+                    data.plan_inicio &&
+                    data.plan_vencimiento &&
+                    data.plan !== "semilla"
+                ) {
+                    const planInicio = data.plan_inicio.toDate();
+                    const vencimientoActual = data.plan_vencimiento.toDate();
+                    const duracionEsperada = getPlanDuration(data.plan);
 
-        if (duracionEsperada > 0) {
-          // Calcular cuál debería ser el vencimiento correcto
-          const vencimientoCorrecto = new Date(planInicio);
-          vencimientoCorrecto.setDate(
-            vencimientoCorrecto.getDate() + duracionEsperada,
-          );
+                    if (duracionEsperada > 0) {
+                        // Calcular cuál debería ser el vencimiento correcto
+                        const vencimientoCorrecto = new Date(planInicio);
+                        vencimientoCorrecto.setDate(
+                            vencimientoCorrecto.getDate() + duracionEsperada,
+                        );
 
-          // Calcular diferencia en días entre el vencimiento actual y el correcto
-          const diferenciaDias = Math.abs(
-            Math.ceil(
-              (vencimientoActual - vencimientoCorrecto) / (1000 * 60 * 60 * 24),
-            ),
-          );
+                        // Calcular diferencia en días entre el vencimiento actual y el correcto
+                        const diferenciaDias = Math.abs(
+                            Math.ceil(
+                                (vencimientoActual - vencimientoCorrecto) /
+                                    (1000 * 60 * 60 * 24),
+                            ),
+                        );
 
-          // Si la diferencia es mayor a 5 días, corregir
-          if (diferenciaDias > 5) {
-            console.warn(
-              `⚠️ [PLAN] Corrigiendo duración del plan ${data.plan}: ${duracionEsperada} días`,
-            );
-            await updateDoc(doc(db, "profesionales", uid), {
-              plan_vencimiento: vencimientoCorrecto,
-            });
-            // Recargar datos
-            const updatedSnap = await getDoc(doc(db, "profesionales", uid));
-            if (updatedSnap.exists()) {
-              userData = updatedSnap.data();
-              data = userData;
-            }
-          }
-        }
-      }
+                        // Si la diferencia es mayor a 5 días, corregir
+                        if (diferenciaDias > 5) {
+                            console.warn(
+                                `⚠️ [PLAN] Corrigiendo duración del plan ${data.plan}: ${duracionEsperada} días`,
+                            );
+                            await updateDoc(doc(db, "profesionales", uid), {
+                                plan_vencimiento: vencimientoCorrecto,
+                            });
+                            // Recargar datos
+                            const updatedSnap = await getDoc(
+                                doc(db, "profesionales", uid),
+                            );
+                            if (updatedSnap.exists()) {
+                                userData = updatedSnap.data();
+                                data = userData;
+                            }
+                        }
+                    }
+                }
 
-      // NORMALIZAR PLAN
-      let rawPlan = data.plan || "semilla";
-      if (rawPlan === "gratuito" || rawPlan === "prueba_gratis")
-        rawPlan = "semilla";
-      if (rawPlan === "profesional") rawPlan = "mensual";
-      if (rawPlan === "semestral") rawPlan = "experto";
-      userPlan = rawPlan;
+                // NORMALIZAR PLAN
+                let rawPlan = data.plan || "semilla";
+                if (rawPlan === "gratuito" || rawPlan === "prueba_gratis")
+                    rawPlan = "semilla";
+                if (rawPlan === "profesional") rawPlan = "mensual";
+                if (rawPlan === "semestral") rawPlan = "experto";
+                userPlan = rawPlan;
 
-      userServices = data.servicios_lista || [];
-      userTags = data.etiquetas || [];
-      isVerified = data.verificado || false;
-      docDniUrl = data.doc_dni;
-      docAntUrl = data.doc_antecedentes;
+                userServices = data.servicios_lista || [];
+                userTags = data.etiquetas || [];
+                isVerified = data.verificado || false;
+                docDniUrl = data.doc_dni;
+                docAntUrl = data.doc_antecedentes;
 
-      // SIDEBAR
-      setText("sidebar-name", data.nombre);
-      setSrc(
-        "avatar-img",
-        data.foto || `https://ui-avatars.com/api/?name=${data.nombre}`,
-      );
-      document.getElementById("avatar-img")?.classList.remove("hidden");
+                // SIDEBAR
+                setText("sidebar-name", data.nombre);
+                setSrc(
+                    "avatar-img",
+                    data.foto ||
+                        `https://ui-avatars.com/api/?name=${data.nombre}`,
+                );
+                document
+                    .getElementById("avatar-img")
+                    ?.classList.remove("hidden");
 
-      renderPlanInfo(userPlan);
-      renderBadges(data);
-      updateClickCounter(data.contacto_clicks || 0);
+                renderPlanInfo(userPlan);
+                renderBadges(data);
+                updateClickCounter(data.contacto_clicks || 0);
 
-      if (data.rol === "admin")
-        document.getElementById("btn-admin-panel")?.classList.remove("hidden");
+                if (data.rol === "admin")
+                    document
+                        .getElementById("btn-admin-panel")
+                        ?.classList.remove("hidden");
 
-      // 🔒 RESTRICCIONES POR PLAN
-      const isExperto = userPlan === "experto" || userPlan === "semestral";
-      const isImpulso = userPlan === "impulso" || userPlan === "mensual";
+                // 🔒 RESTRICCIONES POR PLAN (LÓGICA ACTUALIZADA PARA LOS BOTONES)
+                const isExperto =
+                    userPlan === "experto" || userPlan === "semestral";
+                const isImpulso =
+                    userPlan === "impulso" || userPlan === "mensual";
 
-      if (isExperto) {
-        // Plan Experto: TODO desbloqueado
-        document.getElementById("premium-tools")?.classList.remove("hidden");
-        document.getElementById("tab-seo")?.classList.remove("hidden");
-        document.getElementById("tab-presupuestos")?.classList.remove("hidden");
-        // Quitar candados visuales
-        document
-          .querySelectorAll(".premium-lock")
-          .forEach((lock) => (lock.style.display = "none"));
-      } else if (isImpulso) {
-        // Plan Impulso: Solo Galería (6 fotos)
-        document.getElementById("premium-tools")?.classList.add("hidden");
-        document
-          .getElementById("tab-seo")
-          ?.style.setProperty("display", "none");
-        document
-          .getElementById("tab-presupuestos")
-          ?.style.setProperty("display", "none");
-        // Quitar candado de galería para Impulso
-        const galleryLock = document.querySelector(
-          '[data-tab="galeria"] .premium-lock',
-        );
-        if (galleryLock) galleryLock.style.display = "none";
-      } else {
-        // Plan Semilla: Solo datos básicos
-        document.getElementById("premium-tools")?.classList.add("hidden");
-        document
-          .getElementById("tab-seo")
-          ?.style.setProperty("display", "none");
-        document
-          .getElementById("tab-presupuestos")
-          ?.style.setProperty("display", "none");
-      }
+                if (isExperto) {
+                    // Plan Experto: TODO desbloqueado
+                    document
+                        .getElementById("premium-tools")
+                        ?.classList.remove("hidden");
+                    // CORRECCION: Usamos los IDs nuevos de los botones
+                    document
+                        .getElementById("btn-seo")
+                        ?.classList.remove("hidden");
+                    document
+                        .getElementById("btn-galeria")
+                        ?.classList.remove("hidden");
+                    document
+                        .getElementById("btn-presupuestos")
+                        ?.classList.remove("hidden");
 
-      // FORMULARIO
-      setVal("nombre", data.nombre);
-      setVal("nombre_fantasia", data.nombre_fantasia);
-      setVal("cuit", data.cuit);
-      setVal("rubro_principal", data.rubro_principal);
-      setVal("numero_matricula", data.numero_matricula);
-      setVal("zona", data.zona);
-      setVal("telefono", data.telefono);
-      setVal("descripcion", data.descripcion);
-      // @ts-ignore
-      document.getElementById("es_24hs").checked = data.es_24hs || false;
-      setVal("foto-url", data.foto);
+                    // Mostrar Panel Pro
+                    const panelProBtn =
+                        document.getElementById("btn-panel-pro");
+                    if (panelProBtn) {
+                        panelProBtn.classList.remove("hidden");
+                        panelProBtn.classList.add("flex");
+                    }
 
-      // PAGOS
-      // @ts-ignore
-      document.getElementById("emite_factura").checked =
-        data.emite_factura || false;
-      // @ts-ignore
-      document.getElementById("no_emite_factura").checked = !data.emite_factura;
+                    // Quitar candados visuales
+                    document
+                        .querySelectorAll(".premium-lock")
+                        .forEach((lock) => (lock.style.display = "none"));
+                } else if (isImpulso) {
+                    // Plan Impulso: Solo Galería (6 fotos)
+                    document
+                        .getElementById("premium-tools")
+                        ?.classList.add("hidden");
 
-      if (data.formas_pago) {
-        document.querySelectorAll(".pago-check").forEach((chk) => {
-          // @ts-ignore
-          if (data.formas_pago.includes(chk.value)) chk.checked = true;
-        });
-      }
+                    // Ocultar botones que no corresponden
+                    document.getElementById("btn-seo")?.classList.add("hidden");
+                    document
+                        .getElementById("btn-presupuestos")
+                        ?.classList.add("hidden");
 
-      setVal("instagram", data.redes?.instagram);
-      setVal("website", data.redes?.web);
-      // @ts-ignore
-      document.getElementById("web_propia").checked = data.web_propia || false;
+                    // Mostrar solo Galería
+                    document
+                        .getElementById("btn-galeria")
+                        ?.classList.remove("hidden");
 
-      if (data.ubicacion_exacta && data.ubicacion_exacta.lat) {
-        setVal("latitud", data.ubicacion_exacta.lat);
-        setVal("longitud", data.ubicacion_exacta.lng);
-        setVal("direccion_input", data.ubicacion_exacta.direccion_texto);
-        const status = document.getElementById("geo-status");
-        if (status) {
-          status.innerText = "✅ Ubicación Guardada";
-          status.className = "text-xs text-green-600 font-bold";
-        }
-      }
+                    // Quitar candado de galería para Impulso
+                    const galleryLock = document.querySelector(
+                        '[data-tab="galeria"] .premium-lock',
+                    );
+                    if (galleryLock) galleryLock.style.display = "none";
+                } else {
+                    // Plan Semilla: Solo datos básicos
+                    document
+                        .getElementById("premium-tools")
+                        ?.classList.add("hidden");
 
-      // @ts-ignore
-      document.getElementById("presupuestos_activo").checked =
-        data.presupuestos_config?.activo || false;
+                    // Ocultar todos los botones premium
+                    document.getElementById("btn-seo")?.classList.add("hidden");
+                    document
+                        .getElementById("btn-galeria")
+                        ?.classList.add("hidden");
+                    document
+                        .getElementById("btn-presupuestos")
+                        ?.classList.add("hidden");
+                }
 
-      renderServices();
-      renderGallery(data.portfolio || []);
-      renderTags();
-      checkLockStatus();
-
-      const btnVer = document.getElementById("btn-ver-perfil");
-      if (btnVer) btnVer.setAttribute("href", `/perfil?id=${uid}`);
-
-      if (userPlan === "semilla") blockPremiumTabs();
-    } catch (e) {
-      console.error("Error cargando:", e);
-    }
-  }
-
-  // --- LÓGICA UI ---
-  function blockPremiumTabs() {
-    document
-      .querySelectorAll(".premium-overlay")
-      .forEach((el) => el.classList.remove("hidden"));
-  }
-
-  // --- IA ---
-  function setupAIBio() {
-    document.getElementById("btn-ai-bio")?.addEventListener("click", () => {
-      const rubro =
-        document.getElementById("rubro_principal")?.value || "Profesional";
-      const nombre =
-        document.getElementById("nombre")?.value || "Soy profesional";
-      const zona = document.getElementById("zona")?.value || "su zona";
-      // @ts-ignore
-      document.getElementById("descripcion").value =
-        `¡Hola! Soy ${nombre}, especialista en ${rubro} con experiencia brindando servicios de calidad en ${zona}. Me caracterizo por la puntualidad, el compromiso y la garantía en mis trabajos. Realizo presupuestos sin cargo y acepto diversos medios de pago. ¡Contáctame para solucionar tu problema!`;
-    });
-  }
-
-  // --- GEO ---
-  function setupGeo() {
-    const input = document.getElementById("direccion_input");
-    const list = document.getElementById("geo-suggestions");
-    let debounceTimer;
-    input?.addEventListener("input", (e) => {
-      clearTimeout(debounceTimer);
-      // @ts-ignore
-      const q = e.target.value;
-      setVal("latitud", "");
-      setVal("longitud", "");
-      if (q.length < 4) {
-        list?.classList.add("hidden");
-        return;
-      }
-      debounceTimer = setTimeout(async () => {
-        try {
-          const searchQuery = q + ", Argentina";
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&addressdetails=1&limit=5&countrycodes=ar`,
-          );
-          const data = await res.json();
-          if (list) list.innerHTML = "";
-          if (data.length > 0) {
-            list?.classList.remove("hidden");
-            data.forEach((item) => {
-              const li = document.createElement("li");
-              li.className =
-                "p-2 hover:bg-gray-100 cursor-pointer border-b text-xs text-gray-700";
-              li.innerText = item.display_name;
-              li.onclick = () => {
-                setVal("direccion_input", item.display_name);
-                setVal("latitud", item.lat);
-                setVal("longitud", item.lon);
-                document.getElementById("geo-status").innerText = "📍 Listo";
-                list?.classList.add("hidden");
-              };
-              list?.appendChild(li);
-            });
-          }
-        } catch (e) {}
-      }, 600);
-    });
-    document.addEventListener("click", (e) => {
-      // @ts-ignore
-      if (e.target !== input) list?.classList.add("hidden");
-    });
-  }
-
-  // --- SAVE ---
-  async function saveProfile() {
-    const btn = document.getElementById("btn-top-save");
-    // @ts-ignore
-    btn.innerText = "Guardando...";
-    btn.disabled = true;
-    try {
-      // @ts-ignore
-      const lat = parseFloat(document.getElementById("latitud").value);
-      // @ts-ignore
-      const lng = parseFloat(document.getElementById("longitud").value);
-      const pagos = [];
-      document
-        .querySelectorAll(".pago-check:checked")
-        .forEach((c) => pagos.push(c.value));
-
-      // @ts-ignore
-      const emiteFactura = document.getElementById("emite_factura").checked;
-      // @ts-ignore
-      const noEmite = document.getElementById("no_emite_factura").checked;
-      const finalFactura = noEmite ? false : emiteFactura;
-
-      const updates = {
-        // @ts-ignore
-        nombre: document.getElementById("nombre").value,
-        // @ts-ignore
-        nombre_fantasia: document.getElementById("nombre_fantasia").value,
-        // @ts-ignore
-        cuit: document.getElementById("cuit").value,
-        // @ts-ignore
-        rubro_principal: document.getElementById("rubro_principal").value,
-        // @ts-ignore
-        numero_matricula: document.getElementById("numero_matricula").value,
-        // @ts-ignore
-        zona: document.getElementById("zona").value,
-        // @ts-ignore
-        telefono: document.getElementById("telefono").value,
-        // @ts-ignore
-        descripcion: document.getElementById("descripcion").value,
-        etiquetas: userTags,
-        servicios_lista: userServices, // ← AGREGADO: Guardar servicios de presupuesto
-        // @ts-ignore
-        es_24hs: document.getElementById("es_24hs").checked,
-        emite_factura: finalFactura,
-        formas_pago: pagos,
-        // @ts-ignore
-        foto: document.getElementById("foto-url").value,
-        redes: {
-          // @ts-ignore
-          instagram: document.getElementById("instagram").value,
-          // @ts-ignore
-          web: document.getElementById("website").value,
-        },
-        // @ts-ignore
-        web_propia: document.getElementById("web_propia").checked,
-        ubicacion_exacta:
-          !isNaN(lat) && !isNaN(lng)
-            ? {
-                activo: true,
-                lat: lat,
-                lng: lng,
+                // FORMULARIO
+                setVal("nombre", data.nombre);
+                setVal("nombre_fantasia", data.nombre_fantasia);
+                setVal("cuit", data.cuit);
+                setVal("rubro_principal", data.rubro_principal);
+                setVal("numero_matricula", data.numero_matricula);
+                setVal("zona", data.zona);
+                setVal("telefono", data.telefono);
+                setVal("descripcion", data.descripcion);
                 // @ts-ignore
-                direccion_texto:
-                  document.getElementById("direccion_input").value,
-              }
-            : { activo: false },
-        presupuestos_config: {
-          // @ts-ignore
-          activo: document.getElementById("presupuestos_activo").checked,
-          servicios: userServices,
-        },
-      };
-      await updateDoc(doc(db, "profesionales", currentUserUid), updates);
-      // @ts-ignore
-      Swal.fire({
-        icon: "success",
-        title: "¡Guardado!",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      await loadUserProfile(currentUserUid);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      // @ts-ignore
-      btn.innerText = "💾 Guardar Todo";
-      btn.disabled = false;
-    }
-  }
+                document.getElementById("es_24hs").checked =
+                    data.es_24hs || false;
+                setVal("foto-url", data.foto);
 
-  // --- BOTONES EXTRA (LOGOUT / DELETE / GIFTCARD) ---
-  function setupButtons() {
-    document
-      .getElementById("btn-top-save")
-      ?.addEventListener("click", saveProfile);
+                // PAGOS
+                // @ts-ignore
+                document.getElementById("emite_factura").checked =
+                    data.emite_factura || false;
+                // @ts-ignore
+                document.getElementById("no_emite_factura").checked =
+                    !data.emite_factura;
 
-    document
-      .getElementById("btn-add-service")
-      ?.addEventListener("click", async () => {
-        // @ts-ignore
-        const nom = document.getElementById("serv-nombre").value;
-        // @ts-ignore
-        const min = document.getElementById("serv-min").value;
-        // @ts-ignore
-        const max = document.getElementById("serv-max").value;
-        // @ts-ignore
-        const desc = document.getElementById("serv-desc").value;
-        if (nom && min) {
-          userServices.push({
-            nombre: nom,
-            min,
-            max: max || min,
-            descripcion: desc,
-          });
-          renderServices();
-          // Auto-guardar servicios
-          await updateDoc(doc(db, "profesionales", currentUserUid), {
-            "presupuestos_config.servicios": userServices,
-          });
-          // @ts-ignore
-          document.getElementById("serv-nombre").value = "";
-          document.getElementById("serv-min").value = "";
-          document.getElementById("serv-max").value = "";
-          document.getElementById("serv-desc").value = "";
+                if (data.formas_pago) {
+                    document.querySelectorAll(".pago-check").forEach((chk) => {
+                        // @ts-ignore
+                        if (data.formas_pago.includes(chk.value))
+                            chk.checked = true;
+                    });
+                }
+
+                setVal("instagram", data.redes?.instagram);
+                setVal("website", data.redes?.web);
+                // @ts-ignore
+                document.getElementById("web_propia").checked =
+                    data.web_propia || false;
+
+                if (data.ubicacion_exacta && data.ubicacion_exacta.lat) {
+                    setVal("latitud", data.ubicacion_exacta.lat);
+                    setVal("longitud", data.ubicacion_exacta.lng);
+                    setVal(
+                        "direccion_input",
+                        data.ubicacion_exacta.direccion_texto,
+                    );
+                    const status = document.getElementById("geo-status");
+                    if (status) {
+                        status.innerText = "✅ Ubicación Guardada";
+                        status.className = "text-xs text-green-600 font-bold";
+                    }
+                }
+
+                // @ts-ignore
+                document.getElementById("presupuestos_activo").checked =
+                    data.presupuestos_config?.activo || false;
+
+                renderServices();
+                renderGallery(data.portfolio || []);
+                renderTags();
+                checkLockStatus();
+
+                const btnVer = document.getElementById("btn-ver-perfil");
+                if (btnVer) btnVer.setAttribute("href", `/perfil?id=${uid}`);
+
+                if (userPlan === "semilla") blockPremiumTabs();
+            } catch (e) {
+                console.error("Error cargando:", e);
+            }
         }
-      });
 
-    // 🔥 LOGOUT FUNCIONA
-    document
-      .getElementById("btn-logout")
-      ?.addEventListener("click", async () => {
-        await signOut(auth);
-        window.location.href = "/";
-      });
-
-    // 🔥 ELIMINAR CUENTA FUNCIONA
-    document
-      .getElementById("btn-delete-account")
-      ?.addEventListener("click", async () => {
-        // @ts-ignore
-        const res = await Swal.fire({
-          title: "¿Estás seguro?",
-          text: "No podrás revertir esto. Tu perfil se borrará.",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#d33",
-          cancelButtonColor: "#3085d6",
-          confirmButtonText: "Sí, eliminar",
-        });
-        if (res.isConfirmed) {
-          try {
-            await deleteDoc(doc(db, "profesionales", currentUserUid));
-            await deleteUser(auth.currentUser);
-            window.location.href = "/";
-          } catch (e) {
-            console.error(e);
-            alert("Error al eliminar. Puede que necesites reconectarte.");
-          }
+        // --- LÓGICA UI ---
+        function blockPremiumTabs() {
+            document
+                .querySelectorAll(".premium-overlay")
+                .forEach((el) => el.classList.remove("hidden"));
         }
-      });
 
-    // 🔥 GIFTCARD BELLA
-    document
-      .getElementById("btn-giftcard")
-      ?.addEventListener("click", async () => {
-        // @ts-ignore
-        const { value: codigo } = await Swal.fire({
-          title: '🎁 <span class="text-purple-600">Canjear Beneficio</span>',
-          html: '<p class="text-gray-500 mb-4 text-sm">Ingresa tu código promocional para desbloquear funciones.</p>',
-          input: "text",
-          inputPlaceholder: "Ej: VERANO2026",
-          inputAttributes: { autocapitalize: "off" },
-          showCancelButton: true,
-          confirmButtonText: "✨ Activar",
-          confirmButtonColor: "#9333ea",
-          cancelButtonText: "Cancelar",
-        });
+        // --- IA ---
+        function setupAIBio() {
+            document
+                .getElementById("btn-ai-bio")
+                ?.addEventListener("click", () => {
+                    const rubro =
+                        document.getElementById("rubro_principal")?.value ||
+                        "Profesional";
+                    const nombre =
+                        document.getElementById("nombre")?.value ||
+                        "Soy profesional";
+                    const zona =
+                        document.getElementById("zona")?.value || "su zona";
+                    // @ts-ignore
+                    document.getElementById("descripcion").value =
+                        `¡Hola! Soy ${nombre}, especialista en ${rubro} con experiencia brindando servicios de calidad en ${zona}. Me caracterizo por la puntualidad, el compromiso y la garantía en mis trabajos. Realizo presupuestos sin cargo y acepto diversos medios de pago. ¡Contáctame para solucionar tu problema!`;
+                });
+        }
 
-        if (codigo) {
-          try {
+        // --- GEO ---
+        function setupGeo() {
+            const input = document.getElementById("direccion_input");
+            const list = document.getElementById("geo-suggestions");
+            let debounceTimer;
+            input?.addEventListener("input", (e) => {
+                clearTimeout(debounceTimer);
+                // @ts-ignore
+                const q = e.target.value;
+                setVal("latitud", "");
+                setVal("longitud", "");
+                if (q.length < 4) {
+                    list?.classList.add("hidden");
+                    return;
+                }
+                debounceTimer = setTimeout(async () => {
+                    try {
+                        const searchQuery = q + ", Argentina";
+                        const res = await fetch(
+                            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&addressdetails=1&limit=5&countrycodes=ar`,
+                        );
+                        const data = await res.json();
+                        if (list) list.innerHTML = "";
+                        if (data.length > 0) {
+                            list?.classList.remove("hidden");
+                            data.forEach((item) => {
+                                const li = document.createElement("li");
+                                li.className =
+                                    "p-2 hover:bg-gray-100 cursor-pointer border-b text-xs text-gray-700";
+                                li.innerText = item.display_name;
+                                li.onclick = () => {
+                                    setVal(
+                                        "direccion_input",
+                                        item.display_name,
+                                    );
+                                    setVal("latitud", item.lat);
+                                    setVal("longitud", item.lon);
+                                    document.getElementById(
+                                        "geo-status",
+                                    ).innerText = "📍 Listo";
+                                    list?.classList.add("hidden");
+                                };
+                                list?.appendChild(li);
+                            });
+                        }
+                    } catch (e) {}
+                }, 600);
+            });
+            document.addEventListener("click", (e) => {
+                // @ts-ignore
+                if (e.target !== input) list?.classList.add("hidden");
+            });
+        }
+
+        // --- SAVE ---
+        async function saveProfile() {
+            const btn = document.getElementById("btn-top-save");
             // @ts-ignore
-            Swal.fire({
-              title: "Validando...",
-              didOpen: () => Swal.showLoading(),
+            btn.innerText = "Guardando...";
+            btn.disabled = true;
+            try {
+                // @ts-ignore
+                const lat = parseFloat(
+                    document.getElementById("latitud").value,
+                );
+                // @ts-ignore
+                const lng = parseFloat(
+                    document.getElementById("longitud").value,
+                );
+                const pagos = [];
+                document
+                    .querySelectorAll(".pago-check:checked")
+                    .forEach((c) => pagos.push(c.value));
+
+                // @ts-ignore
+                const emiteFactura =
+                    document.getElementById("emite_factura").checked;
+                // @ts-ignore
+                const noEmite =
+                    document.getElementById("no_emite_factura").checked;
+                const finalFactura = noEmite ? false : emiteFactura;
+
+                const updates = {
+                    // @ts-ignore
+                    nombre: document.getElementById("nombre").value,
+                    // @ts-ignore
+                    nombre_fantasia:
+                        document.getElementById("nombre_fantasia").value,
+                    // @ts-ignore
+                    cuit: document.getElementById("cuit").value,
+                    // @ts-ignore
+                    rubro_principal:
+                        document.getElementById("rubro_principal").value,
+                    // @ts-ignore
+                    numero_matricula:
+                        document.getElementById("numero_matricula").value,
+                    // @ts-ignore
+                    zona: document.getElementById("zona").value,
+                    // @ts-ignore
+                    telefono: document.getElementById("telefono").value,
+                    // @ts-ignore
+                    descripcion: document.getElementById("descripcion").value,
+                    etiquetas: userTags,
+                    servicios_lista: userServices, // ← AGREGADO: Guardar servicios de presupuesto
+                    // @ts-ignore
+                    es_24hs: document.getElementById("es_24hs").checked,
+                    emite_factura: finalFactura,
+                    formas_pago: pagos,
+                    // @ts-ignore
+                    foto: document.getElementById("foto-url").value,
+                    redes: {
+                        // @ts-ignore
+                        instagram: document.getElementById("instagram").value,
+                        // @ts-ignore
+                        web: document.getElementById("website").value,
+                    },
+                    // @ts-ignore
+                    web_propia: document.getElementById("web_propia").checked,
+                    ubicacion_exacta:
+                        !isNaN(lat) && !isNaN(lng)
+                            ? {
+                                  activo: true,
+                                  lat: lat,
+                                  lng: lng,
+                                  // @ts-ignore
+                                  direccion_texto:
+                                      document.getElementById("direccion_input")
+                                          .value,
+                              }
+                            : { activo: false },
+                    presupuestos_config: {
+                        // @ts-ignore
+                        activo: document.getElementById("presupuestos_activo")
+                            .checked,
+                        servicios: userServices,
+                    },
+                };
+                await updateDoc(
+                    doc(db, "profesionales", currentUserUid),
+                    updates,
+                );
+                // @ts-ignore
+                Swal.fire({
+                    icon: "success",
+                    title: "¡Guardado!",
+                    timer: 1500,
+                    showConfirmButton: false,
+                });
+                await loadUserProfile(currentUserUid);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                // @ts-ignore
+                btn.innerText = "💾 Guardar Todo";
+                btn.disabled = false;
+            }
+        }
+
+        // --- BOTONES EXTRA (LOGOUT / DELETE / GIFTCARD) ---
+        function setupButtons() {
+            document
+                .getElementById("btn-top-save")
+                ?.addEventListener("click", saveProfile);
+
+            document
+                .getElementById("btn-add-service")
+                ?.addEventListener("click", async () => {
+                    // @ts-ignore
+                    const nom = document.getElementById("serv-nombre").value;
+                    // @ts-ignore
+                    const min = document.getElementById("serv-min").value;
+                    // @ts-ignore
+                    const max = document.getElementById("serv-max").value;
+                    // @ts-ignore
+                    const desc = document.getElementById("serv-desc").value;
+                    if (nom && min) {
+                        userServices.push({
+                            nombre: nom,
+                            min,
+                            max: max || min,
+                            descripcion: desc,
+                        });
+                        renderServices();
+                        // Auto-guardar servicios
+                        await updateDoc(
+                            doc(db, "profesionales", currentUserUid),
+                            {
+                                "presupuestos_config.servicios": userServices,
+                            },
+                        );
+                        // @ts-ignore
+                        document.getElementById("serv-nombre").value = "";
+                        document.getElementById("serv-min").value = "";
+                        document.getElementById("serv-max").value = "";
+                        document.getElementById("serv-desc").value = "";
+                    }
+                });
+
+            // 🔥 LOGOUT FUNCIONA
+            document
+                .getElementById("btn-logout")
+                ?.addEventListener("click", async () => {
+                    await signOut(auth);
+                    window.location.href = "/";
+                });
+
+            // 🔥 ELIMINAR CUENTA FUNCIONA
+            document
+                .getElementById("btn-delete-account")
+                ?.addEventListener("click", async () => {
+                    // @ts-ignore
+                    const res = await Swal.fire({
+                        title: "¿Estás seguro?",
+                        text: "No podrás revertir esto. Tu perfil se borrará.",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#d33",
+                        cancelButtonColor: "#3085d6",
+                        confirmButtonText: "Sí, eliminar",
+                    });
+                    if (res.isConfirmed) {
+                        try {
+                            await deleteDoc(
+                                doc(db, "profesionales", currentUserUid),
+                            );
+                            await deleteUser(auth.currentUser);
+                            window.location.href = "/";
+                        } catch (e) {
+                            console.error(e);
+                            alert(
+                                "Error al eliminar. Puede que necesites reconectarte.",
+                            );
+                        }
+                    }
+                });
+
+            // 🔥 GIFTCARD BELLA
+            document
+                .getElementById("btn-giftcard")
+                ?.addEventListener("click", async () => {
+                    // @ts-ignore
+                    const { value: codigo } = await Swal.fire({
+                        title: '🎁 <span class="text-purple-600">Canjear Beneficio</span>',
+                        html: '<p class="text-gray-500 mb-4 text-sm">Ingresa tu código promocional para desbloquear funciones.</p>',
+                        input: "text",
+                        inputPlaceholder: "Ej: VERANO2026",
+                        inputAttributes: { autocapitalize: "off" },
+                        showCancelButton: true,
+                        confirmButtonText: "✨ Activar",
+                        confirmButtonColor: "#9333ea",
+                        cancelButtonText: "Cancelar",
+                    });
+
+                    if (codigo) {
+                        try {
+                            // @ts-ignore
+                            Swal.fire({
+                                title: "Validando...",
+                                didOpen: () => Swal.showLoading(),
+                            });
+
+                            // Leer configuración del giftcard desde Firestore
+                            const giftcardDoc = await getDoc(
+                                doc(db, "configuracion", "giftcard"),
+                            );
+
+                            if (!giftcardDoc.exists()) {
+                                // @ts-ignore
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Error de Sistema",
+                                    text: "No hay códigos promocionales activos en este momento.",
+                                });
+                                return;
+                            }
+
+                            const giftcardConfig = giftcardDoc.data();
+
+                            // Validar código
+                            if (
+                                codigo.trim().toUpperCase() !==
+                                    giftcardConfig.codigo ||
+                                !giftcardConfig.activo
+                            ) {
+                                // @ts-ignore
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Código Inválido",
+                                    text: "El código ingresado no es válido o ha expirado.",
+                                });
+                                return;
+                            }
+
+                            // Verificar límite de usos si existe
+                            if (
+                                giftcardConfig.maxUsos &&
+                                giftcardConfig.usos >= giftcardConfig.maxUsos
+                            ) {
+                                // @ts-ignore
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Código Agotado",
+                                    text: "Este código ya alcanzó su límite de usos.",
+                                });
+                                return;
+                            }
+
+                            // Calcular fecha de vencimiento
+                            const vencimiento = new Date();
+                            vencimiento.setDate(
+                                vencimiento.getDate() +
+                                    (giftcardConfig.duracionDias || 60),
+                            );
+
+                            // Actualizar plan del usuario
+                            await updateDoc(
+                                doc(db, "profesionales", currentUserUid),
+                                {
+                                    plan:
+                                        giftcardConfig.planOtorgado ||
+                                        "experto",
+                                    plan_inicio: new Date(),
+                                    plan_vencimiento: vencimiento,
+                                    giftcard_usado: codigo.trim().toUpperCase(),
+                                    giftcard_fecha: new Date(),
+                                },
+                            );
+
+                            // Incrementar contador de usos
+                            await updateDoc(
+                                doc(db, "configuracion", "giftcard"),
+                                {
+                                    usos: (giftcardConfig.usos || 0) + 1,
+                                },
+                            );
+
+                            // @ts-ignore
+                            Swal.fire({
+                                icon: "success",
+                                title: "¡Felicidades! 🦁",
+                                text: `Plan ${giftcardConfig.planOtorgado || "Experto"} activado por ${giftcardConfig.duracionDias || 60} días.`,
+                                confirmButtonColor: "#9333ea",
+                            }).then(() => window.location.reload());
+                        } catch (e) {
+                            console.error("Error activando giftcard:", e);
+                            // @ts-ignore
+                            Swal.fire(
+                                "Error",
+                                "No se pudo activar el código. Intenta nuevamente.",
+                                "error",
+                            );
+                        }
+                    }
+                });
+
+            const handleUpload = async (file, type) => {
+                if (!file) return;
+                // @ts-ignore
+                Swal.fire({
+                    title: "Subiendo...",
+                    didOpen: () => Swal.showLoading(),
+                });
+                try {
+                    let path =
+                        type === "avatar"
+                            ? `profesionales/${currentUserUid}/avatar_${Date.now()}`
+                            : `profesionales/${currentUserUid}/docs/${type}_${Date.now()}`;
+                    if (type === "portfolio")
+                        path = `profesionales/${currentUserUid}/portfolio/${Date.now()}`;
+                    const refS = ref(storage, path);
+                    await uploadBytes(refS, file);
+                    const url = await getDownloadURL(refS);
+                    if (type === "dni")
+                        await updateDoc(
+                            doc(db, "profesionales", currentUserUid),
+                            {
+                                doc_dni: url,
+                                validacion_estado: "pendiente",
+                                verificado: false,
+                            },
+                        );
+                    else if (type === "ant")
+                        await updateDoc(
+                            doc(db, "profesionales", currentUserUid),
+                            {
+                                doc_antecedentes: url,
+                                validacion_estado: "pendiente",
+                                verificado: false,
+                            },
+                        );
+                    else if (type === "avatar") {
+                        // @ts-ignore
+                        document.getElementById("foto-url").value = url;
+                        document.getElementById("avatar-img").src = url;
+                        document
+                            .getElementById("avatar-img")
+                            ?.classList.remove("hidden");
+                    } else if (type === "portfolio") {
+                        await updateDoc(
+                            doc(db, "profesionales", currentUserUid),
+                            {
+                                portfolio: arrayUnion(url),
+                            },
+                        );
+                        const snap = await getDoc(
+                            doc(db, "profesionales", currentUserUid),
+                        );
+                        renderGallery(snap.data().portfolio || []);
+                    }
+                    // @ts-ignore
+                    Swal.close();
+                    const freshSnap = await getDoc(
+                        doc(db, "profesionales", currentUserUid),
+                    );
+                    docDniUrl = freshSnap.data().doc_dni;
+                    docAntUrl = freshSnap.data().doc_antecedentes;
+                    checkLockStatus();
+                } catch (e) {
+                    alert("Error subiendo");
+                }
+            };
+            // @ts-ignore
+            document
+                .getElementById("file-dni")
+                ?.addEventListener("change", (e) =>
+                    handleUpload(e.target.files[0], "dni"),
+                );
+            // @ts-ignore
+            document
+                .getElementById("file-ant")
+                ?.addEventListener("change", (e) =>
+                    handleUpload(e.target.files[0], "ant"),
+                );
+            // @ts-ignore
+            document
+                .getElementById("file-foto")
+                ?.addEventListener("change", (e) =>
+                    handleUpload(e.target.files[0], "avatar"),
+                );
+            // @ts-ignore
+            document
+                .getElementById("input-portfolio")
+                ?.addEventListener("change", (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    // Validar 5MB
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert("La imagen no puede superar 5MB");
+                        e.target.value = ""; // Reset input
+                        return;
+                    }
+
+                    // Validar límite de fotos por plan
+                    const currentCount = userData?.portfolio?.length || 0;
+                    const planLimits = {
+                        gratuito: 0,
+                        semilla: 0,
+                        basico: 3,
+                        mensual: 6, // Plan Impulso/Mensual
+                        impulso: 6,
+                        experto: 12,
+                        semestral: 12,
+                    };
+                    const userPlan = userData?.plan || "gratuito";
+                    const maxPhotos = planLimits[userPlan] || 0;
+
+                    if (currentCount >= maxPhotos) {
+                        alert(
+                            `Has alcanzado el límite de ${maxPhotos} fotos para tu plan ${userPlan}`,
+                        );
+                        e.target.value = "";
+                        return;
+                    }
+
+                    handleUpload(file, "portfolio");
+                });
+        }
+
+        // --- PDF GENERATOR ---
+        document
+            .getElementById("btn-generate-pdf")
+            ?.addEventListener("click", () => {
+                if (userServices.length === 0)
+                    return alert("Agrega servicios primero");
+                // @ts-ignore
+                if (!window.jspdf) return alert("Cargando PDF...");
+                // @ts-ignore
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                const orange = [234, 88, 12];
+                doc.setFillColor(...orange);
+                doc.rect(0, 0, 210, 25, "F");
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(22);
+                doc.text("PRESUPUESTO", 20, 17);
+
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(14);
+                doc.text(userData.nombre || "Profesional", 20, 45);
+                doc.setFontSize(10);
+                doc.setTextColor(100);
+                doc.text(userData.rubro_principal || "", 20, 51);
+                doc.text(`Tel: ${userData.telefono || ""}`, 20, 56);
+
+                let y = 70;
+                doc.setFillColor(240, 240, 240);
+                doc.rect(20, y, 170, 8, "F");
+                doc.setFontSize(9);
+                doc.setTextColor(0);
+                doc.text("SERVICIO", 25, y + 5);
+                doc.text("PRECIO ESTIMADO", 150, y + 5);
+
+                y += 15;
+                userServices.forEach((s) => {
+                    doc.setFont("helvetica", "bold");
+                    doc.text(s.nombre, 25, y);
+                    doc.setFont("helvetica", "normal");
+                    doc.text(`$${s.min} - $${s.max}`, 150, y);
+                    y += 7;
+                    if (s.descripcion) {
+                        doc.setFontSize(8);
+                        doc.setTextColor(100);
+                        doc.text(s.descripcion, 25, y);
+                        y += 8;
+                    }
+                    doc.setDrawColor(230);
+                    doc.line(20, y - 3, 190, y - 3);
+                    doc.setTextColor(0);
+                    doc.setFontSize(9);
+                });
+
+                doc.setFontSize(8);
+                doc.setTextColor(150);
+                doc.text("Válido por 15 días. DeOficios.com.ar", 105, 280, {
+                    align: "center",
+                });
+                doc.save("presupuesto_pro.pdf");
             });
 
-            // Leer configuración del giftcard desde Firestore
-            const giftcardDoc = await getDoc(
-              doc(db, "configuracion", "giftcard"),
-            );
-
-            if (!giftcardDoc.exists()) {
-              // @ts-ignore
-              Swal.fire({
-                icon: "error",
-                title: "Error de Sistema",
-                text: "No hay códigos promocionales activos en este momento.",
-              });
-              return;
+        // --- UI LOCK HELPERS ---
+        function checkLockStatus() {
+            const sDni = document.getElementById("status-dni");
+            const sAnt = document.getElementById("status-ant");
+            if (isVerified) {
+                document
+                    .getElementById("overlay-lock")
+                    ?.classList.add("hidden");
+                // @ts-ignore
+                document.getElementById("btn-top-save").disabled = false;
+                if (sDni) {
+                    sDni.innerText = "✅ Listo";
+                    sDni.className = "text-[10px] text-green-600 font-bold";
+                }
+                if (sAnt) {
+                    sAnt.innerText = "✅ Listo";
+                    sAnt.className = "text-[10px] text-green-600 font-bold";
+                }
+                return;
             }
-
-            const giftcardConfig = giftcardDoc.data();
-
-            // Validar código
-            if (
-              codigo.trim().toUpperCase() !== giftcardConfig.codigo ||
-              !giftcardConfig.activo
-            ) {
-              // @ts-ignore
-              Swal.fire({
-                icon: "error",
-                title: "Código Inválido",
-                text: "El código ingresado no es válido o ha expirado.",
-              });
-              return;
+            if (docDniUrl && docAntUrl) {
+                document
+                    .getElementById("overlay-lock")
+                    ?.classList.add("hidden");
+                // @ts-ignore
+                document.getElementById("btn-top-save").disabled = false;
+            } else {
+                document
+                    .getElementById("overlay-lock")
+                    ?.classList.remove("hidden");
+                // @ts-ignore
+                document.getElementById("btn-top-save").disabled = true;
             }
+        }
 
-            // Verificar límite de usos si existe
-            if (
-              giftcardConfig.maxUsos &&
-              giftcardConfig.usos >= giftcardConfig.maxUsos
-            ) {
-              // @ts-ignore
-              Swal.fire({
-                icon: "error",
-                title: "Código Agotado",
-                text: "Este código ya alcanzó su límite de usos.",
-              });
-              return;
-            }
+        function setupTabs() {
+            console.log("🔧 [TABS] Setting up tabs...");
 
-            // Calcular fecha de vencimiento
-            const vencimiento = new Date();
-            vencimiento.setDate(
-              vencimiento.getDate() + (giftcardConfig.duracionDias || 60),
-            );
+            document.querySelectorAll(".tab-btn").forEach((btn) => {
+                btn.addEventListener("click", (e) => {
+                    e.preventDefault();
 
-            // Actualizar plan del usuario
-            await updateDoc(doc(db, "profesionales", currentUserUid), {
-              plan: giftcardConfig.planOtorgado || "experto",
-              plan_inicio: new Date(),
-              plan_vencimiento: vencimiento,
-              giftcard_usado: codigo.trim().toUpperCase(),
-              giftcard_fecha: new Date(),
+                    // @ts-ignore
+                    const targetTab = btn.dataset.tab;
+                    const targetContent = document.getElementById(
+                        `tab-${targetTab}`,
+                    );
+
+                    console.log(
+                        `🔧 [TABS] Clicked tab: ${targetTab}`,
+                        targetContent,
+                    );
+
+                    // Si ya está activo, no hacer nada
+                    // @ts-ignore
+                    if (btn.classList.contains("active")) {
+                        console.log(
+                            `🔧 [TABS] Tab ${targetTab} already active, skipping`,
+                        );
+                        return;
+                    }
+
+                    // Remover active de todos los botones
+                    document.querySelectorAll(".tab-btn").forEach((b) => {
+                        b.classList.remove(
+                            "active",
+                            "border-orange-500",
+                            "text-orange-600",
+                        );
+                        b.classList.add("text-gray-500");
+                    });
+
+                    // Ocultar todos los contenidos
+                    document.querySelectorAll(".tab-content").forEach((c) => {
+                        c.classList.remove("block");
+                        c.classList.add("hidden");
+                    });
+
+                    // Activar el nuevo botón
+                    // @ts-ignore
+                    btn.classList.add(
+                        "active",
+                        "border-orange-500",
+                        "text-orange-600",
+                    );
+                    // @ts-ignore
+                    btn.classList.remove("text-gray-500");
+
+                    // Mostrar el nuevo contenido
+                    if (targetContent) {
+                        targetContent.classList.remove("hidden");
+                        targetContent.classList.add("block");
+
+                        console.log(`✅ [TABS] Tab ${targetTab} now visible`);
+
+                        // Animación fade-in
+                        targetContent.style.opacity = "0";
+                        targetContent.style.transform = "translateY(10px)";
+
+                        setTimeout(() => {
+                            targetContent.style.transition =
+                                "opacity 0.3s ease, transform 0.3s ease";
+                            targetContent.style.opacity = "1";
+                            targetContent.style.transform = "translateY(0)";
+                        }, 10);
+                    } else {
+                        console.error(
+                            `❌ [TABS] Tab content not found: tab-${targetTab}`,
+                        );
+                    }
+                });
             });
 
-            // Incrementar contador de usos
-            await updateDoc(doc(db, "configuracion", "giftcard"), {
-              usos: (giftcardConfig.usos || 0) + 1,
-            });
-
-            // @ts-ignore
-            Swal.fire({
-              icon: "success",
-              title: "¡Felicidades! 🦁",
-              text: `Plan ${giftcardConfig.planOtorgado || "Experto"} activado por ${giftcardConfig.duracionDias || 60} días.`,
-              confirmButtonColor: "#9333ea",
-            }).then(() => window.location.reload());
-          } catch (e) {
-            console.error("Error activando giftcard:", e);
-            // @ts-ignore
-            Swal.fire(
-              "Error",
-              "No se pudo activar el código. Intenta nuevamente.",
-              "error",
-            );
-          }
-        }
-      });
-
-    const handleUpload = async (file, type) => {
-      if (!file) return;
-      // @ts-ignore
-      Swal.fire({ title: "Subiendo...", didOpen: () => Swal.showLoading() });
-      try {
-        let path =
-          type === "avatar"
-            ? `profesionales/${currentUserUid}/avatar_${Date.now()}`
-            : `profesionales/${currentUserUid}/docs/${type}_${Date.now()}`;
-        if (type === "portfolio")
-          path = `profesionales/${currentUserUid}/portfolio/${Date.now()}`;
-        const refS = ref(storage, path);
-        await uploadBytes(refS, file);
-        const url = await getDownloadURL(refS);
-        if (type === "dni")
-          await updateDoc(doc(db, "profesionales", currentUserUid), {
-            doc_dni: url,
-            validacion_estado: "pendiente",
-            verificado: false,
-          });
-        else if (type === "ant")
-          await updateDoc(doc(db, "profesionales", currentUserUid), {
-            doc_antecedentes: url,
-            validacion_estado: "pendiente",
-            verificado: false,
-          });
-        else if (type === "avatar") {
-          // @ts-ignore
-          document.getElementById("foto-url").value = url;
-          document.getElementById("avatar-img").src = url;
-          document.getElementById("avatar-img")?.classList.remove("hidden");
-        } else if (type === "portfolio") {
-          await updateDoc(doc(db, "profesionales", currentUserUid), {
-            portfolio: arrayUnion(url),
-          });
-          const snap = await getDoc(doc(db, "profesionales", currentUserUid));
-          renderGallery(snap.data().portfolio || []);
-        }
-        // @ts-ignore
-        Swal.close();
-        const freshSnap = await getDoc(
-          doc(db, "profesionales", currentUserUid),
-        );
-        docDniUrl = freshSnap.data().doc_dni;
-        docAntUrl = freshSnap.data().doc_antecedentes;
-        checkLockStatus();
-      } catch (e) {
-        alert("Error subiendo");
-      }
-    };
-    // @ts-ignore
-    document
-      .getElementById("file-dni")
-      ?.addEventListener("change", (e) =>
-        handleUpload(e.target.files[0], "dni"),
-      );
-    // @ts-ignore
-    document
-      .getElementById("file-ant")
-      ?.addEventListener("change", (e) =>
-        handleUpload(e.target.files[0], "ant"),
-      );
-    // @ts-ignore
-    document
-      .getElementById("file-foto")
-      ?.addEventListener("change", (e) =>
-        handleUpload(e.target.files[0], "avatar"),
-      );
-    // @ts-ignore
-    document
-      .getElementById("input-portfolio")
-      ?.addEventListener("change", (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        // Validar 5MB
-        if (file.size > 5 * 1024 * 1024) {
-          alert("La imagen no puede superar 5MB");
-          e.target.value = ""; // Reset input
-          return;
+            console.log("✅ [TABS] Tabs setup complete");
         }
 
-        // Validar límite de fotos por plan
-        const currentCount = userData?.portfolio?.length || 0;
-        const planLimits = {
-          gratuito: 0,
-          semilla: 0,
-          basico: 3,
-          mensual: 6, // Plan Impulso/Mensual
-          impulso: 6,
-          experto: 12,
-          semestral: 12,
-        };
-        const userPlan = userData?.plan || "gratuito";
-        const maxPhotos = planLimits[userPlan] || 0;
-
-        if (currentCount >= maxPhotos) {
-          alert(
-            `Has alcanzado el límite de ${maxPhotos} fotos para tu plan ${userPlan}`,
-          );
-          e.target.value = "";
-          return;
-        }
-
-        handleUpload(file, "portfolio");
-      });
-  }
-
-  // --- PDF GENERATOR ---
-  document.getElementById("btn-generate-pdf")?.addEventListener("click", () => {
-    if (userServices.length === 0) return alert("Agrega servicios primero");
-    // @ts-ignore
-    if (!window.jspdf) return alert("Cargando PDF...");
-    // @ts-ignore
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    const orange = [234, 88, 12];
-    doc.setFillColor(...orange);
-    doc.rect(0, 0, 210, 25, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.text("PRESUPUESTO", 20, 17);
-
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(14);
-    doc.text(userData.nombre || "Profesional", 20, 45);
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(userData.rubro_principal || "", 20, 51);
-    doc.text(`Tel: ${userData.telefono || ""}`, 20, 56);
-
-    let y = 70;
-    doc.setFillColor(240, 240, 240);
-    doc.rect(20, y, 170, 8, "F");
-    doc.setFontSize(9);
-    doc.setTextColor(0);
-    doc.text("SERVICIO", 25, y + 5);
-    doc.text("PRECIO ESTIMADO", 150, y + 5);
-
-    y += 15;
-    userServices.forEach((s) => {
-      doc.setFont("helvetica", "bold");
-      doc.text(s.nombre, 25, y);
-      doc.setFont("helvetica", "normal");
-      doc.text(`$${s.min} - $${s.max}`, 150, y);
-      y += 7;
-      if (s.descripcion) {
-        doc.setFontSize(8);
-        doc.setTextColor(100);
-        doc.text(s.descripcion, 25, y);
-        y += 8;
-      }
-      doc.setDrawColor(230);
-      doc.line(20, y - 3, 190, y - 3);
-      doc.setTextColor(0);
-      doc.setFontSize(9);
-    });
-
-    doc.setFontSize(8);
-    doc.setTextColor(150);
-    doc.text("Válido por 15 días. DeOficios.com.ar", 105, 280, {
-      align: "center",
-    });
-    doc.save("presupuesto_pro.pdf");
-  });
-
-  // --- UI LOCK HELPERS ---
-  function checkLockStatus() {
-    const sDni = document.getElementById("status-dni");
-    const sAnt = document.getElementById("status-ant");
-    if (isVerified) {
-      document.getElementById("overlay-lock")?.classList.add("hidden");
-      // @ts-ignore
-      document.getElementById("btn-top-save").disabled = false;
-      if (sDni) {
-        sDni.innerText = "✅ Listo";
-        sDni.className = "text-[10px] text-green-600 font-bold";
-      }
-      if (sAnt) {
-        sAnt.innerText = "✅ Listo";
-        sAnt.className = "text-[10px] text-green-600 font-bold";
-      }
-      return;
-    }
-    if (docDniUrl && docAntUrl) {
-      document.getElementById("overlay-lock")?.classList.add("hidden");
-      // @ts-ignore
-      document.getElementById("btn-top-save").disabled = false;
-    } else {
-      document.getElementById("overlay-lock")?.classList.remove("hidden");
-      // @ts-ignore
-      document.getElementById("btn-top-save").disabled = true;
-    }
-  }
-
-  function setupTabs() {
-    document.querySelectorAll(".tab-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
+        // 📱 MOSTRAR QR EN MI PERFIL
         document
-          .querySelectorAll(".tab-btn")
-          .forEach((b) =>
-            b.classList.remove(
-              "active",
-              "border-orange-500",
-              "text-orange-600",
-            ),
-          );
-        document
-          .querySelectorAll(".tab-content")
-          .forEach((c) => c.classList.add("hidden"));
-        // @ts-ignore
-        btn.classList.add("active", "border-orange-500", "text-orange-600");
-        // @ts-ignore
-        document
-          .getElementById(`tab-${btn.dataset.tab}`)
-          .classList.remove("hidden");
-      });
-    });
-  }
+            .getElementById("btn-show-qr-profile")
+            ?.addEventListener("click", () => {
+                const profileUrl = `${window.location.origin}/perfil?id=${currentUserUid}`;
 
-  // 📱 MOSTRAR QR EN MI PERFIL
-  document
-    .getElementById("btn-show-qr-profile")
-    ?.addEventListener("click", () => {
-      const profileUrl = `${window.location.origin}/perfil?id=${currentUserUid}`;
-
-      // @ts-ignore
-      Swal.fire({
-        title: "📱 Tu Código QR",
-        html: `
+                // @ts-ignore
+                Swal.fire({
+                    title: "📱 Tu Código QR",
+                    html: `
         <div class="text-center">
           <p class="text-sm text-gray-600 mb-4">Comparte este código para que vean tu perfil</p>
           <div id="qr-container-profile" class="flex justify-center"></div>
           <p class="text-xs text-gray-500 mt-4">${profileUrl}</p>
         </div>
       `,
-        width: 400,
-        showConfirmButton: false,
-        showCloseButton: true,
-        didOpen: () => {
-          const qrContainer = document.getElementById("qr-container-profile");
-          const qrImg = document.createElement("img");
-          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(profileUrl)}`;
-          qrImg.className = "mx-auto rounded-lg shadow-md";
-          // @ts-ignore
-          qrContainer.appendChild(qrImg);
-        },
-      });
-    });
+                    width: 400,
+                    showConfirmButton: false,
+                    showCloseButton: true,
+                    didOpen: () => {
+                        const qrContainer = document.getElementById(
+                            "qr-container-profile",
+                        );
+                        const qrImg = document.createElement("img");
+                        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(profileUrl)}`;
+                        qrImg.className = "mx-auto rounded-lg shadow-md";
+                        // @ts-ignore
+                        qrContainer.appendChild(qrImg);
+                    },
+                });
+            });
 
-  // 💳 DESCARGAR TARJETA DIGITAL EN MI PERFIL
-  document
-    .getElementById("btn-download-card-profile")
-    ?.addEventListener("click", async () => {
-      try {
-        // @ts-ignore
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({
-          orientation: "landscape",
-          unit: "mm",
-          format: [85.6, 53.98],
-        });
+        // 💳 DESCARGAR TARJETA DIGITAL EN MI PERFIL
+        document
+            .getElementById("btn-download-card-profile")
+            ?.addEventListener("click", async () => {
+                try {
+                    // @ts-ignore
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({
+                        orientation: "landscape",
+                        unit: "mm",
+                        format: [85.6, 53.98],
+                    });
 
-        // Obtener datos del usuario
-        // @ts-ignore
-        const nombre =
-          document.getElementById("sidebar-name")?.innerText || "Profesional";
-        // @ts-ignore
-        const rubro = document.getElementById("rubro_principal")?.value || "";
-        // @ts-ignore
-        const telefono = document.getElementById("telefono")?.value || "";
+                    // Obtener datos del usuario
+                    // @ts-ignore
+                    const nombre =
+                        document.getElementById("sidebar-name")?.innerText ||
+                        "Profesional";
+                    // @ts-ignore
+                    const rubro =
+                        document.getElementById("rubro_principal")?.value || "";
+                    // @ts-ignore
+                    const telefono =
+                        document.getElementById("telefono")?.value || "";
 
-        // Fondo degradado
-        doc.setFillColor(147, 51, 234);
-        doc.rect(0, 0, 85.6, 53.98, "F");
+                    // Fondo degradado
+                    doc.setFillColor(147, 51, 234);
+                    doc.rect(0, 0, 85.6, 53.98, "F");
 
-        // Nombre
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(16);
-        doc.setFont(undefined, "bold");
-        doc.text(nombre, 8, 15);
+                    // Nombre
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(16);
+                    doc.setFont(undefined, "bold");
+                    doc.text(nombre, 8, 15);
 
-        // Rubro
-        if (rubro) {
-          doc.setFontSize(10);
-          doc.setFont(undefined, "normal");
-          doc.text(rubro, 8, 22);
-        }
+                    // Rubro
+                    if (rubro) {
+                        doc.setFontSize(10);
+                        doc.setFont(undefined, "normal");
+                        doc.text(rubro, 8, 22);
+                    }
 
-        // Teléfono
-        if (telefono) {
-          doc.setFontSize(12);
-          doc.text(`📱 ${telefono}`, 8, 35);
-        }
+                    // Teléfono
+                    if (telefono) {
+                        doc.setFontSize(12);
+                        doc.text(`📱 ${telefono}`, 8, 35);
+                    }
 
-        // URL del perfil
-        doc.setFontSize(8);
-        doc.text(
-          `${window.location.origin}/perfil?id=${currentUserUid}`,
-          8,
-          48,
-        );
+                    // URL del perfil
+                    doc.setFontSize(8);
+                    doc.text(
+                        `${window.location.origin}/perfil?id=${currentUserUid}`,
+                        8,
+                        48,
+                    );
 
-        // Logo/Badge
-        doc.setFontSize(20);
-        doc.text("⚡", 70, 15);
+                    // Logo/Badge
+                    doc.setFontSize(20);
+                    doc.text("⚡", 70, 15);
 
-        // Descargar
-        doc.save(`tarjeta-${nombre.replace(/\s+/g, "-")}.pdf`);
+                    // Descargar
+                    doc.save(`tarjeta-${nombre.replace(/\s+/g, "-")}.pdf`);
 
-        // @ts-ignore
-        Swal.fire({
-          icon: "success",
-          title: "¡Descargado!",
-          text: "Tu tarjeta digital está lista",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-      } catch (error) {
-        console.error("Error generando tarjeta:", error);
-        // @ts-ignore
-        Swal.fire("Error", "No se pudo generar la tarjeta", "error");
-      }
-    });
-</script>
+                    // @ts-ignore
+                    Swal.fire({
+                        icon: "success",
+                        title: "¡Descargado!",
+                        text: "Tu tarjeta digital está lista",
+                        timer: 2000,
+                        showConfirmButton: false,
+                    });
+                } catch (error) {
+                    console.error("Error generando tarjeta:", error);
+                    // @ts-ignore
+                    Swal.fire(
+                        "Error",
+                        "No se pudo generar la tarjeta",
+                        "error",
+                    );
+                }
+            });
+    </script>
+</Layout>

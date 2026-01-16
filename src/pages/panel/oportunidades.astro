@@ -1,0 +1,730 @@
+---
+import { auth } from "../../firebase/client";
+---
+
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Oportunidades - Panel Profesional</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            body {
+                font-family: "Inter", sans-serif;
+                background-color: #f8fafc;
+            }
+            /* Scrollbar personalizada */
+            ::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: #cbd5e1;
+                border-radius: 3px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
+            }
+            /* Modal Styles */
+            .modal-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(15, 23, 42, 0.5);
+                backdrop-filter: blur(4px);
+                z-index: 999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+            }
+            .modal-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+            .modal-container {
+                background: white;
+                border-radius: 1.5rem;
+                width: 90%;
+                max-width: 400px;
+                padding: 2rem;
+                box-shadow:
+                    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                transform: scale(0.95);
+                transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            .modal-overlay.active .modal-container {
+                transform: scale(1);
+            }
+        </style>
+    </head>
+    <body class="text-slate-800">
+        <div class="flex h-screen overflow-hidden">
+            <!-- SIDEBAR DESKTOP -->
+            <aside
+                class="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 h-full fixed top-0 left-0 z-20"
+            >
+                <div
+                    class="h-16 flex items-center px-6 border-b border-slate-100"
+                >
+                    <a href="/" class="text-xl font-bold text-slate-800">
+                        DeOficios<span class="text-orange-600">Pro</span>
+                    </a>
+                </div>
+
+                <div class="flex-1 overflow-y-auto py-4">
+                    <nav class="px-3 space-y-1">
+                        <a
+                            href="/panel"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">📊</span>
+                            <span class="font-medium text-sm">Dashboard</span>
+                        </a>
+
+                        <a
+                            href="/panel/oportunidades"
+                            class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">🎯</span>
+                            <span class="font-semibold text-sm"
+                                >Oportunidades</span
+                            >
+                            <span
+                                id="badge-oportunidades"
+                                class="ml-auto bg-orange-600 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden"
+                            ></span>
+                        </a>
+
+                        <a
+                            href="/panel/presupuestos"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">📝</span>
+                            <span class="font-medium text-sm">Presupuestos</span
+                            >
+                        </a>
+
+                        <a
+                            href="/panel/finanzas"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">💰</span>
+                            <span class="font-medium text-sm">Finanzas</span>
+                        </a>
+
+                        <a
+                            href="/panel/mi-equipo"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">👷</span>
+                            <span class="font-medium text-sm">Mi Equipo</span>
+                        </a>
+
+                        <a
+                            href="/panel/clientes"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">👥</span>
+                            <span class="font-medium text-sm">Clientes</span>
+                        </a>
+                    </nav>
+                </div>
+
+                <div class="mt-auto pt-4 border-t border-slate-200 space-y-2">
+                    <a
+                        href="/mi-perfil"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                    >
+                        <span>👤</span>
+                        <span class="font-medium text-sm">Mi Perfil</span>
+                    </a>
+
+                    <button
+                        id="btn-logout"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-red-600 transition-colors"
+                    >
+                        <span>🚪</span>
+                        <span class="font-medium text-sm">Cerrar Sesión</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- MAIN CONTENT (MOVU AL INTERIOR DEL FLEX) -->
+            <main class="flex-1 overflow-y-auto md:ml-64 bg-slate-50">
+                <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <!-- HEADER -->
+                    <div
+                        class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4"
+                    >
+                        <div>
+                            <h1 class="text-2xl font-bold text-slate-900">
+                                Oportunidades de Trabajo
+                            </h1>
+                            <p class="text-slate-500 mt-1">
+                                Solicitudes de clientes que coinciden con tu
+                                perfil
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- TABS -->
+                    <div class="border-b border-slate-200 mb-6 overflow-x-auto">
+                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                            <button
+                                id="tab-nuevas"
+                                class="tab-btn active border-orange-500 text-orange-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+                            >
+                                Nuevas
+                            </button>
+                            <button
+                                id="tab-contactadas"
+                                class="tab-btn border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+                            >
+                                Contactadas
+                            </button>
+                            <button
+                                id="tab-descartadas"
+                                class="tab-btn border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+                            >
+                                Descartadas
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- LOADING STATE -->
+                    <div id="loading" class="text-center py-12">
+                        <div
+                            class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"
+                        >
+                        </div>
+                        <p class="text-slate-400 mt-4">
+                            Buscando oportunidades en tu zona...
+                        </p>
+                    </div>
+
+                    <!-- ERROR STATE -->
+                    <div id="error-state" class="hidden text-center py-12">
+                        <div class="text-5xl mb-4">⚠️</div>
+                        <p class="text-slate-500">
+                            Ocurrió un error al cargar las oportunidades.
+                        </p>
+                        <p class="text-xs text-slate-400 mt-2">
+                            Si es la primera vez, es posible que se esté creando
+                            el índice de base de datos.
+                        </p>
+                    </div>
+
+                    <!-- EMPTY STATE -->
+                    <div
+                        id="empty-state"
+                        class="hidden text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300"
+                    >
+                        <div class="mx-auto h-12 w-12 text-slate-300 mb-4">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                                ></path>
+                            </svg>
+                        </div>
+                        <h3
+                            id="empty-title"
+                            class="mt-2 text-sm font-medium text-slate-900"
+                        >
+                            No hay nuevas oportunidades
+                        </h3>
+                        <p id="empty-desc" class="mt-1 text-sm text-slate-500">
+                            Te avisaremos cuando alguien busque un servicio en
+                            tu zona.
+                        </p>
+                    </div>
+
+                    <!-- GRID OPORTUNIDADES -->
+                    <div
+                        id="oportunidades-grid"
+                        class="grid grid-cols-1 gap-6"
+                        style="display: none;"
+                    >
+                        <!-- Cards will be injected here -->
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- MODAL ALERTA -->
+        <div id="custom-alert" class="modal-overlay">
+            <div class="modal-container text-center">
+                <div id="alert-icon" class="text-5xl mb-4"></div>
+                <h3
+                    id="alert-title"
+                    class="text-xl font-bold text-slate-900 mb-2"
+                >
+                </h3>
+                <p id="alert-message" class="text-slate-600 mb-6"></p>
+                <button
+                    onclick="closeAlert()"
+                    class="w-full bg-slate-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-slate-800 transition shadow-lg active:scale-95"
+                >
+                    Entendido
+                </button>
+            </div>
+        </div>
+
+        <script>
+            import { db, auth } from "../../firebase/client";
+            import {
+                collection,
+                query,
+                where,
+                getDocs,
+                orderBy,
+                limit,
+                doc,
+                updateDoc,
+                arrayUnion,
+                getDoc,
+            } from "firebase/firestore";
+            import { onAuthStateChanged } from "firebase/auth";
+
+            let currentUser = null;
+            let todasSolicitudes = [];
+
+            // Referencias DOM
+            const grid = document.getElementById("oportunidades-grid");
+            const loading = document.getElementById("loading");
+            const errorState = document.getElementById("error-state");
+            const emptyState = document.getElementById("empty-state");
+            const emptyTitle = document.getElementById("empty-title");
+            const emptyDesc = document.getElementById("empty-desc");
+            const tabs = document.querySelectorAll(".tab-btn");
+
+            // Estado local
+            let activeTab = "nuevas"; // nuevas | contactadas | descartadas
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUser = user;
+                    await loadOportunidades();
+                } else {
+                    window.location.href = "/ingresar-profesional";
+                }
+            });
+
+            // LOGOUT
+            document
+                .getElementById("btn-logout")
+                ?.addEventListener("click", () => {
+                    auth.signOut().then(() => (window.location.href = "/"));
+                });
+
+            // TABS
+            tabs.forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    // Update UI
+                    tabs.forEach((t) => {
+                        t.classList.remove(
+                            "border-orange-500",
+                            "text-orange-600",
+                            "active",
+                        );
+                        t.classList.add("border-transparent", "text-slate-500");
+                    });
+                    btn.classList.add(
+                        "border-orange-500",
+                        "text-orange-600",
+                        "active",
+                    );
+                    btn.classList.remove(
+                        "border-transparent",
+                        "text-slate-500",
+                    );
+
+                    // Update Logic
+                    activeTab = btn.id.split("-")[1]; // nuevas, contactadas, descartadas
+                    renderOportunidades();
+                });
+            });
+
+            async function loadOportunidades() {
+                console.log("🔍 [OPORTUNIDADES] Iniciando carga...");
+
+                // Ocultar todo inicialmente
+                [loading, grid, emptyState, errorState].forEach((el) => {
+                    if (el) {
+                        el.style.display = "none";
+                        el.classList.add("hidden");
+                    }
+                });
+
+                try {
+                    loading.style.display = "block";
+                    loading.classList.remove("hidden");
+
+                    console.log(
+                        "🔍 [OPORTUNIDADES] Consultando Firestore para UID:",
+                        currentUser?.uid,
+                    );
+
+                    // MODO PRODUCCIÓN: Solo solicitudes donde eres candidato
+                    const q = query(
+                        collection(db, "solicitudes"),
+                        where("candidatos", "array-contains", currentUser.uid),
+                        orderBy("fecha", "desc"),
+                    );
+
+                    /* 
+                // MODO DEBUG: Descomenta esto y comenta el bloque de arriba para ver TODAS las solicitudes
+                console.log("⚠️ MODO DEBUG: Cargando últimas 10 solicitudes sin filtro");
+                const q = query(
+                    collection(db, "solicitudes"),
+                    orderBy("fecha", "desc"),
+                    limit(10)
+                );
+                */
+
+                    console.log("🔍 [OPORTUNIDADES] Ejecutando query...");
+                    const snapshot = await getDocs(q);
+                    console.log(
+                        "🔍 [OPORTUNIDADES] Docs encontrados:",
+                        snapshot.size,
+                    );
+
+                    todasSolicitudes = snapshot.docs.map((doc) => ({
+                        id: doc.id,
+                        ...doc.data(),
+                    }));
+
+                    renderOportunidades();
+                } catch (error) {
+                    console.error("❌ [OPORTUNIDADES] Error:", error);
+                    errorState.style.display = "block";
+                    errorState.classList.remove("hidden");
+                } finally {
+                    loading.style.display = "none";
+                    loading.classList.add("hidden");
+                    console.log("🔍 [OPORTUNIDADES] Carga finalizada");
+                }
+            }
+
+            function renderOportunidades() {
+                console.log("🎨 [RENDER] Iniciando renderOportunidades...");
+                console.log(
+                    "🎨 [RENDER] Total solicitudes:",
+                    todasSolicitudes.length,
+                );
+                console.log("🎨 [RENDER] Tab activo:", activeTab);
+
+                // Filtrar según Tab
+                const filtered = todasSolicitudes.filter((sol) => {
+                    const contactado = sol.contactadosPor?.includes(
+                        currentUser.uid,
+                    );
+                    const descartado = sol.descartadosPor?.includes(
+                        currentUser.uid,
+                    );
+
+                    if (activeTab === "nuevas")
+                        return !contactado && !descartado;
+                    if (activeTab === "contactadas") return contactado;
+                    if (activeTab === "descartadas") return descartado;
+                    return false;
+                });
+
+                console.log(
+                    "🎨 [RENDER] Solicitudes filtradas:",
+                    filtered.length,
+                );
+                console.log("🎨 [RENDER] Datos filtrados:", filtered);
+                if (filtered.length === 0) {
+                    console.log(
+                        "⚠️ [RENDER] No hay solicitudes filtradas - mostrando empty state",
+                    );
+                }
+
+                // Update count badge
+                const nuevasCount = todasSolicitudes.filter(
+                    (s) =>
+                        !s.contactadosPor?.includes(currentUser.uid) &&
+                        !s.descartadosPor?.includes(currentUser.uid),
+                ).length;
+
+                const badge = document.getElementById("badge-oportunidades");
+                if (badge) {
+                    badge.innerText = nuevasCount.toString();
+                    if (nuevasCount > 0) {
+                        badge.style.display = "inline-block";
+                        badge.classList.remove("hidden");
+                    } else {
+                        badge.style.display = "none";
+                        badge.classList.add("hidden");
+                    }
+                }
+
+                // Empty State Logic
+                if (filtered.length === 0) {
+                    console.log("⚠️ [RENDER] Mostrando empty state");
+                    grid.style.display = "none";
+                    emptyState.style.display = "";
+                    emptyState.classList.remove("hidden");
+
+                    if (activeTab === "nuevas") {
+                        emptyTitle.innerText = "No hay nuevas oportunidades";
+                        emptyDesc.innerText =
+                            "Te avisaremos cuando alguien busque un servicio en tu zona.";
+                    } else if (activeTab === "contactadas") {
+                        emptyTitle.innerText = "Aún no has contactado a nadie";
+                        emptyDesc.innerText =
+                            "Las oportunidades que contactes aparecerán aquí.";
+                    } else {
+                        emptyTitle.innerText = "Papelera vacía";
+                        emptyDesc.innerText =
+                            "Las oportunidades descartadas aparecerán aquí.";
+                    }
+                    return;
+                }
+
+                console.log("🎨 [RENDER] Mostrando grid...");
+                emptyState.style.display = "none";
+                grid.style.display = "grid";
+                grid.classList.remove("hidden");
+
+                console.log(
+                    "🎨 [RENDER] Generando HTML para",
+                    filtered.length,
+                    "items",
+                );
+                grid.innerHTML = filtered
+                    .map((sol) => {
+                        // Formatear fecha
+                        let fechaStr = "Reciente";
+                        if (sol.fecha && sol.fecha.seconds) {
+                            const date = new Date(sol.fecha.seconds * 1000);
+                            fechaStr = new Intl.DateTimeFormat("es-AR", {
+                                day: "numeric",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                            }).format(date);
+                        }
+
+                        // Badges
+                        const urgenteBadge = sol.urgente
+                            ? `<span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">🚨 Urgente</span>`
+                            : "";
+
+                        const nuevoBadge =
+                            !sol.leidoPor?.includes(currentUser.uid) &&
+                            activeTab === "nuevas"
+                                ? `<span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-full">Nuevo</span>`
+                                : "";
+
+                        return `
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 hover:shadow-md transition">
+                            <!-- Info Principal -->
+                            <div class="flex-1">
+                                <div class="flex items-start justify-between mb-3">
+                                    <div class="flex flex-wrap gap-2 items-center">
+                                        <span class="bg-slate-100 text-slate-700 text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wide">${sol.rubro}</span>
+                                        ${urgenteBadge}
+                                        ${nuevoBadge}
+                                    </div>
+                                    <span class="text-xs text-slate-400 flex items-center gap-1 whitespace-nowrap">
+                                        ⏱ ${fechaStr}
+                                    </span>
+                                </div>
+                                
+                                <h3 class="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-500"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                    ${sol.zona}
+                                </h3>
+                                
+                                <p class="text-slate-600 mb-4 line-clamp-3 md:line-clamp-none bg-slate-50 p-3 rounded-lg border border-slate-100 text-sm italic">
+                                    "${sol.detalle}"
+                                </p>
+
+                                <div class="flex flex-wrap items-center gap-4 text-sm text-slate-500">
+                                    <span class="flex items-center gap-2 font-medium text-slate-700">
+                                        <div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs">👤</div>
+                                        ${sol.clienteNombre}
+                                    </span>
+                                    ${
+                                        activeTab === "contactadas"
+                                            ? `
+                                        <span class="text-green-600 font-bold text-xs bg-green-50 px-2 py-1 rounded">✅ Contactado</span>
+                                    `
+                                            : ""
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Acciones -->
+                            <div class="flex flex-col gap-3 justify-center min-w-[220px] border-t md:border-t-0 md:border-l border-slate-100 pt-5 md:pt-0 md:pl-6">
+                                ${
+                                    activeTab !== "contactadas"
+                                        ? `
+                                    <button 
+                                        onclick="contactarCliente('${sol.id}', '${sol.clienteNombre}', '${sol.clienteTelefono || ""}')"
+                                        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm hover:shadow active:scale-95"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                        Contactar Cliente
+                                    </button>
+                                    
+                                    ${
+                                        activeTab === "nuevas"
+                                            ? `
+                                        <button 
+                                            onclick="descartarSolicitud('${sol.id}')"
+                                            class="w-full text-slate-500 hover:text-red-600 hover:bg-red-50 font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition text-sm"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                                            Descartar
+                                        </button>
+                                    `
+                                            : `
+                                        <button 
+                                            onclick="restaurarSolicitud('${sol.id}')"
+                                            class="w-full text-slate-500 hover:text-green-600 hover:bg-green-50 font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition text-sm"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"></polyline><path d="M20 20v-7a4 4 0 0 0-4-4H4"></path></svg>
+                                            Restaurar
+                                        </button>
+                                    `
+                                    }
+                                `
+                                        : `
+                                    <div class="text-center py-4 bg-green-50 rounded-lg border border-green-100">
+                                        <span class="block text-2xl mb-1">💬</span>
+                                        <p class="text-green-800 font-bold text-sm">Conversación Iniciada</p>
+                                        <a href="https://wa.me/549${sol.clienteTelefono || ""}" target="_blank" class="text-xs text-green-600 hover:underline mt-1 block">Abrir WhatsApp de nuevo</a>
+                                    </div>
+                                `
+                                }
+                            </div>
+                        </div>
+                    `;
+                    })
+                    .join("");
+
+                console.log(
+                    "🎨 [RENDER] HTML generado, longitud:",
+                    grid.innerHTML.length,
+                );
+                console.log("🎨 [RENDER] Grid renderizado exitosamente");
+            }
+
+            // ACCIONES
+            async function contactarCliente(id, nombre, telefono) {
+                if (!currentUser) return;
+
+                if (!telefono) {
+                    alert(
+                        "Este cliente no dejó teléfono (versión antigua de solicitud).",
+                    );
+                    return;
+                }
+
+                // 1. Marcar como contactado en DB
+                try {
+                    const solRef = doc(db, "solicitudes", id);
+                    await updateDoc(solRef, {
+                        contactadosPor: arrayUnion(currentUser.uid),
+                    });
+
+                    // Actualizar estado local
+                    todasSolicitudes = todasSolicitudes.map((s) => {
+                        if (s.id === id) {
+                            const prev = s.contactadosPor || [];
+                            return {
+                                ...s,
+                                contactadosPor: [...prev, currentUser.uid],
+                            };
+                        }
+                        return s;
+                    });
+
+                    renderOportunidades();
+
+                    // 2. Abrir WhatsApp
+                    const mensaje = `Hola ${nombre}, soy ${currentUser.displayName || "profesional"} de DeOficios. Vi tu pedido de ${todasSolicitudes.find((s) => s.id === id)?.rubro || "trabajo"} y me interesa pasarte un presupuesto.`;
+                    const url = `https://wa.me/549${telefono}?text=${encodeURIComponent(mensaje)}`;
+                    window.open(url, "_blank");
+                } catch (e) {
+                    console.error(e);
+                    alert("Error al procesar contacto");
+                }
+            }
+
+            async function descartarSolicitud(id) {
+                if (!confirm("¿Seguro que quieres descartar esta oportunidad?"))
+                    return;
+
+                try {
+                    const solRef = doc(db, "solicitudes", id);
+                    await updateDoc(solRef, {
+                        descartadosPor: arrayUnion(currentUser.uid),
+                    });
+
+                    // Actualizar local
+                    todasSolicitudes = todasSolicitudes.map((s) => {
+                        if (s.id === id) {
+                            const prev = s.descartadosPor || [];
+                            return {
+                                ...s,
+                                descartadosPor: [...prev, currentUser.uid],
+                            };
+                        }
+                        return s;
+                    });
+
+                    renderOportunidades();
+                } catch (e) {
+                    console.error(e);
+                    alert("Error al descartar");
+                }
+            }
+
+            // MODAL SYSTEM
+            function showAlert(title, message, icon = "✨") {
+                document.getElementById("alert-title").innerText = title;
+                document.getElementById("alert-message").innerText = message;
+                document.getElementById("alert-icon").innerText = icon;
+                document.getElementById("custom-alert").classList.add("active");
+            }
+
+            window.closeAlert = () => {
+                document
+                    .getElementById("custom-alert")
+                    .classList.remove("active");
+            };
+
+            // Exponer funciones globales
+            window.contactarCliente = contactarCliente;
+            window.descartarSolicitud = descartarSolicitud;
+            window.restaurarSolicitud = async function (id) {
+                showAlert(
+                    "Próximamente",
+                    "La funcionalidad de restaurar estará disponible pronto.",
+                    "⏳",
+                );
+            };
+        </script>
+    </body>
+</html>

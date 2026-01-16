@@ -1,27 +1,27 @@
 {
-  "name": "DeOficios Argentina",
+  "name": "DeOficios Pro",
   "short_name": "DeOficios",
-  "description": "La red de profesionales de confianza para tu hogar.",
-  "start_url": "/",
+  "start_url": "/panel",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#f8fafc",
   "theme_color": "#ea580c",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
     },
     {
       "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "sizes": "192x192"
     },
     {
       "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "sizes": "512x512"
     }
-  ]
+  ],
+  "description": "Panel profesional para gestión de oficios y leads."
 }

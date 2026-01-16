@@ -1,0 +1,1974 @@
+---
+import { auth, db } from "../../firebase/client";
+---
+
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Finanzas - DeOficios Pro</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            body {
+                font-family: "Inter", sans-serif;
+                background-color: #f8fafc;
+            }
+            ::-webkit-scrollbar {
+                width: 6px;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: #cbd5e1;
+                border-radius: 3px;
+            }
+
+            /* Page Transitions */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .fade-in {
+                animation: fadeIn 0.3s ease-out;
+            }
+
+            /* Mobile Sidebar */
+            .mobile-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+            }
+
+            .mobile-sidebar.active {
+                transform: translateX(0);
+            }
+
+            /* Overlay */
+            .sidebar-overlay {
+                opacity: 0;
+                visibility: hidden;
+                transition:
+                    opacity 0.3s ease-in-out,
+                    visibility 0.3s ease-in-out;
+            }
+
+            .sidebar-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+        </style>
+    </head>
+    <body class="text-slate-800">
+        <!-- Mobile Sidebar Overlay -->
+        <div
+            id="sidebar-overlay"
+            class="sidebar-overlay fixed inset-0 bg-black/50 z-40 md:hidden"
+        >
+        </div>
+
+        <div class="flex h-screen overflow-hidden">
+            <!-- SIDEBAR -->
+            <aside
+                class="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 h-full"
+            >
+                <div
+                    class="h-16 flex items-center px-6 border-b border-slate-100"
+                >
+                    <a href="/panel" class="text-xl font-bold text-slate-800">
+                        DeOficios<span class="text-orange-600">Pro</span>
+                    </a>
+                </div>
+
+                <div class="flex-1 overflow-y-auto py-4">
+                    <nav class="px-3 space-y-1">
+                        <a
+                            href="/panel"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
+                        >
+                            <span class="text-xl">📊</span>
+                            <span class="font-medium text-sm">Dashboard</span>
+                        </a>
+
+                        <a
+                            href="/panel/oportunidades"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
+                        >
+                            <span class="text-xl">🎯</span>
+                            <span class="font-medium text-sm"
+                                >Oportunidades</span
+                            >
+                        </a>
+
+                        <a
+                            href="/panel/presupuestos"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
+                        >
+                            <span class="text-xl">📝</span>
+                            <span class="font-medium text-sm">Presupuestos</span
+                            >
+                        </a>
+
+                        <a
+                            href="/panel/finanzas"
+                            class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg transition-colors"
+                        >
+                            <span class="text-xl">💰</span>
+                            <span class="font-semibold text-sm">Finanzas</span>
+                        </a>
+
+                        <a
+                            href="/panel/mi-equipo"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">👷</span>
+                            <span class="font-medium text-sm">Mi Equipo</span>
+                        </a>
+
+                        <a
+                            href="/panel/clientes"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">👥</span>
+                            <span class="font-medium text-sm">Clientes</span>
+                        </a>
+                    </nav>
+                </div>
+
+                <div class="mt-auto pt-4 border-t border-slate-200 space-y-2">
+                    <a
+                        href="/mi-perfil"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                    >
+                        <span>👤</span>
+                        <span class="font-medium text-sm">Mi Perfil</span>
+                    </a>
+
+                    <button
+                        id="btn-logout"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-red-600 transition-colors"
+                    >
+                        <span>🚪</span>
+                        <span class="font-medium text-sm">Cerrar Sesión</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Mobile Sidebar -->
+            <aside
+                id="mobile-sidebar"
+                class="mobile-sidebar md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col"
+            >
+                <div
+                    class="h-16 flex items-center justify-between px-6 border-b border-slate-100"
+                >
+                    <a href="/" class="text-xl font-bold text-slate-800">
+                        DeOficios<span class="text-orange-600">Pro</span>
+                    </a>
+                    <button
+                        id="close-sidebar"
+                        class="text-2xl text-slate-600 hover:text-slate-900"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto py-4">
+                    <nav class="px-3 space-y-1">
+                        <a
+                            href="/panel"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">📊</span>
+                            <span class="font-medium text-sm">Dashboard</span>
+                        </a>
+                        <a
+                            href="/panel/oportunidades"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">🎯</span>
+                            <span class="font-medium text-sm"
+                                >Oportunidades</span
+                            >
+                        </a>
+                        <a
+                            href="/panel/presupuestos"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">📝</span>
+                            <span class="font-medium text-sm">Presupuestos</span
+                            >
+                        </a>
+                        <a
+                            href="/panel/finanzas"
+                            class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg"
+                        >
+                            <span class="text-xl">💰</span>
+                            <span class="font-semibold text-sm">Finanzas</span>
+                        </a>
+                        <a
+                            href="/panel/mi-equipo"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">👷</span>
+                            <span class="font-medium text-sm">Mi Equipo</span>
+                        </a>
+                        <a
+                            href="/panel/clientes"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">👥</span>
+                            <span class="font-medium text-sm">Clientes</span>
+                        </a>
+                    </nav>
+                </div>
+
+                <div
+                    class="mt-auto pt-4 border-t border-slate-200 space-y-2 px-3 pb-4"
+                >
+                    <a
+                        href="/mi-perfil"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                    >
+                        <span>👤</span>
+                        <span class="font-medium text-sm">Mi Perfil</span>
+                    </a>
+                    <button
+                        id="btn-logout-mobile"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-red-600 transition-colors"
+                    >
+                        <span>🚪</span>
+                        <span class="font-medium text-sm">Cerrar Sesión</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- MAIN CONTENT -->
+            <main class="flex-1 flex flex-col h-screen overflow-hidden">
+                <!-- HEADER -->
+                <header
+                    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6"
+                >
+                    <h2 class="text-lg font-bold text-slate-800">
+                        Gestión Financiera
+                    </h2>
+
+                    <div class="flex items-center gap-3">
+                        <button
+                            id="btn-add-income"
+                            class="bg-green-500 hover:bg-green-600 text-white font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2"
+                        >
+                            <span>+</span> Ingreso
+                        </button>
+                        <button
+                            id="btn-add-expense"
+                            class="bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2"
+                        >
+                            <span>-</span> Gasto
+                        </button>
+                    </div>
+                </header>
+
+                <!-- CONTENT AREA -->
+                <div class="flex-1 overflow-y-auto p-6 bg-slate-50">
+                    <!-- KPIS -->
+                    <div
+                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+                    >
+                        <!-- Ingresos -->
+                        <div
+                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="p-3 bg-green-50 rounded-xl">
+                                    <span class="text-2xl">💵</span>
+                                </div>
+                                <span
+                                    class="text-xs text-green-600 font-bold bg-green-50 px-2 py-1 rounded-full"
+                                    >Este mes</span
+                                >
+                            </div>
+                            <p class="text-sm text-slate-500 font-medium mb-1">
+                                Ingresos
+                            </p>
+                            <h3
+                                id="kpi-ingresos"
+                                class="text-3xl font-bold text-green-600"
+                            >
+                                $0
+                            </h3>
+                        </div>
+
+                        <!-- Gastos -->
+                        <div
+                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="p-3 bg-red-50 rounded-xl">
+                                    <span class="text-2xl">💸</span>
+                                </div>
+                                <span
+                                    class="text-xs text-red-600 font-bold bg-red-50 px-2 py-1 rounded-full"
+                                    >Este mes</span
+                                >
+                            </div>
+                            <p class="text-sm text-slate-500 font-medium mb-1">
+                                Gastos
+                            </p>
+                            <h3
+                                id="kpi-gastos"
+                                class="text-3xl font-bold text-red-600"
+                            >
+                                $0
+                            </h3>
+                        </div>
+
+                        <!-- Balance Neto -->
+                        <div
+                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="p-3 bg-blue-50 rounded-xl">
+                                    <span class="text-2xl">💰</span>
+                                </div>
+                                <span
+                                    class="text-xs text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded-full"
+                                    >Neto</span
+                                >
+                            </div>
+                            <p class="text-sm text-slate-500 font-medium mb-1">
+                                Balance
+                            </p>
+                            <h3
+                                id="kpi-balance"
+                                class="text-3xl font-bold text-blue-600"
+                            >
+                                $0
+                            </h3>
+                        </div>
+
+                        <!-- Derivaciones -->
+                        <div
+                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="p-3 bg-orange-50 rounded-xl">
+                                    <span class="text-2xl">👷</span>
+                                </div>
+                                <span
+                                    class="text-xs text-orange-600 font-bold bg-orange-50 px-2 py-1 rounded-full"
+                                    >Pendiente</span
+                                >
+                            </div>
+                            <p class="text-sm text-slate-500 font-medium mb-1">
+                                Derivaciones
+                            </p>
+                            <h3
+                                id="kpi-derivaciones"
+                                class="text-3xl font-bold text-orange-600"
+                            >
+                                $0
+                            </h3>
+                        </div>
+                    </div>
+
+                    <!-- MI EQUIPO -->
+                    <div
+                        class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8"
+                    >
+                        <div
+                            class="p-6 border-b border-slate-100 flex justify-between items-center"
+                        >
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-800">
+                                    Mi Equipo 👷
+                                </h3>
+                                <p class="text-sm text-slate-500">
+                                    Gestiona derivaciones y comisiones
+                                </p>
+                            </div>
+                            <button
+                                id="btn-add-team"
+                                class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2"
+                            >
+                                <span>+</span> Agregar Miembro
+                            </button>
+                        </div>
+
+                        <div id="equipo-container" class="p-6">
+                            <!-- Se llena dinámicamente -->
+                            <div class="text-center py-8 text-slate-400">
+                                <div class="text-5xl mb-3">👥</div>
+                                <p class="text-sm">
+                                    No hay miembros en tu equipo
+                                </p>
+                                <p class="text-xs mt-1">
+                                    Agrega ayudantes o socios para calcular
+                                    derivaciones automáticamente
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ÚLTIMOS MOVIMIENTOS -->
+                    <div
+                        class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8"
+                    >
+                        <div
+                            class="p-6 border-b border-slate-100 flex justify-between items-center"
+                        >
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-800">
+                                    Últimos Movimientos
+                                </h3>
+                                <p class="text-sm text-slate-500">
+                                    Historial de ingresos y gastos
+                                </p>
+                            </div>
+                            <select
+                                id="filter-tipo"
+                                class="bg-slate-50 border border-slate-200 text-sm rounded-lg px-4 py-2 outline-none"
+                            >
+                                <option value="todos">Todos</option>
+                                <option value="ingreso">Ingresos</option>
+                                <option value="gasto">Gastos</option>
+                            </select>
+                        </div>
+
+                        <div
+                            id="movimientos-container"
+                            class="divide-y divide-slate-100"
+                        >
+                            <!-- Se llena dinámicamente -->
+                            <div class="p-12 text-center text-slate-400">
+                                <div class="text-6xl mb-4">📊</div>
+                                <p>No hay movimientos registrados</p>
+                                <p class="text-sm mt-2">
+                                    Comienza registrando tu primer ingreso o
+                                    gasto
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Danger Zone -->
+                <div
+                    class="mt-12 pt-8 border-t border-slate-200 text-center pb-8"
+                >
+                    <button
+                        onclick="resetValues()"
+                        class="text-sm text-slate-400 hover:text-red-600 transition flex items-center gap-2 mx-auto justify-center"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-trash-2"
+                            ><path d="M3 6h18"></path><path
+                                d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"
+                            ></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+                            ></path><line x1="10" x2="10" y1="11" y2="17"
+                            ></line><line x1="14" x2="14" y1="11" y2="17"
+                            ></line></svg
+                        >
+                        Reiniciar todos los datos
+                    </button>
+                    <p class="text-xs text-slate-300 mt-2">
+                        Esta acción borrará todas tus finanzas, equipo y
+                        derivaciones. No se puede deshacer.
+                    </p>
+                </div>
+            </main>
+        </div>
+
+        <!-- MODAL INGRESO -->
+        <div
+            id="modal-ingreso"
+            class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center p-4"
+        >
+            <div
+                class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+            >
+                <div
+                    class="p-6 border-b flex justify-between items-center bg-green-50"
+                >
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900">
+                            Registrar Ingreso
+                        </h3>
+                        <p class="text-sm text-slate-500">
+                            Nuevo cobro o trabajo realizado
+                        </p>
+                    </div>
+                    <button
+                        id="close-modal-ingreso"
+                        class="text-3xl text-slate-400 hover:text-slate-600"
+                        >&times;</button
+                    >
+                </div>
+
+                <form id="form-ingreso" class="p-6 space-y-4">
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                            >Concepto</label
+                        >
+                        <input
+                            type="text"
+                            id="ingreso-concepto"
+                            required
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-green-500"
+                            placeholder="Ej: Instalación aire acondicionado"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                            >Monto</label
+                        >
+                        <input
+                            type="number"
+                            id="ingreso-monto"
+                            required
+                            min="0"
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-green-500"
+                            placeholder="0"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                            >Fecha</label
+                        >
+                        <input
+                            type="date"
+                            id="ingreso-fecha"
+                            required
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-green-500"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                            >Cliente (opcional)</label
+                        >
+                        <input
+                            type="text"
+                            id="ingreso-cliente"
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-green-500"
+                            placeholder="Nombre del cliente"
+                        />
+                    </div>
+
+                    <!-- SELECCIÓN DE EQUIPO -->
+                    <div class="pt-4 border-t">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                id="ingreso-con-equipo"
+                                class="w-5 h-5 text-green-600 accent-green-600"
+                            />
+                            <span class="font-bold text-slate-700"
+                                >¿Trabajaste con alguien de tu equipo?</span
+                            >
+                        </label>
+                    </div>
+
+                    <div
+                        id="ingreso-equipo-selector"
+                        class="hidden space-y-2 p-4 bg-slate-50 rounded-lg"
+                    >
+                        <p class="text-sm font-bold text-slate-700 mb-2">
+                            Selecciona miembros:
+                        </p>
+                        <div id="ingreso-equipo-list">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+                        <div
+                            id="ingreso-preview"
+                            class="mt-4 p-3 bg-white rounded-lg border border-slate-200 hidden"
+                        >
+                            <p class="text-xs font-bold text-slate-600 mb-2">
+                                Preview de distribución:
+                            </p>
+                            <div id="ingreso-preview-content"></div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t flex gap-3">
+                        <button
+                            type="button"
+                            id="cancel-ingreso"
+                            class="flex-1 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 rounded-lg transition"
+                            >Cancelar</button
+                        >
+                        <button
+                            type="submit"
+                            class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition"
+                            >Guardar Ingreso</button
+                        >
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL GASTO -->
+        <div
+            id="modal-gasto"
+            class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center p-4"
+        >
+            <div
+                class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+            >
+                <div
+                    class="p-6 border-b flex justify-between items-center bg-red-50"
+                >
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900">
+                            Registrar Gasto
+                        </h3>
+                        <p class="text-sm text-slate-500">
+                            Nuevo gasto o compra
+                        </p>
+                    </div>
+                    <button
+                        id="close-modal-gasto"
+                        class="text-3xl text-slate-400 hover:text-slate-600"
+                        >&times;</button
+                    >
+                </div>
+
+                <form id="form-gasto" class="p-6 space-y-4">
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                            >Concepto</label
+                        >
+                        <input
+                            type="text"
+                            id="gasto-concepto"
+                            required
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
+                            placeholder="Ej: Materiales eléctricos"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                            >Monto</label
+                        >
+                        <input
+                            type="number"
+                            id="gasto-monto"
+                            required
+                            min="0"
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
+                            placeholder="0"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                            >Fecha</label
+                        >
+                        <input
+                            type="date"
+                            id="gasto-fecha"
+                            required
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                            >Categoría</label
+                        >
+                        <select
+                            id="gasto-categoria"
+                            required
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
+                        >
+                            <option value="">Selecciona una categoría</option>
+                            <option value="materiales">Materiales</option>
+                            <option value="herramientas">Herramientas</option>
+                            <option value="transporte">Transporte</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                    </div>
+
+                    <div class="pt-4 border-t flex gap-3">
+                        <button
+                            type="button"
+                            id="cancel-gasto"
+                            class="flex-1 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 rounded-lg transition"
+                            >Cancelar</button
+                        >
+                        <button
+                            type="submit"
+                            class="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition"
+                            >Guardar Gasto</button
+                        >
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL AGREGAR MIEMBRO DEL EQUIPO -->
+        <div
+            id="modal-team"
+            class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center p-4"
+        >
+            <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
+                <div
+                    class="p-6 border-b flex justify-between items-center bg-orange-50"
+                >
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900">
+                            Agregar Miembro del Equipo
+                        </h3>
+                        <p class="text-sm text-slate-500">
+                            Ayudante, socio o subcontratista
+                        </p>
+                    </div>
+                    <button
+                        id="close-modal-team"
+                        class="text-3xl text-slate-400 hover:text-slate-600"
+                        >&times;</button
+                    >
+                </div>
+
+                <form id="form-team" class="p-6 space-y-4">
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                            >Nombre</label
+                        >
+                        <input
+                            type="text"
+                            id="team-nombre"
+                            required
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500"
+                            placeholder="Ej: Juan Pérez"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                            >Rol</label
+                        >
+                        <select
+                            id="team-rol"
+                            required
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500"
+                        >
+                            <option value="">Selecciona un rol</option>
+                            <option value="ayudante">Ayudante</option>
+                            <option value="socio">Socio</option>
+                            <option value="subcontratista"
+                                >Subcontratista</option
+                            >
+                        </select>
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                            >Tipo de Pago</label
+                        >
+                        <select
+                            id="team-tipo-pago"
+                            required
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500"
+                        >
+                            <option value="">Selecciona tipo</option>
+                            <option value="porcentaje">Porcentaje (%)</option>
+                            <option value="fijo">Monto Fijo ($)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                            >Valor</label
+                        >
+                        <input
+                            type="number"
+                            id="team-valor"
+                            required
+                            min="0"
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500"
+                            placeholder="Ej: 30 (para 30%)"
+                        />
+                        <p
+                            id="team-valor-hint"
+                            class="text-xs text-slate-500 mt-1"
+                        >
+                            Selecciona primero el tipo de pago
+                        </p>
+                    </div>
+
+                    <div class="pt-4 border-t flex gap-3">
+                        <button
+                            type="button"
+                            id="cancel-team"
+                            class="flex-1 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 rounded-lg transition"
+                            >Cancelar</button
+                        >
+                        <button
+                            type="submit"
+                            class="flex-1 px-6 py-3 bg-orange-600 text-white rounded-lg font-bold hover:bg-orange-700 transition"
+                            >Guardar Miembro</button
+                        >
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- CUSTOM ALERT MODAL -->
+        <div
+            id="custom-alert"
+            class="hidden fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300"
+        >
+            <div
+                class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl transform scale-95 transition-transform duration-300"
+            >
+                <div class="text-center">
+                    <div id="alert-icon" class="text-5xl mb-4">✅</div>
+                    <h3
+                        id="alert-title"
+                        class="text-xl font-bold text-slate-800 mb-2"
+                    >
+                        ¡Éxito!
+                    </h3>
+                    <p id="alert-message" class="text-slate-600 mb-6">
+                        Operación realizada correctamente.
+                    </p>
+                    <button
+                        id="alert-btn"
+                        class="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition"
+                    >
+                        Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CUSTOM CONFIRM MODAL -->
+        <div
+            id="custom-confirm"
+            class="hidden fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300"
+        >
+            <div
+                class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl transform scale-95 transition-transform duration-300"
+            >
+                <div class="text-center">
+                    <div class="text-5xl mb-4">🤔</div>
+                    <h3
+                        id="confirm-title"
+                        class="text-xl font-bold text-slate-800 mb-2"
+                    >
+                        ¿Estás seguro?
+                    </h3>
+                    <p id="confirm-message" class="text-slate-600 mb-6">
+                        Esta acción no se puede deshacer.
+                    </p>
+                    <div class="flex gap-3">
+                        <button
+                            id="confirm-cancel"
+                            class="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            id="confirm-ok"
+                            class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition"
+                        >
+                            Confirmar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            import { auth, db } from "../../firebase/client";
+            import { onAuthStateChanged, signOut } from "firebase/auth";
+            import {
+                doc,
+                getDoc,
+                collection,
+                addDoc,
+                query,
+                where,
+                getDocs,
+                orderBy,
+                limit,
+                Timestamp,
+            } from "firebase/firestore";
+
+            const logoutBtn = document.getElementById("btn-logout");
+            const btnAddIncome = document.getElementById("btn-add-income");
+            const btnAddExpense = document.getElementById("btn-add-expense");
+
+            const modalIngreso = document.getElementById("modal-ingreso");
+            const modalGasto = document.getElementById("modal-gasto");
+
+            const formIngreso = document.getElementById("form-ingreso");
+            const formGasto = document.getElementById("form-gasto");
+
+            let currentUser = null;
+            let equipoData = [];
+
+            // === CUSTOM ALERTS & CONFIRMS ===
+            function showAlert(
+                title: string,
+                message: string,
+                type: "success" | "error" = "success",
+            ) {
+                const modal = document.getElementById("custom-alert");
+                const icon = document.getElementById("alert-icon");
+                const titleEl = document.getElementById("alert-title");
+                const msgEl = document.getElementById("alert-message");
+                const btn = document.getElementById("alert-btn");
+
+                if (!modal || !icon || !titleEl || !msgEl || !btn) return;
+
+                icon.textContent = type === "success" ? "✅" : "❌";
+                titleEl.textContent = title;
+                msgEl.textContent = message;
+
+                modal.classList.remove("hidden");
+                // Animation
+                setTimeout(() => {
+                    modal.classList.remove("opacity-0");
+                    modal.querySelector("div")?.classList.remove("scale-95");
+                    modal.querySelector("div")?.classList.add("scale-100");
+                }, 10);
+
+                return new Promise<void>((resolve) => {
+                    const close = () => {
+                        modal.classList.add("opacity-0");
+                        modal.querySelector("div")?.classList.add("scale-95");
+                        setTimeout(() => {
+                            modal.classList.add("hidden");
+                            resolve();
+                        }, 300);
+                    };
+                    btn.onclick = close;
+                });
+            }
+
+            function showConfirm(
+                title: string,
+                message: string,
+                confirmText = "Confirmar",
+                confirmColor = "bg-red-600",
+            ) {
+                const modal = document.getElementById("custom-confirm");
+                const titleEl = document.getElementById("confirm-title");
+                const msgEl = document.getElementById("confirm-message");
+                const confirmBtn = document.getElementById("confirm-ok");
+                const cancelBtn = document.getElementById("confirm-cancel");
+
+                if (!modal || !titleEl || !msgEl || !confirmBtn || !cancelBtn)
+                    return Promise.resolve(false);
+
+                titleEl.textContent = title;
+                msgEl.textContent = message;
+                confirmBtn.textContent = confirmText;
+                confirmBtn.className = `flex-1 py-3 text-white rounded-xl font-bold transition hover:opacity-90 ${confirmColor}`;
+
+                modal.classList.remove("hidden");
+                // Animation
+                setTimeout(() => {
+                    modal.classList.remove("opacity-0");
+                    modal.querySelector("div")?.classList.remove("scale-95");
+                    modal.querySelector("div")?.classList.add("scale-100");
+                }, 10);
+
+                return new Promise<boolean>((resolve) => {
+                    const close = (result: boolean) => {
+                        modal.classList.add("opacity-0");
+                        modal.querySelector("div")?.classList.add("scale-95");
+                        setTimeout(() => {
+                            modal.classList.add("hidden");
+                            resolve(result);
+                        }, 300);
+                    };
+
+                    confirmBtn.onclick = () => close(true);
+                    cancelBtn.onclick = () => close(false);
+                });
+            }
+
+            // Expose globally
+            (window as any).showAlert = showAlert;
+            (window as any).showConfirm = showConfirm;
+
+            // Team modal
+            const btnAddTeam = document.getElementById("btn-add-team");
+            const modalTeam = document.getElementById("modal-team");
+            const formTeam = document.getElementById("form-team");
+
+            // Setear fecha de hoy por defecto
+            const today = new Date().toISOString().split("T")[0];
+            document.getElementById("ingreso-fecha").value = today;
+            document.getElementById("gasto-fecha").value = today;
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    const docRef = doc(db, "profesionales", user.uid);
+                    const docSnap = await getDoc(docRef);
+
+                    if (docSnap.exists()) {
+                        currentUser = user;
+                        await loadFinanzas(user.uid);
+                        await loadEquipo(user.uid);
+                    } else {
+                        window.location.href = "/";
+                    }
+                } else {
+                    window.location.href = "/ingresar";
+                }
+            });
+
+            // Abrir/Cerrar modales
+            btnAddIncome?.addEventListener("click", () =>
+                modalIngreso.classList.remove("hidden"),
+            );
+            btnAddExpense?.addEventListener("click", () =>
+                modalGasto.classList.remove("hidden"),
+            );
+
+            document
+                .getElementById("close-modal-ingreso")
+                ?.addEventListener("click", () =>
+                    modalIngreso.classList.add("hidden"),
+                );
+            document
+                .getElementById("cancel-ingreso")
+                ?.addEventListener("click", () =>
+                    modalIngreso.classList.add("hidden"),
+                );
+
+            document
+                .getElementById("close-modal-gasto")
+                ?.addEventListener("click", () =>
+                    modalGasto.classList.add("hidden"),
+                );
+            document
+                .getElementById("cancel-gasto")
+                ?.addEventListener("click", () =>
+                    modalGasto.classList.add("hidden"),
+                );
+
+            // === TEAM MODAL ===
+            btnAddTeam?.addEventListener("click", () =>
+                modalTeam.classList.remove("hidden"),
+            );
+            document
+                .getElementById("close-modal-team")
+                ?.addEventListener("click", () =>
+                    modalTeam.classList.add("hidden"),
+                );
+            document
+                .getElementById("cancel-team")
+                ?.addEventListener("click", () =>
+                    modalTeam.classList.add("hidden"),
+                );
+
+            // Cambiar hint según tipo de pago
+            document
+                .getElementById("team-tipo-pago")
+                ?.addEventListener("change", (e) => {
+                    const hint = document.getElementById("team-valor-hint");
+                    if (
+                        (e.target as HTMLSelectElement).value === "porcentaje"
+                    ) {
+                        hint.textContent =
+                            "Ingresa el porcentaje (ej: 30 para 30%)";
+                    } else if (
+                        (e.target as HTMLSelectElement).value === "fijo"
+                    ) {
+                        hint.textContent = "Ingresa el monto fijo en pesos";
+                    }
+                });
+
+            // Guardar miembro del equipo
+            formTeam?.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                if (!currentUser) return;
+
+                const nombre = (
+                    document.getElementById("team-nombre") as HTMLInputElement
+                ).value;
+                const rol = (
+                    document.getElementById("team-rol") as HTMLSelectElement
+                ).value;
+                const tipoPago = (
+                    document.getElementById(
+                        "team-tipo-pago",
+                    ) as HTMLSelectElement
+                ).value;
+                const valor = parseFloat(
+                    (document.getElementById("team-valor") as HTMLInputElement)
+                        .value,
+                );
+
+                try {
+                    await addDoc(
+                        collection(
+                            db,
+                            "profesionales",
+                            currentUser.uid,
+                            "equipo",
+                        ),
+                        {
+                            nombre,
+                            rol,
+                            tipoPago,
+                            valor,
+                            activo: true,
+                            totalTrabajosJuntos: 0,
+                            totalDerivado: 0,
+                            pendientePago: 0,
+                            createdAt: Timestamp.now(),
+                        },
+                    );
+
+                    await showAlert(
+                        "¡Excelente!",
+                        "Has agregado un nuevo miembro a tu equipo.",
+                        "success",
+                    );
+                    modalTeam.classList.add("hidden");
+                    formTeam.reset();
+                    await loadEquipo(currentUser.uid);
+                } catch (error) {
+                    console.error(error);
+                    await showAlert(
+                        "Error",
+                        "No se pudo guardar el miembro.",
+                        "error",
+                    );
+                }
+            });
+
+            // Guardar Ingreso
+            formIngreso?.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                if (!currentUser) return;
+
+                const concepto = (
+                    document.getElementById(
+                        "ingreso-concepto",
+                    ) as HTMLInputElement
+                ).value;
+                const monto = parseFloat(
+                    (
+                        document.getElementById(
+                            "ingreso-monto",
+                        ) as HTMLInputElement
+                    ).value,
+                );
+                const fecha = new Date(
+                    (
+                        document.getElementById(
+                            "ingreso-fecha",
+                        ) as HTMLInputElement
+                    ).value,
+                );
+                const cliente = (
+                    document.getElementById(
+                        "ingreso-cliente",
+                    ) as HTMLInputElement
+                ).value;
+                const conEquipo = (
+                    document.getElementById(
+                        "ingreso-con-equipo",
+                    ) as HTMLInputElement
+                ).checked;
+
+                // Calcular derivaciones si trabajó con equipo
+                let equipoArray: any[] = [];
+                let montoNeto = monto;
+
+                if (conEquipo) {
+                    const selectedCheckboxes = document.querySelectorAll(
+                        ".equipo-checkbox:checked",
+                    );
+                    selectedCheckboxes.forEach((cb) => {
+                        const checkbox = cb as HTMLInputElement;
+                        const miembroId = checkbox.dataset.id || "";
+                        const nombre = checkbox.dataset.nombre || "";
+                        const tipo = checkbox.dataset.tipo || "";
+                        const valor = parseFloat(checkbox.dataset.valor || "0");
+
+                        let montoDerivado = 0;
+                        if (tipo === "porcentaje") {
+                            montoDerivado = (monto * valor) / 100;
+                        } else {
+                            montoDerivado = valor;
+                        }
+
+                        equipoArray.push({
+                            miembroId,
+                            nombre,
+                            tipo,
+                            valor,
+                            monto: montoDerivado,
+                        });
+
+                        montoNeto -= montoDerivado;
+                    });
+                }
+
+                try {
+                    // Guardar ingreso
+                    const ingresoRef = await addDoc(
+                        collection(
+                            db,
+                            "profesionales",
+                            currentUser.uid,
+                            "finanzas",
+                        ),
+                        {
+                            tipo: "ingreso",
+                            concepto,
+                            monto,
+                            fecha: Timestamp.fromDate(fecha),
+                            clienteNombre: cliente || null,
+                            metodoCobro: "efectivo",
+                            equipo: equipoArray,
+                            montoNeto: montoNeto,
+                            createdAt: Timestamp.now(),
+                        },
+                    );
+
+                    // Crear derivaciones si hay equipo
+                    if (equipoArray.length > 0) {
+                        const { updateDoc } =
+                            await import("firebase/firestore");
+
+                        const derivacionesPromises = equipoArray.map(
+                            (miembro) =>
+                                addDoc(
+                                    collection(
+                                        db,
+                                        "profesionales",
+                                        currentUser.uid,
+                                        "derivaciones",
+                                    ),
+                                    {
+                                        miembroId: miembro.miembroId,
+                                        miembroNombre: miembro.nombre,
+                                        monto: miembro.monto,
+                                        trabajoId: ingresoRef.id,
+                                        trabajoConcepto: concepto,
+                                        fecha: Timestamp.fromDate(fecha),
+                                        pagado: false,
+                                        fechaPago: null,
+                                    },
+                                ),
+                        );
+                        await Promise.all(derivacionesPromises);
+
+                        // Actualizar estadísticas del equipo
+                        const updatePromises = equipoArray.map(
+                            async (miembro) => {
+                                const miembroDoc = doc(
+                                    db,
+                                    "profesionales",
+                                    currentUser.uid,
+                                    "equipo",
+                                    miembro.miembroId,
+                                );
+                                const miembroSnap = await getDoc(miembroDoc);
+                                if (miembroSnap.exists()) {
+                                    const data = miembroSnap.data();
+                                    await updateDoc(miembroDoc, {
+                                        totalTrabajosJuntos:
+                                            (data.totalTrabajosJuntos || 0) + 1,
+                                        totalDerivado:
+                                            (data.totalDerivado || 0) +
+                                            miembro.monto,
+                                        pendientePago:
+                                            (data.pendientePago || 0) +
+                                            miembro.monto,
+                                    });
+                                }
+                            },
+                        );
+                        await Promise.all(updatePromises);
+                    }
+
+                    await showAlert(
+                        "¡Ingreso Registrado!",
+                        `El ingreso y las derivaciones han sido guardadas.${equipoArray.length > 0 ? ` (${equipoArray.length} derivaciones)` : ""}`,
+                        "success",
+                    );
+                    modalIngreso.classList.add("hidden");
+                    formIngreso.reset();
+                    (
+                        document.getElementById(
+                            "ingreso-fecha",
+                        ) as HTMLInputElement
+                    ).value = today;
+                    (
+                        document.getElementById(
+                            "ingreso-con-equipo",
+                        ) as HTMLInputElement
+                    ).checked = false;
+                    equipoSelector?.classList.add("hidden");
+                    await loadFinanzas(currentUser.uid);
+                    await loadEquipo(currentUser.uid);
+                } catch (error) {
+                    console.error(error);
+                    alert("❌ Error al guardar ingreso");
+                }
+            });
+
+            // Guardar Gasto
+            formGasto?.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                if (!currentUser) return;
+
+                const concepto =
+                    document.getElementById("gasto-concepto").value;
+                const monto = parseFloat(
+                    document.getElementById("gasto-monto").value,
+                );
+                const fecha = new Date(
+                    document.getElementById("gasto-fecha").value,
+                );
+                const categoria =
+                    document.getElementById("gasto-categoria").value;
+
+                try {
+                    await addDoc(
+                        collection(
+                            db,
+                            "profesionales",
+                            currentUser.uid,
+                            "finanzas",
+                        ),
+                        {
+                            tipo: "gasto",
+                            concepto,
+                            monto,
+                            fecha: Timestamp.fromDate(fecha),
+                            categoria,
+                            createdAt: Timestamp.now(),
+                        },
+                    );
+
+                    await showAlert(
+                        "Gasto Registrado",
+                        "Tus finanzas han sido actualizadas.",
+                        "success",
+                    );
+                    modalGasto.classList.add("hidden");
+                    formGasto.reset();
+                    (
+                        document.getElementById(
+                            "gasto-fecha",
+                        ) as HTMLInputElement
+                    ).value = today;
+                    await loadFinanzas(currentUser.uid);
+                } catch (error) {
+                    console.error(error);
+                    await showAlert(
+                        "Error",
+                        "No se pudo guardar el gasto.",
+                        "error",
+                    );
+                }
+            });
+
+            // Cargar datos financieros
+            async function loadFinanzas(uid) {
+                try {
+                    // Cargar movimientos financieros (ingresos y gastos)
+                    const q = query(
+                        collection(db, "profesionales", uid, "finanzas"),
+                        orderBy("fecha", "desc"),
+                        limit(50),
+                    );
+                    const snapshot = await getDocs(q);
+                    const movimientos = snapshot.docs.map((doc) => ({
+                        id: doc.id,
+                        tipo: doc.data().tipo,
+                        ...doc.data(),
+                    }));
+
+                    // Cargar derivaciones pagadas
+                    const derivacionesQuery = query(
+                        collection(db, "profesionales", uid, "derivaciones"),
+                        where("pagado", "==", true),
+                        orderBy("fechaPago", "desc"),
+                        limit(20),
+                    );
+                    const derivacionesSnap = await getDocs(derivacionesQuery);
+                    const derivaciones = derivacionesSnap.docs.map((doc) => ({
+                        id: doc.id,
+                        tipo: "derivacion",
+                        ...doc.data(),
+                    }));
+
+                    // Combinar y ordenar por fecha
+                    const todosMovimientos = [
+                        ...movimientos,
+                        ...derivaciones,
+                    ].sort((a, b) => {
+                        const fechaA =
+                            a.tipo === "derivacion" ? a.fechaPago : a.fecha;
+                        const fechaB =
+                            b.tipo === "derivacion" ? b.fechaPago : b.fecha;
+                        return fechaB.toMillis() - fechaA.toMillis();
+                    });
+
+                    // Calcular KPIs del mes actual
+                    const now = new Date();
+                    const mesActual = now.getMonth();
+                    const anioActual = now.getFullYear();
+
+                    let ingresosMes = 0;
+                    let gastosMes = 0;
+                    let derivacionesPendientes = 0;
+
+                    movimientos.forEach((mov) => {
+                        if (mov.tipo === "derivacion") return; // Saltar derivaciones en KPIs
+
+                        const fechaMov = mov.fecha.toDate();
+                        if (
+                            fechaMov.getMonth() === mesActual &&
+                            fechaMov.getFullYear() === anioActual
+                        ) {
+                            if (mov.tipo === "ingreso") {
+                                ingresosMes += mov.monto;
+                            } else if (mov.tipo === "gasto") {
+                                gastosMes += mov.monto;
+                            }
+                        }
+                    });
+
+                    const balance = ingresosMes - gastosMes;
+
+                    // Calcular derivaciones pendientes
+                    try {
+                        const derivacionesQuery = query(
+                            collection(
+                                db,
+                                "profesionales",
+                                uid,
+                                "derivaciones",
+                            ),
+                            where("pagado", "==", false),
+                        );
+                        const derivacionesSnap =
+                            await getDocs(derivacionesQuery);
+                        derivacionesPendientes = derivacionesSnap.docs.reduce(
+                            (sum, doc) => sum + (doc.data().monto || 0),
+                            0,
+                        );
+                    } catch (error) {
+                        console.error("Error calculando derivaciones:", error);
+                    }
+
+                    // Actualizar KPIs
+                    document.getElementById("kpi-ingresos").textContent =
+                        "$" + ingresosMes.toLocaleString();
+                    document.getElementById("kpi-gastos").textContent =
+                        "$" + gastosMes.toLocaleString();
+                    document.getElementById("kpi-balance").textContent =
+                        "$" + balance.toLocaleString();
+                    document.getElementById("kpi-derivaciones").textContent =
+                        "$" + derivacionesPendientes.toLocaleString();
+
+                    // Renderizar movimientos (ahora incluye derivaciones)
+                    renderMovimientos(todosMovimientos);
+                } catch (error) {
+                    console.error("Error cargando finanzas:", error);
+                }
+            }
+
+            function renderMovimientos(movimientos) {
+                const container = document.getElementById(
+                    "movimientos-container",
+                );
+
+                if (movimientos.length === 0) {
+                    container.innerHTML = `
+                    <div class="p-12 text-center text-slate-400">
+                        <div class="text-6xl mb-4">📊</div>
+                        <p>No hay movimientos registrados</p>
+                        <p class="text-sm mt-2">Comienza registrando tu primer ingreso o gasto</p>
+                    </div>
+                `;
+                    return;
+                }
+
+                container.innerHTML = movimientos
+                    .map((mov) => {
+                        let fecha, color, signo, icon, concepto, detalle;
+
+                        if (mov.tipo === "derivacion") {
+                            // DERIVACIÓN PAGADA
+                            fecha = mov.fechaPago
+                                .toDate()
+                                .toLocaleDateString("es-AR", {
+                                    day: "2-digit",
+                                    month: "short",
+                                });
+                            color = "text-purple-600";
+                            signo = "-";
+                            icon = "👷";
+                            concepto = `Pago a ${mov.miembroNombre}`;
+                            detalle = mov.trabajoConcepto;
+                        } else {
+                            // INGRESO O GASTO
+                            fecha = mov.fecha
+                                .toDate()
+                                .toLocaleDateString("es-AR", {
+                                    day: "2-digit",
+                                    month: "short",
+                                });
+                            color =
+                                mov.tipo === "ingreso"
+                                    ? "text-green-600"
+                                    : "text-red-600";
+                            signo = mov.tipo === "ingreso" ? "+" : "-";
+                            icon = mov.tipo === "ingreso" ? "💵" : "💸";
+                            concepto = mov.concepto;
+                            detalle = `${mov.clienteNombre ? mov.clienteNombre : ""}${mov.categoria ? (mov.clienteNombre ? " • " : "") + mov.categoria : ""}`;
+                        }
+
+                        return `
+                    <div class="p-4 hover:bg-slate-50 transition flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="text-2xl">${icon}</div>
+                            <div>
+                                <p class="font-bold text-slate-800">${concepto}</p>
+                                <p class="text-sm text-slate-500">${fecha}${detalle ? " • " + detalle : ""}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-lg ${color}">${signo}$${mov.monto.toLocaleString()}</p>
+                        </div>
+                    </div>
+                `;
+                    })
+                    .join("");
+            }
+
+            // === FUNCIONES DE EQUIPO ===
+            async function loadEquipo(uid: string) {
+                try {
+                    const q = query(
+                        collection(db, "profesionales", uid, "equipo"),
+                        where("activo", "==", true),
+                    );
+
+                    const snapshot = await getDocs(q);
+                    equipoData = snapshot.docs.map((doc) => ({
+                        id: doc.id,
+                        ...doc.data(),
+                    }));
+
+                    renderEquipo();
+                } catch (error) {
+                    console.error("Error cargando equipo:", error);
+                }
+            }
+
+            function renderEquipo() {
+                const container = document.getElementById("equipo-container");
+                if (!container) return;
+
+                if (equipoData.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-8 text-slate-400">
+                            <div class="text-5xl mb-3">👥</div>
+                            <p class="text-sm">No hay miembros en tu equipo</p>
+                            <p class="text-xs mt-1">Agrega ayudantes o socios para calcular derivaciones automáticamente</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        ${equipoData
+                            .map(
+                                (miembro: any) => `
+                            <div class="p-4 border border-slate-200 rounded-xl hover:border-orange-300 transition">
+                                <div class="flex items-start justify-between mb-2">
+                                    <div class="flex-1">
+                                        <p class="font-bold text-slate-800">${miembro.nombre}</p>
+                                        <p class="text-sm text-slate-500 capitalize">${miembro.rol}</p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded-full">
+                                            ${miembro.tipoPago === "porcentaje" ? miembro.valor + "%" : "$" + miembro.valor.toLocaleString()}
+                                        </span>
+                                        <button onclick="editarMiembro('${miembro.id}')" class="text-blue-500 hover:text-blue-700 text-xl" title="Editar">✏️</button>
+                                        <button onclick="eliminarMiembro('${miembro.id}', '${miembro.nombre}')" class="text-red-500 hover:text-red-700 text-xl" title="Eliminar">🗑️</button>
+                                    </div>
+                                </div>
+                                <div class="text-xs text-slate-500 space-y-1">
+                                    <p>Trabajos juntos: ${miembro.totalTrabajosJuntos || 0}</p>
+                                    <p>Total derivado: $${(miembro.totalDerivado || 0).toLocaleString()}</p>
+                                    ${
+                                        miembro.pendientePago > 0
+                                            ? `
+                                        <div class="flex items-center justify-between pt-2 border-t border-slate-200 mt-2">
+                                            <p class="text-orange-600 font-bold">Pendiente: $${miembro.pendientePago.toLocaleString()}</p>
+                                            <button onclick="marcarComoPagado('${miembro.id}')" class="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded">✓ Pagado</button>
+                                        </div>
+                                    `
+                                            : ""
+                                    }
+                                </div>
+                            </div>
+                        `,
+                            )
+                            .join("")}
+                    </div>
+                `;
+            }
+
+            // Eliminar miembro del equipo
+            async function eliminarMiembro(miembroId: string, nombre: string) {
+                if (!currentUser) return;
+
+                const confirmar = await showConfirm(
+                    "Eliminar Miembro",
+                    `¿Estás seguro de eliminar a ${nombre} de tu equipo?\nEsto NO eliminará el historial de trabajos anteriores.`,
+                    "Eliminar",
+                    "bg-red-600",
+                );
+
+                if (!confirmar) return;
+
+                try {
+                    const { deleteDoc } = await import("firebase/firestore");
+                    await deleteDoc(
+                        doc(
+                            db,
+                            "profesionales",
+                            currentUser.uid,
+                            "equipo",
+                            miembroId,
+                        ),
+                    );
+                    await showAlert(
+                        "Miembro Eliminado",
+                        `${nombre} ha sido eliminado de tu equipo.`,
+                        "success",
+                    );
+                    await loadEquipo(currentUser.uid);
+                } catch (error) {
+                    console.error(error);
+                    await showAlert(
+                        "Error",
+                        "No se pudo eliminar al miembro.",
+                        "error",
+                    );
+                }
+            }
+
+            // Marcar derivaciones como pagadas
+            async function marcarComoPagado(miembroId: string) {
+                if (!currentUser) return;
+
+                const confirmar = await showConfirm(
+                    "Confirmar Pago",
+                    "¿Confirmas que pagaste todas las derivaciones pendientes a este miembro?",
+                    "Sí, pagado",
+                    "bg-green-600",
+                );
+
+                if (!confirmar) return;
+
+                try {
+                    const { updateDoc } = await import("firebase/firestore");
+                    const miembroDoc = doc(
+                        db,
+                        "profesionales",
+                        currentUser.uid,
+                        "equipo",
+                        miembroId,
+                    );
+                    await updateDoc(miembroDoc, {
+                        pendientePago: 0,
+                    });
+
+                    // Marcar todas las derivaciones como pagadas
+                    const derivacionesQuery = query(
+                        collection(
+                            db,
+                            "profesionales",
+                            currentUser.uid,
+                            "derivaciones",
+                        ),
+                        where("miembroId", "==", miembroId),
+                        where("pagado", "==", false),
+                    );
+                    const derivacionesSnap = await getDocs(derivacionesQuery);
+
+                    const updatePromises = derivacionesSnap.docs.map(
+                        (derivacionDoc) =>
+                            updateDoc(derivacionDoc.ref, {
+                                pagado: true,
+                                fechaPago: Timestamp.now(),
+                            }),
+                    );
+                    await Promise.all(updatePromises);
+
+                    await showAlert(
+                        "Pago Registrado",
+                        "Has marcado las derivaciones como pagadas.",
+                        "success",
+                    );
+                    await loadEquipo(currentUser.uid);
+                } catch (error) {
+                    console.error(error);
+                    await showAlert(
+                        "Error",
+                        "No se pudo registrar el pago.",
+                        "error",
+                    );
+                }
+            }
+
+            // Reiniciar todos los datos
+            async function resetValues() {
+                if (!currentUser) return;
+
+                const confirmar = await showConfirm(
+                    "⚠️ ZONA DE PELIGRO",
+                    "¿Estás seguro de que quieres REINICIAR todo el panel?\n\nSe borrarán TODOS tus ingresos, gastos, equipo y registro de derivaciones.\n\nEsta acción NO SE PUEDE DESHACER.",
+                    "Sí, borrar todo",
+                    "bg-red-600",
+                );
+
+                if (!confirmar) return;
+
+                const segundaConfirmacion = await showConfirm(
+                    "¿Estás realmente seguro?",
+                    "Por favor confirma una última vez que deseas eliminar todos tus datos financieros.",
+                    "Confirmar borrado",
+                    "bg-red-800",
+                );
+
+                if (!segundaConfirmacion) return;
+
+                try {
+                    const { deleteDoc, getDocs, collection } =
+                        await import("firebase/firestore");
+
+                    // 1. Borrar Equipo
+                    const equipoSnap = await getDocs(
+                        collection(
+                            db,
+                            "profesionales",
+                            currentUser.uid,
+                            "equipo",
+                        ),
+                    );
+                    const equipoPromises = equipoSnap.docs.map((doc) =>
+                        deleteDoc(doc.ref),
+                    );
+
+                    // 2. Borrar Finanzas
+                    const finanzasSnap = await getDocs(
+                        collection(
+                            db,
+                            "profesionales",
+                            currentUser.uid,
+                            "finanzas",
+                        ),
+                    );
+                    const finanzasPromises = finanzasSnap.docs.map((doc) =>
+                        deleteDoc(doc.ref),
+                    );
+
+                    // 3. Borrar Derivaciones
+                    const derivacionesSnap = await getDocs(
+                        collection(
+                            db,
+                            "profesionales",
+                            currentUser.uid,
+                            "derivaciones",
+                        ),
+                    );
+                    const derivacionesPromises = derivacionesSnap.docs.map(
+                        (doc) => deleteDoc(doc.ref),
+                    );
+
+                    await Promise.all([
+                        ...equipoPromises,
+                        ...finanzasPromises,
+                        ...derivacionesPromises,
+                    ]);
+
+                    await showAlert(
+                        "Panel Reiniciado",
+                        "Todos tus datos han sido eliminados correctamente.",
+                        "success",
+                    );
+                    window.location.reload();
+                } catch (error) {
+                    console.error("Error reseteando panel:", error);
+                    await showAlert(
+                        "Error",
+                        "Hubo un problema al intentar reiniciar el panel.",
+                        "error",
+                    );
+                }
+            }
+
+            // Hacer las funciones globales para que onclick funcione
+            (window as any).eliminarMiembro = eliminarMiembro;
+            (window as any).marcarComoPagado = marcarComoPagado;
+            (window as any).resetValues = resetValues;
+
+            // === SELECCIÓN DE EQUIPO EN INGRESO ===
+            function renderEquipoEnIngreso() {
+                const list = document.getElementById("ingreso-equipo-list");
+                if (!list) return;
+
+                list.innerHTML = equipoData
+                    .map(
+                        (miembro: any) => `
+                    <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200 hover:border-orange-300 cursor-pointer transition">
+                        <input type="checkbox" class="equipo-checkbox w-5 h-5 text-orange-600 accent-orange-600" data-id="${miembro.id}" data-nombre="${miembro.nombre}" data-tipo="${miembro.tipoPago}" data-valor="${miembro.valor}">
+                        <div class="flex-1">
+                            <p class="font-bold text-sm text-slate-800">${miembro.nombre}</p>
+                            <p class="text-xs text-slate-500">${miembro.rol} • ${miembro.tipoPago === "porcentaje" ? miembro.valor + "%" : "$" + miembro.valor.toLocaleString()}</p>
+                        </div>
+                    </label>
+                `,
+                    )
+                    .join("");
+
+                // Listener para actualizar preview
+                document
+                    .querySelectorAll(".equipo-checkbox")
+                    .forEach((checkbox) => {
+                        checkbox.addEventListener(
+                            "change",
+                            updateIngresoPreview,
+                        );
+                    });
+            }
+
+            // Toggle selector de equipo
+            const conEquipoCheckbox =
+                document.getElementById("ingreso-con-equipo");
+            const equipoSelector = document.getElementById(
+                "ingreso-equipo-selector",
+            );
+
+            conEquipoCheckbox?.addEventListener("change", (e) => {
+                if ((e.target as HTMLInputElement).checked) {
+                    equipoSelector?.classList.remove("hidden");
+                    renderEquipoEnIngreso();
+                } else {
+                    equipoSelector?.classList.add("hidden");
+                    document
+                        .querySelectorAll(".equipo-checkbox")
+                        .forEach(
+                            (cb) => ((cb as HTMLInputElement).checked = false),
+                        );
+                    document
+                        .getElementById("ingreso-preview")
+                        ?.classList.add("hidden");
+                }
+            });
+
+            function updateIngresoPreview() {
+                const monto =
+                    parseFloat(
+                        (
+                            document.getElementById(
+                                "ingreso-monto",
+                            ) as HTMLInputElement
+                        )?.value,
+                    ) || 0;
+                const selectedCheckboxes = document.querySelectorAll(
+                    ".equipo-checkbox:checked",
+                );
+                const preview = document.getElementById("ingreso-preview");
+                const previewContent = document.getElementById(
+                    "ingreso-preview-content",
+                );
+
+                if (selectedCheckboxes.length === 0 || monto === 0) {
+                    preview?.classList.add("hidden");
+                    return;
+                }
+
+                let totalDerivado = 0;
+                let html = '<div class="space-y-1 text-xs">';
+                html += `<div class="flex justify-between font-bold text-slate-700"><span>Total trabajo:</span><span>$${monto.toLocaleString()}</span></div>`;
+
+                selectedCheckboxes.forEach((cb) => {
+                    const checkbox = cb as HTMLInputElement;
+                    const nombre = checkbox.dataset.nombre;
+                    const tipo = checkbox.dataset.tipo;
+                    const valor = parseFloat(checkbox.dataset.valor || "0");
+
+                    let montoDerivado = 0;
+                    if (tipo === "porcentaje") {
+                        montoDerivado = (monto * valor) / 100;
+                    } else {
+                        montoDerivado = valor;
+                    }
+
+                    totalDerivado += montoDerivado;
+                    html += `<div class="flex justify-between text-orange-600"><span>- ${nombre} (${tipo === "porcentaje" ? valor + "%" : "$" + valor.toLocaleString()}):</span><span>$${montoDerivado.toLocaleString()}</span></div>`;
+                });
+
+                const tuParte = monto - totalDerivado;
+                html += `<div class="flex justify-between font-bold text-green-600 pt-2 border-t"><span>= Tu parte:</span><span>$${tuParte.toLocaleString()}</span></div>`;
+                html += "</div>";
+
+                if (previewContent) previewContent.innerHTML = html;
+                preview?.classList.remove("hidden");
+            }
+
+            // Actualizar preview cuando cambia el monto
+            document
+                .getElementById("ingreso-monto")
+                ?.addEventListener("input", updateIngresoPreview);
+
+            // Logout
+            logoutBtn?.addEventListener("click", async () => {
+                await signOut(auth);
+                window.location.href = "/";
+            });
+        </script>
+    </body>
+</html>

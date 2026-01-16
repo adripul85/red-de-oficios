@@ -1,0 +1,1037 @@
+---
+import { auth, db } from "../../firebase/client";
+---
+
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Presupuestos - DeOficios Pro</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        ></script>
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        ></script>
+        <style>
+            body {
+                font-family: "Inter", sans-serif;
+                background-color: #f8fafc;
+            }
+            .modal {
+                transition: opacity 0.3s ease-in-out;
+            }
+            .modal-content {
+                transition: transform 0.3s ease-in-out;
+            }
+            /* Mobile Menu Toggle */
+            .mobile-menu-toggle {
+                transform: rotate(0deg);
+                transition: transform 0.3s ease-in-out;
+            }
+
+            /* Page Transitions */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .fade-in {
+                animation: fadeIn 0.3s ease-out;
+            }
+
+            /* Mobile Sidebar */
+            .mobile-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+            }
+
+            .mobile-sidebar.active {
+                transform: translateX(0);
+            }
+
+            /* Overlay */
+            .sidebar-overlay {
+                opacity: 0;
+                visibility: hidden;
+                transition:
+                    opacity 0.3s ease-in-out,
+                    visibility 0.3s ease-in-out;
+            }
+
+            .sidebar-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+        </style>
+    </head>
+    <body class="text-slate-800">
+        <!-- Mobile Sidebar Overlay -->
+        <div
+            id="sidebar-overlay"
+            class="sidebar-overlay fixed inset-0 bg-black/50 z-40 md:hidden"
+        >
+        </div>
+
+        <div class="flex h-screen overflow-hidden">
+            <!-- SIDEBAR (Copiado de index.astro para consistencia) -->
+            <aside
+                class="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 h-full"
+            >
+                <div
+                    class="h-16 flex items-center px-6 border-b border-slate-100"
+                >
+                    <a href="/" class="text-xl font-bold text-slate-800">
+                        DeOficios<span class="text-orange-600">Pro</span>
+                    </a>
+                </div>
+                <div class="flex-1 overflow-y-auto py-4">
+                    <nav class="px-3 space-y-1">
+                        <a
+                            href="/panel"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">📊</span>
+                            <span class="font-medium text-sm">Dashboard</span>
+                        </a>
+                        <a
+                            href="/panel/oportunidades"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">🎯</span>
+                            <span class="font-medium text-sm"
+                                >Oportunidades</span
+                            >
+                        </a>
+                        <a
+                            href="/panel/presupuestos"
+                            class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">📝</span>
+                            <span class="font-semibold text-sm"
+                                >Presupuestos</span
+                            >
+                        </a>
+                        <a
+                            href="/panel/finanzas"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">💰</span>
+                            <span class="font-medium text-sm">Finanzas</span>
+                        </a>
+                        <a
+                            href="/panel/mi-equipo"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">👷</span>
+                            <span class="font-medium text-sm">Mi Equipo</span>
+                        </a>
+                        <a
+                            href="/panel/clientes"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">👥</span>
+                            <span class="font-medium text-sm">Clientes</span>
+                        </a>
+                        <div
+                            class="mt-auto pt-4 border-t border-slate-200 space-y-2"
+                        >
+                            <a
+                                href="/mi-perfil"
+                                class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                            >
+                                <span>👤</span>
+                                <span class="font-medium text-sm"
+                                    >Mi Perfil</span
+                                >
+                            </a>
+
+                            <button
+                                id="btn-logout"
+                                class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-red-600 transition-colors"
+                            >
+                                <span>🚪</span>
+                                <span class="font-medium text-sm"
+                                    >Cerrar Sesión</span
+                                >
+                            </button>
+                        </div>
+                    </nav>
+                </div>
+            </aside>
+
+            <!-- Mobile Sidebar -->
+            <aside
+                id="mobile-sidebar"
+                class="mobile-sidebar md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col"
+            >
+                <div
+                    class="h-16 flex items-center justify-between px-6 border-b border-slate-100"
+                >
+                    <a href="/" class="text-xl font-bold text-slate-800">
+                        DeOficios<span class="text-orange-600">Pro</span>
+                    </a>
+                    <button
+                        id="close-sidebar"
+                        class="text-2xl text-slate-600 hover:text-slate-900"
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto py-4">
+                    <nav class="px-3 space-y-1">
+                        <a
+                            href="/panel"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">📊</span>
+                            <span class="font-medium text-sm">Dashboard</span>
+                        </a>
+                        <a
+                            href="/panel/oportunidades"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">🎯</span>
+                            <span class="font-medium text-sm"
+                                >Oportunidades</span
+                            >
+                        </a>
+                        <a
+                            href="/panel/presupuestos"
+                            class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg"
+                        >
+                            <span class="text-xl">📝</span>
+                            <span class="font-semibold text-sm"
+                                >Presupuestos</span
+                            >
+                        </a>
+                        <a
+                            href="/panel/finanzas"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">💰</span>
+                            <span class="font-medium text-sm">Finanzas</span>
+                        </a>
+                        <a
+                            href="/panel/mi-equipo"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">👷</span>
+                            <span class="font-medium text-sm">Mi Equipo</span>
+                        </a>
+                        <a
+                            href="/panel/clientes"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
+                        >
+                            <span class="text-xl">👥</span>
+                            <span class="font-medium text-sm">Clientes</span>
+                        </a>
+                    </nav>
+                </div>
+
+                <div
+                    class="mt-auto pt-4 border-t border-slate-200 space-y-2 px-3 pb-4"
+                >
+                    <a
+                        href="/mi-perfil"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                    >
+                        <span>👤</span>
+                        <span class="font-medium text-sm">Mi Perfil</span>
+                    </a>
+                    <button
+                        id="btn-logout-mobile"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-red-600 transition-colors"
+                    >
+                        <span>🚪</span>
+                        <span class="font-medium text-sm">Cerrar Sesión</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- MAIN CONTENT -->
+            <main
+                class="flex-1 flex flex-col h-screen overflow-hidden relative"
+            >
+                <header
+                    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10"
+                >
+                    <button id="open-sidebar" class="md:hidden text-2xl mr-4"
+                        >☰</button
+                    >
+                    <h2 class="text-lg font-bold text-slate-800">
+                        Gestor de Presupuestos
+                    </h2>
+                    <div class="flex items-center gap-4">
+                        <button
+                            id="btn-nuevo"
+                            class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2"
+                        >
+                            <span>+</span> Nuevo Presupuesto
+                        </button>
+                    </div>
+                </header>
+
+                <div class="flex-1 overflow-y-auto p-6 bg-slate-50">
+                    <!-- LOADING STATE -->
+                    <div
+                        id="loading-state"
+                        class="flex justify-center items-center h-64"
+                    >
+                        <div
+                            class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"
+                        >
+                        </div>
+                    </div>
+
+                    <!-- EMPTY STATE -->
+                    <div
+                        id="empty-state"
+                        class="hidden flex flex-col items-center justify-center h-64 text-center"
+                    >
+                        <div
+                            class="bg-orange-100 p-4 rounded-full mb-4 text-4xl"
+                        >
+                            📝
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800">
+                            No tienes presupuestos aún
+                        </h3>
+                        <p class="text-slate-500 text-sm max-w-xs mx-auto mt-2">
+                            Crea presupuestos profesionales y envíalos a tus
+                            clientes en minutos.
+                        </p>
+                    </div>
+
+                    <!-- TABLE -->
+                    <div
+                        id="content-table"
+                        class="hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
+                    >
+                        <table class="w-full text-left text-sm text-slate-600">
+                            <thead
+                                class="bg-slate-50 text-slate-500 uppercase font-bold text-xs"
+                            >
+                                <tr>
+                                    <th class="px-6 py-3">Cliente</th>
+                                    <th class="px-6 py-3">Trabajo</th>
+                                    <th class="px-6 py-3">Fecha</th>
+                                    <th class="px-6 py-3 text-right">Total</th>
+                                    <th class="px-6 py-3 text-center">Estado</th
+                                    >
+                                    <th class="px-6 py-3 text-right"
+                                        >Acciones</th
+                                    >
+                                </tr>
+                            </thead>
+                            <tbody
+                                id="presupuestos-list"
+                                class="divide-y divide-slate-100"
+                            >
+                                <!-- Rendered internally -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- MODAL NUEVO/EDITAR -->
+        <div
+            id="modal-presupuesto"
+            class="fixed inset-0 z-50 hidden opacity-0 pointer-events-none transition-opacity duration-300"
+        >
+            <div
+                class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                id="modal-overlay"
+            >
+            </div>
+            <div class="absolute inset-0 flex items-center justify-center p-4">
+                <div
+                    class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300"
+                    id="modal-content"
+                >
+                    <div
+                        class="p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10"
+                    >
+                        <h3 class="text-xl font-bold text-slate-800">
+                            Nuevo Presupuesto
+                        </h3>
+                        <button
+                            id="btn-close-modal"
+                            class="text-slate-400 hover:text-slate-600"
+                            >✕</button
+                        >
+                    </div>
+
+                    <form id="form-presupuesto" class="p-6 space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label
+                                    class="block text-sm font-bold text-slate-700 mb-1"
+                                    >Cliente</label
+                                >
+                                <input
+                                    type="text"
+                                    name="cliente"
+                                    required
+                                    class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-orange-500 transition-colors"
+                                    placeholder="Nombre del cliente"
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-sm font-bold text-slate-700 mb-1"
+                                    >Teléfono (Opcional)</label
+                                >
+                                <input
+                                    type="tel"
+                                    name="telefono"
+                                    class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-orange-500 transition-colors"
+                                    placeholder="+54 11..."
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-sm font-bold text-slate-700 mb-1"
+                                >Título del Trabajo</label
+                            >
+                            <input
+                                type="text"
+                                name="titulo"
+                                required
+                                class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-orange-500 transition-colors"
+                                placeholder="Ej: Instalación de Aire Acondicionado"
+                            />
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-end mb-2">
+                                <label
+                                    class="block text-sm font-bold text-slate-700"
+                                    >Items</label
+                                >
+                                <button
+                                    type="button"
+                                    id="btn-add-item"
+                                    class="text-xs font-bold text-orange-600 hover:underline"
+                                    >+ Agregar Item</button
+                                >
+                            </div>
+                            <div
+                                id="items-container"
+                                class="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-200"
+                            >
+                                <!-- Items dinámicos -->
+                            </div>
+                        </div>
+
+                        <div
+                            class="flex justify-end items-center gap-4 text-lg font-bold border-t border-slate-100 pt-4"
+                        >
+                            <span>Total:</span>
+                            <span
+                                id="total-display"
+                                class="text-orange-600 text-2xl">$0</span
+                            >
+                        </div>
+
+                        <div class="pt-4 flex gap-3">
+                            <button
+                                type="button"
+                                id="btn-cancel"
+                                class="flex-1 py-3 border border-slate-300 rounded-xl text-slate-600 font-bold hover:bg-slate-50 transition-colors"
+                                >Cancelar</button
+                            >
+                            <button
+                                type="submit"
+                                class="flex-1 py-3 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 shadow-lg shadow-orange-200 transition-all transform hover:-translate-y-1"
+                                >Guardar Presupuesto</button
+                            >
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ALERT MODAL -->
+        <div
+            id="alert-modal"
+            class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4"
+        >
+            <div
+                class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                id="alert-overlay"
+            >
+            </div>
+            <div
+                class="bg-white rounded-2xl shadow-2xl w-full max-w-sm transform scale-95 transition-all relative z-10 overflow-hidden"
+            >
+                <div
+                    id="alert-header"
+                    class="p-4 border-b border-slate-100 flex items-center gap-3"
+                >
+                    <div id="alert-icon" class="text-2xl">⚠️</div>
+                    <h3 id="alert-title" class="font-bold text-slate-800">
+                        Alerta
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <p id="alert-message" class="text-slate-600 text-sm">
+                        Mensaje de alerta
+                    </p>
+                </div>
+                <div class="p-4 bg-slate-50 flex gap-3 justify-end">
+                    <button
+                        id="alert-cancel"
+                        class="hidden px-4 py-2 text-slate-500 font-bold hover:bg-slate-200 rounded-lg transition"
+                        >Cancelar</button
+                    >
+                    <button
+                        id="alert-ok"
+                        class="flex-1 bg-slate-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-slate-900 transition shadow-lg shadow-slate-200"
+                        >Aceptar</button
+                    >
+                </div>
+            </div>
+        </div>
+
+        <script>
+            import { onAuthStateChanged } from "firebase/auth";
+            import {
+                collection,
+                query,
+                where,
+                getDocs,
+                addDoc,
+                updateDoc,
+                doc,
+                deleteDoc,
+                orderBy,
+                onSnapshot,
+            } from "firebase/firestore";
+            import { auth, db } from "../../firebase/client";
+
+            const loadingState = document.getElementById("loading-state");
+            const emptyState = document.getElementById("empty-state");
+            const contentTable = document.getElementById("content-table");
+            const listContainer = document.getElementById("presupuestos-list");
+            const modal = document.getElementById("modal-presupuesto");
+            const modalContent = document.getElementById("modal-content");
+            const form = document.getElementById("form-presupuesto");
+
+            let currentUser = null;
+            let items = [{ desc: "", cant: 1, precio: 0 }];
+            let allPresupuestos = {}; // Store fetched data by ID
+
+            // AUTH CHECK
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUser = user;
+                    loadPresupuestos(user.uid);
+                } else {
+                    window.location.href = "/";
+                }
+            });
+
+            // LOAD DATA
+            function loadPresupuestos(uid) {
+                // UPDATE: Usar subcolección profesionales/{uid}/presupuestos para cumplir reglas de seguridad
+                const q = query(
+                    collection(db, "profesionales", uid, "presupuestos"),
+                );
+
+                onSnapshot(
+                    q,
+                    (snapshot) => {
+                        loadingState.classList.add("hidden");
+
+                        if (snapshot.empty) {
+                            emptyState.classList.remove("hidden");
+                            contentTable.classList.add("hidden");
+                        } else {
+                            emptyState.classList.add("hidden");
+                            contentTable.classList.remove("hidden");
+
+                            // Update cache
+                            snapshot.docs.forEach(
+                                (d) =>
+                                    (allPresupuestos[d.id] = {
+                                        id: d.id,
+                                        ...d.data(),
+                                    }),
+                            );
+
+                            renderList(
+                                snapshot.docs.sort(
+                                    (a, b) => b.data().fecha - a.data().fecha,
+                                ),
+                            );
+                        }
+                    },
+                    (error) => {
+                        console.error("Error cargando presupuestos:", error);
+                        loadingState.innerHTML =
+                            '<p class="text-red-500">Error cargando datos. Verifica tu conexión.</p>';
+                    },
+                );
+            }
+
+            function renderList(docs) {
+                listContainer.innerHTML = "";
+                docs.forEach((doc) => {
+                    const data = doc.data();
+                    const date = data.fecha
+                        ? new Date(
+                              data.fecha.seconds * 1000,
+                          ).toLocaleDateString()
+                        : "Sin fecha";
+                    const statusColors = {
+                        Pendiente: "bg-yellow-100 text-yellow-700",
+                        Aprobado: "bg-blue-100 text-blue-700",
+                        Cobrado: "bg-green-100 text-green-700",
+                        Rechazado: "bg-red-100 text-red-700",
+                    };
+
+                    const tr = document.createElement("tr");
+                    tr.className =
+                        "hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0";
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 font-medium text-slate-800">${data.cliente}</td>
+                        <td class="px-6 py-4">${data.titulo}</td>
+                        <td class="px-6 py-4 text-slate-500">${date}</td>
+                        <td class="px-6 py-4 text-right font-bold">$${parseInt(data.total).toLocaleString()}</td>
+                        <td class="px-6 py-4 text-center">
+                            <select onchange="updateStatus('${doc.id}', this.value)" class="${statusColors[data.estado] || "bg-slate-100"} text-xs font-bold px-2 py-1 rounded-full outline-none cursor-pointer border-none appearance-none text-center">
+                                <option value="Pendiente" ${data.estado === "Pendiente" ? "selected" : ""}>Pendiente</option>
+                                <option value="Aprobado" ${data.estado === "Aprobado" ? "selected" : ""}>Aprobado</option>
+                                <option value="Cobrado" ${data.estado === "Cobrado" ? "selected" : ""}>Cobrado</option>
+                                <option value="Rechazado" ${data.estado === "Rechazado" ? "selected" : ""}>Rechazado</option>
+                            </select>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex justify-end gap-2">
+                                <button onclick="printPDF('${doc.id}')" class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Descargar PDF">
+                                    📄
+                                </button>
+                                <button onclick="deleteBudget('${doc.id}')" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
+                                    🗑️
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    listContainer.appendChild(tr);
+                });
+            }
+
+            // MODAL LOGIC
+            document
+                .getElementById("btn-nuevo")
+                .addEventListener("click", () => openModal());
+            document
+                .getElementById("btn-close-modal")
+                .addEventListener("click", closeModal);
+            document
+                .getElementById("btn-cancel")
+                .addEventListener("click", closeModal);
+            document
+                .getElementById("modal-overlay")
+                .addEventListener("click", closeModal);
+
+            document
+                .getElementById("btn-add-item")
+                .addEventListener("click", () => {
+                    items.push({ desc: "", cant: 1, precio: 0 });
+                    renderItems();
+                });
+
+            function openModal() {
+                modal.classList.remove(
+                    "hidden",
+                    "opacity-0",
+                    "pointer-events-none",
+                );
+                modalContent.classList.remove("scale-95");
+                modalContent.classList.add("scale-100");
+                items = [{ desc: "", cant: 1, precio: 0 }];
+                renderItems();
+            }
+
+            function closeModal() {
+                modal.classList.add("opacity-0", "pointer-events-none");
+                modalContent.classList.remove("scale-100");
+                modalContent.classList.add("scale-95");
+                setTimeout(() => modal.classList.add("hidden"), 300);
+                form.reset();
+            }
+
+            // DYNAMIC ITEMS
+            function calculateTotal() {
+                const total = items.reduce(
+                    (sum, i) => sum + i.cant * i.precio,
+                    0,
+                );
+                document.getElementById("total-display").innerText =
+                    `$${total.toLocaleString()}`;
+            }
+
+            function renderItems() {
+                const container = document.getElementById("items-container");
+                container.innerHTML = "";
+
+                items.forEach((item, index) => {
+                    const div = document.createElement("div");
+                    div.className = "flex gap-2 items-start";
+                    div.innerHTML = `
+                        <input type="text" placeholder="Descripción" value="${item.desc}" oninput="updateItem(${index}, 'desc', this.value)" class="flex-1 border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-orange-500">
+                        <input type="number" placeholder="Cant." value="${item.cant}" oninput="updateItem(${index}, 'cant', this.value)" class="w-16 border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-orange-500">
+                        <input type="number" placeholder="Precio" value="${item.precio}" oninput="updateItem(${index}, 'precio', this.value)" class="w-24 border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-orange-500">
+                        <button type="button" onclick="removeItem(${index})" class="text-red-400 hover:text-red-600 px-1">✕</button>
+                    `;
+                    container.appendChild(div);
+                });
+
+                calculateTotal();
+            }
+
+            window.updateItem = (index, field, value) => {
+                items[index][field] = field === "desc" ? value : Number(value);
+                // Solo recalculamos total, NO renderizamos todo para no perder foco
+                calculateTotal();
+            };
+
+            window.removeItem = (index) => {
+                if (items.length > 1) {
+                    items.splice(index, 1);
+                    renderItems();
+                }
+            };
+
+            // CREATE BUDGET
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+                const total = items.reduce(
+                    (sum, i) => sum + i.cant * i.precio,
+                    0,
+                );
+
+                const newBudget = {
+                    uid: currentUser.uid,
+                    cliente: formData.get("cliente"),
+                    telefono: formData.get("telefono"),
+                    titulo: formData.get("titulo"),
+                    items: items,
+                    total: total,
+                    fecha: new Date(),
+                    estado: "Pendiente",
+                };
+
+                try {
+                    // UPDATE: Guardar en subcolección profesionales/{uid}/presupuestos
+                    await addDoc(
+                        collection(
+                            db,
+                            "profesionales",
+                            currentUser.uid,
+                            "presupuestos",
+                        ),
+                        newBudget,
+                    );
+                    await showAlert(
+                        "¡Éxito!",
+                        "El presupuesto se ha guardado correctamente",
+                        "success",
+                    );
+                    closeModal();
+                } catch (error) {
+                    console.error("Error creating budget:", error);
+                    await showAlert(
+                        "Error",
+                        "Error al guardar el presupuesto: " + error.message,
+                        "error",
+                    );
+                }
+            });
+
+            // ACTIONS
+            window.updateStatus = async (id, newStatus) => {
+                try {
+                    // UPDATE: Referencia a subcolección
+                    const ref = doc(
+                        db,
+                        "profesionales",
+                        currentUser.uid,
+                        "presupuestos",
+                        id,
+                    );
+                    await updateDoc(ref, { estado: newStatus });
+
+                    // Si se marca como cobrado, podría integrarse con Finanzas (opcional)
+                } catch (error) {
+                    console.error("Error updating status:", error);
+                }
+            };
+
+            window.deleteBudget = async (id) => {
+                const confirmed = await showConfirm(
+                    "Eliminar Presupuesto",
+                    "¿Estás seguro de que quieres eliminar este presupuesto? Esta acción no se puede deshacer.",
+                    "Eliminar",
+                    "bg-red-600",
+                );
+
+                if (confirmed) {
+                    try {
+                        // UPDATE: Referencia a subcolección
+                        await deleteDoc(
+                            doc(
+                                db,
+                                "profesionales",
+                                currentUser.uid,
+                                "presupuestos",
+                                id,
+                            ),
+                        );
+                        await showAlert(
+                            "Eliminado",
+                            "El presupuesto ha sido eliminado correctamente",
+                            "success",
+                        );
+                    } catch (error) {
+                        console.error("Error deleting:", error);
+                        await showAlert(
+                            "Error",
+                            "No se pudo eliminar el presupuesto",
+                            "error",
+                        );
+                    }
+                }
+            };
+
+            window.printPDF = async (id) => {
+                const p = allPresupuestos[id];
+                if (!p)
+                    return showAlert(
+                        "Error",
+                        "Presupuesto no encontrado",
+                        "error",
+                    );
+
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+
+                    // Header
+                    doc.setFillColor(234, 88, 12); // Orange
+                    doc.rect(0, 0, 210, 40, "F");
+
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(22);
+                    doc.text("PRESUPUESTO", 14, 25);
+                    doc.setFontSize(12);
+                    doc.text("DeOficios Pro", 160, 25);
+
+                    // Info
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFontSize(10);
+                    doc.text(`Cliente: ${p.cliente}`, 14, 50);
+                    if (p.telefono) doc.text(`Teléfono: ${p.telefono}`, 14, 56);
+
+                    const fecha = p.fecha
+                        ? new Date(p.fecha.seconds * 1000).toLocaleDateString()
+                        : "N/A";
+                    doc.text(`Fecha: ${fecha}`, 160, 50);
+                    doc.text(`Ref: #${id.slice(0, 6).toUpperCase()}`, 160, 56);
+
+                    // Titulo Trabajo
+                    doc.setFontSize(14);
+                    doc.setFont(undefined, "bold");
+                    doc.text(p.titulo || "Presupuesto de Trabajo", 14, 70);
+
+                    // Tabla items
+                    let y = 85;
+                    doc.setFillColor(245, 245, 245);
+                    doc.rect(14, y - 5, 180, 8, "F");
+                    doc.setFontSize(10);
+                    doc.text("Descripción", 16, y);
+                    doc.text("Cant.", 130, y);
+                    doc.text("Precio", 150, y);
+                    doc.text("Total", 180, y);
+
+                    doc.setFont(undefined, "normal");
+                    y += 10;
+
+                    p.items.forEach((item) => {
+                        const subtotal = item.cant * item.precio;
+                        doc.text(item.desc || "Item", 16, y);
+                        doc.text(item.cant.toString(), 130, y);
+                        doc.text(`$${item.precio}`, 150, y);
+                        doc.text(`$${subtotal}`, 180, y);
+                        y += 8;
+                    });
+
+                    // Totales
+                    y += 5;
+                    doc.line(14, y, 194, y);
+                    y += 10;
+                    doc.setFont(undefined, "bold");
+                    doc.setFontSize(14);
+                    doc.text(
+                        `TOTAL: $${parseInt(p.total).toLocaleString()}`,
+                        150,
+                        y,
+                    );
+
+                    // Footer
+                    doc.setFontSize(8);
+                    doc.setTextColor(100);
+                    doc.text(
+                        "Presupuesto válido por 15 días. Documento generado con DeOficios.net",
+                        105,
+                        280,
+                        { align: "center" },
+                    );
+
+                    doc.save(`Presupuesto_${p.cliente}_${id.slice(0, 4)}.pdf`);
+                } catch (e) {
+                    console.error("PDF Error", e);
+                    showAlert(
+                        "Error PDF",
+                        "Hubo un error generando el PDF. Asegúrate de tener conexión para cargar las librerías.",
+                        "error",
+                    );
+                }
+            };
+
+            // === ALERT SYSTEM ===
+            function showAlert(title, message, type = "info") {
+                return new Promise((resolve) => {
+                    const modal = document.getElementById("alert-modal");
+                    const titleEl = document.getElementById("alert-title");
+                    const msgEl = document.getElementById("alert-message");
+                    const iconEl = document.getElementById("alert-icon");
+                    const okBtn = document.getElementById("alert-ok");
+                    const cancelBtn = document.getElementById("alert-cancel");
+                    const header = document.getElementById("alert-header");
+
+                    if (!modal) return resolve();
+
+                    // Config
+                    titleEl.innerText = title;
+                    msgEl.innerText = message;
+                    cancelBtn.classList.add("hidden");
+                    okBtn.innerText = "Aceptar";
+                    okBtn.onclick = () => {
+                        modal.classList.add("hidden");
+                        resolve(true);
+                    };
+
+                    // Styles
+                    if (type === "success") {
+                        iconEl.innerText = "✅";
+                        okBtn.className =
+                            "flex-1 bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition shadow-lg shadow-green-200";
+                    } else if (type === "error") {
+                        iconEl.innerText = "❌";
+                        okBtn.className =
+                            "flex-1 bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition shadow-lg shadow-red-200";
+                    } else {
+                        iconEl.innerText = "ℹ️";
+                        okBtn.className =
+                            "flex-1 bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition shadow-lg shadow-indigo-200";
+                    }
+
+                    modal.classList.remove("hidden");
+                });
+            }
+
+            function showConfirm(
+                title,
+                message,
+                actionText = "Aceptar",
+                actionClass = "bg-orange-600",
+            ) {
+                return new Promise((resolve) => {
+                    const modal = document.getElementById("alert-modal");
+                    const titleEl = document.getElementById("alert-title");
+                    const msgEl = document.getElementById("alert-message");
+                    const iconEl = document.getElementById("alert-icon");
+                    const okBtn = document.getElementById("alert-ok");
+                    const cancelBtn = document.getElementById("alert-cancel");
+
+                    if (!modal) return resolve(false);
+
+                    // Config
+                    titleEl.innerText = title;
+                    msgEl.innerText = message;
+                    iconEl.innerText = "🤔";
+
+                    cancelBtn.classList.remove("hidden");
+                    cancelBtn.onclick = () => {
+                        modal.classList.add("hidden");
+                        resolve(false);
+                    };
+
+                    okBtn.innerText = actionText;
+                    okBtn.className = `flex-1 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg ${actionClass}`;
+                    okBtn.onclick = () => {
+                        modal.classList.add("hidden");
+                        resolve(true);
+                    };
+
+                    modal.classList.remove("hidden");
+                });
+            }
+
+            // Mobile Sidebar Toggle
+            const mobileSidebar = document.getElementById("mobile-sidebar");
+            const sidebarOverlay = document.getElementById("sidebar-overlay");
+            const openSidebarBtn = document.getElementById("open-sidebar");
+            const closeSidebarBtn = document.getElementById("close-sidebar");
+
+            function openMobileSidebar() {
+                mobileSidebar?.classList.add("active");
+                sidebarOverlay?.classList.add("active");
+            }
+
+            function closeMobileSidebar() {
+                mobileSidebar?.classList.remove("active");
+                sidebarOverlay?.classList.remove("active");
+            }
+
+            openSidebarBtn?.addEventListener("click", openMobileSidebar);
+            closeSidebarBtn?.addEventListener("click", closeMobileSidebar);
+            sidebarOverlay?.addEventListener("click", closeMobileSidebar);
+
+            // Mobile logout
+            document
+                .getElementById("btn-logout-mobile")
+                ?.addEventListener("click", async () => {
+                    try {
+                        await signOut(auth);
+                        window.location.href = "/ingresar";
+                    } catch (error) {
+                        console.error("Error al cerrar sesión:", error);
+                    }
+                });
+
+            // Add fade-in animation to main content
+            document.querySelector("main")?.classList.add("fade-in");
+        </script>
+    </body>
+</html>

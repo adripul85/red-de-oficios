@@ -1,0 +1,847 @@
+---
+import { auth, db } from "../../firebase/client";
+---
+
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Clientes - DeOficios Pro</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            body {
+                font-family: "Inter", sans-serif;
+                background-color: #f8fafc;
+            }
+            ::-webkit-scrollbar {
+                width: 6px;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: #cbd5e1;
+                border-radius: 3px;
+            }
+        </style>
+    </head>
+    <body class="text-slate-800">
+        <div class="flex h-screen overflow-hidden">
+            <!-- SIDEBAR -->
+            <aside
+                class="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 h-full"
+            >
+                <div
+                    class="h-16 flex items-center px-6 border-b border-slate-100"
+                >
+                    <a href="/panel" class="text-xl font-bold text-slate-800">
+                        DeOficios<span class="text-orange-600">Pro</span>
+                    </a>
+                </div>
+
+                <div class="flex-1 overflow-y-auto py-4">
+                    <nav class="px-3 space-y-1">
+                        <a
+                            href="/panel"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">📊</span>
+                            <span class="font-medium text-sm">Dashboard</span>
+                        </a>
+
+                        <a
+                            href="/panel/oportunidades"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">🎯</span>
+                            <span class="font-medium text-sm"
+                                >Oportunidades</span
+                            >
+                        </a>
+
+                        <a
+                            href="/panel/presupuestos"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">📝</span>
+                            <span class="font-medium text-sm">Presupuestos</span
+                            >
+                        </a>
+
+                        <a
+                            href="/panel/finanzas"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">💰</span>
+                            <span class="font-medium text-sm">Finanzas</span>
+                        </a>
+
+                        <a
+                            href="/panel/mi-equipo"
+                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">👷</span>
+                            <span class="font-medium text-sm">Mi Equipo</span>
+                        </a>
+
+                        <a
+                            href="/panel/clientes"
+                            class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg group transition-colors"
+                        >
+                            <span class="text-xl">👥</span>
+                            <span class="font-semibold text-sm">Clientes</span>
+                        </a>
+                    </nav>
+                </div>
+
+                <div class="mt-auto pt-4 border-t border-slate-200 space-y-2">
+                    <a
+                        href="/mi-perfil"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                    >
+                        <span>👤</span>
+                        <span class="font-medium text-sm">Mi Perfil</span>
+                    </a>
+
+                    <button
+                        id="btn-logout"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-red-600 transition-colors"
+                    >
+                        <span>🚪</span>
+                        <span class="font-medium text-sm">Cerrar Sesión</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- MAIN CONTENT -->
+            <main class="flex-1 flex flex-col h-screen overflow-hidden">
+                <!-- HEADER -->
+                <header
+                    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6"
+                >
+                    <div class="flex items-center gap-4">
+                        <h2 class="text-lg font-bold text-slate-800">
+                            Mis Clientes
+                        </h2>
+                        <input
+                            type="text"
+                            id="search-input"
+                            placeholder="Buscar cliente..."
+                            class="border border-slate-300 rounded-lg px-4 py-2 text-sm outline-none focus:border-orange-500 w-64"
+                        />
+                    </div>
+
+                    <button
+                        id="btn-add-client"
+                        class="bg-orange-600 hover:bg-orange-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2"
+                    >
+                        <span>+</span> Nuevo Cliente
+                    </button>
+                </header>
+
+                <!-- CONTENT AREA -->
+                <div class="flex-1 overflow-y-auto p-6 bg-slate-50">
+                    <!-- STATS -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <!-- Total Clientes -->
+                        <div
+                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="p-3 bg-indigo-50 rounded-xl">
+                                    <span class="text-2xl">👥</span>
+                                </div>
+                            </div>
+                            <p class="text-sm text-slate-500 font-medium mb-1">
+                                Total Clientes
+                            </p>
+                            <h3
+                                id="stat-total-clients"
+                                class="text-3xl font-bold text-indigo-600"
+                            >
+                                0
+                            </h3>
+                        </div>
+
+                        <!-- Total Facturado -->
+                        <div
+                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="p-3 bg-green-50 rounded-xl">
+                                    <span class="text-2xl">💵</span>
+                                </div>
+                            </div>
+                            <p class="text-sm text-slate-500 font-medium mb-1">
+                                Total Facturado
+                            </p>
+                            <h3
+                                id="stat-total-billed"
+                                class="text-3xl font-bold text-green-600"
+                            >
+                                $0
+                            </h3>
+                        </div>
+
+                        <!-- Trabajos Realizados -->
+                        <div
+                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="p-3 bg-orange-50 rounded-xl">
+                                    <span class="text-2xl">🔧</span>
+                                </div>
+                            </div>
+                            <p class="text-sm text-slate-500 font-medium mb-1">
+                                Trabajos Totales
+                            </p>
+                            <h3
+                                id="stat-total-jobs"
+                                class="text-3xl font-bold text-orange-600"
+                            >
+                                0
+                            </h3>
+                        </div>
+
+                        <!-- Cliente Frecuente -->
+                        <div
+                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="p-3 bg-purple-50 rounded-xl">
+                                    <span class="text-2xl">⭐</span>
+                                </div>
+                            </div>
+                            <p class="text-sm text-slate-500 font-medium mb-1">
+                                Cliente Frecuente
+                            </p>
+                            <h3
+                                id="stat-top-client"
+                                class="text-lg font-bold text-purple-600 truncate"
+                            >
+                                -
+                            </h3>
+                        </div>
+                    </div>
+
+                    <!-- CLIENTS GRID -->
+                    <div
+                        class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6"
+                    >
+                        <h3 class="text-lg font-bold text-slate-800 mb-6">
+                            Lista de Clientes
+                        </h3>
+
+                        <!-- Empty State -->
+                        <div id="empty-state" class="text-center py-12">
+                            <div class="text-6xl mb-4">👤</div>
+                            <p class="text-slate-600 font-medium mb-2">
+                                No tienes clientes registrados
+                            </p>
+                            <p class="text-sm text-slate-400 mb-6">
+                                Agrega tus clientes para llevar un mejor control
+                                de tu negocio
+                            </p>
+                            <button
+                                onclick="document.getElementById('btn-add-client').click()"
+                                class="bg-orange-600 hover:bg-orange-700 text-white font-bold px-6 py-3 rounded-lg transition"
+                            >
+                                + Agregar Primer Cliente
+                            </button>
+                        </div>
+
+                        <!-- Clients Table -->
+                        <div id="clients-table" class="hidden overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-slate-200">
+                                        <th
+                                            class="text-left py-3 px-4 text-sm font-bold text-slate-700"
+                                        >
+                                            Cliente
+                                        </th>
+                                        <th
+                                            class="text-left py-3 px-4 text-sm font-bold text-slate-700"
+                                        >
+                                            Contacto
+                                        </th>
+                                        <th
+                                            class="text-left py-3 px-4 text-sm font-bold text-slate-700"
+                                        >
+                                            Trabajos
+                                        </th>
+                                        <th
+                                            class="text-left py-3 px-4 text-sm font-bold text-slate-700"
+                                        >
+                                            Total Facturado
+                                        </th>
+                                        <th
+                                            class="text-left py-3 px-4 text-sm font-bold text-slate-700"
+                                        >
+                                            Último Trabajo
+                                        </th>
+                                        <th
+                                            class="text-left py-3 px-4 text-sm font-bold text-slate-700"
+                                        >
+                                            Acciones
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clients-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- ADD/EDIT CLIENT MODAL -->
+        <div
+            id="modal-client"
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4"
+        >
+            <div
+                class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform scale-95 transition-all"
+            >
+                <div class="p-6 border-b border-slate-100">
+                    <h3
+                        id="modal-title"
+                        class="text-xl font-bold text-slate-800"
+                    >
+                        Agregar Cliente
+                    </h3>
+                </div>
+
+                <form id="form-client" class="p-6 space-y-4">
+                    <input type="hidden" id="client-id" />
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                        >
+                            Nombre Completo
+                        </label>
+                        <input
+                            type="text"
+                            id="client-nombre"
+                            required
+                            class="w-full border border-slate-300 rounded-lg px-4 py-2 outline-none focus:border-orange-500"
+                            placeholder="Ej: Ana García"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                        >
+                            Teléfono
+                        </label>
+                        <input
+                            type="tel"
+                            id="client-telefono"
+                            required
+                            class="w-full border border-slate-300 rounded-lg px-4 py-2 outline-none focus:border-orange-500"
+                            placeholder="Ej: 1234567890"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                        >
+                            Email (opcional)
+                        </label>
+                        <input
+                            type="email"
+                            id="client-email"
+                            class="w-full border border-slate-300 rounded-lg px-4 py-2 outline-none focus:border-orange-500"
+                            placeholder="Ej: ana@email.com"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                        >
+                            Dirección (opcional)
+                        </label>
+                        <input
+                            type="text"
+                            id="client-direccion"
+                            class="w-full border border-slate-300 rounded-lg px-4 py-2 outline-none focus:border-orange-500"
+                            placeholder="Ej: Calle 123, CABA"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                        >
+                            Notas (opcional)
+                        </label>
+                        <textarea
+                            id="client-notas"
+                            rows="3"
+                            class="w-full border border-slate-300 rounded-lg px-4 py-2 outline-none focus:border-orange-500"
+                            placeholder="Ej: Cliente preferencial, paga al contado"
+                        ></textarea>
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button
+                            type="button"
+                            id="btn-cancel-client"
+                            class="flex-1 border border-slate-300 text-slate-700 font-bold px-4 py-2 rounded-lg hover:bg-slate-50 transition"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            class="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold px-4 py-2 rounded-lg transition"
+                        >
+                            Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ALERT MODAL -->
+        <div
+            id="alert-modal"
+            class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4"
+        >
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+            <div
+                class="bg-white rounded-2xl shadow-2xl w-full max-w-sm transform scale-95 transition-all relative z-10 overflow-hidden"
+            >
+                <div
+                    id="alert-header"
+                    class="p-4 border-b border-slate-100 flex items-center gap-3"
+                >
+                    <div id="alert-icon" class="text-2xl">⚠️</div>
+                    <h3 id="alert-title" class="font-bold text-slate-800">
+                        Alerta
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <p id="alert-message" class="text-slate-600 text-sm">
+                        Mensaje de alerta
+                    </p>
+                </div>
+                <div class="p-4 bg-slate-50 flex gap-3 justify-end">
+                    <button
+                        id="alert-cancel"
+                        class="hidden px-4 py-2 text-slate-500 font-bold hover:bg-slate-200 rounded-lg transition"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        id="alert-ok"
+                        class="flex-1 bg-slate-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-slate-900 transition shadow-lg shadow-slate-200"
+                    >
+                        Aceptar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            import { auth, db } from "../../firebase/client";
+            import { onAuthStateChanged, signOut } from "firebase/auth";
+            import {
+                collection,
+                addDoc,
+                getDocs,
+                doc,
+                updateDoc,
+                deleteDoc,
+                query,
+                where,
+                Timestamp,
+            } from "firebase/firestore";
+
+            const logoutBtn = document.getElementById("btn-logout");
+            const btnAddClient = document.getElementById("btn-add-client");
+            const modalClient = document.getElementById("modal-client");
+            const formClient = document.getElementById("form-client");
+            const btnCancelClient =
+                document.getElementById("btn-cancel-client");
+            const emptyState = document.getElementById("empty-state");
+            const clientsTable = document.getElementById("clients-table");
+            const searchInput = document.getElementById("search-input");
+
+            let currentUser = null;
+            let clientsData = [];
+            let filteredClients = [];
+
+            // AUTH
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    loadClients(user.uid);
+                } else {
+                    window.location.href = "/ingresar";
+                }
+            });
+
+            // LOAD CLIENTS
+            async function loadClients(uid) {
+                try {
+                    const snapshot = await getDocs(
+                        collection(db, "profesionales", uid, "clientes"),
+                    );
+
+                    clientsData = snapshot.docs.map((doc) => ({
+                        id: doc.id,
+                        ...doc.data(),
+                    }));
+
+                    filteredClients = [...clientsData];
+                    renderClients();
+                    updateStats();
+                } catch (error) {
+                    console.error("Error cargando clientes:", error);
+                    showAlert(
+                        "Error",
+                        "No se pudieron cargar los clientes",
+                        "error",
+                    );
+                }
+            }
+
+            // RENDER CLIENTS
+            function renderClients() {
+                if (filteredClients.length === 0) {
+                    emptyState.classList.remove("hidden");
+                    clientsTable.classList.add("hidden");
+                    return;
+                }
+
+                emptyState.classList.add("hidden");
+                clientsTable.classList.remove("hidden");
+
+                const tbody = document.getElementById("clients-tbody");
+                tbody.innerHTML = filteredClients
+                    .sort((a, b) => {
+                        const dateA = a.ultimoTrabajo?.seconds || 0;
+                        const dateB = b.ultimoTrabajo?.seconds || 0;
+                        return dateB - dateA;
+                    })
+                    .map(
+                        (client) => `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                        <td class="py-3 px-4">
+                            <p class="font-bold text-slate-800">${client.nombre}</p>
+                            ${client.notas ? `<p class="text-xs text-slate-500 mt-1">${client.notas}</p>` : ""}
+                        </td>
+                        <td class="py-3 px-4">
+                            <p class="text-sm text-slate-600">${client.telefono}</p>
+                            ${client.email ? `<p class="text-xs text-slate-500">${client.email}</p>` : ""}
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="text-sm font-bold text-indigo-600">${client.trabajosRealizados || 0}</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="text-sm font-bold text-green-600">$${(client.totalFacturado || 0).toLocaleString()}</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="text-xs text-slate-500">
+                                ${client.ultimoTrabajo ? new Date(client.ultimoTrabajo.seconds * 1000).toLocaleDateString() : "Sin trabajos"}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="flex items-center gap-2">
+                                <button onclick="callClient('${client.telefono}')" class="text-green-600 hover:text-green-700 text-xl" title="Llamar">📞</button>
+                                <button onclick="editClient('${client.id}')" class="text-blue-600 hover:text-blue-700 text-xl" title="Editar">✏️</button>
+                                <button onclick="deleteClient('${client.id}', '${client.nombre}')" class="text-red-500 hover:text-red-700 text-xl" title="Eliminar">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `,
+                    )
+                    .join("");
+            }
+
+            // UPDATE STATS
+            function updateStats() {
+                const totalClients = clientsData.length;
+                const totalBilled = clientsData.reduce(
+                    (sum, c) => sum + (c.totalFacturado || 0),
+                    0,
+                );
+                const totalJobs = clientsData.reduce(
+                    (sum, c) => sum + (c.trabajosRealizados || 0),
+                    0,
+                );
+
+                const topClient = clientsData.sort(
+                    (a, b) =>
+                        (b.trabajosRealizados || 0) -
+                        (a.trabajosRealizados || 0),
+                )[0];
+
+                document.getElementById("stat-total-clients").textContent =
+                    totalClients;
+                document.getElementById("stat-total-billed").textContent =
+                    "$" + totalBilled.toLocaleString();
+                document.getElementById("stat-total-jobs").textContent =
+                    totalJobs;
+                document.getElementById("stat-top-client").textContent =
+                    topClient ? topClient.nombre : "-";
+            }
+
+            // SEARCH
+            searchInput.addEventListener("input", (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                filteredClients = clientsData.filter(
+                    (client) =>
+                        client.nombre.toLowerCase().includes(searchTerm) ||
+                        client.telefono.includes(searchTerm) ||
+                        (client.email &&
+                            client.email.toLowerCase().includes(searchTerm)),
+                );
+                renderClients();
+            });
+
+            // MODAL CONTROLS
+            btnAddClient.addEventListener("click", () => {
+                document.getElementById("modal-title").textContent =
+                    "Agregar Cliente";
+                formClient.reset();
+                document.getElementById("client-id").value = "";
+                modalClient.classList.remove("hidden");
+            });
+
+            btnCancelClient.addEventListener("click", () => {
+                modalClient.classList.add("hidden");
+                formClient.reset();
+            });
+
+            // ADD/EDIT CLIENT
+            formClient.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                if (!currentUser) return;
+
+                const clientId = document.getElementById("client-id").value;
+                const nombre = document.getElementById("client-nombre").value;
+                const telefono =
+                    document.getElementById("client-telefono").value;
+                const email = document.getElementById("client-email").value;
+                const direccion =
+                    document.getElementById("client-direccion").value;
+                const notas = document.getElementById("client-notas").value;
+
+                const clientData = {
+                    nombre,
+                    telefono,
+                    email: email || "",
+                    direccion: direccion || "",
+                    notas: notas || "",
+                    updatedAt: Timestamp.now(),
+                };
+
+                try {
+                    if (clientId) {
+                        // EDIT
+                        await updateDoc(
+                            doc(
+                                db,
+                                "profesionales",
+                                currentUser.uid,
+                                "clientes",
+                                clientId,
+                            ),
+                            clientData,
+                        );
+                        await showAlert(
+                            "Cliente Actualizado",
+                            `${nombre} ha sido actualizado.`,
+                            "success",
+                        );
+                    } else {
+                        // ADD
+                        await addDoc(
+                            collection(
+                                db,
+                                "profesionales",
+                                currentUser.uid,
+                                "clientes",
+                            ),
+                            {
+                                ...clientData,
+                                totalFacturado: 0,
+                                trabajosRealizados: 0,
+                                createdAt: Timestamp.now(),
+                            },
+                        );
+                        await showAlert(
+                            "Cliente Agregado",
+                            `${nombre} ha sido agregado a tu lista.`,
+                            "success",
+                        );
+                    }
+
+                    modalClient.classList.add("hidden");
+                    formClient.reset();
+                    await loadClients(currentUser.uid);
+                } catch (error) {
+                    console.error(error);
+                    await showAlert(
+                        "Error",
+                        "No se pudo guardar el cliente.",
+                        "error",
+                    );
+                }
+            });
+
+            // EDIT CLIENT
+            window.editClient = (clientId) => {
+                const client = clientsData.find((c) => c.id === clientId);
+                if (!client) return;
+
+                document.getElementById("modal-title").textContent =
+                    "Editar Cliente";
+                document.getElementById("client-id").value = clientId;
+                document.getElementById("client-nombre").value = client.nombre;
+                document.getElementById("client-telefono").value =
+                    client.telefono;
+                document.getElementById("client-email").value =
+                    client.email || "";
+                document.getElementById("client-direccion").value =
+                    client.direccion || "";
+                document.getElementById("client-notas").value =
+                    client.notas || "";
+
+                modalClient.classList.remove("hidden");
+            };
+
+            // DELETE CLIENT
+            window.deleteClient = async (clientId, nombre) => {
+                const confirmed = await showConfirm(
+                    "Eliminar Cliente",
+                    `¿Estás seguro de eliminar a ${nombre}?\nEsto NO eliminará el historial de presupuestos.`,
+                    "Eliminar",
+                    "bg-red-600",
+                );
+
+                if (!confirmed) return;
+
+                try {
+                    await deleteDoc(
+                        doc(
+                            db,
+                            "profesionales",
+                            currentUser.uid,
+                            "clientes",
+                            clientId,
+                        ),
+                    );
+                    await showAlert(
+                        "Cliente Eliminado",
+                        `${nombre} ha sido eliminado.`,
+                        "success",
+                    );
+                    await loadClients(currentUser.uid);
+                } catch (error) {
+                    console.error(error);
+                    await showAlert(
+                        "Error",
+                        "No se pudo eliminar al cliente.",
+                        "error",
+                    );
+                }
+            };
+
+            // CALL CLIENT
+            window.callClient = (telefono) => {
+                window.open(`https://wa.me/${telefono}`, "_blank");
+            };
+
+            // ALERT SYSTEM
+            function showAlert(title, message, type = "info") {
+                return new Promise((resolve) => {
+                    const modal = document.getElementById("alert-modal");
+                    const titleEl = document.getElementById("alert-title");
+                    const msgEl = document.getElementById("alert-message");
+                    const iconEl = document.getElementById("alert-icon");
+                    const okBtn = document.getElementById("alert-ok");
+                    const cancelBtn = document.getElementById("alert-cancel");
+
+                    if (!modal) return resolve();
+
+                    titleEl.innerText = title;
+                    msgEl.innerText = message;
+                    cancelBtn.classList.add("hidden");
+                    okBtn.innerText = "Aceptar";
+                    okBtn.onclick = () => {
+                        modal.classList.add("hidden");
+                        resolve(true);
+                    };
+
+                    if (type === "success") {
+                        iconEl.innerText = "✅";
+                        okBtn.className =
+                            "flex-1 bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition shadow-lg shadow-green-200";
+                    } else if (type === "error") {
+                        iconEl.innerText = "❌";
+                        okBtn.className =
+                            "flex-1 bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition shadow-lg shadow-red-200";
+                    } else {
+                        iconEl.innerText = "ℹ️";
+                        okBtn.className =
+                            "flex-1 bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition shadow-lg shadow-indigo-200";
+                    }
+
+                    modal.classList.remove("hidden");
+                });
+            }
+
+            function showConfirm(
+                title,
+                message,
+                actionText = "Aceptar",
+                actionClass = "bg-orange-600",
+            ) {
+                return new Promise((resolve) => {
+                    const modal = document.getElementById("alert-modal");
+                    const titleEl = document.getElementById("alert-title");
+                    const msgEl = document.getElementById("alert-message");
+                    const iconEl = document.getElementById("alert-icon");
+                    const okBtn = document.getElementById("alert-ok");
+                    const cancelBtn = document.getElementById("alert-cancel");
+
+                    if (!modal) return resolve(false);
+
+                    titleEl.innerText = title;
+                    msgEl.innerText = message;
+                    iconEl.innerText = "🤔";
+
+                    cancelBtn.classList.remove("hidden");
+                    cancelBtn.onclick = () => {
+                        modal.classList.add("hidden");
+                        resolve(false);
+                    };
+
+                    okBtn.innerText = actionText;
+                    okBtn.className = `flex-1 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg ${actionClass}`;
+                    okBtn.onclick = () => {
+                        modal.classList.add("hidden");
+                        resolve(true);
+                    };
+
+                    modal.classList.remove("hidden");
+                });
+            }
+
+            // LOGOUT
+            logoutBtn?.addEventListener("click", async () => {
+                await signOut(auth);
+                window.location.href = "/";
+            });
+        </script>
+    </body>
+</html>

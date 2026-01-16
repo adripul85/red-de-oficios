@@ -45,15 +45,19 @@ const { title, hideHeader = false, hideFooter = false } = Astro.props;
 		{!hideFooter && <Footer />}
 		<script is:inline>
 			if ("serviceWorker" in navigator) {
-				navigator.serviceWorker
-					.getRegistrations()
-					.then(function (regs) {
-						for (let reg of regs) {
-							reg.unregister().then(() =>
-								console.log("🧹 Cache limpiada."),
-							);
-						}
-					});
+				window.addEventListener("load", () => {
+					navigator.serviceWorker
+						.register("/sw.js")
+						.then((reg) =>
+							console.log(
+								"✅ Service Worker registrado:",
+								reg.scope,
+							),
+						)
+						.catch((err) =>
+							console.log("❌ Error registro SW:", err),
+						);
+				});
 			}
 		</script>
 	</body>
