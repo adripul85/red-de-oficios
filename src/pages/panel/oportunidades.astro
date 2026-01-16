@@ -4,6 +4,21 @@ import { auth } from "../../firebase/client";
 
 <html lang="es">
     <head>
+        <!-- Google tag (gtag.js) -->
+        <script
+            async
+            src="https://www.googletagmanager.com/gtag/js?id=G-LG6RPRWWDY"
+        ></script>
+        <script is:inline>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag("js", new Date());
+
+            gtag("config", "G-LG6RPRWWDY");
+        </script>
+
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Oportunidades - Panel Profesional</title>
@@ -442,9 +457,9 @@ import { auth } from "../../firebase/client";
             let currentUser: any = null;
             let todasSolicitudes: any[] = [];
 
-            // Wrap everything in astro:page-load for View Transitions compatibility
-            document.addEventListener("astro:page-load", () => {
-                console.log("🚀 [OPORTUNIDADES] Página cargada/navegada");
+            // Execute immediately - IIFE pattern
+            (function () {
+                console.log("🚀 [OPORTUNIDADES] Ejecutando inicialización...");
 
                 // Referencias DOM
                 const grid = document.getElementById("oportunidades-grid");
@@ -964,7 +979,7 @@ import { auth } from "../../firebase/client";
                         "⏳",
                     );
                 };
-            }); // End of astro:page-load
+            })(); // End of IIFE
         </script>
     </body>
 </html>

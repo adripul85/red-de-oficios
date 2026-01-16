@@ -218,19 +218,17 @@
     }
   }
 
+  // Listener de autenticación (SOLO UNA VEZ)
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    await updateHeaderUI();
+  });
+
+  // Listener de navegación en Astro (re-render UI en cada navegación)
   document.addEventListener("astro:page-load", async () => {
-    console.log("🚀 [HEADER] Página cargada/navegada");
-
-    // 1. AUTH LOGIC
-    onAuthStateChanged(auth, async (user) => {
-      currentUser = user;
-      await updateHeaderUI();
-    });
-
-    // 2. INITIAL UI RENDER (Manual trigger for first load or navigation)
     await updateHeaderUI();
 
-    // 3. MENU TOGGLE
+    // Re-bind menu toggle
     const menuBtn = document.getElementById("menu-toggle");
     const mobileMenu = document.getElementById("mobile-menu");
     menuBtn?.addEventListener("click", () =>

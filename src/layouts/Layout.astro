@@ -16,6 +16,21 @@ const { title, hideHeader = false, hideFooter = false } = Astro.props;
 <!doctype html>
 <html lang="es">
 	<head>
+		<!-- Google tag (gtag.js) -->
+		<script
+			async
+			src="https://www.googletagmanager.com/gtag/js?id=G-LG6RPRWWDY"
+		></script>
+		<script is:inline>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() {
+				dataLayer.push(arguments);
+			}
+			gtag("js", new Date());
+
+			gtag("config", "G-LG6RPRWWDY");
+		</script>
+
 		<meta charset="UTF-8" />
 		<meta
 			name="viewport"
@@ -65,16 +80,23 @@ const { title, hideHeader = false, hideFooter = false } = Astro.props;
 
 		<!-- Splash Screen Script -->
 		<script is:inline>
-			// Splash Screen fade out - using DOMContentLoaded for faster response
-			document.addEventListener("DOMContentLoaded", () => {
+			// Hide splash screen on first load AND on every View Transition
+			function hideSplash() {
 				const splash = document.getElementById("custom-splash-screen");
-				if (splash) {
-					// Fade rápido para no bloquear la experiencia
-					setTimeout(() => {
-						splash.classList.add("hidden");
-						setTimeout(() => splash.remove(), 400);
-					}, 300); // Solo 0.3 segundos de display
+				if (splash && !splash.classList.contains("hidden")) {
+					splash.classList.add("hidden");
+					setTimeout(() => splash.remove(), 400);
 				}
+			}
+
+			// First load
+			document.addEventListener("DOMContentLoaded", () => {
+				setTimeout(() => hideSplash(), 300);
+			});
+
+			// View Transitions navigations
+			document.addEventListener("astro:page-load", () => {
+				hideSplash();
 			});
 		</script>
 
@@ -206,3 +228,26 @@ const { title, hideHeader = false, hideFooter = false } = Astro.props;
 		display: block;
 	}
 </style>
+<script>
+	// Evitar click derecho
+	document.addEventListener("contextmenu", (event) => event.preventDefault());
+
+	// Evitar atajos de teclado para ver código (F12, Ctrl+U, etc)
+	document.onkeydown = function (e) {
+		if (event.keyCode == 123) {
+			return false;
+		} // F12
+		if (e.ctrlKey && e.shiftKey && e.keyCode == "I".charCodeAt(0)) {
+			return false;
+		} // Ctrl+Shift+I
+		if (e.ctrlKey && e.shiftKey && e.keyCode == "C".charCodeAt(0)) {
+			return false;
+		} // Ctrl+Shift+C
+		if (e.ctrlKey && e.shiftKey && e.keyCode == "J".charCodeAt(0)) {
+			return false;
+		} // Ctrl+Shift+J
+		if (e.ctrlKey && e.keyCode == "U".charCodeAt(0)) {
+			return false;
+		} // Ctrl+U
+	};
+</script>

@@ -5,6 +5,21 @@ import { auth, db } from "../../firebase/client";
 <!doctype html>
 <html lang="es">
     <head>
+        <!-- Google tag (gtag.js) -->
+        <script
+            async
+            src="https://www.googletagmanager.com/gtag/js?id=G-LG6RPRWWDY"
+        ></script>
+        <script is:inline>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag("js", new Date());
+
+            gtag("config", "G-LG6RPRWWDY");
+        </script>
+
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Finanzas - DeOficios Pro</title>
@@ -733,6 +748,97 @@ import { auth, db } from "../../firebase/client";
             </div>
         </div>
 
+        <!-- MODAL EDITAR MOVIMIENTO -->
+        <div
+            id="modal-edit-mov"
+            class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center p-4"
+        >
+            <div
+                class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+            >
+                <div
+                    class="p-6 border-b flex justify-between items-center bg-blue-50"
+                >
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900">
+                            Editar Movimiento
+                        </h3>
+                        <p class="text-sm text-slate-500">
+                            Modifica los detalles del registro
+                        </p>
+                    </div>
+                    <button
+                        id="close-modal-edit"
+                        class="text-3xl text-slate-400 hover:text-slate-600"
+                        >&times;</button
+                    >
+                </div>
+
+                <form id="form-edit-mov" class="p-6 space-y-4">
+                    <input type="hidden" id="edit-mov-id" />
+                    <input type="hidden" id="edit-mov-tipo" />
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                            >Concepto</label
+                        >
+                        <input
+                            type="text"
+                            id="edit-mov-concepto"
+                            required
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                            >Monto</label
+                        >
+                        <input
+                            type="number"
+                            id="edit-mov-monto"
+                            required
+                            min="0"
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                            >Fecha</label
+                        >
+                        <input
+                            type="date"
+                            id="edit-mov-fecha"
+                            required
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+
+                    <div id="edit-mov-extra-container">
+                        <!-- Campos específicos según tipo (cliente o categoría) -->
+                    </div>
+
+                    <div class="pt-4 border-t flex gap-3">
+                        <button
+                            type="button"
+                            id="cancel-edit"
+                            class="flex-1 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 rounded-lg transition"
+                            >Cancelar</button
+                        >
+                        <button
+                            type="submit"
+                            class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition"
+                            >Guardar Cambios</button
+                        >
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- MODAL AGREGAR MIEMBRO DEL EQUIPO -->
         <div
             id="modal-team"
@@ -917,6 +1023,8 @@ import { auth, db } from "../../firebase/client";
             import {
                 doc,
                 getDoc,
+                updateDoc,
+                deleteDoc,
                 collection,
                 addDoc,
                 query,
@@ -927,559 +1035,746 @@ import { auth, db } from "../../firebase/client";
                 Timestamp,
             } from "firebase/firestore";
 
-            document.addEventListener('astro:page-load', () => {
+            (function () {
                 console.log("🚀 [FINANZAS] Página cargada/navegada");
 
                 const logoutBtn = document.getElementById("btn-logout");
                 const btnAddIncome = document.getElementById("btn-add-income");
-                const btnAddExpense = document.getElementById("btn-add-expense");
+                const btnAddExpense =
+                    document.getElementById("btn-add-expense");
 
                 const modalIngreso = document.getElementById("modal-ingreso");
                 const modalGasto = document.getElementById("modal-gasto");
 
                 const formIngreso = document.getElementById("form-ingreso");
                 const formGasto = document.getElementById("form-gasto");
-
-                let currentUser = null;
-                let equipoData = [];
-
-            // === CUSTOM ALERTS & CONFIRMS ===
-            function showAlert(
-                title: string,
-                message: string,
-                type: "success" | "error" = "success",
-            ) {
-                const modal = document.getElementById("custom-alert");
-                const icon = document.getElementById("alert-icon");
-                const titleEl = document.getElementById("alert-title");
-                const msgEl = document.getElementById("alert-message");
-                const btn = document.getElementById("alert-btn");
-
-                if (!modal || !icon || !titleEl || !msgEl || !btn) return;
-
-                icon.textContent = type === "success" ? "✅" : "❌";
-                titleEl.textContent = title;
-                msgEl.textContent = message;
-
-                modal.classList.remove("hidden");
-                // Animation
-                setTimeout(() => {
-                    modal.classList.remove("opacity-0");
-                    modal.querySelector("div")?.classList.remove("scale-95");
-                    modal.querySelector("div")?.classList.add("scale-100");
-                }, 10);
-
-                return new Promise<void>((resolve) => {
-                    const close = () => {
-                        modal.classList.add("opacity-0");
-                        modal.querySelector("div")?.classList.add("scale-95");
-                        setTimeout(() => {
-                            modal.classList.add("hidden");
-                            resolve();
-                        }, 300);
-                    };
-                    btn.onclick = close;
-                });
-            }
-
-            function showConfirm(
-                title: string,
-                message: string,
-                confirmText = "Confirmar",
-                confirmColor = "bg-red-600",
-            ) {
-                const modal = document.getElementById("custom-confirm");
-                const titleEl = document.getElementById("confirm-title");
-                const msgEl = document.getElementById("confirm-message");
-                const confirmBtn = document.getElementById("confirm-ok");
-                const cancelBtn = document.getElementById("confirm-cancel");
-
-                if (!modal || !titleEl || !msgEl || !confirmBtn || !cancelBtn)
-                    return Promise.resolve(false);
-
-                titleEl.textContent = title;
-                msgEl.textContent = message;
-                confirmBtn.textContent = confirmText;
-                confirmBtn.className = `flex-1 py-3 text-white rounded-xl font-bold transition hover:opacity-90 ${confirmColor}`;
-
-                modal.classList.remove("hidden");
-                // Animation
-                setTimeout(() => {
-                    modal.classList.remove("opacity-0");
-                    modal.querySelector("div")?.classList.remove("scale-95");
-                    modal.querySelector("div")?.classList.add("scale-100");
-                }, 10);
-
-                return new Promise<boolean>((resolve) => {
-                    const close = (result: boolean) => {
-                        modal.classList.add("opacity-0");
-                        modal.querySelector("div")?.classList.add("scale-95");
-                        setTimeout(() => {
-                            modal.classList.add("hidden");
-                            resolve(result);
-                        }, 300);
-                    };
-
-                    confirmBtn.onclick = () => close(true);
-                    cancelBtn.onclick = () => close(false);
-                });
-            }
-
-            // Expose globally
-            (window as any).showAlert = showAlert;
-            (window as any).showConfirm = showConfirm;
-
-            // Team modal
-            const btnAddTeam = document.getElementById("btn-add-team");
-            const modalTeam = document.getElementById("modal-team");
-            const formTeam = document.getElementById("form-team");
-
-            // Setear fecha de hoy por defecto
-            const today = new Date().toISOString().split("T")[0];
-            document.getElementById("ingreso-fecha").value = today;
-            document.getElementById("gasto-fecha").value = today;
-
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    const docRef = doc(db, "profesionales", user.uid);
-                    const docSnap = await getDoc(docRef);
-
-                    if (docSnap.exists()) {
-                        currentUser = user;
-                        await loadFinanzas(user.uid);
-                        await loadEquipo(user.uid);
-                    } else {
-                        window.location.href = "/";
-                    }
-                } else {
-                    window.location.href = "/ingresar";
-                }
-            });
-
-            // Abrir/Cerrar modales
-            btnAddIncome?.addEventListener("click", () =>
-                modalIngreso.classList.remove("hidden"),
-            );
-            btnAddExpense?.addEventListener("click", () =>
-                modalGasto.classList.remove("hidden"),
-            );
-
-            document
-                .getElementById("close-modal-ingreso")
-                ?.addEventListener("click", () =>
-                    modalIngreso.classList.add("hidden"),
-                );
-            document
-                .getElementById("cancel-ingreso")
-                ?.addEventListener("click", () =>
-                    modalIngreso.classList.add("hidden"),
+                const modalEdit = document.getElementById("modal-edit-mov");
+                const formEdit = document.getElementById("form-edit-mov");
+                const editExtraContainer = document.getElementById(
+                    "edit-mov-extra-container",
                 );
 
-            document
-                .getElementById("close-modal-gasto")
-                ?.addEventListener("click", () =>
-                    modalGasto.classList.add("hidden"),
-                );
-            document
-                .getElementById("cancel-gasto")
-                ?.addEventListener("click", () =>
-                    modalGasto.classList.add("hidden"),
-                );
+                let currentUser: any = null;
+                let equipoData: any[] = [];
 
-            // === TEAM MODAL ===
-            btnAddTeam?.addEventListener("click", () =>
-                modalTeam.classList.remove("hidden"),
-            );
-            document
-                .getElementById("close-modal-team")
-                ?.addEventListener("click", () =>
-                    modalTeam.classList.add("hidden"),
-                );
-            document
-                .getElementById("cancel-team")
-                ?.addEventListener("click", () =>
-                    modalTeam.classList.add("hidden"),
-                );
+                // === CUSTOM ALERTS & CONFIRMS ===
+                function showAlert(
+                    title: string,
+                    message: string,
+                    type: "success" | "error" = "success",
+                ) {
+                    const modal = document.getElementById("custom-alert");
+                    const icon = document.getElementById("alert-icon");
+                    const titleEl = document.getElementById("alert-title");
+                    const msgEl = document.getElementById("alert-message");
+                    const btn = document.getElementById("alert-btn");
 
-            // Cambiar hint según tipo de pago
-            document
-                .getElementById("team-tipo-pago")
-                ?.addEventListener("change", (e) => {
-                    const hint = document.getElementById("team-valor-hint");
-                    if (
-                        (e.target as HTMLSelectElement).value === "porcentaje"
-                    ) {
-                        hint.textContent =
-                            "Ingresa el porcentaje (ej: 30 para 30%)";
-                    } else if (
-                        (e.target as HTMLSelectElement).value === "fijo"
-                    ) {
-                        hint.textContent = "Ingresa el monto fijo en pesos";
-                    }
-                });
+                    if (!modal || !icon || !titleEl || !msgEl || !btn) return;
 
-            // Guardar miembro del equipo
-            formTeam?.addEventListener("submit", async (e) => {
-                e.preventDefault();
-                if (!currentUser) return;
+                    icon.textContent = type === "success" ? "✅" : "❌";
+                    titleEl.textContent = title;
+                    msgEl.textContent = message;
 
-                const nombre = (
-                    document.getElementById("team-nombre") as HTMLInputElement
-                ).value;
-                const rol = (
-                    document.getElementById("team-rol") as HTMLSelectElement
-                ).value;
-                const tipoPago = (
-                    document.getElementById(
-                        "team-tipo-pago",
-                    ) as HTMLSelectElement
-                ).value;
-                const valor = parseFloat(
-                    (document.getElementById("team-valor") as HTMLInputElement)
-                        .value,
-                );
+                    modal.classList.remove("hidden");
+                    // Animation
+                    setTimeout(() => {
+                        modal.classList.remove("opacity-0");
+                        modal
+                            .querySelector("div")
+                            ?.classList.remove("scale-95");
+                        modal.querySelector("div")?.classList.add("scale-100");
+                    }, 10);
 
-                try {
-                    await addDoc(
-                        collection(
-                            db,
-                            "profesionales",
-                            currentUser.uid,
-                            "equipo",
-                        ),
-                        {
-                            nombre,
-                            rol,
-                            tipoPago,
-                            valor,
-                            activo: true,
-                            totalTrabajosJuntos: 0,
-                            totalDerivado: 0,
-                            pendientePago: 0,
-                            createdAt: Timestamp.now(),
-                        },
-                    );
-
-                    await showAlert(
-                        "¡Excelente!",
-                        "Has agregado un nuevo miembro a tu equipo.",
-                        "success",
-                    );
-                    modalTeam.classList.add("hidden");
-                    formTeam.reset();
-                    await loadEquipo(currentUser.uid);
-                } catch (error) {
-                    console.error(error);
-                    await showAlert(
-                        "Error",
-                        "No se pudo guardar el miembro.",
-                        "error",
-                    );
-                }
-            });
-
-            // Guardar Ingreso
-            formIngreso?.addEventListener("submit", async (e) => {
-                e.preventDefault();
-                if (!currentUser) return;
-
-                const concepto = (
-                    document.getElementById(
-                        "ingreso-concepto",
-                    ) as HTMLInputElement
-                ).value;
-                const monto = parseFloat(
-                    (
-                        document.getElementById(
-                            "ingreso-monto",
-                        ) as HTMLInputElement
-                    ).value,
-                );
-                const fecha = new Date(
-                    (
-                        document.getElementById(
-                            "ingreso-fecha",
-                        ) as HTMLInputElement
-                    ).value,
-                );
-                const cliente = (
-                    document.getElementById(
-                        "ingreso-cliente",
-                    ) as HTMLInputElement
-                ).value;
-                const conEquipo = (
-                    document.getElementById(
-                        "ingreso-con-equipo",
-                    ) as HTMLInputElement
-                ).checked;
-
-                // Calcular derivaciones si trabajó con equipo
-                let equipoArray: any[] = [];
-                let montoNeto = monto;
-
-                if (conEquipo) {
-                    const selectedCheckboxes = document.querySelectorAll(
-                        ".equipo-checkbox:checked",
-                    );
-                    selectedCheckboxes.forEach((cb) => {
-                        const checkbox = cb as HTMLInputElement;
-                        const miembroId = checkbox.dataset.id || "";
-                        const nombre = checkbox.dataset.nombre || "";
-                        const tipo = checkbox.dataset.tipo || "";
-                        const valor = parseFloat(checkbox.dataset.valor || "0");
-
-                        let montoDerivado = 0;
-                        if (tipo === "porcentaje") {
-                            montoDerivado = (monto * valor) / 100;
-                        } else {
-                            montoDerivado = valor;
-                        }
-
-                        equipoArray.push({
-                            miembroId,
-                            nombre,
-                            tipo,
-                            valor,
-                            monto: montoDerivado,
-                        });
-
-                        montoNeto -= montoDerivado;
+                    return new Promise<void>((resolve) => {
+                        const close = () => {
+                            modal.classList.add("opacity-0");
+                            modal
+                                .querySelector("div")
+                                ?.classList.add("scale-95");
+                            setTimeout(() => {
+                                modal.classList.add("hidden");
+                                resolve();
+                            }, 300);
+                        };
+                        btn.onclick = close;
                     });
                 }
 
-                try {
-                    // Guardar ingreso
-                    const ingresoRef = await addDoc(
-                        collection(
+                function showConfirm(
+                    title: string,
+                    message: string,
+                    confirmText = "Confirmar",
+                    confirmColor = "bg-red-600",
+                ) {
+                    const modal = document.getElementById("custom-confirm");
+                    const titleEl = document.getElementById("confirm-title");
+                    const msgEl = document.getElementById("confirm-message");
+                    const confirmBtn = document.getElementById("confirm-ok");
+                    const cancelBtn = document.getElementById("confirm-cancel");
+
+                    if (
+                        !modal ||
+                        !titleEl ||
+                        !msgEl ||
+                        !confirmBtn ||
+                        !cancelBtn
+                    )
+                        return Promise.resolve(false);
+
+                    titleEl.textContent = title;
+                    msgEl.textContent = message;
+                    confirmBtn.textContent = confirmText;
+                    confirmBtn.className = `flex-1 py-3 text-white rounded-xl font-bold transition hover:opacity-90 ${confirmColor}`;
+
+                    modal.classList.remove("hidden");
+                    // Animation
+                    setTimeout(() => {
+                        modal.classList.remove("opacity-0");
+                        modal
+                            .querySelector("div")
+                            ?.classList.remove("scale-95");
+                        modal.querySelector("div")?.classList.add("scale-100");
+                    }, 10);
+
+                    return new Promise<boolean>((resolve) => {
+                        const close = (result: boolean) => {
+                            modal.classList.add("opacity-0");
+                            modal
+                                .querySelector("div")
+                                ?.classList.add("scale-95");
+                            setTimeout(() => {
+                                modal.classList.add("hidden");
+                                resolve(result);
+                            }, 300);
+                        };
+
+                        confirmBtn.onclick = () => close(true);
+                        cancelBtn.onclick = () => close(false);
+                    });
+                }
+
+                // Expose globally
+                (window as any).showAlert = showAlert;
+                (window as any).showConfirm = showConfirm;
+
+                // Team modal
+                const btnAddTeam = document.getElementById("btn-add-team");
+                const modalTeam = document.getElementById("modal-team");
+                const formTeam = document.getElementById("form-team");
+
+                // Setear fecha de hoy por defecto
+                const today = new Date().toISOString().split("T")[0];
+                document.getElementById("ingreso-fecha").value = today;
+                document.getElementById("gasto-fecha").value = today;
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        const docRef = doc(db, "profesionales", user.uid);
+                        const docSnap = await getDoc(docRef);
+
+                        if (docSnap.exists()) {
+                            currentUser = user;
+                            await loadFinanzas(user.uid);
+                            await loadEquipo(user.uid);
+                        } else {
+                            window.location.href = "/";
+                        }
+                    } else {
+                        window.location.href = "/ingresar";
+                    }
+                });
+
+                // Abrir/Cerrar modales
+                btnAddIncome?.addEventListener("click", () =>
+                    modalIngreso.classList.remove("hidden"),
+                );
+                btnAddExpense?.addEventListener("click", () =>
+                    modalGasto.classList.remove("hidden"),
+                );
+
+                document
+                    .getElementById("close-modal-ingreso")
+                    ?.addEventListener("click", () =>
+                        modalIngreso.classList.add("hidden"),
+                    );
+                document
+                    .getElementById("cancel-ingreso")
+                    ?.addEventListener("click", () =>
+                        modalIngreso.classList.add("hidden"),
+                    );
+
+                document
+                    .getElementById("close-modal-gasto")
+                    ?.addEventListener("click", () =>
+                        modalGasto.classList.add("hidden"),
+                    );
+                document
+                    .getElementById("cancel-gasto")
+                    ?.addEventListener("click", () =>
+                        modalGasto.classList.add("hidden"),
+                    );
+
+                // === TEAM MODAL ===
+                btnAddTeam?.addEventListener("click", () =>
+                    modalTeam.classList.remove("hidden"),
+                );
+                document
+                    .getElementById("close-modal-team")
+                    ?.addEventListener("click", () =>
+                        modalTeam.classList.add("hidden"),
+                    );
+                document
+                    .getElementById("cancel-team")
+                    ?.addEventListener("click", () =>
+                        modalTeam.classList.add("hidden"),
+                    );
+
+                // Cambiar hint según tipo de pago
+                document
+                    .getElementById("team-tipo-pago")
+                    ?.addEventListener("change", (e) => {
+                        const hint = document.getElementById("team-valor-hint");
+                        if (
+                            (e.target as HTMLSelectElement).value ===
+                            "porcentaje"
+                        ) {
+                            hint.textContent =
+                                "Ingresa el porcentaje (ej: 30 para 30%)";
+                        } else if (
+                            (e.target as HTMLSelectElement).value === "fijo"
+                        ) {
+                            hint.textContent = "Ingresa el monto fijo en pesos";
+                        }
+                    });
+
+                // Guardar miembro del equipo
+                formTeam?.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    if (!currentUser) return;
+
+                    const nombre = (
+                        document.getElementById(
+                            "team-nombre",
+                        ) as HTMLInputElement
+                    ).value;
+                    const rol = (
+                        document.getElementById("team-rol") as HTMLSelectElement
+                    ).value;
+                    const tipoPago = (
+                        document.getElementById(
+                            "team-tipo-pago",
+                        ) as HTMLSelectElement
+                    ).value;
+                    const valor = parseFloat(
+                        (
+                            document.getElementById(
+                                "team-valor",
+                            ) as HTMLInputElement
+                        ).value,
+                    );
+
+                    try {
+                        await addDoc(
+                            collection(
+                                db,
+                                "profesionales",
+                                currentUser.uid,
+                                "equipo",
+                            ),
+                            {
+                                nombre,
+                                rol,
+                                tipoPago,
+                                valor,
+                                activo: true,
+                                totalTrabajosJuntos: 0,
+                                totalDerivado: 0,
+                                pendientePago: 0,
+                                createdAt: Timestamp.now(),
+                            },
+                        );
+
+                        await showAlert(
+                            "¡Excelente!",
+                            "Has agregado un nuevo miembro a tu equipo.",
+                            "success",
+                        );
+                        modalTeam.classList.add("hidden");
+                        formTeam.reset();
+                        await loadEquipo(currentUser.uid);
+                    } catch (error) {
+                        console.error(error);
+                        await showAlert(
+                            "Error",
+                            "No se pudo guardar el miembro.",
+                            "error",
+                        );
+                    }
+                });
+
+                // === EDIT MODAL EVENTS ===
+                document
+                    .getElementById("close-modal-edit")
+                    ?.addEventListener("click", () =>
+                        modalEdit?.classList.add("hidden"),
+                    );
+                document
+                    .getElementById("cancel-edit")
+                    ?.addEventListener("click", () =>
+                        modalEdit?.classList.add("hidden"),
+                    );
+
+                // Open Edit Modal
+                (window as any).openEditMov = (async function (id, tipo) {
+                    if (!currentUser) return;
+                    console.log("📝 Editando:", id, tipo);
+
+                    try {
+                        const docRef = doc(
                             db,
                             "profesionales",
                             currentUser.uid,
                             "finanzas",
-                        ),
-                        {
-                            tipo: "ingreso",
-                            concepto,
-                            monto,
-                            fecha: Timestamp.fromDate(fecha),
-                            clienteNombre: cliente || null,
-                            metodoCobro: "efectivo",
-                            equipo: equipoArray,
-                            montoNeto: montoNeto,
-                            createdAt: Timestamp.now(),
-                        },
+                            id,
+                        );
+                        const snap = await getDoc(docRef);
+
+                        if (!snap.exists()) return;
+                        const data = snap.data();
+
+                        (
+                            document.getElementById(
+                                "edit-mov-id",
+                            ) as HTMLInputElement
+                        ).value = id;
+                        (
+                            document.getElementById(
+                                "edit-mov-tipo",
+                            ) as HTMLInputElement
+                        ).value = tipo;
+                        (
+                            document.getElementById(
+                                "edit-mov-concepto",
+                            ) as HTMLInputElement
+                        ).value = data.concepto;
+                        (
+                            document.getElementById(
+                                "edit-mov-monto",
+                            ) as HTMLInputElement
+                        ).value = data.monto;
+
+                        // Formatear fecha para el input date
+                        const d = data.fecha.toDate();
+                        const year = d.getFullYear();
+                        const month = String(d.getMonth() + 1).padStart(2, "0");
+                        const day = String(d.getDate()).padStart(2, "0");
+                        (
+                            document.getElementById(
+                                "edit-mov-fecha",
+                            ) as HTMLInputElement
+                        ).value = `${year}-${month}-${day}`;
+
+                        // Campos extra según tipo
+                        if (tipo === "ingreso" && editExtraContainer) {
+                            editExtraContainer.innerHTML = `
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Cliente (opcional)</label>
+                                    <input type="text" id="edit-mov-cliente" value="${data.clienteNombre || ""}" class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nombre del cliente" />
+                                </div>
+                            `;
+                        } else if (tipo === "gasto" && editExtraContainer) {
+                            editExtraContainer.innerHTML = `
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Categoría</label>
+                                    <select id="edit-mov-categoria" required class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="materiales" ${data.categoria === "materiales" ? "selected" : ""}>Materiales</option>
+                                        <option value="herramientas" ${data.categoria === "herramientas" ? "selected" : ""}>Herramientas</option>
+                                        <option value="transporte" ${data.categoria === "transporte" ? "selected" : ""}>Transporte</option>
+                                        <option value="otros" ${data.categoria === "otros" ? "selected" : ""}>Otros</option>
+                                    </select>
+                                </div>
+                            `;
+                        } else if (editExtraContainer) {
+                            editExtraContainer.innerHTML = "";
+                        }
+
+                        modalEdit?.classList.remove("hidden");
+                    } catch (error) {
+                        console.error(error);
+                        showAlert(
+                            "Error",
+                            "No se pudo cargar la información del movimiento",
+                            "error",
+                        );
+                    }
+                })(
+                    // Delete Movement
+                    window as any,
+                ).deleteMov = async function (id, tipo) {
+                    const confirmed = await (window as any).showConfirm(
+                        "¿Eliminar movimiento?",
+                        "Esta acción borrará el registro de tus finanzas. Si es un ingreso que tenía equipo asignado, las derivaciones no se borrarán automáticamente.",
                     );
 
-                    // Crear derivaciones si hay equipo
-                    if (equipoArray.length > 0) {
-                        const { updateDoc } =
-                            await import("firebase/firestore");
+                    if (confirmed) {
+                        try {
+                            const docRef = doc(
+                                db,
+                                "profesionales",
+                                currentUser.uid,
+                                "finanzas",
+                                id,
+                            );
+                            await deleteDoc(docRef);
+                            showAlert(
+                                "Eliminado",
+                                "El movimiento ha sido borrado con éxito.",
+                            );
+                            await loadFinanzas(currentUser.uid);
+                        } catch (error) {
+                            console.error(error);
+                            showAlert(
+                                "Error",
+                                "No se pudo eliminar el movimiento",
+                                "error",
+                            );
+                        }
+                    }
+                };
 
-                        const derivacionesPromises = equipoArray.map(
-                            (miembro) =>
-                                addDoc(
-                                    collection(
-                                        db,
-                                        "profesionales",
-                                        currentUser.uid,
-                                        "derivaciones",
-                                    ),
-                                    {
-                                        miembroId: miembro.miembroId,
-                                        miembroNombre: miembro.nombre,
-                                        monto: miembro.monto,
-                                        trabajoId: ingresoRef.id,
-                                        trabajoConcepto: concepto,
-                                        fecha: Timestamp.fromDate(fecha),
-                                        pagado: false,
-                                        fechaPago: null,
-                                    },
-                                ),
-                        );
-                        await Promise.all(derivacionesPromises);
+                formEdit?.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    if (!currentUser) return;
 
-                        // Actualizar estadísticas del equipo
-                        const updatePromises = equipoArray.map(
-                            async (miembro) => {
-                                const miembroDoc = doc(
-                                    db,
-                                    "profesionales",
-                                    currentUser.uid,
-                                    "equipo",
-                                    miembro.miembroId,
-                                );
-                                const miembroSnap = await getDoc(miembroDoc);
-                                if (miembroSnap.exists()) {
-                                    const data = miembroSnap.data();
-                                    await updateDoc(miembroDoc, {
-                                        totalTrabajosJuntos:
-                                            (data.totalTrabajosJuntos || 0) + 1,
-                                        totalDerivado:
-                                            (data.totalDerivado || 0) +
-                                            miembro.monto,
-                                        pendientePago:
-                                            (data.pendientePago || 0) +
-                                            miembro.monto,
-                                    });
-                                }
-                            },
-                        );
-                        await Promise.all(updatePromises);
+                    const id = (
+                        document.getElementById(
+                            "edit-mov-id",
+                        ) as HTMLInputElement
+                    ).value;
+                    const tipo = (
+                        document.getElementById(
+                            "edit-mov-tipo",
+                        ) as HTMLInputElement
+                    ).value;
+                    const concepto = (
+                        document.getElementById(
+                            "edit-mov-concepto",
+                        ) as HTMLInputElement
+                    ).value;
+                    const monto = parseFloat(
+                        (
+                            document.getElementById(
+                                "edit-mov-monto",
+                            ) as HTMLInputElement
+                        ).value,
+                    );
+                    const fechaValue = (
+                        document.getElementById(
+                            "edit-mov-fecha",
+                        ) as HTMLInputElement
+                    ).value;
+                    const fecha = new Date(fechaValue + "T12:00:00"); // Forzar mediodía para evitar desfases de zona horaria
+
+                    const updateData: any = {
+                        concepto,
+                        monto,
+                        fecha: Timestamp.fromDate(fecha),
+                    };
+
+                    if (tipo === "ingreso") {
+                        updateData.clienteNombre =
+                            (
+                                document.getElementById(
+                                    "edit-mov-cliente",
+                                ) as HTMLInputElement
+                            ).value || null;
+                    } else if (tipo === "gasto") {
+                        updateData.categoria = (
+                            document.getElementById(
+                                "edit-mov-categoria",
+                            ) as HTMLSelectElement
+                        ).value;
                     }
 
-                    await showAlert(
-                        "¡Ingreso Registrado!",
-                        `El ingreso y las derivaciones han sido guardadas.${equipoArray.length > 0 ? ` (${equipoArray.length} derivaciones)` : ""}`,
-                        "success",
-                    );
-                    modalIngreso.classList.add("hidden");
-                    formIngreso.reset();
-                    (
+                    try {
+                        const docRef = doc(
+                            db,
+                            "profesionales",
+                            currentUser.uid,
+                            "finanzas",
+                            id,
+                        );
+                        await updateDoc(docRef, updateData);
+
+                        showAlert(
+                            "¡Actualizado!",
+                            "El movimiento ha sido modificado correctamente.",
+                            "success",
+                        );
+                        modalEdit?.classList.add("hidden");
+                        await loadFinanzas(currentUser.uid);
+                    } catch (error) {
+                        console.error(error);
+                        showAlert(
+                            "Error",
+                            "No se pudo actualizar el movimiento",
+                            "error",
+                        );
+                    }
+                });
+
+                // Guardar Ingreso
+                formIngreso?.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    if (!currentUser) return;
+
+                    const concepto = (
                         document.getElementById(
-                            "ingreso-fecha",
+                            "ingreso-concepto",
                         ) as HTMLInputElement
-                    ).value = today;
-                    (
+                    ).value;
+                    const monto = parseFloat(
+                        (
+                            document.getElementById(
+                                "ingreso-monto",
+                            ) as HTMLInputElement
+                        ).value,
+                    );
+                    const fecha = new Date(
+                        (
+                            document.getElementById(
+                                "ingreso-fecha",
+                            ) as HTMLInputElement
+                        ).value,
+                    );
+                    const cliente = (
+                        document.getElementById(
+                            "ingreso-cliente",
+                        ) as HTMLInputElement
+                    ).value;
+                    const conEquipo = (
                         document.getElementById(
                             "ingreso-con-equipo",
                         ) as HTMLInputElement
-                    ).checked = false;
-                    equipoSelector?.classList.add("hidden");
-                    await loadFinanzas(currentUser.uid);
-                    await loadEquipo(currentUser.uid);
-                } catch (error) {
-                    console.error(error);
-                    alert("❌ Error al guardar ingreso");
-                }
-            });
+                    ).checked;
 
-            // Guardar Gasto
-            formGasto?.addEventListener("submit", async (e) => {
-                e.preventDefault();
-                if (!currentUser) return;
+                    // Calcular derivaciones si trabajó con equipo
+                    let equipoArray: any[] = [];
+                    let montoNeto = monto;
 
-                const concepto =
-                    document.getElementById("gasto-concepto").value;
-                const monto = parseFloat(
-                    document.getElementById("gasto-monto").value,
-                );
-                const fecha = new Date(
-                    document.getElementById("gasto-fecha").value,
-                );
-                const categoria =
-                    document.getElementById("gasto-categoria").value;
+                    if (conEquipo) {
+                        const selectedCheckboxes = document.querySelectorAll(
+                            ".equipo-checkbox:checked",
+                        );
+                        selectedCheckboxes.forEach((cb) => {
+                            const checkbox = cb as HTMLInputElement;
+                            const miembroId = checkbox.dataset.id || "";
+                            const nombre = checkbox.dataset.nombre || "";
+                            const tipo = checkbox.dataset.tipo || "";
+                            const valor = parseFloat(
+                                checkbox.dataset.valor || "0",
+                            );
 
-                try {
-                    await addDoc(
-                        collection(
-                            db,
-                            "profesionales",
-                            currentUser.uid,
-                            "finanzas",
-                        ),
-                        {
-                            tipo: "gasto",
-                            concepto,
-                            monto,
-                            fecha: Timestamp.fromDate(fecha),
-                            categoria,
-                            createdAt: Timestamp.now(),
-                        },
-                    );
-
-                    await showAlert(
-                        "Gasto Registrado",
-                        "Tus finanzas han sido actualizadas.",
-                        "success",
-                    );
-                    modalGasto.classList.add("hidden");
-                    formGasto.reset();
-                    (
-                        document.getElementById(
-                            "gasto-fecha",
-                        ) as HTMLInputElement
-                    ).value = today;
-                    await loadFinanzas(currentUser.uid);
-                } catch (error) {
-                    console.error(error);
-                    await showAlert(
-                        "Error",
-                        "No se pudo guardar el gasto.",
-                        "error",
-                    );
-                }
-            });
-
-            // Cargar datos financieros
-            async function loadFinanzas(uid) {
-                try {
-                    // Cargar movimientos financieros (ingresos y gastos)
-                    const q = query(
-                        collection(db, "profesionales", uid, "finanzas"),
-                        orderBy("fecha", "desc"),
-                        limit(50),
-                    );
-                    const snapshot = await getDocs(q);
-                    const movimientos = snapshot.docs.map((doc) => ({
-                        id: doc.id,
-                        tipo: doc.data().tipo,
-                        ...doc.data(),
-                    }));
-
-                    // Cargar derivaciones pagadas
-                    const derivacionesQuery = query(
-                        collection(db, "profesionales", uid, "derivaciones"),
-                        where("pagado", "==", true),
-                        orderBy("fechaPago", "desc"),
-                        limit(20),
-                    );
-                    const derivacionesSnap = await getDocs(derivacionesQuery);
-                    const derivaciones = derivacionesSnap.docs.map((doc) => ({
-                        id: doc.id,
-                        tipo: "derivacion",
-                        ...doc.data(),
-                    }));
-
-                    // Combinar y ordenar por fecha
-                    const todosMovimientos = [
-                        ...movimientos,
-                        ...derivaciones,
-                    ].sort((a, b) => {
-                        const fechaA =
-                            a.tipo === "derivacion" ? a.fechaPago : a.fecha;
-                        const fechaB =
-                            b.tipo === "derivacion" ? b.fechaPago : b.fecha;
-                        return fechaB.toMillis() - fechaA.toMillis();
-                    });
-
-                    // Calcular KPIs del mes actual
-                    const now = new Date();
-                    const mesActual = now.getMonth();
-                    const anioActual = now.getFullYear();
-
-                    let ingresosMes = 0;
-                    let gastosMes = 0;
-                    let derivacionesPendientes = 0;
-
-                    movimientos.forEach((mov) => {
-                        if (mov.tipo === "derivacion") return; // Saltar derivaciones en KPIs
-
-                        const fechaMov = mov.fecha.toDate();
-                        if (
-                            fechaMov.getMonth() === mesActual &&
-                            fechaMov.getFullYear() === anioActual
-                        ) {
-                            if (mov.tipo === "ingreso") {
-                                ingresosMes += mov.monto;
-                            } else if (mov.tipo === "gasto") {
-                                gastosMes += mov.monto;
+                            let montoDerivado = 0;
+                            if (tipo === "porcentaje") {
+                                montoDerivado = (monto * valor) / 100;
+                            } else {
+                                montoDerivado = valor;
                             }
-                        }
-                    });
 
-                    const balance = ingresosMes - gastosMes;
+                            equipoArray.push({
+                                miembroId,
+                                nombre,
+                                tipo,
+                                valor,
+                                monto: montoDerivado,
+                            });
 
-                    // Calcular derivaciones pendientes
+                            montoNeto -= montoDerivado;
+                        });
+                    }
+
                     try {
+                        // Guardar ingreso
+                        const ingresoRef = await addDoc(
+                            collection(
+                                db,
+                                "profesionales",
+                                currentUser.uid,
+                                "finanzas",
+                            ),
+                            {
+                                tipo: "ingreso",
+                                concepto,
+                                monto,
+                                fecha: Timestamp.fromDate(fecha),
+                                clienteNombre: cliente || null,
+                                metodoCobro: "efectivo",
+                                equipo: equipoArray,
+                                montoNeto: montoNeto,
+                                createdAt: Timestamp.now(),
+                            },
+                        );
+
+                        // Crear derivaciones si hay equipo
+                        if (equipoArray.length > 0) {
+                            const { updateDoc } =
+                                await import("firebase/firestore");
+
+                            const derivacionesPromises = equipoArray.map(
+                                (miembro) =>
+                                    addDoc(
+                                        collection(
+                                            db,
+                                            "profesionales",
+                                            currentUser.uid,
+                                            "derivaciones",
+                                        ),
+                                        {
+                                            miembroId: miembro.miembroId,
+                                            miembroNombre: miembro.nombre,
+                                            monto: miembro.monto,
+                                            trabajoId: ingresoRef.id,
+                                            trabajoConcepto: concepto,
+                                            fecha: Timestamp.fromDate(fecha),
+                                            pagado: false,
+                                            fechaPago: null,
+                                        },
+                                    ),
+                            );
+                            await Promise.all(derivacionesPromises);
+
+                            // Actualizar estadísticas del equipo
+                            const updatePromises = equipoArray.map(
+                                async (miembro) => {
+                                    const miembroDoc = doc(
+                                        db,
+                                        "profesionales",
+                                        currentUser.uid,
+                                        "equipo",
+                                        miembro.miembroId,
+                                    );
+                                    const miembroSnap =
+                                        await getDoc(miembroDoc);
+                                    if (miembroSnap.exists()) {
+                                        const data = miembroSnap.data();
+                                        await updateDoc(miembroDoc, {
+                                            totalTrabajosJuntos:
+                                                (data.totalTrabajosJuntos ||
+                                                    0) + 1,
+                                            totalDerivado:
+                                                (data.totalDerivado || 0) +
+                                                miembro.monto,
+                                            pendientePago:
+                                                (data.pendientePago || 0) +
+                                                miembro.monto,
+                                        });
+                                    }
+                                },
+                            );
+                            await Promise.all(updatePromises);
+                        }
+
+                        await showAlert(
+                            "¡Ingreso Registrado!",
+                            `El ingreso y las derivaciones han sido guardadas.${equipoArray.length > 0 ? ` (${equipoArray.length} derivaciones)` : ""}`,
+                            "success",
+                        );
+                        modalIngreso.classList.add("hidden");
+                        formIngreso.reset();
+                        (
+                            document.getElementById(
+                                "ingreso-fecha",
+                            ) as HTMLInputElement
+                        ).value = today;
+                        (
+                            document.getElementById(
+                                "ingreso-con-equipo",
+                            ) as HTMLInputElement
+                        ).checked = false;
+                        equipoSelector?.classList.add("hidden");
+                        await loadFinanzas(currentUser.uid);
+                        await loadEquipo(currentUser.uid);
+                    } catch (error) {
+                        console.error(error);
+                        alert("❌ Error al guardar ingreso");
+                    }
+                });
+
+                // Guardar Gasto
+                formGasto?.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    if (!currentUser) return;
+
+                    const concepto =
+                        document.getElementById("gasto-concepto").value;
+                    const monto = parseFloat(
+                        document.getElementById("gasto-monto").value,
+                    );
+                    const fecha = new Date(
+                        document.getElementById("gasto-fecha").value,
+                    );
+                    const categoria =
+                        document.getElementById("gasto-categoria").value;
+
+                    try {
+                        await addDoc(
+                            collection(
+                                db,
+                                "profesionales",
+                                currentUser.uid,
+                                "finanzas",
+                            ),
+                            {
+                                tipo: "gasto",
+                                concepto,
+                                monto,
+                                fecha: Timestamp.fromDate(fecha),
+                                categoria,
+                                createdAt: Timestamp.now(),
+                            },
+                        );
+
+                        await showAlert(
+                            "Gasto Registrado",
+                            "Tus finanzas han sido actualizadas.",
+                            "success",
+                        );
+                        modalGasto.classList.add("hidden");
+                        formGasto.reset();
+                        (
+                            document.getElementById(
+                                "gasto-fecha",
+                            ) as HTMLInputElement
+                        ).value = today;
+                        await loadFinanzas(currentUser.uid);
+                    } catch (error) {
+                        console.error(error);
+                        await showAlert(
+                            "Error",
+                            "No se pudo guardar el gasto.",
+                            "error",
+                        );
+                    }
+                });
+
+                // Cargar datos financieros
+                async function loadFinanzas(uid) {
+                    try {
+                        // Cargar movimientos financieros (ingresos y gastos)
+                        const q = query(
+                            collection(db, "profesionales", uid, "finanzas"),
+                            orderBy("fecha", "desc"),
+                            limit(50),
+                        );
+                        const snapshot = await getDocs(q);
+                        const movimientos = snapshot.docs.map((doc) => ({
+                            id: doc.id,
+                            tipo: doc.data().tipo,
+                            ...doc.data(),
+                        }));
+
+                        // Cargar derivaciones pagadas
                         const derivacionesQuery = query(
                             collection(
                                 db,
@@ -1487,88 +1782,156 @@ import { auth, db } from "../../firebase/client";
                                 uid,
                                 "derivaciones",
                             ),
-                            where("pagado", "==", false),
+                            where("pagado", "==", true),
+                            orderBy("fechaPago", "desc"),
+                            limit(20),
                         );
                         const derivacionesSnap =
                             await getDocs(derivacionesQuery);
-                        derivacionesPendientes = derivacionesSnap.docs.reduce(
-                            (sum, doc) => sum + (doc.data().monto || 0),
-                            0,
+                        const derivaciones = derivacionesSnap.docs.map(
+                            (doc) => ({
+                                id: doc.id,
+                                tipo: "derivacion",
+                                ...doc.data(),
+                            }),
                         );
+
+                        // Combinar y ordenar por fecha
+                        const todosMovimientos = [
+                            ...movimientos,
+                            ...derivaciones,
+                        ].sort((a, b) => {
+                            const fechaA =
+                                a.tipo === "derivacion" ? a.fechaPago : a.fecha;
+                            const fechaB =
+                                b.tipo === "derivacion" ? b.fechaPago : b.fecha;
+                            return fechaB.toMillis() - fechaA.toMillis();
+                        });
+
+                        // Calcular KPIs del mes actual
+                        const now = new Date();
+                        const mesActual = now.getMonth();
+                        const anioActual = now.getFullYear();
+
+                        let ingresosMes = 0;
+                        let gastosMes = 0;
+                        let derivacionesPendientes = 0;
+
+                        movimientos.forEach((mov) => {
+                            if (mov.tipo === "derivacion") return; // Saltar derivaciones en KPIs
+
+                            const fechaMov = mov.fecha.toDate();
+                            if (
+                                fechaMov.getMonth() === mesActual &&
+                                fechaMov.getFullYear() === anioActual
+                            ) {
+                                if (mov.tipo === "ingreso") {
+                                    ingresosMes += mov.monto;
+                                } else if (mov.tipo === "gasto") {
+                                    gastosMes += mov.monto;
+                                }
+                            }
+                        });
+
+                        const balance = ingresosMes - gastosMes;
+
+                        // Calcular derivaciones pendientes
+                        try {
+                            const derivacionesQuery = query(
+                                collection(
+                                    db,
+                                    "profesionales",
+                                    uid,
+                                    "derivaciones",
+                                ),
+                                where("pagado", "==", false),
+                            );
+                            const derivacionesSnap =
+                                await getDocs(derivacionesQuery);
+                            derivacionesPendientes =
+                                derivacionesSnap.docs.reduce(
+                                    (sum, doc) => sum + (doc.data().monto || 0),
+                                    0,
+                                );
+                        } catch (error) {
+                            console.error(
+                                "Error calculando derivaciones:",
+                                error,
+                            );
+                        }
+
+                        // Actualizar KPIs
+                        document.getElementById("kpi-ingresos").textContent =
+                            "$" + ingresosMes.toLocaleString();
+                        document.getElementById("kpi-gastos").textContent =
+                            "$" + gastosMes.toLocaleString();
+                        document.getElementById("kpi-balance").textContent =
+                            "$" + balance.toLocaleString();
+                        document.getElementById(
+                            "kpi-derivaciones",
+                        ).textContent =
+                            "$" + derivacionesPendientes.toLocaleString();
+
+                        // Renderizar movimientos (ahora incluye derivaciones)
+                        renderMovimientos(todosMovimientos);
                     } catch (error) {
-                        console.error("Error calculando derivaciones:", error);
+                        console.error("Error cargando finanzas:", error);
                     }
-
-                    // Actualizar KPIs
-                    document.getElementById("kpi-ingresos").textContent =
-                        "$" + ingresosMes.toLocaleString();
-                    document.getElementById("kpi-gastos").textContent =
-                        "$" + gastosMes.toLocaleString();
-                    document.getElementById("kpi-balance").textContent =
-                        "$" + balance.toLocaleString();
-                    document.getElementById("kpi-derivaciones").textContent =
-                        "$" + derivacionesPendientes.toLocaleString();
-
-                    // Renderizar movimientos (ahora incluye derivaciones)
-                    renderMovimientos(todosMovimientos);
-                } catch (error) {
-                    console.error("Error cargando finanzas:", error);
                 }
-            }
 
-            function renderMovimientos(movimientos) {
-                const container = document.getElementById(
-                    "movimientos-container",
-                );
+                function renderMovimientos(movimientos) {
+                    const container = document.getElementById(
+                        "movimientos-container",
+                    );
 
-                if (movimientos.length === 0) {
-                    container.innerHTML = `
+                    if (movimientos.length === 0) {
+                        container.innerHTML = `
                     <div class="p-12 text-center text-slate-400">
                         <div class="text-6xl mb-4">📊</div>
                         <p>No hay movimientos registrados</p>
                         <p class="text-sm mt-2">Comienza registrando tu primer ingreso o gasto</p>
                     </div>
                 `;
-                    return;
-                }
+                        return;
+                    }
 
-                container.innerHTML = movimientos
-                    .map((mov) => {
-                        let fecha, color, signo, icon, concepto, detalle;
+                    container.innerHTML = movimientos
+                        .map((mov) => {
+                            let fecha, color, signo, icon, concepto, detalle;
 
-                        if (mov.tipo === "derivacion") {
-                            // DERIVACIÓN PAGADA
-                            fecha = mov.fechaPago
-                                .toDate()
-                                .toLocaleDateString("es-AR", {
-                                    day: "2-digit",
-                                    month: "short",
-                                });
-                            color = "text-purple-600";
-                            signo = "-";
-                            icon = "👷";
-                            concepto = `Pago a ${mov.miembroNombre}`;
-                            detalle = mov.trabajoConcepto;
-                        } else {
-                            // INGRESO O GASTO
-                            fecha = mov.fecha
-                                .toDate()
-                                .toLocaleDateString("es-AR", {
-                                    day: "2-digit",
-                                    month: "short",
-                                });
-                            color =
-                                mov.tipo === "ingreso"
-                                    ? "text-green-600"
-                                    : "text-red-600";
-                            signo = mov.tipo === "ingreso" ? "+" : "-";
-                            icon = mov.tipo === "ingreso" ? "💵" : "💸";
-                            concepto = mov.concepto;
-                            detalle = `${mov.clienteNombre ? mov.clienteNombre : ""}${mov.categoria ? (mov.clienteNombre ? " • " : "") + mov.categoria : ""}`;
-                        }
+                            if (mov.tipo === "derivacion") {
+                                // DERIVACIÓN PAGADA
+                                fecha = mov.fechaPago
+                                    .toDate()
+                                    .toLocaleDateString("es-AR", {
+                                        day: "2-digit",
+                                        month: "short",
+                                    });
+                                color = "text-purple-600";
+                                signo = "-";
+                                icon = "👷";
+                                concepto = `Pago a ${mov.miembroNombre}`;
+                                detalle = mov.trabajoConcepto;
+                            } else {
+                                // INGRESO O GASTO
+                                fecha = mov.fecha
+                                    .toDate()
+                                    .toLocaleDateString("es-AR", {
+                                        day: "2-digit",
+                                        month: "short",
+                                    });
+                                color =
+                                    mov.tipo === "ingreso"
+                                        ? "text-green-600"
+                                        : "text-red-600";
+                                signo = mov.tipo === "ingreso" ? "+" : "-";
+                                icon = mov.tipo === "ingreso" ? "💵" : "💸";
+                                concepto = mov.concepto;
+                                detalle = `${mov.clienteNombre ? mov.clienteNombre : ""}${mov.categoria ? (mov.clienteNombre ? " • " : "") + mov.categoria : ""}`;
+                            }
 
-                        return `
-                    <div class="p-4 hover:bg-slate-50 transition flex items-center justify-between">
+                            return `
+                    <div class="p-4 hover:bg-slate-50 transition flex items-center justify-between group">
                         <div class="flex items-center gap-4">
                             <div class="text-2xl">${icon}</div>
                             <div>
@@ -1576,51 +1939,68 @@ import { auth, db } from "../../firebase/client";
                                 <p class="text-sm text-slate-500">${fecha}${detalle ? " • " + detalle : ""}</p>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <p class="font-bold text-lg ${color}">${signo}$${mov.monto.toLocaleString()}</p>
+                        <div class="flex items-center gap-4">
+                            <div class="text-right">
+                                <p class="font-bold text-lg ${color}">${signo}$${mov.monto.toLocaleString()}</p>
+                            </div>
+                            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                ${
+                                    mov.tipo !== "derivacion"
+                                        ? `
+                                    <button onclick="openEditMov('${mov.id}', '${mov.tipo}')" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Editar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                                    </button>
+                                    <button onclick="deleteMov('${mov.id}', '${mov.tipo}')" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition" title="Eliminar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                                    </button>
+                                `
+                                        : ""
+                                }
+                            </div>
                         </div>
                     </div>
                 `;
-                    })
-                    .join("");
-            }
-
-            // === FUNCIONES DE EQUIPO ===
-            async function loadEquipo(uid: string) {
-                try {
-                    const q = query(
-                        collection(db, "profesionales", uid, "equipo"),
-                        where("activo", "==", true),
-                    );
-
-                    const snapshot = await getDocs(q);
-                    equipoData = snapshot.docs.map((doc) => ({
-                        id: doc.id,
-                        ...doc.data(),
-                    }));
-
-                    renderEquipo();
-                } catch (error) {
-                    console.error("Error cargando equipo:", error);
+                        })
+                        .join("");
                 }
-            }
 
-            function renderEquipo() {
-                const container = document.getElementById("equipo-container");
-                if (!container) return;
+                // === FUNCIONES DE EQUIPO ===
+                async function loadEquipo(uid: string) {
+                    try {
+                        const q = query(
+                            collection(db, "profesionales", uid, "equipo"),
+                            where("activo", "==", true),
+                        );
 
-                if (equipoData.length === 0) {
-                    container.innerHTML = `
+                        const snapshot = await getDocs(q);
+                        equipoData = snapshot.docs.map((doc) => ({
+                            id: doc.id,
+                            ...doc.data(),
+                        }));
+
+                        renderEquipo();
+                    } catch (error) {
+                        console.error("Error cargando equipo:", error);
+                    }
+                }
+
+                function renderEquipo() {
+                    const container =
+                        document.getElementById("equipo-container");
+                    if (!container) return;
+
+                    if (equipoData.length === 0) {
+                        container.innerHTML = `
                         <div class="text-center py-8 text-slate-400">
                             <div class="text-5xl mb-3">👥</div>
                             <p class="text-sm">No hay miembros en tu equipo</p>
                             <p class="text-xs mt-1">Agrega ayudantes o socios para calcular derivaciones automáticamente</p>
                         </div>
                     `;
-                    return;
-                }
+                        return;
+                    }
 
-                container.innerHTML = `
+                    container.innerHTML = `
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         ${equipoData
                             .map(
@@ -1659,212 +2039,218 @@ import { auth, db } from "../../firebase/client";
                             .join("")}
                     </div>
                 `;
-            }
+                }
 
-            // Eliminar miembro del equipo
-            async function eliminarMiembro(miembroId: string, nombre: string) {
-                if (!currentUser) return;
+                // Eliminar miembro del equipo
+                async function eliminarMiembro(
+                    miembroId: string,
+                    nombre: string,
+                ) {
+                    if (!currentUser) return;
 
-                const confirmar = await showConfirm(
-                    "Eliminar Miembro",
-                    `¿Estás seguro de eliminar a ${nombre} de tu equipo?\nEsto NO eliminará el historial de trabajos anteriores.`,
-                    "Eliminar",
-                    "bg-red-600",
-                );
+                    const confirmar = await showConfirm(
+                        "Eliminar Miembro",
+                        `¿Estás seguro de eliminar a ${nombre} de tu equipo?\nEsto NO eliminará el historial de trabajos anteriores.`,
+                        "Eliminar",
+                        "bg-red-600",
+                    );
 
-                if (!confirmar) return;
+                    if (!confirmar) return;
 
-                try {
-                    const { deleteDoc } = await import("firebase/firestore");
-                    await deleteDoc(
-                        doc(
+                    try {
+                        const { deleteDoc } =
+                            await import("firebase/firestore");
+                        await deleteDoc(
+                            doc(
+                                db,
+                                "profesionales",
+                                currentUser.uid,
+                                "equipo",
+                                miembroId,
+                            ),
+                        );
+                        await showAlert(
+                            "Miembro Eliminado",
+                            `${nombre} ha sido eliminado de tu equipo.`,
+                            "success",
+                        );
+                        await loadEquipo(currentUser.uid);
+                    } catch (error) {
+                        console.error(error);
+                        await showAlert(
+                            "Error",
+                            "No se pudo eliminar al miembro.",
+                            "error",
+                        );
+                    }
+                }
+
+                // Marcar derivaciones como pagadas
+                async function marcarComoPagado(miembroId: string) {
+                    if (!currentUser) return;
+
+                    const confirmar = await showConfirm(
+                        "Confirmar Pago",
+                        "¿Confirmas que pagaste todas las derivaciones pendientes a este miembro?",
+                        "Sí, pagado",
+                        "bg-green-600",
+                    );
+
+                    if (!confirmar) return;
+
+                    try {
+                        const { updateDoc } =
+                            await import("firebase/firestore");
+                        const miembroDoc = doc(
                             db,
                             "profesionales",
                             currentUser.uid,
                             "equipo",
                             miembroId,
-                        ),
-                    );
-                    await showAlert(
-                        "Miembro Eliminado",
-                        `${nombre} ha sido eliminado de tu equipo.`,
-                        "success",
-                    );
-                    await loadEquipo(currentUser.uid);
-                } catch (error) {
-                    console.error(error);
-                    await showAlert(
-                        "Error",
-                        "No se pudo eliminar al miembro.",
-                        "error",
-                    );
+                        );
+                        await updateDoc(miembroDoc, {
+                            pendientePago: 0,
+                        });
+
+                        // Marcar todas las derivaciones como pagadas
+                        const derivacionesQuery = query(
+                            collection(
+                                db,
+                                "profesionales",
+                                currentUser.uid,
+                                "derivaciones",
+                            ),
+                            where("miembroId", "==", miembroId),
+                            where("pagado", "==", false),
+                        );
+                        const derivacionesSnap =
+                            await getDocs(derivacionesQuery);
+
+                        const updatePromises = derivacionesSnap.docs.map(
+                            (derivacionDoc) =>
+                                updateDoc(derivacionDoc.ref, {
+                                    pagado: true,
+                                    fechaPago: Timestamp.now(),
+                                }),
+                        );
+                        await Promise.all(updatePromises);
+
+                        await showAlert(
+                            "Pago Registrado",
+                            "Has marcado las derivaciones como pagadas.",
+                            "success",
+                        );
+                        await loadEquipo(currentUser.uid);
+                    } catch (error) {
+                        console.error(error);
+                        await showAlert(
+                            "Error",
+                            "No se pudo registrar el pago.",
+                            "error",
+                        );
+                    }
                 }
-            }
 
-            // Marcar derivaciones como pagadas
-            async function marcarComoPagado(miembroId: string) {
-                if (!currentUser) return;
+                // Reiniciar todos los datos
+                async function resetValues() {
+                    if (!currentUser) return;
 
-                const confirmar = await showConfirm(
-                    "Confirmar Pago",
-                    "¿Confirmas que pagaste todas las derivaciones pendientes a este miembro?",
-                    "Sí, pagado",
-                    "bg-green-600",
-                );
-
-                if (!confirmar) return;
-
-                try {
-                    const { updateDoc } = await import("firebase/firestore");
-                    const miembroDoc = doc(
-                        db,
-                        "profesionales",
-                        currentUser.uid,
-                        "equipo",
-                        miembroId,
+                    const confirmar = await showConfirm(
+                        "⚠️ ZONA DE PELIGRO",
+                        "¿Estás seguro de que quieres REINICIAR todo el panel?\n\nSe borrarán TODOS tus ingresos, gastos, equipo y registro de derivaciones.\n\nEsta acción NO SE PUEDE DESHACER.",
+                        "Sí, borrar todo",
+                        "bg-red-600",
                     );
-                    await updateDoc(miembroDoc, {
-                        pendientePago: 0,
-                    });
 
-                    // Marcar todas las derivaciones como pagadas
-                    const derivacionesQuery = query(
-                        collection(
-                            db,
-                            "profesionales",
-                            currentUser.uid,
-                            "derivaciones",
-                        ),
-                        where("miembroId", "==", miembroId),
-                        where("pagado", "==", false),
-                    );
-                    const derivacionesSnap = await getDocs(derivacionesQuery);
+                    if (!confirmar) return;
 
-                    const updatePromises = derivacionesSnap.docs.map(
-                        (derivacionDoc) =>
-                            updateDoc(derivacionDoc.ref, {
-                                pagado: true,
-                                fechaPago: Timestamp.now(),
-                            }),
+                    const segundaConfirmacion = await showConfirm(
+                        "¿Estás realmente seguro?",
+                        "Por favor confirma una última vez que deseas eliminar todos tus datos financieros.",
+                        "Confirmar borrado",
+                        "bg-red-800",
                     );
-                    await Promise.all(updatePromises);
 
-                    await showAlert(
-                        "Pago Registrado",
-                        "Has marcado las derivaciones como pagadas.",
-                        "success",
-                    );
-                    await loadEquipo(currentUser.uid);
-                } catch (error) {
-                    console.error(error);
-                    await showAlert(
-                        "Error",
-                        "No se pudo registrar el pago.",
-                        "error",
-                    );
+                    if (!segundaConfirmacion) return;
+
+                    try {
+                        const { deleteDoc, getDocs, collection } =
+                            await import("firebase/firestore");
+
+                        // 1. Borrar Equipo
+                        const equipoSnap = await getDocs(
+                            collection(
+                                db,
+                                "profesionales",
+                                currentUser.uid,
+                                "equipo",
+                            ),
+                        );
+                        const equipoPromises = equipoSnap.docs.map((doc) =>
+                            deleteDoc(doc.ref),
+                        );
+
+                        // 2. Borrar Finanzas
+                        const finanzasSnap = await getDocs(
+                            collection(
+                                db,
+                                "profesionales",
+                                currentUser.uid,
+                                "finanzas",
+                            ),
+                        );
+                        const finanzasPromises = finanzasSnap.docs.map((doc) =>
+                            deleteDoc(doc.ref),
+                        );
+
+                        // 3. Borrar Derivaciones
+                        const derivacionesSnap = await getDocs(
+                            collection(
+                                db,
+                                "profesionales",
+                                currentUser.uid,
+                                "derivaciones",
+                            ),
+                        );
+                        const derivacionesPromises = derivacionesSnap.docs.map(
+                            (doc) => deleteDoc(doc.ref),
+                        );
+
+                        await Promise.all([
+                            ...equipoPromises,
+                            ...finanzasPromises,
+                            ...derivacionesPromises,
+                        ]);
+
+                        await showAlert(
+                            "Panel Reiniciado",
+                            "Todos tus datos han sido eliminados correctamente.",
+                            "success",
+                        );
+                        window.location.reload();
+                    } catch (error) {
+                        console.error("Error reseteando panel:", error);
+                        await showAlert(
+                            "Error",
+                            "Hubo un problema al intentar reiniciar el panel.",
+                            "error",
+                        );
+                    }
                 }
-            }
 
-            // Reiniciar todos los datos
-            async function resetValues() {
-                if (!currentUser) return;
+                // Hacer las funciones globales para que onclick funcione
+                (window as any).eliminarMiembro = eliminarMiembro;
+                (window as any).marcarComoPagado = marcarComoPagado;
+                (window as any).resetValues = resetValues;
 
-                const confirmar = await showConfirm(
-                    "⚠️ ZONA DE PELIGRO",
-                    "¿Estás seguro de que quieres REINICIAR todo el panel?\n\nSe borrarán TODOS tus ingresos, gastos, equipo y registro de derivaciones.\n\nEsta acción NO SE PUEDE DESHACER.",
-                    "Sí, borrar todo",
-                    "bg-red-600",
-                );
+                // === SELECCIÓN DE EQUIPO EN INGRESO ===
+                function renderEquipoEnIngreso() {
+                    const list = document.getElementById("ingreso-equipo-list");
+                    if (!list) return;
 
-                if (!confirmar) return;
-
-                const segundaConfirmacion = await showConfirm(
-                    "¿Estás realmente seguro?",
-                    "Por favor confirma una última vez que deseas eliminar todos tus datos financieros.",
-                    "Confirmar borrado",
-                    "bg-red-800",
-                );
-
-                if (!segundaConfirmacion) return;
-
-                try {
-                    const { deleteDoc, getDocs, collection } =
-                        await import("firebase/firestore");
-
-                    // 1. Borrar Equipo
-                    const equipoSnap = await getDocs(
-                        collection(
-                            db,
-                            "profesionales",
-                            currentUser.uid,
-                            "equipo",
-                        ),
-                    );
-                    const equipoPromises = equipoSnap.docs.map((doc) =>
-                        deleteDoc(doc.ref),
-                    );
-
-                    // 2. Borrar Finanzas
-                    const finanzasSnap = await getDocs(
-                        collection(
-                            db,
-                            "profesionales",
-                            currentUser.uid,
-                            "finanzas",
-                        ),
-                    );
-                    const finanzasPromises = finanzasSnap.docs.map((doc) =>
-                        deleteDoc(doc.ref),
-                    );
-
-                    // 3. Borrar Derivaciones
-                    const derivacionesSnap = await getDocs(
-                        collection(
-                            db,
-                            "profesionales",
-                            currentUser.uid,
-                            "derivaciones",
-                        ),
-                    );
-                    const derivacionesPromises = derivacionesSnap.docs.map(
-                        (doc) => deleteDoc(doc.ref),
-                    );
-
-                    await Promise.all([
-                        ...equipoPromises,
-                        ...finanzasPromises,
-                        ...derivacionesPromises,
-                    ]);
-
-                    await showAlert(
-                        "Panel Reiniciado",
-                        "Todos tus datos han sido eliminados correctamente.",
-                        "success",
-                    );
-                    window.location.reload();
-                } catch (error) {
-                    console.error("Error reseteando panel:", error);
-                    await showAlert(
-                        "Error",
-                        "Hubo un problema al intentar reiniciar el panel.",
-                        "error",
-                    );
-                }
-            }
-
-            // Hacer las funciones globales para que onclick funcione
-            (window as any).eliminarMiembro = eliminarMiembro;
-            (window as any).marcarComoPagado = marcarComoPagado;
-            (window as any).resetValues = resetValues;
-
-            // === SELECCIÓN DE EQUIPO EN INGRESO ===
-            function renderEquipoEnIngreso() {
-                const list = document.getElementById("ingreso-equipo-list");
-                if (!list) return;
-
-                list.innerHTML = equipoData
-                    .map(
-                        (miembro: any) => `
+                    list.innerHTML = equipoData
+                        .map(
+                            (miembro: any) => `
                     <label class="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200 hover:border-orange-300 cursor-pointer transition">
                         <input type="checkbox" class="equipo-checkbox w-5 h-5 text-orange-600 accent-orange-600" data-id="${miembro.id}" data-nombre="${miembro.nombre}" data-tipo="${miembro.tipoPago}" data-valor="${miembro.valor}">
                         <div class="flex-1">
@@ -1873,106 +2259,107 @@ import { auth, db } from "../../firebase/client";
                         </div>
                     </label>
                 `,
-                    )
-                    .join("");
+                        )
+                        .join("");
 
-                // Listener para actualizar preview
-                document
-                    .querySelectorAll(".equipo-checkbox")
-                    .forEach((checkbox) => {
-                        checkbox.addEventListener(
-                            "change",
-                            updateIngresoPreview,
-                        );
-                    });
-            }
-
-            // Toggle selector de equipo
-            const conEquipoCheckbox =
-                document.getElementById("ingreso-con-equipo");
-            const equipoSelector = document.getElementById(
-                "ingreso-equipo-selector",
-            );
-
-            conEquipoCheckbox?.addEventListener("change", (e) => {
-                if ((e.target as HTMLInputElement).checked) {
-                    equipoSelector?.classList.remove("hidden");
-                    renderEquipoEnIngreso();
-                } else {
-                    equipoSelector?.classList.add("hidden");
+                    // Listener para actualizar preview
                     document
                         .querySelectorAll(".equipo-checkbox")
-                        .forEach(
-                            (cb) => ((cb as HTMLInputElement).checked = false),
-                        );
-                    document
-                        .getElementById("ingreso-preview")
-                        ?.classList.add("hidden");
-                }
-            });
-
-            function updateIngresoPreview() {
-                const monto =
-                    parseFloat(
-                        (
-                            document.getElementById(
-                                "ingreso-monto",
-                            ) as HTMLInputElement
-                        )?.value,
-                    ) || 0;
-                const selectedCheckboxes = document.querySelectorAll(
-                    ".equipo-checkbox:checked",
-                );
-                const preview = document.getElementById("ingreso-preview");
-                const previewContent = document.getElementById(
-                    "ingreso-preview-content",
-                );
-
-                if (selectedCheckboxes.length === 0 || monto === 0) {
-                    preview?.classList.add("hidden");
-                    return;
+                        .forEach((checkbox) => {
+                            checkbox.addEventListener(
+                                "change",
+                                updateIngresoPreview,
+                            );
+                        });
                 }
 
-                let totalDerivado = 0;
-                let html = '<div class="space-y-1 text-xs">';
-                html += `<div class="flex justify-between font-bold text-slate-700"><span>Total trabajo:</span><span>$${monto.toLocaleString()}</span></div>`;
+                // Toggle selector de equipo
+                const conEquipoCheckbox =
+                    document.getElementById("ingreso-con-equipo");
+                const equipoSelector = document.getElementById(
+                    "ingreso-equipo-selector",
+                );
 
-                selectedCheckboxes.forEach((cb) => {
-                    const checkbox = cb as HTMLInputElement;
-                    const nombre = checkbox.dataset.nombre;
-                    const tipo = checkbox.dataset.tipo;
-                    const valor = parseFloat(checkbox.dataset.valor || "0");
-
-                    let montoDerivado = 0;
-                    if (tipo === "porcentaje") {
-                        montoDerivado = (monto * valor) / 100;
+                conEquipoCheckbox?.addEventListener("change", (e) => {
+                    if ((e.target as HTMLInputElement).checked) {
+                        equipoSelector?.classList.remove("hidden");
+                        renderEquipoEnIngreso();
                     } else {
-                        montoDerivado = valor;
+                        equipoSelector?.classList.add("hidden");
+                        document
+                            .querySelectorAll(".equipo-checkbox")
+                            .forEach(
+                                (cb) =>
+                                    ((cb as HTMLInputElement).checked = false),
+                            );
+                        document
+                            .getElementById("ingreso-preview")
+                            ?.classList.add("hidden");
                     }
-
-                    totalDerivado += montoDerivado;
-                    html += `<div class="flex justify-between text-orange-600"><span>- ${nombre} (${tipo === "porcentaje" ? valor + "%" : "$" + valor.toLocaleString()}):</span><span>$${montoDerivado.toLocaleString()}</span></div>`;
                 });
 
-                const tuParte = monto - totalDerivado;
-                html += `<div class="flex justify-between font-bold text-green-600 pt-2 border-t"><span>= Tu parte:</span><span>$${tuParte.toLocaleString()}</span></div>`;
-                html += "</div>";
+                function updateIngresoPreview() {
+                    const monto =
+                        parseFloat(
+                            (
+                                document.getElementById(
+                                    "ingreso-monto",
+                                ) as HTMLInputElement
+                            )?.value,
+                        ) || 0;
+                    const selectedCheckboxes = document.querySelectorAll(
+                        ".equipo-checkbox:checked",
+                    );
+                    const preview = document.getElementById("ingreso-preview");
+                    const previewContent = document.getElementById(
+                        "ingreso-preview-content",
+                    );
 
-                if (previewContent) previewContent.innerHTML = html;
-                preview?.classList.remove("hidden");
-            }
+                    if (selectedCheckboxes.length === 0 || monto === 0) {
+                        preview?.classList.add("hidden");
+                        return;
+                    }
 
-            // Actualizar preview cuando cambia el monto
-            document
-                .getElementById("ingreso-monto")
-                ?.addEventListener("input", updateIngresoPreview);
+                    let totalDerivado = 0;
+                    let html = '<div class="space-y-1 text-xs">';
+                    html += `<div class="flex justify-between font-bold text-slate-700"><span>Total trabajo:</span><span>$${monto.toLocaleString()}</span></div>`;
 
-            // Logout
-            logoutBtn?.addEventListener("click", async () => {
-                await signOut(auth);
-                window.location.href = "/";
-            });
-            }); // End of astro:page-load
+                    selectedCheckboxes.forEach((cb) => {
+                        const checkbox = cb as HTMLInputElement;
+                        const nombre = checkbox.dataset.nombre;
+                        const tipo = checkbox.dataset.tipo;
+                        const valor = parseFloat(checkbox.dataset.valor || "0");
+
+                        let montoDerivado = 0;
+                        if (tipo === "porcentaje") {
+                            montoDerivado = (monto * valor) / 100;
+                        } else {
+                            montoDerivado = valor;
+                        }
+
+                        totalDerivado += montoDerivado;
+                        html += `<div class="flex justify-between text-orange-600"><span>- ${nombre} (${tipo === "porcentaje" ? valor + "%" : "$" + valor.toLocaleString()}):</span><span>$${montoDerivado.toLocaleString()}</span></div>`;
+                    });
+
+                    const tuParte = monto - totalDerivado;
+                    html += `<div class="flex justify-between font-bold text-green-600 pt-2 border-t"><span>= Tu parte:</span><span>$${tuParte.toLocaleString()}</span></div>`;
+                    html += "</div>";
+
+                    if (previewContent) previewContent.innerHTML = html;
+                    preview?.classList.remove("hidden");
+                }
+
+                // Actualizar preview cuando cambia el monto
+                document
+                    .getElementById("ingreso-monto")
+                    ?.addEventListener("input", updateIngresoPreview);
+
+                // Logout
+                logoutBtn?.addEventListener("click", async () => {
+                    await signOut(auth);
+                    window.location.href = "/";
+                });
+            })(); // End of IIFE
         </script>
     </body>
 </html>

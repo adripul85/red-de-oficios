@@ -5,6 +5,21 @@ import { auth, db } from "../../firebase/client";
 <!doctype html>
 <html lang="es">
     <head>
+        <!-- Google tag (gtag.js) -->
+        <script
+            async
+            src="https://www.googletagmanager.com/gtag/js?id=G-LG6RPRWWDY"
+        ></script>
+        <script is:inline>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag("js", new Date());
+
+            gtag("config", "G-LG6RPRWWDY");
+        </script>
+
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Clientes - DeOficios Pro</title>
@@ -505,6 +520,33 @@ import { auth, db } from "../../firebase/client";
                         <label
                             class="block text-sm font-bold text-slate-700 mb-2"
                         >
+                            Trabajos Realizados
+                        </label>
+                        <textarea
+                            id="client-trabajos"
+                            class="w-full border border-slate-300 rounded-lg px-4 py-2 outline-none focus:border-orange-500 min-h-[80px]"
+                            placeholder="Ej: Instalación de termotanque, arreglo de grifería..."
+                        ></textarea>
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                        >
+                            Presupuesto / Capacidad de gasto (opcional)
+                        </label>
+                        <input
+                            type="text"
+                            id="client-presupuesto-estimado"
+                            class="w-full border border-slate-300 rounded-lg px-4 py-2 outline-none focus:border-orange-500"
+                            placeholder="Ej: $50.000 o Presupuesto medio"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2"
+                        >
                             Dirección (opcional)
                         </label>
                         <input
@@ -603,7 +645,7 @@ import { auth, db } from "../../firebase/client";
                 Timestamp,
             } from "firebase/firestore";
 
-            document.addEventListener("astro:page-load", () => {
+            (function () {
                 console.log("🚀 [CLIENTES] Página cargada/navegada");
 
                 const logoutBtn = document.getElementById("btn-logout");
@@ -780,6 +822,16 @@ import { auth, db } from "../../firebase/client";
                     const direccion =
                         document.getElementById("client-direccion").value;
                     const notas = document.getElementById("client-notas").value;
+                    const trabajos = (
+                        document.getElementById(
+                            "client-trabajos",
+                        ) as HTMLTextAreaElement
+                    ).value;
+                    const presupuestoEstimado = (
+                        document.getElementById(
+                            "client-presupuesto-estimado",
+                        ) as HTMLInputElement
+                    ).value;
 
                     const clientData = {
                         nombre,
@@ -787,6 +839,8 @@ import { auth, db } from "../../firebase/client";
                         email: email || "",
                         direccion: direccion || "",
                         notas: notas || "",
+                        trabajos: trabajos || "",
+                        presupuestoEstimado: presupuestoEstimado || "",
                         updatedAt: Timestamp.now(),
                     };
 
@@ -860,6 +914,16 @@ import { auth, db } from "../../firebase/client";
                         client.email || "";
                     document.getElementById("client-direccion").value =
                         client.direccion || "";
+                    (
+                        document.getElementById(
+                            "client-trabajos",
+                        ) as HTMLTextAreaElement
+                    ).value = client.trabajos || "";
+                    (
+                        document.getElementById(
+                            "client-presupuesto-estimado",
+                        ) as HTMLInputElement
+                    ).value = client.presupuestoEstimado || "";
                     document.getElementById("client-notas").value =
                         client.notas || "";
 
@@ -991,7 +1055,7 @@ import { auth, db } from "../../firebase/client";
                     await signOut(auth);
                     window.location.href = "/";
                 });
-            }); // End of astro:page-load
+            })(); // End of IIFE
         </script>
     </body>
 </html>

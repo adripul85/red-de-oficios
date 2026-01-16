@@ -4,6 +4,21 @@ import { auth, db } from "../../firebase/client";
 
 <html lang="es">
     <head>
+        <!-- Google tag (gtag.js) -->
+        <script
+            async
+            src="https://www.googletagmanager.com/gtag/js?id=G-LG6RPRWWDY"
+        ></script>
+        <script is:inline>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag("js", new Date());
+
+            gtag("config", "G-LG6RPRWWDY");
+        </script>
+
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Presupuestos - DeOficios Pro</title>
@@ -526,7 +541,8 @@ import { auth, db } from "../../firebase/client";
             } from "firebase/firestore";
             import { auth, db } from "../../firebase/client";
 
-            document.addEventListener("astro:page-load", () => {
+            // Execute immediately - IIFE pattern
+            (function () {
                 console.log("🚀 [PRESUPUESTOS] Página cargada/navegada");
 
                 const loadingState = document.getElementById("loading-state");
@@ -1055,7 +1071,7 @@ import { auth, db } from "../../firebase/client";
 
                 // Add fade-in animation to main content
                 document.querySelector("main")?.classList.add("fade-in");
-            }); // End of astro:page-load
+            })(); // End of IIFE
         </script>
     </body>
 </html>

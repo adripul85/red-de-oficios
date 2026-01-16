@@ -5,6 +5,21 @@ import { auth } from "../../firebase/client";
 
 <html lang="es">
     <head>
+        <!-- Google tag (gtag.js) -->
+        <script
+            async
+            src="https://www.googletagmanager.com/gtag/js?id=G-LG6RPRWWDY"
+        ></script>
+        <script is:inline>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag("js", new Date());
+
+            gtag("config", "G-LG6RPRWWDY");
+        </script>
+
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Panel Profesional - DeOficios</title>
@@ -641,9 +656,15 @@ import { auth } from "../../firebase/client";
                     Timestamp,
                 } from "firebase/firestore";
 
-                // Wrap everything in astro:page-load for View Transitions compatibility
-                document.addEventListener("astro:page-load", () => {
-                    console.log("🚀 [DASHBOARD] Página cargada/navegada");
+                console.log(
+                    "💡 [DASHBOARD] Script loaded, executing immediately...",
+                );
+
+                // Execute immediately - don't wait for event
+                (function () {
+                    console.log(
+                        "🚀 [DASHBOARD] Running dashboard initialization...",
+                    );
 
                     const nameEl = document.getElementById("user-name");
                     const avatarEl = document.getElementById("user-avatar");
@@ -652,20 +673,47 @@ import { auth } from "../../firebase/client";
                         "badge-oportunidades",
                     );
 
+                    console.log("📋 [DASHBOARD] DOM elements:", {
+                        nameEl,
+                        avatarEl,
+                        logoutBtn,
+                        badgeOportunidades,
+                    });
+
                     onAuthStateChanged(auth, async (user) => {
+                        console.log(
+                            "🔐 [DASHBOARD] onAuthStateChanged fired, user:",
+                            user ? user.uid : "NO USER",
+                        );
+
                         if (user) {
                             try {
+                                console.log(
+                                    "👤 [DASHBOARD] User authenticated, fetching data...",
+                                );
                                 // Verificar si es profesional (seguridad básica frontend)
                                 const docRef = doc(
                                     db,
                                     "profesionales",
                                     user.uid,
                                 );
-                                // Usar getDocFromServer para evitar problemas de snapshot listener
                                 const docSnap = await getDocFromServer(docRef);
+
+                                console.log(
+                                    "📄 [DASHBOARD] Document snapshot exists:",
+                                    docSnap.exists(),
+                                );
 
                                 if (docSnap.exists()) {
                                     const data = docSnap.data();
+                                    console.log(
+                                        "✅ [DASHBOARD] User data loaded:",
+                                        {
+                                            nombre: data.nombre,
+                                            plan: data.plan,
+                                        },
+                                    );
+
                                     if (nameEl)
                                         nameEl.textContent = data.nombre;
                                     if (avatarEl)
@@ -674,9 +722,18 @@ import { auth } from "../../firebase/client";
                                             `https://ui-avatars.com/api/?name=${data.nombre}`;
 
                                     // Cargar datos del dashboard
+                                    console.log(
+                                        "📊 [DASHBOARD] Calling loadDashboardData...",
+                                    );
                                     await loadDashboardData(user.uid, data);
+                                    console.log(
+                                        "✅ [DASHBOARD] loadDashboardData completed",
+                                    );
 
                                     // GAMIFICACION
+                                    console.log(
+                                        "🎮 [DASHBOARD] Calling calculateGamification...",
+                                    );
                                     calculateGamification(user.uid, data);
 
                                     // === SISTEMA DE NOTIFICACIONES ===
@@ -1321,48 +1378,61 @@ import { auth } from "../../firebase/client";
                             document.getElementById("misiones-list");
                         if (missionsList) missionsList.innerHTML = missionsHtml;
                     }
-                }); // End of astro:page-load
+                })(); // End of IIFE - execute dashboard immediately
             </script>
 
             <script>
-                // Mobile Sidebar Toggle
-                const mobileSidebar = document.getElementById("mobile-sidebar");
-                const sidebarOverlay =
-                    document.getElementById("sidebar-overlay");
-                const openSidebarBtn = document.getElementById("open-sidebar");
-                const closeSidebarBtn =
-                    document.getElementById("close-sidebar");
+                document.addEventListener("astro:page-load", () => {
+                    // Mobile Sidebar Toggle
+                    const mobileSidebar =
+                        document.getElementById("mobile-sidebar");
+                    const sidebarOverlay =
+                        document.getElementById("sidebar-overlay");
+                    const openSidebarBtn =
+                        document.getElementById("open-sidebar");
+                    const closeSidebarBtn =
+                        document.getElementById("close-sidebar");
 
-                function openMobileSidebar() {
-                    mobileSidebar?.classList.add("active");
-                    sidebarOverlay?.classList.add("active");
-                }
+                    function openMobileSidebar() {
+                        mobileSidebar?.classList.add("active");
+                        sidebarOverlay?.classList.add("active");
+                    }
 
-                function closeMobileSidebar() {
-                    mobileSidebar?.classList.remove("active");
-                    sidebarOverlay?.classList.remove("active");
-                }
+                    function closeMobileSidebar() {
+                        mobileSidebar?.classList.remove("active");
+                        sidebarOverlay?.classList.remove("active");
+                    }
 
-                openSidebarBtn?.addEventListener("click", openMobileSidebar);
-                closeSidebarBtn?.addEventListener("click", closeMobileSidebar);
-                sidebarOverlay?.addEventListener("click", closeMobileSidebar);
+                    openSidebarBtn?.addEventListener(
+                        "click",
+                        openMobileSidebar,
+                    );
+                    closeSidebarBtn?.addEventListener(
+                        "click",
+                        closeMobileSidebar,
+                    );
+                    sidebarOverlay?.addEventListener(
+                        "click",
+                        closeMobileSidebar,
+                    );
 
-                // Mobile logout
-                document
-                    .getElementById("btn-logout-mobile")
-                    ?.addEventListener("click", async () => {
-                        try {
-                            await signOut(auth);
-                            window.location.href = "/ingresar";
-                        } catch (error) {
-                            console.error("Error al cerrar sesión:", error);
-                        }
-                    });
+                    // Mobile logout
+                    document
+                        .getElementById("btn-logout-mobile")
+                        ?.addEventListener("click", async () => {
+                            try {
+                                await signOut(auth);
+                                window.location.href = "/ingresar";
+                            } catch (error) {
+                                console.error("Error al cerrar sesión:", error);
+                            }
+                        });
 
-                // Add fade-in animation to main content
-                document.querySelector("main")?.classList.add("fade-in");
+                    // Add fade-in animation to main content
+                    document.querySelector("main")?.classList.add("fade-in");
+                });
 
-                // Service Worker
+                // Service Worker (keep outside - runs once)
                 if ("serviceWorker" in navigator) {
                     window.addEventListener("load", () => {
                         navigator.serviceWorker
