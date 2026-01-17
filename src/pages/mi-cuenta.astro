@@ -153,7 +153,10 @@ import Layout from "../layouts/Layout.astro";
                             <div
                                 class="text-center p-3 bg-purple-50 rounded-2xl"
                             >
-                                <p class="text-2xl font-bold text-purple-600">
+                                <p
+                                    id="reviews-count"
+                                    class="text-2xl font-bold text-purple-600"
+                                >
                                     0
                                 </p>
                                 <p class="text-xs text-slate-600 font-medium">
@@ -509,6 +512,8 @@ import Layout from "../layouts/Layout.astro";
             deleteDoc,
             arrayRemove,
         } from "firebase/firestore";
+        import Swal from "sweetalert2";
+        import "sweetalert2/dist/sweetalert2.min.css";
 
         let currentUser: any = null;
 
@@ -537,10 +542,19 @@ import Layout from "../layouts/Layout.astro";
             document
                 .getElementById("btn-logout")
                 ?.addEventListener("click", async () => {
-                    const confirmed = confirm(
-                        "¿Estás seguro de cerrar sesión?",
-                    );
-                    if (confirmed) {
+                    const result = await Swal.fire({
+                        title: "¿Cerrar Sesión?",
+                        text: "¿Estás seguro de que quieres salir?",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#ef4444",
+                        cancelButtonColor: "#64748b",
+                        confirmButtonText: "Sí, cerrar sesión",
+                        cancelButtonText: "Cancelar",
+                        reverseButtons: true,
+                    });
+
+                    if (result.isConfirmed) {
                         await signOut(auth);
                         window.location.href = "/";
                     }
@@ -625,10 +639,22 @@ import Layout from "../layouts/Layout.astro";
                             (fotoEl as HTMLImageElement).src = downloadURL;
                             (fotoEl as HTMLElement).style.opacity = "1";
                         }
-                        alert("✅ Foto actualizada correctamente");
+
+                        Swal.fire({
+                            title: "¡Foto Actualizada!",
+                            icon: "success",
+                            timer: 2000,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: "top-end",
+                        });
                     } catch (error) {
                         console.error("Error subiendo avatar:", error);
-                        alert("❌ Error al subir la foto. Intenta de nuevo.");
+                        Swal.fire({
+                            title: "Error",
+                            text: "No se pudo actualizar la foto. Intenta nuevamente.",
+                            icon: "error",
+                        });
                     }
                 });
         });
@@ -815,6 +841,9 @@ import Layout from "../layouts/Layout.astro";
                 );
                 const snap = await getDocs(q);
 
+                const countEl = document.getElementById("reviews-count");
+                if (countEl) countEl.innerText = snap.size.toString();
+
                 if (snap.empty) {
                     empty?.classList.remove("hidden");
                     if (list) list.innerHTML = "";
@@ -860,7 +889,9 @@ import Layout from "../layouts/Layout.astro";
 
                         list.innerHTML = reviewsData
                             .map((r: any) => {
-                                const stars = "⭐".repeat(r.puntuacion || 0);
+                                const stars = "⭐".repeat(
+                                    r.estrellas || r.puntuacion || 0,
+                                );
                                 const fecha = r.fecha?.toDate
                                     ? r.fecha
                                           .toDate()
@@ -954,16 +985,25 @@ import Layout from "../layouts/Layout.astro";
                             let statusLabel = "Nueva",
                                 statusClass = "bg-slate-100 text-slate-600",
                                 icon = "📝";
+
                             if (s.status === "completada") {
-                                statusLabel = "Completada";
-                                statusClass = "bg-green-100 text-green-700";
-                                icon = "✅";
+                                statusLabel = "Finalizada";
+                                statusClass = "bg-gray-100 text-gray-700";
+                                icon = "🏁";
+                            } else if (
+                                s.status === "aceptada" ||
+                                s.status === "en_progreso"
+                            ) {
+                                statusLabel = "En Progreso";
+                                statusClass =
+                                    "bg-green-100 text-green-700 animate-pulse";
+                                icon = "🚀";
                             } else if (contactados > 0) {
-                                statusLabel = `${contactados} contactados`;
+                                statusLabel = `${contactados} presupuestos`;
                                 statusClass = "bg-blue-100 text-blue-700";
-                                icon = "📞";
+                                icon = "💬";
                             } else if (candidatos > 0) {
-                                statusLabel = "Buscando";
+                                statusLabel = "Buscando expertos...";
                                 statusClass = "bg-yellow-100 text-yellow-700";
                                 icon = "🔍";
                             }
@@ -979,7 +1019,7 @@ import Layout from "../layouts/Layout.astro";
                                     <p class="text-sm text-slate-500 mb-2">📍 ${s.zona || "Sin zona"}</p>
                                     <button 
                                         onclick="borrarSolicitud('${doc.id}')"
-                                        class="text-xs text-red-500 font-bold hover:underline opacity-0 group-hover:opacity-100 transition-opacity"
+                                        class="text-xs text-red-500 font-bold hover:underline transition-all mt-1"
                                     >
                                         Eliminar Solicitud
                                     </button>
@@ -1001,35 +1041,73 @@ import Layout from "../layouts/Layout.astro";
 
         // --- FUNCIONES GLOBALES DE GESTIÓN ---
         (window as any).borrarSolicitud = async (id: string) => {
-            if (
-                !confirm(
-                    "¿Seguro que quieres eliminar esta solicitud? Se perderá el historial.",
-                )
-            )
-                return;
+            const result = await Swal.fire({
+                title: "¿Eliminar Solicitud?",
+                text: "Se perderá el historial y los profesionales no podrán contactarte.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#ef4444",
+                cancelButtonColor: "#64748b",
+                confirmButtonText: "Sí, eliminar",
+                cancelButtonText: "Cancelar",
+            });
+
+            if (!result.isConfirmed) return;
+
             try {
                 await deleteDoc(doc(db, "solicitudes", id));
                 if (currentUser) await loadMisSolicitudes(currentUser.uid);
-                alert("✅ Solicitud eliminada");
+
+                Swal.fire({
+                    title: "Eliminada",
+                    text: "La solicitud ha sido eliminada.",
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
             } catch (e) {
                 console.error(e);
-                alert("❌ Error al eliminar");
+                Swal.fire(
+                    "Error",
+                    "No se pudo eliminar la solicitud.",
+                    "error",
+                );
             }
         };
 
         (window as any).quitarFavorito = async (proId: string) => {
             if (!currentUser) return;
-            if (!confirm("¿Quitar de tus favoritos?")) return;
+
+            const result = await Swal.fire({
+                title: "¿Quitar de favoritos?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Sí, quitar",
+                cancelButtonText: "Cancelar",
+                confirmButtonColor: "#ef4444",
+            });
+
+            if (!result.isConfirmed) return;
+
             try {
                 const userRef = doc(db, "clientes", currentUser.uid);
                 await updateDoc(userRef, {
                     favoritos: arrayRemove(proId),
                 });
                 await initClientDashboard(currentUser);
-                alert("✅ Quitado de favoritos");
+
+                Swal.fire({
+                    title: "Hecho",
+                    text: "Profesional eliminado de tus favoritos",
+                    icon: "success",
+                    timer: 1500,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: "top-end",
+                });
             } catch (e) {
                 console.error(e);
-                alert("❌ Error al quitar favorito");
+                Swal.fire("Error", "No se pudo quitar de favoritos.", "error");
             }
         };
 
@@ -1037,17 +1115,26 @@ import Layout from "../layouts/Layout.astro";
             if (!auth.currentUser) return;
             try {
                 await sendEmailVerification(auth.currentUser);
-                alert(
-                    "✅ Email de verificación enviado. Revisa tu bandeja de entrada.",
-                );
+                Swal.fire({
+                    title: "Email Enviado",
+                    text: "Revisa tu bandeja de entrada para verificar tu cuenta.",
+                    icon: "success",
+                    confirmButtonColor: "#2563eb",
+                });
             } catch (e: any) {
                 console.error(e);
                 if (e.code === "auth/too-many-requests") {
-                    alert(
-                        "⏳ Espera un momento antes de solicitar otro email.",
+                    Swal.fire(
+                        "Espera",
+                        "Por favor espera un momento antes de solicitar otro email.",
+                        "warning",
                     );
                 } else {
-                    alert("❌ Error al enviar el email.");
+                    Swal.fire(
+                        "Error",
+                        "No se pudo enviar el correo de verificación.",
+                        "error",
+                    );
                 }
             }
         };
