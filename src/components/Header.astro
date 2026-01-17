@@ -18,7 +18,21 @@
         <div id="user-area" class="auth-buttons">
           <div class="spinner-small"></div>
         </div>
-        <button id="menu-toggle" class="menu-toggle visible-mobile">☰</button>
+        <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-8 h-8 text-gray-700"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path>
+          </svg>
+        </button>
       </div>
     </div>
   </div>
@@ -226,14 +240,24 @@
 
   // Listener de navegación en Astro (re-render UI en cada navegación)
   document.addEventListener("astro:page-load", async () => {
-    await updateHeaderUI();
-
-    // Re-bind menu toggle
+    // 1. Activar menú móvil INMEDIATAMENTE (no esperar a auth)
     const menuBtn = document.getElementById("menu-toggle");
     const mobileMenu = document.getElementById("mobile-menu");
-    menuBtn?.addEventListener("click", () =>
-      mobileMenu?.classList.toggle("hidden"),
-    );
+
+    // Remover listeners anteriores para evitar duplicados si astro:page-load dispara múltiple
+    const newMenuBtn = menuBtn?.cloneNode(true);
+    if (menuBtn && newMenuBtn) {
+      menuBtn.parentNode.replaceChild(newMenuBtn, menuBtn);
+      newMenuBtn.addEventListener("click", () => {
+        console.log("🍔 Toggle menú");
+        mobileMenu?.classList.toggle("hidden");
+        newMenuBtn.classList.toggle("active");
+        mobileMenu?.classList.toggle("active");
+      });
+    }
+
+    // 2. Actualizar UI de usuario (Async)
+    await updateHeaderUI();
   });
 </script>
 
@@ -340,10 +364,84 @@
   }
   @media (max-width: 768px) {
     .hidden-mobile {
-      display: none;
+      display: none !important;
     }
     .visible-mobile {
-      display: block;
+      display: block !important;
+    }
+
+    /* Responsive Header Fixes */
+    .header-content {
+      height: 60px;
+      padding: 0 15px;
+    }
+
+    .logo {
+      font-size: 1.3rem;
+      z-index: 60;
+    }
+
+    /* CRITICAL: HIDE USER AREA IN HEADER ON MOBILE */
+    #user-area {
+      display: none !important;
+    }
+
+    .header-right {
+      gap: 0;
+    }
+
+    /* Hamburger Config - SVG Style */
+    .menu-toggle {
+      display: block !important;
+      font-size: 1.8rem;
+      color: #374151;
+      padding: 5px;
+      line-height: 1;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      z-index: 60;
+    }
+
+    /* SVG Transition */
+    .menu-toggle svg {
+      transition: transform 0.3s ease;
+    }
+
+    .menu-toggle.active svg {
+      transform: rotate(90deg);
+      color: #ea580c;
+    }
+
+    /* Fix mobile menu positioning */
+    .mobile-menu {
+      top: 60px;
+      border-top: 1px solid #f3f4f6;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      max-height: calc(100vh - 60px);
+      overflow-y: auto;
+
+      /* Transitions */
+      display: block !important;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-20px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    .mobile-menu.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* Ensure hidden class works for initial state logic */
+    .mobile-menu.hidden {
+      display: block !important;
+      visibility: hidden;
+      opacity: 0;
     }
   }
 </style>

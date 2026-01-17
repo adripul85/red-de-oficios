@@ -1,16 +1,27 @@
 ---
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import IAFloatingButton from "../components/IAFloatingButton.astro";
 import "../styles/global.css";
 import { ClientRouter } from "astro:transitions";
 
 interface Props {
 	title: string;
+	description?: string;
+	image?: string;
 	hideHeader?: boolean;
 	hideFooter?: boolean;
 }
 
-const { title, hideHeader = false, hideFooter = false } = Astro.props;
+const {
+	title,
+	description = "DeOficios - Conectando profesionales con vecinos. Encontrá al experto que necesitás o ofrecé tus servicios.",
+	image = "/icon-512.png",
+	hideHeader = false,
+	hideFooter = false,
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
 
 <!doctype html>
@@ -36,13 +47,25 @@ const { title, hideHeader = false, hideFooter = false } = Astro.props;
 			name="viewport"
 			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
 		/>
-		<meta
-			name="description"
-			content="DeOficios - Conectando profesionales con vecinos."
-		/>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalURL} />
 		<link rel="icon" type="image/png" href="/icon-192.png" />
 		<link rel="manifest" href="/manifest.json" />
 		<meta name="theme-color" content="#ea580c" />
+
+		<!-- Open Graph / Facebook -->
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content={canonicalURL} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:image" content={new URL(image, Astro.url)} />
+
+		<!-- Twitter -->
+		<meta property="twitter:card" content="summary_large_image" />
+		<meta property="twitter:url" content={canonicalURL} />
+		<meta property="twitter:title" content={title} />
+		<meta property="twitter:description" content={description} />
+		<meta property="twitter:image" content={new URL(image, Astro.url)} />
 
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -69,8 +92,8 @@ const { title, hideHeader = false, hideFooter = false } = Astro.props;
 			<img
 				src="/icon-512.png"
 				alt="Logo DeOficios"
-				width="120"
-				height="120"
+				width="280"
+				height="280"
 			/>
 		</div>
 
@@ -117,6 +140,7 @@ const { title, hideHeader = false, hideFooter = false } = Astro.props;
 				});
 			}
 		</script>
+		<IAFloatingButton />
 	</body>
 </html>
 
@@ -233,8 +257,8 @@ const { title, hideHeader = false, hideFooter = false } = Astro.props;
 	document.addEventListener("contextmenu", (event) => event.preventDefault());
 
 	// Evitar atajos de teclado para ver código (F12, Ctrl+U, etc)
-	document.onkeydown = function (e) {
-		if (event.keyCode == 123) {
+	document.onkeydown = function (e: KeyboardEvent) {
+		if (e.keyCode == 123) {
 			return false;
 		} // F12
 		if (e.ctrlKey && e.shiftKey && e.keyCode == "I".charCodeAt(0)) {

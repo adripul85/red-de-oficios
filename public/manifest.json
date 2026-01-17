@@ -1,7 +1,7 @@
 {
   "name": "DeOficios Pro",
   "short_name": "DeOficios",
-  "start_url": "/panel",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#ea580c",

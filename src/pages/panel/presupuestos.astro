@@ -159,30 +159,27 @@ import { auth, db } from "../../firebase/client";
                             <span class="text-xl">👥</span>
                             <span class="font-medium text-sm">Clientes</span>
                         </a>
-                        <div
-                            class="mt-auto pt-4 border-t border-slate-200 space-y-2"
-                        >
-                            <a
-                                href="/mi-perfil"
-                                class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                            >
-                                <span>👤</span>
-                                <span class="font-medium text-sm"
-                                    >Mi Perfil</span
-                                >
-                            </a>
-
-                            <button
-                                id="btn-logout"
-                                class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-red-600 transition-colors"
-                            >
-                                <span>🚪</span>
-                                <span class="font-medium text-sm"
-                                    >Cerrar Sesión</span
-                                >
-                            </button>
-                        </div>
                     </nav>
+                </div>
+
+                <div
+                    class="mt-auto pt-4 border-t border-slate-200 space-y-2 p-4"
+                >
+                    <a
+                        href="/mi-perfil"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                    >
+                        <span>👤</span>
+                        <span class="font-medium text-sm">Mi Perfil</span>
+                    </a>
+
+                    <button
+                        id="btn-logout"
+                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-red-600 transition-colors"
+                    >
+                        <span>🚪</span>
+                        <span class="font-medium text-sm">Cerrar Sesión</span>
+                    </button>
                 </div>
             </aside>
 
@@ -768,7 +765,17 @@ import { auth, db } from "../../firebase/client";
                     };
 
                     try {
-                        // UPDATE: Guardar en subcolección profesionales/{uid}/presupuestos
+                        if (!db) {
+                            throw new Error(
+                                "La conexión a la base de datos no está inicializada",
+                            );
+                        }
+
+                        console.log(
+                            "💾 Guardando presupuesto para UID:",
+                            currentUser.uid,
+                        );
+
                         await addDoc(
                             collection(
                                 db,

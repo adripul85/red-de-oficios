@@ -279,6 +279,37 @@ if (!profesional) return Astro.redirect("/404");
     </div>
 </Layout>
 
+<script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        name: profesional.nombre,
+        image:
+            profesional.foto ||
+            `https://ui-avatars.com/api/?name=${profesional.nombre}`,
+        "@id": Astro.url.href,
+        url: Astro.url.href,
+        telephone: profesional.telefono ? `+549${profesional.telefono}` : "",
+        address: {
+            "@type": "PostalAddress",
+            addressLocality: profesional.zona || "Argentina",
+            addressCountry: "AR",
+        },
+        description:
+            profesional.descripcion ||
+            `Servicios de ${profesional.rubro_principal} en ${profesional.zona}`,
+        aggregateRating:
+            profesional.total_valoraciones > 0
+                ? {
+                      "@type": "AggregateRating",
+                      ratingValue: profesional.puntuacion,
+                      reviewCount: profesional.total_valoraciones,
+                  }
+                : undefined,
+    })}
+/>
+
 <script define:vars={{ idProfesional }}>
     import { onAuthStateChanged } from "firebase/auth";
     import { auth, db } from "../../firebase/client";
