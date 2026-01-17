@@ -515,28 +515,42 @@ import Layout from "../layouts/Layout.astro";
         import Swal from "sweetalert2";
         import "sweetalert2/dist/sweetalert2.min.css";
 
+        let unsubscribe: any = null;
         let currentUser: any = null;
 
-        // Listen to Auth state once
-        onAuthStateChanged(auth, async (user) => {
-            currentUser = user;
-            if (user) {
-                await initClientDashboard(user);
-            } else if (
-                window.location.pathname === "/mi-cuenta" ||
-                window.location.pathname.startsWith("/mi-cuenta")
-            ) {
-                window.location.href = "/ingresar-cliente";
-            }
-        });
-
-        // Wrap page specific events only in astro:page-load
+        // Wrap everything in a setup function handled by astro:page-load
         document.addEventListener("astro:page-load", () => {
             console.log("🚀 [MI-CUENTA] Página cargada/navegada");
 
-            if (currentUser) {
-                initClientDashboard(currentUser);
+            // Cleanup previous listener if exists (though astro usually handles scripts well, good practice)
+            if (unsubscribe) unsubscribe();
+
+            unsubscribe = onAuthStateChanged(auth, async (user) => {
+                currentUser = user; // Update global var
+                if (user) {
+                    console.log(
+                        "✅ [MI-CUENTA] Usuario autenticado:",
+                        user.uid,
+                    );
+                    await initClientDashboard(user);
+                } else if (
+                    window.location.pathname === "/mi-cuenta" ||
+                    window.location.pathname.startsWith("/mi-cuenta")
+                ) {
+                    console.log(
+                        "⚠️ [MI-CUENTA] No autenticado, redirigiendo...",
+                    );
+                    window.location.href = "/ingresar-cliente";
+                }
+            });
+
+            // If we already have a user from previous state (fast navigation), trigger init immediately
+            if (auth.currentUser) {
+                console.log("⚡ [MI-CUENTA] Auth pre-existente detecado");
+                initClientDashboard(auth.currentUser);
             }
+
+            // BTN LOGOUT
 
             // BTN LOGOUT
             document

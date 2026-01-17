@@ -256,16 +256,7 @@ import { LOCATIONS } from "../data/locations";
 
 <script>
     import { db, auth } from "../firebase/client";
-    import {
-        collection,
-        addDoc,
-        query,
-        where,
-        getDocs,
-        serverTimestamp,
-        orderBy,
-        limit,
-    } from "firebase/firestore";
+
     import { onAuthStateChanged } from "firebase/auth";
 
     // Wrap everything in astro:page-load for View Transitions compatibility
@@ -307,73 +298,36 @@ import { LOCATIONS } from "../data/locations";
             const urgente = document.getElementById("urgente").checked;
 
             try {
-                // 1. MATCHING: Buscar profesionales Premium en esa zona y rubro
-                const qPros = query(
-                    collection(db, "profesionales"),
-                    where("rubro_principal", "==", rubro),
-                    where("zona", "==", zona),
-                    // Filtramos solo planes pagos para darles prioridad
-                    where("plan", "in", ["profesional", "experto"]),
-                    limit(10),
-                );
+                const response = await fetch("/api/crear-solicitud", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        clienteId: currentUser.uid,
+                        clienteNombre: clienteNombre,
+                        clienteAvatar: currentUser.photoURL || "",
+                        rubro,
+                        zona,
+                        telefono,
+                        presupuesto,
+                        detalle,
+                        urgente,
+                    }),
+                });
 
-                const snapPros = await getDocs(qPros);
-                const candidatos = snapPros.docs.map((d) => d.id);
+                const data = await response.json();
 
-                if (candidatos.length === 0) {
-                    alert(
-                        "Lo sentimos, no encontramos profesionales Premium en tu zona por el momento. Intenta buscar manualmente.",
-                    );
-                    btn.disabled = false;
-                    btn.innerText = "Enviar Solicitud";
-                    return;
+                if (!response.ok) {
+                    throw new Error(data.error || "Error al crear solicitud");
                 }
-
-                // 2. CREAR LA SOLICITUD (LEAD)
-                const docRef = await addDoc(collection(db, "solicitudes"), {
-                    clienteId: currentUser.uid,
-                    clienteNombre: clienteNombre,
-                    clienteAvatar: currentUser.photoURL || "",
-                    rubro: rubro,
-                    zona: zona,
-                    telefono: telefono,
-                    presupuesto: presupuesto,
-                    detalle: detalle,
-                    urgente: urgente,
-                    fecha: new Date(),
-                    candidatos: candidatos,
-                    contactados: [],
-                    descartados: [],
-                    status: "nueva",
-                });
-
-                // 3. NOTIFICACIONES (Crear alertas para cada profesional)
-                const batchPromesas = candidatos.map((proId) => {
-                    return addDoc(
-                        collection(
-                            db,
-                            "profesionales",
-                            proId,
-                            "notificaciones",
-                        ),
-                        {
-                            tipo: "lead_nuevo",
-                            titulo: `¡Nueva oportunidad de trabajo! 🤑`,
-                            mensaje: `Un cliente busca ${rubro} en ${zona}.`,
-                            link: `/panel/oportunidades?id=${docRef.id}`,
-                            leido: false,
-                            fecha: serverTimestamp(),
-                        },
-                    );
-                });
-                await Promise.all(batchPromesas);
 
                 // MOSTRAR MODAL DE ÉXITO
                 const modal = document.getElementById("success-modal");
                 const modalContent = document.getElementById("modal-content");
                 const prosCountEl = document.getElementById("pros-count");
 
-                prosCountEl.innerText = candidatos.length;
+                prosCountEl.innerText = data.candidatosCount || 0;
                 modal.classList.remove("hidden");
 
                 // Animación de entrada
@@ -391,8 +345,9 @@ import { LOCATIONS } from "../data/locations";
                 btn.innerText = "Solicitud Enviada ✅";
             } catch (error) {
                 console.error(error);
-                alert("Hubo un error. Intenta nuevamente.");
+                alert(error.message || "Hubo un error. Intenta nuevamente.");
                 btn.disabled = false;
+                btn.innerText = "Enviar Solicitud a Expertos 📨";
             }
         });
     }); // End of astro:page-load

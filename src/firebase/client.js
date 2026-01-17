@@ -14,9 +14,12 @@ const firebaseConfig = {
   appId: import.meta.env.PUBLIC_FIREBASE_APP_ID
 };
 
+import { getMessaging } from "firebase/messaging";
+
 // Singleton pattern for SSR/HMR
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
+export const messaging = typeof window !== "undefined" ? getMessaging(app) : null;
