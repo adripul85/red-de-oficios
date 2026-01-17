@@ -4,7 +4,7 @@ import Step2Specialty from './Step2Specialty';
 import Step3Showcase from './Step3Showcase';
 import ProfileCardPreview from './ProfileCardPreview';
 import { auth, db } from '../../firebase/client';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 
 export default function RegistrationWizard() {
@@ -85,6 +85,15 @@ export default function RegistrationWizard() {
             const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
             const user = userCredential.user;
             console.log("✅ [AUTH] Usuario creado:", user.uid);
+
+            // SEND VERIFICATION EMAIL
+            try {
+                await sendEmailVerification(user);
+                console.log("📧 [AUTH] Email de verificación enviado");
+            } catch (emailErr) {
+                console.warn("⚠️ [AUTH] No se pudo enviar email de verificación:", emailErr);
+                // No bloqueamos el registro por esto, pero lo logueamos
+            }
 
             // 2. Prepare Profile Data (Exclude password, Sanitize Phone)
             const profileData = { ...formData };
