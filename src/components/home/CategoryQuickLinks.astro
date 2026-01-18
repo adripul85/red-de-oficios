@@ -3,35 +3,41 @@ import { CATEGORIES } from "../../data/categories";
 
 // 1. Mapa de Iconos (Coincidiendo con tus nombres exactos)
 const iconMap: Record<string, string> = {
+  // Urgencias
+  "Plomero (Urgencias)": "🚨",
+  "Electricista (Urgencias)": "⚡",
+  "Gasista (Urgencias)": "🔥",
+  "Cerrajero (24hs)": "🔑",
+  // Construcción
   Albañil: "🧱",
   Pintor: "🎨",
   Techista: "🏠",
-  "Colocador de Pisos/Ceramista": "🔲",
+  "Colocador de Pisos / Revestimientos": "🔲",
   Durlockero: "🏗️",
   Herrero: "⚒️",
   Carpintero: "🪚",
-  Plomero: "💧",
-  "Electricista Matriculado": "⚡",
-  "Gasista Matriculado": "🔥",
-  Cerrajero: "🔑",
-  "Técnico de Aire Acondicionado": "❄️",
-  Destapaciones: "🚽",
-  Vidriero: "🪟",
-  Persianista: "🪟",
+  // Mantenimiento
   Jardinero: "🌿",
   Piletero: "🏊",
-  Fletero: "🚚",
+  Persianista: "🪟",
+  Vidriero: "🪟",
   Fumigador: "🦟",
-  Tapicero: "🛋️",
+  Limpieza: "🧹",
+  // Servicios
+  "Fletero / Mudanzas": "🚚",
+  "Técnico de Aire Acondicionado": "❄️",
   "Técnico de Electrodomésticos": "🔌",
   "Instalador de Cámaras y Alarmas": "📹",
-  "Peinador / Estilista": "💇‍♀️",
-  "Maquillador / Maquilladora": "💄",
-  Barbero: "💈",
+  // Estética
+  "Peluquero / Estilista": "💇‍♀️",
   "Manicura / Pedicura": "💅",
-  Zapatero: "👞",
-  "Sastre / Modista": "🧵",
-  Relojero: "⌚",
+  "Maquillador / Maquilladora": "💄",
+  Masajista: "💆‍♀️",
+  // Eventos
+  "Pastelero / Catering": "🎂",
+  "DJ / Sonidista": "🎧",
+  Tapicero: "🛋️",
+  "Zapatero / Modista": "🧵",
   default: "🛠️",
 };
 
@@ -66,44 +72,71 @@ const allRubros = CATEGORIES.flatMap((grupo) =>
 </section>
 
 <script>
-  // Script que corre en el cliente para aleatorizar
+  // Script para manejar animaciones y lógica simple
   document.addEventListener("astro:page-load", () => {
-    const dataDiv = document.getElementById("rubros-data");
     const container = document.getElementById("random-container");
+    if (!container) return;
 
-    if (!dataDiv || !container) return;
-
-    const rawData = dataDiv.dataset.list;
-    if (!rawData) return;
-
-    const allRubros = JSON.parse(rawData);
-
-    // MEZCLAR
-    const shuffled = allRubros.sort(() => Math.random() - 0.5);
-
-    // TOMAR 6
-    const selected = shuffled.slice(0, 6);
+    // Categorias definidas por el usuario
+    const mainCategories = [
+      {
+        name: "Urgencias",
+        icon: "🚨",
+        slug: "Urgencias",
+        desc: "Plomero, Luz, Gas, Llaves",
+        link: "/resultados?q=Urgencias",
+      },
+      {
+        name: "Obra y Refacción",
+        icon: "🏗️",
+        slug: "Obra",
+        desc: "Albañil, Pintor, Techista",
+        link: "/resultados?q=Construcción",
+      },
+      {
+        name: "Hogar",
+        icon: "🏠",
+        slug: "Hogar",
+        desc: "Jardín, Pileta, Persiana",
+        link: "/resultados?q=Mantenimiento",
+      },
+      {
+        name: "Servicios",
+        icon: "🚛",
+        slug: "Servicios",
+        desc: "Fletes, Aire, Reparaciones",
+        link: "/resultados?q=Servicios",
+      },
+      {
+        name: "Estética",
+        icon: "💇",
+        slug: "Estética",
+        desc: "Peluquería, Manicura, Masaje",
+        link: "/resultados?q=Estética",
+      },
+      {
+        name: "Eventos",
+        icon: "🥳",
+        slug: "Eventos",
+        desc: "Pastelería, DJ, Sonido",
+        link: "/resultados?q=Eventos",
+      },
+    ];
 
     // GENERAR HTML
-    const cardsHTML = selected
+    const cardsHTML = mainCategories
       .map(
-        (cat: any) => `
-      <a href="/resultados?q=${encodeURIComponent(cat.slug)}" class="category-card fade-in">
+        (cat) => `
+      <a href="${cat.link}" class="category-card fade-in">
         <span class="icon">${cat.icon}</span>
-        <span class="name">${cat.nombre}</span>
+        <span class="name">${cat.name}</span>
+        <span class="desc" style="font-size: 0.7rem; color: #9ca3af; text-align: center;">${cat.desc}</span>
       </a>
     `,
       )
       .join("");
 
-    const viewAllHTML = `
-      <a href="/resultados" class="category-card view-all fade-in">
-        <span class="icon">📚</span>
-        <span class="name">Ver todos los Rubros</span>
-      </a>
-    `;
-
-    container.innerHTML = cardsHTML + viewAllHTML;
+    container.innerHTML = cardsHTML;
   });
 
   // Fallback por si no usas View Transitions

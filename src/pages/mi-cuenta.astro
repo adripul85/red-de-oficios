@@ -511,6 +511,7 @@ import Layout from "../layouts/Layout.astro";
             updateDoc,
             deleteDoc,
             arrayRemove,
+            deleteField,
         } from "firebase/firestore";
         import Swal from "sweetalert2";
         import "sweetalert2/dist/sweetalert2.min.css";
@@ -1000,6 +1001,15 @@ import Layout from "../layouts/Layout.astro";
                                 statusClass = "bg-slate-100 text-slate-600",
                                 icon = "📝";
 
+                            let actionsHTML = `
+                                <button 
+                                    onclick="borrarSolicitud('${doc.id}')"
+                                    class="text-xs text-red-500 font-bold hover:underline transition-all mt-1"
+                                >
+                                    Eliminar Solicitud
+                                </button>
+                            `;
+
                             if (s.status === "completada") {
                                 statusLabel = "Finalizada";
                                 statusClass = "bg-gray-100 text-gray-700";
@@ -1008,10 +1018,32 @@ import Layout from "../layouts/Layout.astro";
                                 s.status === "aceptada" ||
                                 s.status === "en_progreso"
                             ) {
-                                statusLabel = "En Progreso";
+                                // Customize message with Professional Name
+                                const proName =
+                                    s.profesionalNombre || "El profesional";
+                                statusLabel = `${proName} se va a contactar con vos`;
                                 statusClass =
-                                    "bg-green-100 text-green-700 animate-pulse";
+                                    "bg-green-100 text-green-700 font-bold border border-green-200";
                                 icon = "🚀";
+
+                                // Allow cancelling/returning to pool
+                                actionsHTML = `
+                                    <div class="flex gap-2 mt-2">
+                                        <button 
+                                            onclick="cancelarTrabajo('${doc.id}')"
+                                            class="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded font-bold hover:bg-orange-200 transition"
+                                            title="El profesional no respondió o no hubo arreglo"
+                                        >
+                                            🔄 Volver a Publicar
+                                        </button>
+                                        <button 
+                                            onclick="borrarSolicitud('${doc.id}')"
+                                            class="text-xs text-red-400 hover:text-red-600 transition"
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                `;
                             } else if (contactados > 0) {
                                 statusLabel = `${contactados} presupuestos`;
                                 statusClass = "bg-blue-100 text-blue-700";
@@ -1031,15 +1063,12 @@ import Layout from "../layouts/Layout.astro";
                                         <h4 class="font-semibold text-slate-800">${s.rubro || "Servicio"}</h4>
                                     </div>
                                     <p class="text-sm text-slate-500 mb-2">📍 ${s.zona || "Sin zona"}</p>
-                                    <button 
-                                        onclick="borrarSolicitud('${doc.id}')"
-                                        class="text-xs text-red-500 font-bold hover:underline transition-all mt-1"
-                                    >
-                                        Eliminar Solicitud
-                                    </button>
+                                    ${actionsHTML}
                                 </div>
-                                <div class="text-right">
-                                    <span class="px-2 py-1 text-xs font-bold rounded-full ${statusClass}">${statusLabel}</span>
+                                <div class="text-right max-w-[50%]">
+                                    <span class="inline-block px-2 py-1 text-xs font-bold rounded-full ${statusClass} text-center leading-tight">
+                                        ${statusLabel}
+                                    </span>
                                     <p class="text-xs text-slate-400 mt-2">${fecha}</p>
                                 </div>
                             </div>
@@ -1054,6 +1083,51 @@ import Layout from "../layouts/Layout.astro";
         }
 
         // --- FUNCIONES GLOBALES DE GESTIÓN ---
+        (window as any).cancelarTrabajo = async (id: string) => {
+            if (!currentUser) return;
+
+            const result = await Swal.fire({
+                title: "¿Volver a Publicar?",
+                text: "El trabajo volverá a estar disponible para otros profesionales. Úsalo si el profesional actual no respondió.",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#f97316",
+                cancelButtonColor: "#64748b",
+                confirmButtonText: "Sí, republicar",
+                cancelButtonText: "Cancelar",
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                // @ts-ignore
+                const docRef = doc(db, "solicitudes", id);
+                await updateDoc(docRef, {
+                    status: "pendiente",
+                    profesionalId: deleteField(),
+                    profesionalNombre: deleteField(),
+                    profesionalFoto: deleteField(),
+                });
+
+                await loadMisSolicitudes(currentUser.uid);
+
+                Swal.fire({
+                    title: "¡Republicada!",
+                    text: "Tu solicitud está visible nuevamente en la bolsa de trabajo.",
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
+            } catch (e) {
+                console.error(e);
+                Swal.fire(
+                    "Error",
+                    "No se pudo actualizar la solicitud.",
+                    "error",
+                );
+            }
+        };
+
         (window as any).borrarSolicitud = async (id: string) => {
             const result = await Swal.fire({
                 title: "¿Eliminar Solicitud?",

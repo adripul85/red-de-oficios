@@ -271,9 +271,18 @@ const prosJson = JSON.stringify(profesionales);
       });
     }
     mapInstance.on("locationfound", (e) => {
-      L.circle(e.latlng, { radius: e.accuracy / 2, color: "blue" }).addTo(
-        mapInstance,
-      );
+      // User request: "Eliminar el punto azul el estándar"
+      // L.circle(e.latlng, { radius: e.accuracy / 2, color: "blue" }).addTo(mapInstance);
+
+      // Instead, maybe just a custom marker or nothing, but for now we silence the blue circle.
+      // We can add a custom 'You are here' marker if needed later.
+      const userIcon = L.divIcon({
+        className: "user-location-marker",
+        html: '<div style="background-color:#3b82f6;width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 0 0 4px rgba(59,130,246,0.3);"></div>',
+        iconSize: [20, 20],
+      });
+      L.marker(e.latlng, { icon: userIcon }).addTo(mapInstance);
+
       if (btnLocate) btnLocate.innerHTML = "<span>✅</span> Estás aquí";
     });
   });

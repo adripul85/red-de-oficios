@@ -11,6 +11,7 @@ interface Props {
 	image?: string;
 	hideHeader?: boolean;
 	hideFooter?: boolean;
+	hideIA?: boolean;
 }
 
 const {
@@ -19,6 +20,7 @@ const {
 	image = "/icon-512.png",
 	hideHeader = false,
 	hideFooter = false,
+	hideIA = false,
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -140,7 +142,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 				});
 			}
 		</script>
-		<IAFloatingButton />
+		{!hideIA && <IAFloatingButton />}
 	</body>
 </html>
 

@@ -599,7 +599,65 @@ import Layout from "../layouts/Layout.astro";
                                         /><span class="font-bold text-sm"
                                             >Activar Modo Landing</span
                                         ></label
+                                    ><div class="mt-4">
+                                        <label
+                                            class="block text-xs mb-1 text-gray-300"
+                                            >Dirección personalizada (Slug)</label
+                                        >
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-gray-500 text-sm"
+                                                >reddeoficio.com/</span
+                                            >
+                                            <input
+                                                type="text"
+                                                id="slug_custom"
+                                                class="flex-1 bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm"
+                                                placeholder="mi-negocio"
+                                            />
+                                        </div>
+                                        <p
+                                            class="text-[10px] text-gray-500 mt-1"
+                                        >
+                                            Dejar en blanco para usar el ID por
+                                            defecto.
+                                        </p>
+                                    </div>
+
+                                    <div
+                                        class="mt-4 pt-4 border-t border-gray-700"
                                     >
+                                        <p
+                                            class="text-xs text-gray-400 mb-2 uppercase font-bold"
+                                        >
+                                            Configuración SEO
+                                        </p>
+                                        <div class="grid md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label
+                                                    class="block text-xs mb-1 text-gray-300"
+                                                    >Nombre Público (Título SEO)</label
+                                                >
+                                                <input
+                                                    type="text"
+                                                    id="seo_nombre"
+                                                    class="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm"
+                                                    placeholder="Ej: Lucas Pulido Electricista"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="block text-xs mb-1 text-gray-300"
+                                                    >Profesión / Palabras Clave</label
+                                                >
+                                                <input
+                                                    type="text"
+                                                    id="seo_profesion"
+                                                    class="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm"
+                                                    placeholder="Ej: Electricidad, Reparaciones, Urgencias 24hs"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="grid md:grid-cols-2 gap-6">
                                     <div>
@@ -1152,42 +1210,47 @@ import Layout from "../layouts/Layout.astro";
         };
 
         const RUBROS = {
-            "Construcción y Reformas": [
+            "🚨 Urgencias 24hs": [
+                "Plomero (Urgencias)",
+                "Electricista (Urgencias)",
+                "Gasista (Urgencias)",
+                "Cerrajero (24hs)",
+            ],
+            "🏗️ Construcción y Obra": [
                 "Albañil",
                 "Pintor",
                 "Techista",
-                "Colocador de Pisos/Ceramista",
+                "Colocador de Pisos / Revestimientos",
                 "Durlockero",
                 "Herrero",
                 "Carpintero",
             ],
-            "Instalaciones y Mantenimiento": [
-                "Plomero",
-                "Electricista Matriculado",
-                "Gasista Matriculado",
-                "Cerrajero",
-                "Técnico de Aire Acondicionado",
-                "Destapaciones",
-            ],
-            "Carpintería Metálica y Vidriería": ["Vidriero", "Persianista"],
-            "Exteriores y Logística": [
+            "🌿 Mantenimiento y Hogar": [
                 "Jardinero",
                 "Piletero",
-                "Fletero",
+                "Persianista",
+                "Vidriero",
                 "Fumigador",
+                "Limpieza",
             ],
-            "Servicios Especializados": [
-                "Tapicero",
+            "🚛 Servicios y Logística": [
+                "Fletero / Mudanzas",
+                "Técnico de Aire Acondicionado",
                 "Técnico de Electrodomésticos",
-                "Instalador de Cámaras de Seguridad",
+                "Instalador de Cámaras y Alarmas",
             ],
-            "Estética y Cuidado Personal": [
-                "Peinador/Estilista",
-                "Maquillador/Maquilladora",
-                "Barbero",
-                "Manicura/Pedicura",
+            "💇 Estética y Cuidado": [
+                "Peluquero / Estilista",
+                "Manicura / Pedicura",
+                "Maquillador / Maquilladora",
+                "Masajista",
             ],
-            "Oficios Clásicos": ["Zapatero", "Sastre/Modista", "Relojero"],
+            "🥳 Eventos y Otros": [
+                "Pastelero / Catering",
+                "DJ / Sonidista",
+                "Tapicero",
+                "Zapatero / Modista",
+            ],
         };
 
         // --- 3. ESTADO GLOBAL ---
@@ -1575,6 +1638,7 @@ import Layout from "../layouts/Layout.astro";
 
                 setVal("instagram", data.redes?.instagram);
                 setVal("website", data.redes?.web);
+                setVal("slug_custom", data.slug); // Cargar slug
                 // @ts-ignore
                 document.getElementById("web_propia").checked =
                     data.web_propia || false;
@@ -1755,6 +1819,12 @@ import Layout from "../layouts/Layout.astro";
                     },
                     // @ts-ignore
                     web_propia: document.getElementById("web_propia").checked,
+                    seo_nombre: document.getElementById("seo_nombre")
+                        ? document.getElementById("seo_nombre").value
+                        : "",
+                    seo_profesion: document.getElementById("seo_profesion")
+                        ? document.getElementById("seo_profesion").value
+                        : "",
                     ubicacion_exacta:
                         !isNaN(lat) && !isNaN(lng)
                             ? {
@@ -1774,6 +1844,18 @@ import Layout from "../layouts/Layout.astro";
                         servicios: userServices,
                     },
                 };
+
+                const slugInput = document.getElementById("slug_custom");
+                // @ts-ignore
+                if (slugInput) {
+                    // @ts-ignore
+                    updates.slug = slugInput.value
+                        .toLowerCase()
+                        .replace(/[^a-z0-9-]/g, "-")
+                        .replace(/-+/g, "-")
+                        .replace(/^-|-$/g, "");
+                }
+
                 await updateDoc(
                     doc(db, "profesionales", currentUserUid),
                     updates,

@@ -395,6 +395,68 @@ import { auth, db } from "../../firebase/client";
                         </div>
                     </div>
 
+                    <!-- DATOS DE COBRO -->
+                    <div
+                        class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8"
+                    >
+                        <div
+                            class="p-6 border-b border-slate-100 flex justify-between items-center"
+                        >
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-800">
+                                    Datos de Cobro 💳
+                                </h3>
+                                <p class="text-sm text-slate-500">
+                                    Tus datos para recibir transferencias
+                                </p>
+                            </div>
+                            <button
+                                id="btn-save-mp"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition hidden"
+                            >
+                                Guardar Cambios
+                            </button>
+                        </div>
+                        <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label
+                                    class="block text-sm font-bold text-slate-700 mb-2"
+                                    >Alias</label
+                                >
+                                <input
+                                    type="text"
+                                    id="mp-alias"
+                                    class="w-full border border-slate-200 rounded-lg px-4 py-2 outline-none focus:border-indigo-500 placeholder-slate-300 transition-colors"
+                                    placeholder="ej: nombre.apellido.mp"
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-sm font-bold text-slate-700 mb-2"
+                                    >CBU / CVU</label
+                                >
+                                <input
+                                    type="text"
+                                    id="mp-cbu"
+                                    class="w-full border border-slate-200 rounded-lg px-4 py-2 outline-none focus:border-indigo-500 placeholder-slate-300 transition-colors"
+                                    placeholder="0000003123..."
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-sm font-bold text-slate-700 mb-2"
+                                    >Titular</label
+                                >
+                                <input
+                                    type="text"
+                                    id="mp-titular"
+                                    class="w-full border border-slate-200 rounded-lg px-4 py-2 outline-none focus:border-indigo-500 placeholder-slate-300 transition-colors"
+                                    placeholder="Nombre Apellido"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- MI EQUIPO -->
                     <div
                         class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8"
@@ -1758,9 +1820,88 @@ import { auth, db } from "../../firebase/client";
                     }
                 });
 
+                // Cobros Logic
+                const btnSaveMp = document.getElementById("btn-save-mp");
+                const inputsMp = ["mp-alias", "mp-cbu", "mp-titular"].map(
+                    (id) => document.getElementById(id),
+                );
+
+                inputsMp.forEach((input) => {
+                    input?.addEventListener("input", () => {
+                        btnSaveMp?.classList.remove("hidden");
+                    });
+                });
+
+                btnSaveMp?.addEventListener("click", async () => {
+                    try {
+                        const alias = (
+                            document.getElementById(
+                                "mp-alias",
+                            ) as HTMLInputElement
+                        ).value;
+                        const cbu = (
+                            document.getElementById(
+                                "mp-cbu",
+                            ) as HTMLInputElement
+                        ).value;
+                        const titular = (
+                            document.getElementById(
+                                "mp-titular",
+                            ) as HTMLInputElement
+                        ).value;
+
+                        await updateDoc(
+                            doc(db, "profesionales", currentUser.uid),
+                            {
+                                mpAlias: alias,
+                                mpCvu: cbu,
+                                mpTitular: titular,
+                                updatedAt: Timestamp.now(),
+                            },
+                        );
+
+                        await showAlert(
+                            "Guardado",
+                            "Tus datos de cobro han sido actualizados.",
+                            "success",
+                        );
+                        btnSaveMp?.classList.add("hidden");
+                    } catch (e) {
+                        console.error(e);
+                        await showAlert(
+                            "Error",
+                            "No se pudieron guardar los datos.",
+                            "error",
+                        );
+                    }
+                });
+
                 // Cargar datos financieros
                 async function loadFinanzas(uid) {
                     try {
+                        // Cargar Datos de Profile (MP)
+                        const proDoc = await getDoc(
+                            doc(db, "profesionales", uid),
+                        );
+                        if (proDoc.exists()) {
+                            const data = proDoc.data();
+                            (
+                                document.getElementById(
+                                    "mp-alias",
+                                ) as HTMLInputElement
+                            ).value = data.mpAlias || "";
+                            (
+                                document.getElementById(
+                                    "mp-cbu",
+                                ) as HTMLInputElement
+                            ).value = data.mpCvu || "";
+                            (
+                                document.getElementById(
+                                    "mp-titular",
+                                ) as HTMLInputElement
+                            ).value = data.mpTitular || "";
+                        }
+
                         // Cargar movimientos financieros (ingresos y gastos)
                         const q = query(
                             collection(db, "profesionales", uid, "finanzas"),

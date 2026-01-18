@@ -22,6 +22,11 @@ if (id) {
 
 if (!profesional) return Astro.redirect("/");
 
+// SI TIENE SLUG, REDIRECCIONAR A LA URL LIMPIA
+if (profesional.slug) {
+    return Astro.redirect(`/${profesional.slug}`);
+}
+
 // --- ELIMINADO: Bloqueo de perfiles gratuitos ---
 // Los perfiles FREE ahora son públicos
 // const planActual = profesional.plan || "gratuito";
@@ -40,12 +45,62 @@ const ubicacion = profesional.zona || "Argentina";
 
 const portfolioJson = JSON.stringify(profesional.portfolio || []);
 const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
+
+const seoTitle = profesional.seo_nombre || `${profesional.nombre} | DeOficios`;
+const seoDescription =
+    profesional.seo_profesion ||
+    `Contacta a ${profesional.nombre}, ${profesional.rubro_principal} en ${ubicacion}. Ver perfil, fotos y opiniones.`;
+const serviceIcons: Record<string, string> = {
+    "Aire Acondicionado": "❄️",
+    Electricidad: "⚡",
+    Electricista: "⚡",
+    Gasista: "🔥",
+    Plomero: "🚰",
+    Plomería: "🚰",
+    Pintor: "🎨",
+    Albañil: "🧱",
+    Construcción: "🏗️",
+    Flete: "🚚",
+    Mudanza: "📦",
+    Jardinería: "🌿",
+    Limpieza: "🧹",
+    Carpintero: "🪚",
+    Herrero: "⚔️",
+    Mecánico: "🔧",
+    Cerrajero: "🔑",
+    Techista: "🏠",
+    Durlock: "🏗️",
+};
+
+const getServiceIcon = (serviceName: any) => {
+    if (!serviceName || typeof serviceName !== "string") return "🛠️";
+    // Buscar coincidencia parcial
+    const lowerName = serviceName.toLowerCase();
+    for (const key in serviceIcons) {
+        if (lowerName.includes(key.toLowerCase())) {
+            return serviceIcons[key];
+        }
+    }
+    return "🛠️"; // Icono por defecto
+};
+
+const mappedServices = (profesional.servicios_lista || [])
+    .filter((s: any) => s && typeof s === "string")
+    .slice(0, 4)
+    .map((s: string) => ({
+        label: s,
+        icon: getServiceIcon(s),
+    }));
+
+import ModernProfileCard from "../components/ModernProfileCard.astro";
 ---
 
 <Layout
-    title={`${profesional.nombre} | DeOficios`}
+    title={seoTitle}
+    description={seoDescription}
     hideHeader={mostrarComoLanding}
     hideFooter={mostrarComoLanding}
+    hideIA={mostrarComoLanding}
 >
     <script
         is:inline
@@ -54,136 +109,27 @@ const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
 
     {
         mostrarComoLanding ? (
-            /* MODO LANDING */
-            <div class="landing-body font-sans min-h-screen bg-gray-50 flex flex-col items-center pb-20">
-                <header class="w-full bg-[#111827] text-white pt-12 pb-24 px-4 text-center rounded-b-[50px] shadow-2xl relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-                    <div class="relative z-10 flex flex-col items-center">
-                        <div class="w-32 h-32 rounded-full p-1 bg-gradient-to-r from-orange-500 to-red-600 shadow-xl mb-4">
-                            <img
-                                src={profesional.foto}
-                                class="w-full h-full rounded-full object-cover border-4 border-[#111827]"
-                            />
-                        </div>
-                        <span class="bg-orange-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2 shadow-sm">
-                            {profesional.rubro_principal}
-                        </span>
-                        <h1 class="text-3xl md:text-4xl font-black mb-2">
-                            {profesional.nombre}
-                        </h1>
-                        <div class="flex flex-wrap justify-center gap-3 text-sm text-gray-300 mt-2">
-                            <span class="flex items-center gap-1">
-                                📍 {ubicacion}
-                            </span>
-                            {profesional.es_24hs && (
-                                <span class="bg-red-900/50 text-red-200 px-2 py-0.5 rounded border border-red-800 text-xs font-bold">
-                                    🚨 24hs
-                                </span>
-                            )}
-                            <span class="text-yellow-400 font-bold">
-                                ★ {promedio.toFixed(1)}
-                            </span>
-                        </div>
-                    </div>
-                </header>
-
-                <main class="w-full max-w-md px-4 -mt-16 relative z-20 space-y-4">
-                    <div class="grid grid-cols-1 gap-3">
-                        {profesional.telefono && (
-                            <a
-                                href={`https://wa.me/549${profesional.telefono}`}
-                                target="_blank"
-                                class="bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-2xl shadow-lg text-center flex items-center justify-center gap-2 transition transform hover:scale-105 text-lg"
-                                onclick="trackClick()"
-                            >
-                                <span>💬</span> Contactar por WhatsApp
-                            </a>
-                        )}
-                        {profesional.servicios_lista?.length > 0 && (
-                            <button
-                                id="btn-landing-pdf"
-                                class="bg-white text-gray-800 font-bold py-3 rounded-xl shadow-md border-2 border-orange-500 hover:bg-orange-50 flex items-center justify-center gap-2 transition"
-                            >
-                                <span>📄</span> Ver Tarifario / Presupuesto
-                            </button>
-                        )}
-                        
-                        <!-- Botón de Reporte -->
-                        <button
-                            id="btn-report-profile"
-                            class="bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium py-2 rounded-lg flex items-center justify-center gap-2 transition text-sm border border-gray-300"
-                        >
-                            <span>🚩</span> Reportar Perfil
-                        </button>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 class="text-gray-800 font-bold mb-3 border-l-4 border-orange-500 pl-3">
-                            Sobre mí
-                        </h3>
-                        <p class="text-gray-600 text-sm leading-relaxed whitespace-pre-line mb-4">
-                            {profesional.descripcion ||
-                                "Consultar por servicios."}
-                        </p>
-
-                        <div class="flex flex-wrap gap-2 mb-3">
-                            {profesional.matricula && (
-                                <span class="text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-100 font-bold">
-                                    🎓 Matrícula: {profesional.matricula}
-                                </span>
-                            )}
-                            {profesional.emite_factura && (
-                                <span class="text-[10px] bg-gray-100 text-gray-700 px-2 py-1 rounded border border-gray-200">
-                                    🧾 Factura A/C
-                                </span>
-                            )}
-                        </div>
-                        {profesional.formas_pago && (
-                            <div class="pt-3 border-t border-gray-100">
-                                <p class="text-xs text-gray-400 mb-2 font-bold uppercase">
-                                    Medios de Pago:
-                                </p>
-                                <div class="flex flex-wrap gap-2">
-                                    {profesional.formas_pago.map((p) => (
-                                        <span class="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">
-                                            💳 {p}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {profesional.portfolio &&
-                        profesional.portfolio.length > 0 && (
-                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                                <h3 class="text-gray-800 font-bold mb-3 border-l-4 border-purple-500 pl-3">
-                                    Mis Trabajos
-                                </h3>
-                                <div class="grid grid-cols-3 gap-2">
-                                    {profesional.portfolio
-                                        .slice(0, 6)
-                                        .map((img, index) => (
-                                            <img
-                                                src={img}
-                                                class="aspect-square object-cover rounded-lg bg-gray-100 cursor-pointer open-lightbox hover:opacity-80 transition"
-                                                data-index={index}
-                                            />
-                                        ))}
-                                </div>
-                            </div>
-                        )}
-
-                    {profesional.ubicacion_exacta?.activo && (
-                        <a
-                            href={`https://www.google.com/maps/search/?api=1&query=${profesional.ubicacion_exacta.lat},${profesional.ubicacion_exacta.lng}`}
-                            target="_blank"
-                            class="block bg-blue-50 p-4 rounded-xl text-center text-blue-700 font-bold border border-blue-100 hover:bg-blue-100 transition"
-                        >
-                            🗺️ Ver Ubicación en Mapa
-                        </a>
-                    )}
-                </main>
+            /* MODO LANDING NUEVO */
+            <div class="landing-body font-sans min-h-screen bg-slate-100 flex items-center justify-center py-10 px-4 overflow-x-hidden">
+                <ModernProfileCard
+                    name={profesional.nombre}
+                    role={
+                        profesional.seo_profesion || profesional.rubro_principal
+                    }
+                    avatar={profesional.foto}
+                    location={ubicacion}
+                    rating={promedio.toFixed(1)}
+                    priceInfo={
+                        profesional.presupuestos_config?.activo
+                            ? "Presupuestos sin cargo"
+                            : "Consultar precio"
+                    }
+                    services={mappedServices}
+                    bio={profesional.descripcion}
+                    experience={profesional.experiencia}
+                    category={profesional.rubro_principal}
+                    whatsappUrl={`https://wa.me/549${profesional.telefono}?text=Hola, vi tu perfil en Red de Oficio y quería hacerte una consulta.`}
+                />
             </div>
         ) : (
             /* MODO DIRECTORIO */
@@ -230,7 +176,9 @@ const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
                                     </button>
                                 </div>
                                 <p class="text-xl text-gray-600 mb-3">
-                                    {profesional.rubro_principal} en{" "}
+                                    {profesional.seo_profesion ||
+                                        profesional.rubro_principal}{" "}
+                                    en{" "}
                                     <span class="font-bold text-gray-800">
                                         {ubicacion}
                                     </span>
@@ -470,9 +418,9 @@ const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
                             {profesional.servicios_lista?.length > 0 && (
                                 <button
                                     id="btn-generate-pdf-sidebar"
-                                    class="block w-full bg-white border-2 border-orange-500 text-orange-600 font-bold py-3 rounded-xl text-center hover:bg-orange-50 transition shadow-sm flex items-center justify-center gap-2"
+                                    class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-orange-200 transition transform hover:-translate-y-1 flex items-center justify-center gap-2"
                                 >
-                                    <span>📄</span> Ver Tarifario / Presupuesto
+                                    <span>📄</span> Ver Presupuestos
                                 </button>
                             )}
 
@@ -498,8 +446,6 @@ const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
                                     </div>
                                 )}
                         </div>
-
-                        
                     </div>
                 </main>
             </div>
@@ -555,22 +501,20 @@ const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
         class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center p-4 backdrop-blur-sm"
     >
         <div
-            class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[85vh] flex flex-col overflow-hidden"
+            class="bg-white rounded-2xl w-full max-w-lg mx-4 relative shadow-2xl overflow-hidden animate-fade-in-up"
         >
             <div
-                class="p-6 border-b flex justify-between items-center bg-gray-50"
+                class="bg-gradient-to-r from-orange-500 to-red-600 p-6 text-white flex justify-between items-center"
             >
                 <div>
-                    <h3 class="text-xl font-bold text-gray-900">
-                        Seleccionar Servicios
-                    </h3>
-                    <p class="text-sm text-gray-500">
-                        Marca los ítems que deseas presupuestar
+                    <h3 class="font-bold text-xl">Ver Presupuestos</h3>
+                    <p class="text-xs text-orange-100 mt-1">
+                        Selecciona los servicios de interés
                     </p>
                 </div>
                 <button
-                    id="close-modal"
-                    class="text-3xl text-gray-400 hover:text-gray-600"
+                    id="btn-close-modal"
+                    class="text-white hover:text-gray-200 text-2xl font-bold"
                     >&times;</button
                 >
             </div>
@@ -584,8 +528,7 @@ const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
             <div class="p-6 border-t bg-gray-50 flex gap-3 justify-end">
                 <button
                     id="btn-cancel"
-                    class="px-4 py-2 text-gray-600 font-medium"
-                    >Cancelar</button
+                    class="px-4 py-2 text-gray-600 font-medium">Cancelar</button
                 >
                 <button
                     id="btn-download-pdf"
@@ -681,200 +624,82 @@ const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
             if (e.key === "ArrowRight") updateLightbox(currentIndex + 1);
         });
 
-        // PDF GENERATOR
-        const generatePdf = () => {
-            if (services.length === 0)
-                return alert("El profesional no tiene un tarifario cargado.");
-            if (!window.jspdf)
-                return alert("Cargando PDF... intenta de nuevo.");
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const orange = [234, 88, 12];
-
-            doc.setFillColor(...orange);
-            doc.rect(0, 0, 210, 30, "F");
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(22);
-            doc.text("PRESUPUESTO / TARIFARIO", 20, 20);
-            doc.setTextColor(0, 0, 0);
-            doc.setFontSize(14);
-            doc.text(proName, 20, 45);
-            doc.setFontSize(10);
-            doc.setTextColor(100);
-            doc.text(proRubro, 20, 51);
-            if (proMat) doc.text(`Matrícula: ${proMat}`, 20, 57);
-            if (proTel) doc.text(`Contacto: ${proTel}`, 20, 63);
-
-            let y = 80;
-            doc.setFillColor(240, 240, 240);
-            doc.rect(20, y, 170, 8, "F");
-            doc.setFontSize(9);
-            doc.setTextColor(0);
-            doc.text("SERVICIO", 25, y + 5);
-            doc.text("PRECIO ESTIMADO", 150, y + 5);
-
-            y += 15;
-            services.forEach((s) => {
-                doc.setFont("helvetica", "bold");
-                doc.text(s.nombre, 25, y);
-                doc.setFont("helvetica", "normal");
-                doc.text(`$${s.min} - $${s.max}`, 150, y);
-                y += 6;
-                if (s.descripcion) {
-                    doc.setFontSize(8);
-                    doc.setTextColor(100);
-                    doc.text(s.descripcion, 25, y);
-                    y += 8;
-                } else {
-                    y += 4;
-                }
-                doc.setDrawColor(230);
-                doc.line(20, y - 3, 190, y - 3);
-                doc.setTextColor(0);
-                doc.setFontSize(9);
-            });
-
-            doc.setFontSize(8);
-            doc.setTextColor(150);
-            doc.text("Generado en DeOficios.com.ar", 105, 280, {
-                align: "center",
-            });
-            doc.save(`tarifario_${proName.replace(/\s+/g, "_")}.pdf`);
-        };
-
-        // MODAL DE SELECCIÓN DE PRESUPUESTO
-        function setupModal() {
-            const modal = document.getElementById('budget-modal');
-            const list = document.getElementById('modal-services-list');
-            const openBtns = [
-                document.getElementById('btn-landing-pdf'),
-                document.getElementById('btn-generate-pdf-sidebar')
-            ];
-
-            const openModal = () => {
-                if (!services || services.length === 0) {
-                    return alert("Este profesional no tiene servicios cargados.");
-                }
-                
-                list.innerHTML = services.map((s, idx) => `
-                    <label class="flex items-center gap-4 p-4 border rounded-xl hover:bg-orange-50 cursor-pointer transition">
-                        <input type="checkbox" class="service-item w-5 h-5 accent-orange-600" data-idx="${idx}" checked>
-                        <div class="flex-1">
-                            <div class="flex justify-between font-bold text-gray-800">
-                                <span>${s.nombre}</span>
-                                <span class="text-orange-600">$${s.min} - $${s.max}</span>
-                            </div>
-                            ${s.descripcion ? `<p class="text-xs text-gray-500 mt-1">${s.descripcion}</p>` : ''}
-                        </div>
-                    </label>
-                `).join('');
-                modal.classList.remove('hidden');
-            };
-
-            openBtns.forEach(btn => btn?.addEventListener('click', openModal));
-            
-            document.getElementById('close-modal')?.addEventListener('click', () => {
-                modal.classList.add('hidden');
-            });
-            
-            document.getElementById('btn-cancel')?.addEventListener('click', () => {
-                modal.classList.add('hidden');
-            });
-
-            document.getElementById('btn-download-pdf')?.addEventListener('click', () => {
-                const selectedIdxs = Array.from(document.querySelectorAll('.service-item:checked')).map(cb => cb.dataset.idx);
-                if (selectedIdxs.length === 0) {
-                    return alert("Selecciona al menos un servicio.");
-                }
-
-                const selectedServices = selectedIdxs.map(i => services[i]);
-                generateCustomPDF(selectedServices);
-                modal.classList.add('hidden');
-            });
-            
-            // Cerrar modal al hacer click fuera
-            modal?.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.add('hidden');
-                }
-            });
-            
-            // Cerrar modal con ESC
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-                    modal.classList.add('hidden');
-                }
-            });
-        }
-
+        // GENERATE CUSTOM PDF (SAFE VERSION)
         function generateCustomPDF(selected) {
+            if (!window.jspdf) {
+                return Swal.fire(
+                    "Error",
+                    "La librería PDF no se cargó correctamente. Intenta recargar la página.",
+                    "error",
+                );
+            }
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
+
             // Colores del tema
-            const primaryDark = [31, 41, 55];      // Gris oscuro
-            const accentOrange = [234, 88, 12];    // Naranja
-            const lightGray = [245, 245, 245];     // Gris claro
-            const textDark = [40, 40, 40];         // Texto oscuro
-            const textGray = [100, 100, 100];      // Texto gris
+            const primaryDark = [31, 41, 55]; // Gris oscuro
+            const accentOrange = [234, 88, 12]; // Naranja
+            const lightGray = [245, 245, 245]; // Gris claro
+            const textDark = [40, 40, 40]; // Texto oscuro
+            const textGray = [100, 100, 100]; // Texto gris
 
             // === HEADER ===
             // Fondo principal
             doc.setFillColor(...primaryDark);
-            doc.rect(0, 0, 210, 45, 'F');
-            
+            doc.rect(0, 0, 210, 45, "F");
+
             // Barra naranja decorativa
             doc.setFillColor(...accentOrange);
-            doc.rect(0, 45, 210, 3, 'F');
-            
+            doc.rect(0, 45, 210, 3, "F");
+
             // Logo/Icono (círculo decorativo)
             doc.setFillColor(255, 255, 255);
-            doc.circle(20, 22, 8, 'F');
+            doc.circle(20, 22, 8, "F");
             doc.setFillColor(...accentOrange);
-            doc.circle(20, 22, 6, 'F');
-            
+            doc.circle(20, 22, 6, "F");
+
             // Título principal
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(24);
-            doc.setFont(undefined, 'bold');
+            doc.setFont(undefined, "bold");
             doc.text("PRESUPUESTO PROFESIONAL", 35, 22);
-            
+
             // Fecha
             doc.setFontSize(9);
-            doc.setFont(undefined, 'normal');
+            doc.setFont(undefined, "normal");
             doc.setTextColor(200, 200, 200);
-            const fecha = new Date().toLocaleDateString('es-AR', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+            const fecha = new Date().toLocaleDateString("es-AR", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
             });
             doc.text("Emitido: " + fecha, 35, 30);
-            
+
             // Número de presupuesto
             const numPresupuesto = "#" + Date.now().toString().slice(-6);
             doc.text("No. " + numPresupuesto, 35, 36);
 
             // === INFORMACIÓN DEL PROFESIONAL ===
             let y = 60;
-            
+
             // Caja con info del profesional
             doc.setFillColor(...lightGray);
-            doc.roundedRect(15, y, 180, 28, 3, 3, 'F');
-            
+            doc.roundedRect(15, y, 180, 28, 3, 3, "F");
+
             doc.setTextColor(...textDark);
             doc.setFontSize(16);
-            doc.setFont(undefined, 'bold');
+            doc.setFont(undefined, "bold");
             doc.text(proName, 20, y + 8);
-            
+
             doc.setFontSize(11);
-            doc.setFont(undefined, 'normal');
+            doc.setFont(undefined, "normal");
             doc.setTextColor(...textGray);
             doc.text(proRubro, 20, y + 15);
-            
+
             if (proTel) {
                 doc.text("Tel: " + proTel, 20, y + 22);
             }
-            
+
             if (proMat) {
                 doc.setFontSize(9);
                 doc.text("Mat. " + proMat, 150, y + 22);
@@ -882,61 +707,68 @@ const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
 
             // === TABLA DE SERVICIOS ===
             y = 100;
-            
+
             // Header de tabla
             doc.setFillColor(...accentOrange);
-            doc.roundedRect(15, y, 180, 12, 2, 2, 'F');
-            
+            doc.roundedRect(15, y, 180, 12, 2, 2, "F");
+
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(11);
-            doc.setFont(undefined, 'bold');
+            doc.setFont(undefined, "bold");
             doc.text("DESCRIPCION DEL SERVICIO", 20, y + 8);
             doc.text("VALOR ESTIMADO", 150, y + 8);
 
             y += 20;
             let totalMin = 0;
             let totalMax = 0;
-            
+
             // Servicios
             selected.forEach((s, index) => {
                 // Fondo alternado para mejor legibilidad
                 if (index % 2 === 0) {
                     doc.setFillColor(250, 250, 250);
-                    doc.rect(15, y - 5, 180, 0, 'F');
+                    doc.rect(15, y - 5, 180, 0, "F");
                 }
-                
+
                 // Nombre del servicio
-                doc.setFont(undefined, 'bold');
+                doc.setFont(undefined, "bold");
                 doc.setFontSize(11);
                 doc.setTextColor(...textDark);
                 doc.text(s.nombre, 20, y);
-                
+
                 // Precio
                 doc.setTextColor(...accentOrange);
-                doc.setFont(undefined, 'bold');
-                doc.text("$" + s.min.toLocaleString() + " - $" + s.max.toLocaleString(), 150, y);
-                
+                doc.setFont(undefined, "bold");
+                doc.text(
+                    "$" +
+                        s.min.toLocaleString() +
+                        " - $" +
+                        s.max.toLocaleString(),
+                    150,
+                    y,
+                );
+
                 totalMin += parseInt(s.min);
                 totalMax += parseInt(s.max);
-                
+
                 y += 6;
-                
+
                 // Descripción
                 if (s.descripcion) {
                     doc.setFontSize(9);
                     doc.setTextColor(...textGray);
-                    doc.setFont(undefined, 'normal');
+                    doc.setFont(undefined, "normal");
                     const lines = doc.splitTextToSize(s.descripcion, 125);
                     doc.text(lines, 20, y);
-                    y += (lines.length * 4);
+                    y += lines.length * 4;
                 }
-                
+
                 // Línea separadora sutil
                 doc.setDrawColor(220, 220, 220);
                 doc.setLineWidth(0.3);
                 doc.line(15, y + 2, 195, y + 2);
                 y += 8;
-                
+
                 // Nueva página si es necesario
                 if (y > 250) {
                     doc.addPage();
@@ -947,77 +779,244 @@ const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
             // === RESUMEN TOTAL ===
             y += 5;
             doc.setFillColor(...lightGray);
-            doc.roundedRect(15, y, 180, 20, 2, 2, 'F');
-            
+            doc.roundedRect(15, y, 180, 20, 2, 2, "F");
+
             doc.setFontSize(12);
-            doc.setFont(undefined, 'bold');
+            doc.setFont(undefined, "bold");
             doc.setTextColor(...textDark);
             doc.text("RANGO TOTAL ESTIMADO:", 20, y + 8);
-            
+
             doc.setFontSize(14);
             doc.setTextColor(...accentOrange);
-            doc.text("$" + totalMin.toLocaleString() + " - $" + totalMax.toLocaleString(), 20, y + 15);
+            doc.text(
+                "$" +
+                    totalMin.toLocaleString() +
+                    " - $" +
+                    totalMax.toLocaleString(),
+                20,
+                y + 15,
+            );
 
             // === FOOTER ===
             const pageHeight = doc.internal.pageSize.height;
-            
+
             // Línea decorativa
             doc.setDrawColor(...accentOrange);
             doc.setLineWidth(1);
             doc.line(15, pageHeight - 35, 195, pageHeight - 35);
-            
+
             // Nota de validez
             doc.setFontSize(11);
             doc.setTextColor(...accentOrange);
-            doc.setFont(undefined, 'bold');
-            doc.text("Presupuesto valido por 7 dias corridos", 105, pageHeight - 27, { align: 'center' });
-            
+            doc.setFont(undefined, "bold");
+            doc.text(
+                "Presupuesto valido por 7 dias corridos",
+                105,
+                pageHeight - 27,
+                { align: "center" },
+            );
+
             // Disclaimer
             doc.setFontSize(8);
             doc.setTextColor(...textGray);
-            doc.setFont(undefined, 'normal');
-            doc.text("Los precios son estimativos y pueden variar segun complejidad del trabajo.", 105, pageHeight - 20, { align: 'center' });
-            
+            doc.setFont(undefined, "normal");
+            doc.text(
+                "Los precios son estimativos y pueden variar segun complejidad del trabajo.",
+                105,
+                pageHeight - 20,
+                { align: "center" },
+            );
+
             // Branding
             doc.setFontSize(9);
             doc.setTextColor(...primaryDark);
-            doc.setFont(undefined, 'bold');
-            doc.text("DeOficios.com.ar", 105, pageHeight - 12, { align: 'center' });
-            
+            doc.setFont(undefined, "bold");
+            doc.text("DeOficios.com.ar", 105, pageHeight - 12, {
+                align: "center",
+            });
+
             doc.setFontSize(7);
             doc.setTextColor(...textGray);
-            doc.setFont(undefined, 'normal');
-            doc.text("Conectando profesionales con clientes desde 2024", 105, pageHeight - 7, { align: 'center' });
+            doc.setFont(undefined, "normal");
+            doc.text(
+                "Conectando profesionales con clientes desde 2024",
+                105,
+                pageHeight - 7,
+                { align: "center" },
+            );
 
             // Guardar
-            doc.save("Presupuesto_" + proName.replace(/\s+/g, '_') + "_" + numPresupuesto + ".pdf");
+            doc.save(
+                "Presupuesto_" +
+                    proName.replace(/\s+/g, "_") +
+                    "_" +
+                    numPresupuesto +
+                    ".pdf",
+            );
         }
 
-        // Ejecutar setup del modal
+        // Renderizar servicios en el modal
+        function renderServicesInModal() {
+            const container = document.getElementById("modal-services-list");
+            if (!container) return;
+            container.innerHTML = "";
+
+            if (!services || services.length === 0) {
+                container.innerHTML =
+                    '<p class="text-gray-500 text-center py-4">Este profesional no tiene servicios configurados.</p>';
+                return;
+            }
+
+            services.forEach((s, idx) => {
+                const div = document.createElement("div");
+                div.className =
+                    "flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-orange-50 transition cursor-pointer";
+                div.onclick = (e) => {
+                    // @ts-ignore
+                    if (e.target.type !== "checkbox") {
+                        const chk = document.getElementById(`chk-srv-${idx}`);
+                        // @ts-ignore
+                        if (chk) chk.checked = !chk.checked;
+                    }
+                };
+
+                div.innerHTML = `
+                    <input type="checkbox" id="chk-srv-${idx}" class="mt-1 w-5 h-5 text-orange-600 rounded border-gray-300 focus:ring-orange-500 service-check" value="${idx}">
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start">
+                            <h4 class="font-bold text-gray-800 text-sm">${s.nombre}</h4>
+                            <span class="text-orange-600 font-bold text-sm">$${s.min.toLocaleString()} - $${s.max.toLocaleString()}</span>
+                        </div>
+                        ${s.descripcion ? `<p class="text-xs text-gray-500 mt-1">${s.descripcion}</p>` : ""}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Setup completo del modal
+        function setupModal() {
+            console.log("🚀 [DEBUG] setupModal called");
+            const modal = document.getElementById("budget-modal");
+            const btnLanding = document.getElementById("btn-landing-pdf");
+            const btnSidebar = document.getElementById(
+                "btn-generate-pdf-sidebar",
+            );
+            const btnClose = document.getElementById("btn-close-modal");
+            const btnCancel = document.getElementById("btn-cancel");
+            const btnDownload = document.getElementById("btn-download-pdf");
+
+            const openModal = () => {
+                if (modal) {
+                    renderServicesInModal(); // Renderizar al abrir
+                    modal.classList.remove("hidden");
+                    modal.classList.add("flex");
+                }
+            };
+
+            const closeModal = () => {
+                if (modal) {
+                    modal.classList.add("hidden");
+                    modal.classList.remove("flex");
+                }
+            };
+
+            if (btnLanding) btnLanding.addEventListener("click", openModal);
+            if (btnSidebar) btnSidebar.addEventListener("click", openModal);
+            if (btnClose) btnClose.addEventListener("click", closeModal);
+            if (btnCancel) btnCancel.addEventListener("click", closeModal);
+
+            if (btnDownload) {
+                btnDownload.addEventListener("click", () => {
+                    // Recopilar seleccionados
+                    const selected = [];
+                    document
+                        .querySelectorAll(".service-check:checked")
+                        .forEach((chk) => {
+                            // @ts-ignore
+                            const index = parseInt(chk.value);
+                            if (services[index]) selected.push(services[index]);
+                        });
+
+                    if (selected.length === 0) {
+                        // @ts-ignore
+                        return Swal.fire(
+                            "Atención",
+                            "Por favor selecciona al menos un servicio.",
+                            "warning",
+                        );
+                    }
+
+                    // @ts-ignore
+                    btnDownload.innerText = "Generando...";
+                    // @ts-ignore
+                    btnDownload.disabled = true;
+
+                    setTimeout(() => {
+                        generateCustomPDF(selected);
+                        // @ts-ignore
+                        btnDownload.innerText = "Descargar PDF";
+                        // @ts-ignore
+                        btnDownload.disabled = false;
+                        closeModal();
+                        // @ts-ignore
+                        Swal.fire(
+                            "¡Listo!",
+                            "Tu presupuesto se ha descargado.",
+                            "success",
+                        );
+                    }, 500);
+                });
+            }
+
+            // Cerrar al hacer click fuera del contenido
+            if (modal) {
+                modal.addEventListener("click", (e) => {
+                    // @ts-ignore
+                    if (e.target === modal) closeModal();
+                });
+            }
+        }
+
         setupModal();
 
         // MAPA
+        console.log("🚀 [DEBUG] Initializing Map logic");
         const mapDiv = document.getElementById("mini-map");
         if (mapDiv) {
-            const lat = mapDiv.dataset.lat;
-            const lng = mapDiv.dataset.lng;
-            const map = L.map("mini-map", {
-                zoomControl: false,
-                dragging: false,
-                scrollWheelZoom: false,
-            }).setView([lat, lng], 13);
-            L.tileLayer(
-                "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-            ).addTo(map);
-            L.circle([lat, lng], {
-                radius: 800,
-                color: "#3b82f6",
-                fillColor: "#3b82f6",
-                fillOpacity: 0.2,
-            }).addTo(map);
+            try {
+                // @ts-ignore
+                if (typeof L === "undefined") {
+                    console.error("❌ [DEBUG] Leaflet L is undefined");
+                } else {
+                    const lat = mapDiv.dataset.lat;
+                    const lng = mapDiv.dataset.lng;
+                    console.log("🚀 [DEBUG] Map found, lat:", lat, "lng:", lng);
+                    // @ts-ignore
+                    const map = L.map("mini-map", {
+                        zoomControl: false,
+                        dragging: false,
+                        scrollWheelZoom: false,
+                    }).setView([lat, lng], 13);
+                    // @ts-ignore
+                    L.tileLayer(
+                        "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+                    ).addTo(map);
+                    // @ts-ignore
+                    L.circle([lat, lng], {
+                        radius: 800,
+                        color: "#3b82f6",
+                        fillColor: "#3b82f6",
+                        fillOpacity: 0.2,
+                    }).addTo(map);
+                }
+            } catch (e) {
+                console.error("❌ [DEBUG] Map Error:", e);
+            }
+        } else {
+            console.warn("⚠️ [DEBUG] #mini-map not found in DOM");
         }
     });
-}); // End of astro:page-load
 </script>
 
 <script>
@@ -1042,155 +1041,167 @@ const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
 
         // @ts-ignore
         window.trackClick = async () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const pid = urlParams.get("id");
-        if (pid)
-            await updateDoc(doc(db, "profesionales", pid), {
-                contacto_clicks: increment(1),
-            });
-    };
+            const urlParams = new URLSearchParams(window.location.search);
+            const pid = urlParams.get("id");
+            if (pid)
+                await updateDoc(doc(db, "profesionales", pid), {
+                    contacto_clicks: increment(1),
+                });
+        };
 
-    const container = document.getElementById("profile-directory");
-    const idPro = container?.dataset.id;
+        const container = document.getElementById("profile-directory");
+        const idPro = container?.dataset.id;
 
-    if (idPro) {
-        const list = document.getElementById("reviews-list");
-        if (list) {
-            const q = query(
-                collection(db, "profesionales", idPro, "resenas"),
-                orderBy("fecha", "desc"),
-            );
-            getDocs(q).then((snap) => {
-                list.innerHTML = "";
-                if (snap.empty) {
-                    list.innerHTML = `<div class="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300"><p class="text-3xl mb-2">💬</p><p class="text-gray-500 italic mb-2">Aún no hay opiniones.</p><p class="text-orange-600 font-bold text-sm">¡Sé el primero en compartir tu experiencia!</p></div>`;
-                    return;
+        if (idPro) {
+            const list = document.getElementById("reviews-list");
+            if (list) {
+                const q = query(
+                    collection(db, "profesionales", idPro, "resenas"),
+                    orderBy("fecha", "desc"),
+                );
+                getDocs(q).then((snap) => {
+                    list.innerHTML = "";
+                    if (snap.empty) {
+                        list.innerHTML = `<div class="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300"><p class="text-3xl mb-2">💬</p><p class="text-gray-500 italic mb-2">Aún no hay opiniones.</p><p class="text-orange-600 font-bold text-sm">¡Sé el primero en compartir tu experiencia!</p></div>`;
+                        return;
+                    }
+                    snap.forEach((doc) => {
+                        const d = doc.data();
+                        const date = d.fecha
+                            ? new Date(
+                                  d.fecha.seconds * 1000,
+                              ).toLocaleDateString()
+                            : "";
+                        const avatarSrc =
+                            d.clienteFoto ||
+                            `https://ui-avatars.com/api/?name=${d.clienteNombre}&background=random&color=fff&size=64`;
+                        list.innerHTML += `<div class="border-b border-gray-100 pb-4 last:border-0 mb-4"><div class="flex justify-between items-center mb-2"><div class="flex items-center gap-3"><img src="${avatarSrc}" class="w-8 h-8 rounded-full shadow-sm"><span class="font-bold text-sm text-gray-800">${d.clienteNombre}</span></div><span class="text-xs text-gray-400">${date}</span></div><div class="text-yellow-400 text-xs mb-2">${"★".repeat(d.estrellas)}</div><p class="text-sm text-gray-600 leading-relaxed">"${d.comentario}"</p></div>`;
+                    });
+                });
+            }
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    const snap = await getDoc(doc(db, "clientes", user.uid));
+                    if (snap.exists()) {
+                        document
+                            .getElementById("guest-view")
+                            ?.classList.add("hidden");
+                        document
+                            .getElementById("user-view")
+                            ?.classList.remove("hidden");
+                        // @ts-ignore
+                        document.getElementById("user-name").innerText =
+                            snap.data().nombre;
+                        // @ts-ignore
+                        document.getElementById("user-avatar").src =
+                            snap.data().foto ||
+                            user.photoURL ||
+                            `https://ui-avatars.com/api/?name=${snap.data().nombre}&background=0D8ABC&color=fff`;
+                        checkFav(user.uid);
+                    }
                 }
-                snap.forEach((doc) => {
-                    const d = doc.data();
-                    const date = d.fecha
-                        ? new Date(d.fecha.seconds * 1000).toLocaleDateString()
-                        : "";
-                    const avatarSrc =
-                        d.clienteFoto ||
-                        `https://ui-avatars.com/api/?name=${d.clienteNombre}&background=random&color=fff&size=64`;
-                    list.innerHTML += `<div class="border-b border-gray-100 pb-4 last:border-0 mb-4"><div class="flex justify-between items-center mb-2"><div class="flex items-center gap-3"><img src="${avatarSrc}" class="w-8 h-8 rounded-full shadow-sm"><span class="font-bold text-sm text-gray-800">${d.clienteNombre}</span></div><span class="text-xs text-gray-400">${date}</span></div><div class="text-yellow-400 text-xs mb-2">${"★".repeat(d.estrellas)}</div><p class="text-sm text-gray-600 leading-relaxed">"${d.comentario}"</p></div>`;
+            });
+
+            const stars = document.querySelectorAll("#stars-selector span");
+            const ratingInput = document.getElementById("rating-val");
+            stars.forEach((s, idx) => {
+                s.addEventListener("click", () => {
+                    // @ts-ignore
+                    ratingInput.value = idx + 1;
+                    stars.forEach((st, i) =>
+                        st.classList.toggle("text-yellow-400", i <= idx),
+                    );
+                });
+            });
+
+            document
+                .getElementById("btn-send-review")
+                ?.addEventListener("click", async () => {
+                    // @ts-ignore
+                    const val = parseInt(ratingInput.value);
+                    // @ts-ignore
+                    const txt = document.getElementById("review-text").value;
+                    if (!val || !txt)
+                        return alert(
+                            "Por favor califica y escribe un comentario.",
+                        );
+                    try {
+                        // @ts-ignore
+                        await runTransaction(db, async (t) => {
+                            const ref = doc(
+                                collection(
+                                    db,
+                                    "profesionales",
+                                    idPro,
+                                    "resenas",
+                                ),
+                            );
+                            const proRef = doc(db, "profesionales", idPro);
+                            const proDoc = await t.get(proRef);
+                            const d = proDoc.data();
+                            const newTotal = (d.total_votos || 0) + 1;
+                            const newAvg =
+                                ((d.promedio || 0) * (d.total_votos || 0) +
+                                    val) /
+                                newTotal;
+                            // @ts-ignore
+                            const userName =
+                                document.getElementById("user-name").innerText;
+                            // @ts-ignore
+                            const userPic =
+                                document.getElementById("user-avatar").src;
+
+                            t.set(ref, {
+                                estrellas: val,
+                                comentario: txt,
+                                fecha: serverTimestamp(),
+                                clienteNombre: userName,
+                                clienteId: auth.currentUser.uid,
+                                clienteFoto: userPic,
+                            });
+                            t.update(proRef, {
+                                total_votos: newTotal,
+                                promedio: newAvg,
+                            });
+                        });
+                        alert("¡Opinión publicada!");
+                        window.location.reload();
+                    } catch (e) {
+                        console.error(e);
+                        alert("Error al publicar.");
+                    }
+                });
+        }
+
+        async function checkFav(uid) {
+            const btn = document.getElementById("btn-fav");
+            if (!btn) return;
+            const snap = await getDoc(doc(db, "clientes", uid));
+            if (snap.exists() && snap.data().favoritos?.includes(idPro))
+                btn.style.color = "#ef4444";
+            btn.addEventListener("click", async () => {
+                const ref = doc(db, "clientes", uid);
+                const isRed = btn.style.color === "rgb(239, 68, 68)";
+                btn.style.color = isRed ? "#d1d5db" : "#ef4444";
+                // @ts-ignore
+                await runTransaction(db, async (t) => {
+                    const d = await t.get(ref);
+                    let favs = d.data().favoritos || [];
+                    if (isRed) favs = favs.filter((id) => id !== idPro);
+                    else if (!favs.includes(idPro)) favs.push(idPro);
+                    t.update(ref, { favoritos: favs });
                 });
             });
         }
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const snap = await getDoc(doc(db, "clientes", user.uid));
-                if (snap.exists()) {
-                    document
-                        .getElementById("guest-view")
-                        ?.classList.add("hidden");
-                    document
-                        .getElementById("user-view")
-                        ?.classList.remove("hidden");
-                    // @ts-ignore
-                    document.getElementById("user-name").innerText =
-                        snap.data().nombre;
-                    // @ts-ignore
-                    document.getElementById("user-avatar").src =
-                        snap.data().foto ||
-                        user.photoURL ||
-                        `https://ui-avatars.com/api/?name=${snap.data().nombre}&background=0D8ABC&color=fff`;
-                    checkFav(user.uid);
-                }
-            }
-        });
-
-        const stars = document.querySelectorAll("#stars-selector span");
-        const ratingInput = document.getElementById("rating-val");
-        stars.forEach((s, idx) => {
-            s.addEventListener("click", () => {
-                // @ts-ignore
-                ratingInput.value = idx + 1;
-                stars.forEach((st, i) =>
-                    st.classList.toggle("text-yellow-400", i <= idx),
-                );
-            });
-        });
-
+        // 🚩 REPORTAR PERFIL
         document
-            .getElementById("btn-send-review")
+            .getElementById("btn-report-profile")
             ?.addEventListener("click", async () => {
-                // @ts-ignore
-                const val = parseInt(ratingInput.value);
-                // @ts-ignore
-                const txt = document.getElementById("review-text").value;
-                if (!val || !txt)
-                    return alert("Por favor califica y escribe un comentario.");
-                try {
-                    // @ts-ignore
-                    await runTransaction(db, async (t) => {
-                        const ref = doc(
-                            collection(db, "profesionales", idPro, "resenas"),
-                        );
-                        const proRef = doc(db, "profesionales", idPro);
-                        const proDoc = await t.get(proRef);
-                        const d = proDoc.data();
-                        const newTotal = (d.total_votos || 0) + 1;
-                        const newAvg =
-                            ((d.promedio || 0) * (d.total_votos || 0) + val) /
-                            newTotal;
-                        // @ts-ignore
-                        const userName =
-                            document.getElementById("user-name").innerText;
-                        // @ts-ignore
-                        const userPic =
-                            document.getElementById("user-avatar").src;
-
-                        t.set(ref, {
-                            estrellas: val,
-                            comentario: txt,
-                            fecha: serverTimestamp(),
-                            clienteNombre: userName,
-                            clienteId: auth.currentUser.uid,
-                            clienteFoto: userPic,
-                        });
-                        t.update(proRef, {
-                            total_votos: newTotal,
-                            promedio: newAvg,
-                        });
-                    });
-                    alert("¡Opinión publicada!");
-                    window.location.reload();
-                } catch (e) {
-                    console.error(e);
-                    alert("Error al publicar.");
-                }
-            });
-    }
-
-    async function checkFav(uid) {
-        const btn = document.getElementById("btn-fav");
-        if (!btn) return;
-        const snap = await getDoc(doc(db, "clientes", uid));
-        if (snap.exists() && snap.data().favoritos?.includes(idPro))
-            btn.style.color = "#ef4444";
-        btn.addEventListener("click", async () => {
-            const ref = doc(db, "clientes", uid);
-            const isRed = btn.style.color === "rgb(239, 68, 68)";
-            btn.style.color = isRed ? "#d1d5db" : "#ef4444";
-            // @ts-ignore
-            await runTransaction(db, async (t) => {
-                const d = await t.get(ref);
-                let favs = d.data().favoritos || [];
-                if (isRed) favs = favs.filter((id) => id !== idPro);
-                else if (!favs.includes(idPro)) favs.push(idPro);
-                t.update(ref, { favoritos: favs });
-            });
-        });
-    }
-
-    // 🚩 REPORTAR PERFIL
-    document.getElementById("btn-report-profile")?.addEventListener("click", async () => {
-        const { value: formValues } = await Swal.fire({
-            title: '🚩 Reportar Perfil',
-            html: `
+                const { value: formValues } = await Swal.fire({
+                    title: "🚩 Reportar Perfil",
+                    html: `
                 <div class="text-left">
                     <p class="text-sm text-gray-600 mb-4">Ayúdanos a mantener la comunidad segura reportando perfiles inapropiados.</p>
                     <label class="block text-xs font-bold text-gray-700 mb-2">Motivo del reporte:</label>
@@ -1206,135 +1217,177 @@ const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
                     <textarea id="report-description" class="w-full border p-2 rounded" rows="3" placeholder="Describe el problema..."></textarea>
                 </div>
             `,
-            showCancelButton: true,
-            confirmButtonText: 'Enviar Reporte',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#ef4444',
-            preConfirm: () => {
-                const reason = document.getElementById('report-reason').value;
-                const description = document.getElementById('report-description').value;
-                
-                if (!reason) {
-                    Swal.showValidationMessage('Por favor selecciona un motivo');
-                    return false;
-                }
-                
-                return { reason, description };
-            }
-        });
+                    showCancelButton: true,
+                    confirmButtonText: "Enviar Reporte",
+                    cancelButtonText: "Cancelar",
+                    confirmButtonColor: "#ef4444",
+                    preConfirm: () => {
+                        const reason =
+                            document.getElementById("report-reason").value;
+                        const description =
+                            document.getElementById("report-description").value;
 
-        if (formValues) {
-            try {
-                const user = auth.currentUser;
-                if (!user) {
-                    Swal.fire('Error', 'Debes iniciar sesión para reportar', 'error');
-                    return;
-                }
+                        if (!reason) {
+                            Swal.showValidationMessage(
+                                "Por favor selecciona un motivo",
+                            );
+                            return false;
+                        }
 
-                // Guardar reporte en Firestore
-                await addDoc(collection(db, "reportes_perfiles"), {
-                    perfilReportado: idProfesional,
-                    nombreReportado: profesional.nombre,
-                    reportadoPor: user.uid,
-                    motivo: formValues.reason,
-                    descripcion: formValues.description || "",
-                    fecha: new Date(),
-                    estado: "pendiente"
+                        return { reason, description };
+                    },
                 });
+
+                if (formValues) {
+                    try {
+                        const user = auth.currentUser;
+                        if (!user) {
+                            Swal.fire(
+                                "Error",
+                                "Debes iniciar sesión para reportar",
+                                "error",
+                            );
+                            return;
+                        }
+
+                        // Guardar reporte en Firestore
+                        await addDoc(collection(db, "reportes_perfiles"), {
+                            perfilReportado: idProfesional,
+                            nombreReportado: profesional.nombre,
+                            reportadoPor: user.uid,
+                            motivo: formValues.reason,
+                            descripcion: formValues.description || "",
+                            fecha: new Date(),
+                            estado: "pendiente",
+                        });
+
+                        Swal.fire({
+                            icon: "success",
+                            title: "Reporte Enviado",
+                            text: "Gracias por ayudarnos a mantener la comunidad segura. Revisaremos tu reporte pronto.",
+                            confirmButtonColor: "#10b981",
+                        });
+                    } catch (error) {
+                        console.error("Error enviando reporte:", error);
+                        Swal.fire(
+                            "Error",
+                            "No se pudo enviar el reporte. Intenta nuevamente.",
+                            "error",
+                        );
+                    }
+                }
+            });
+
+        // 📱 MOSTRAR QR
+        document
+            .getElementById("btn-show-qr")
+            ?.addEventListener("click", () => {
+                const profileUrl = window.location.href;
 
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Reporte Enviado',
-                    text: 'Gracias por ayudarnos a mantener la comunidad segura. Revisaremos tu reporte pronto.',
-                    confirmButtonColor: '#10b981'
-                });
-            } catch (error) {
-                console.error("Error enviando reporte:", error);
-                Swal.fire('Error', 'No se pudo enviar el reporte. Intenta nuevamente.', 'error');
-            }
-        }
-    });
-
-    // 📱 MOSTRAR QR
-    document.getElementById("btn-show-qr")?.addEventListener("click", () => {
-        const profileUrl = window.location.href;
-        
-        Swal.fire({
-            title: '📱 Código QR',
-            html: `
+                    title: "📱 Código QR",
+                    html: `
                 <div class="text-center">
                     <p class="text-sm text-gray-600 mb-4">Escanea este código para ver el perfil</p>
                     <div id="qr-container" class="flex justify-center"></div>
                     <p class="text-xs text-gray-500 mt-4">${profileUrl}</p>
                 </div>
             `,
-            width: 400,
-            showConfirmButton: false,
-            showCloseButton: true,
-            didOpen: () => {
-                // Generar QR usando API pública
-                const qrContainer = document.getElementById('qr-container');
-                const qrImg = document.createElement('img');
-                qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(profileUrl)}`;
-                qrImg.className = 'mx-auto rounded-lg shadow-md';
-                qrContainer.appendChild(qrImg);
-            }
-        });
-    });
-
-    // 💳 DESCARGAR TARJETA DIGITAL
-    document.getElementById("btn-download-card")?.addEventListener("click", async () => {
-        try {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({
-                orientation: 'landscape',
-                unit: 'mm',
-                format: [85.6, 53.98] // Tamaño tarjeta de crédito
+                    width: 400,
+                    showConfirmButton: false,
+                    showCloseButton: true,
+                    didOpen: () => {
+                        // Generar QR usando API pública
+                        const qrContainer =
+                            document.getElementById("qr-container");
+                        const qrImg = document.createElement("img");
+                        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(profileUrl)}`;
+                        qrImg.className = "mx-auto rounded-lg shadow-md";
+                        qrContainer.appendChild(qrImg);
+                    },
+                });
             });
 
-            // Fondo degradado
-            doc.setFillColor(147, 51, 234); // Purple
-            doc.rect(0, 0, 85.6, 53.98, 'F');
-            
-            // Nombre
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(16);
-            doc.setFont(undefined, 'bold');
-            doc.text(profesional.nombre, 8, 15);
-            
-            // Rubro
-            doc.setFontSize(10);
-            doc.setFont(undefined, 'normal');
-            doc.text(profesional.rubro_principal, 8, 22);
-            
-            // Teléfono
-            if (profesional.telefono) {
-                doc.setFontSize(12);
-                doc.text(`📱 ${profesional.telefono}`, 8, 35);
-            }
-            
-            // URL del perfil
-            doc.setFontSize(8);
-            doc.text(window.location.href, 8, 48);
-            
-            // Logo/Badge
-            doc.setFontSize(20);
-            doc.text('⚡', 70, 15);
-            
-            // Descargar
-            doc.save(`tarjeta-${profesional.nombre.replace(/\s+/g, '-')}.pdf`);
-            
-            Swal.fire({
-                icon: 'success',
-                title: '¡Descargado!',
-                text: 'Tu tarjeta digital está lista',
-                timer: 2000,
-                showConfirmButton: false
+        // 💳 DESCARGAR TARJETA DIGITAL
+        document
+            .getElementById("btn-download-card")
+            ?.addEventListener("click", async () => {
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({
+                        orientation: "landscape",
+                        unit: "mm",
+                        format: [85.6, 53.98], // Tamaño tarjeta de crédito
+                    });
+
+                    // Fondo degradado
+                    doc.setFillColor(147, 51, 234); // Purple
+                    doc.rect(0, 0, 85.6, 53.98, "F");
+
+                    // Nombre
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(16);
+                    doc.setFont(undefined, "bold");
+                    doc.text(profesional.nombre, 8, 15);
+
+                    // Rubro
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, "normal");
+                    doc.text(profesional.rubro_principal, 8, 22);
+
+                    // Teléfono
+                    if (profesional.telefono) {
+                        doc.setFontSize(12);
+                        doc.text(`📱 ${profesional.telefono}`, 8, 35);
+                    }
+
+                    // URL del perfil
+                    doc.setFontSize(8);
+                    doc.text(window.location.href, 8, 48);
+
+                    // Logo/Badge
+                    doc.setFontSize(20);
+                    doc.text("⚡", 70, 15);
+
+                    // Descargar
+                    doc.save(
+                        `tarjeta-${profesional.nombre.replace(/\s+/g, "-")}.pdf`,
+                    );
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "¡Descargado!",
+                        text: "Tu tarjeta digital está lista",
+                        timer: 2000,
+                        showConfirmButton: false,
+                    });
+                } catch (error) {
+                    console.error("Error generando tarjeta:", error);
+                    Swal.fire(
+                        "Error",
+                        "No se pudo generar la tarjeta",
+                        "error",
+                    );
+                }
             });
-        } catch (error) {
-            console.error('Error generando tarjeta:', error);
-            Swal.fire('Error', 'No se pudo generar la tarjeta', 'error');
-        }
-    });
-}); // End of astro:page-load
+    }); // End of astro:page-load
 </script>
+
+<style>
+    /* Fix map */
+    #mini-map {
+        height: 200px;
+        width: 100%;
+        background: #f0f0f0;
+        z-index: 1;
+        min-height: 200px; /* Force height */
+    }
+    .leaflet-container {
+        font-family: inherit;
+    }
+
+    /* Ensure modal overlay is above everything */
+    #budget-modal {
+        z-index: 9999;
+    }
+</style>

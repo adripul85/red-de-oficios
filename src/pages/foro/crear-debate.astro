@@ -247,19 +247,47 @@ const groups = Object.keys(CATEGORY_MAP);
                     </ul>
                 </div>
 
-                <div class="bg-white border border-slate-200 rounded-xl p-6">
-                    <h3 class="font-serif font-bold text-slate-800 mb-4">
-                        Normas básicas
+                <div
+                    class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm"
+                >
+                    <h3
+                        class="font-serif font-bold text-slate-800 mb-4 flex items-center gap-2"
+                    >
+                        <span>📜</span> Normas de la comunidad
                     </h3>
-                    <p class="text-sm text-slate-500 mb-4 leading-relaxed">
-                        Queremos que este sea un espacio útil y respetuoso para
-                        todos los profesionales y clientes.
-                    </p>
+                    <ul
+                        class="space-y-3 text-sm text-slate-600 leading-relaxed mb-6"
+                    >
+                        <li class="flex gap-2">
+                            <span class="text-green-500 font-bold">✓</span>
+                            <span
+                                >Sé respetuoso y amable con todos los miembros.</span
+                            >
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="text-green-500 font-bold">✓</span>
+                            <span
+                                >Aporta valor: respuestas útiles y
+                                constructivas.</span
+                            >
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="text-red-500 font-bold">✗</span>
+                            <span>No hagas spam ni autopromoción excesiva.</span
+                            >
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="text-red-500 font-bold">✗</span>
+                            <span
+                                >Evita temas políticos o religiosos polémicos.</span
+                            >
+                        </li>
+                    </ul>
                     <a
                         href="/foro/reglas"
-                        class="text-sm font-bold text-[#FF5A5F] hover:underline"
+                        class="block w-full text-center bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold py-3 rounded-lg border border-slate-200 transition-colors text-sm"
                     >
-                        Ver normas de la comunidad →
+                        Leer reglamento completo
                     </a>
                 </div>
             </aside>

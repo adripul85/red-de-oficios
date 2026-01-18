@@ -105,9 +105,9 @@ function getRelativeTime(date) {
 }
 ---
 
-<Layout title="Comunidad - DeOficios">
+<Layout title="Comunidad - DeOficios" hideIA={true}>
     <link
-        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Gravitas+One&family=Montserrat:wght@400;500;600;700&display=swap"
         rel="stylesheet"
     />
     <script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
@@ -117,7 +117,7 @@ function getRelativeTime(date) {
         <section class="bg-white border-b border-gray-200 pt-12 pb-12 px-4">
             <div class="max-w-6xl mx-auto text-center">
                 <h1
-                    class="text-4xl md:text-6xl font-serif text-slate-800 mb-4 leading-tight"
+                    class="text-4xl md:text-6xl font-gravitas text-slate-800 mb-4 leading-tight"
                 >
                     La Comunidad de Oficios
                 </h1>
@@ -338,7 +338,7 @@ function getRelativeTime(date) {
 
         <a
             href="/foro/crear-debate"
-            class="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-[#FF5A5F] text-white rounded-full shadow-xl flex items-center justify-center z-50 text-2xl hover:scale-110 transition"
+            class="lg:hidden fixed bottom-48 right-6 w-14 h-14 bg-[#FF5A5F] text-white rounded-full shadow-xl flex items-center justify-center z-50 text-2xl hover:scale-110 transition"
         >
             ✍️
         </a>
@@ -361,7 +361,7 @@ function getRelativeTime(date) {
             id="sidebar-content"
         >
             <div class="flex justify-between items-center mb-6">
-                <h3 class="font-serif font-bold text-xl text-slate-800">
+                <h3 class="font-gravitas font-bold text-xl text-slate-800">
                     Comunidad
                 </h3>
                 <button
@@ -446,10 +446,10 @@ function getRelativeTime(date) {
 
 <style>
     body {
-        font-family: "Inter", sans-serif;
+        font-family: "Montserrat", sans-serif;
     }
-    .font-serif {
-        font-family: "DM Serif Display", serif;
+    .font-gravitas {
+        font-family: "Gravitas One", cursive;
     }
 </style>
 
