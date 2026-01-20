@@ -609,7 +609,7 @@ import ProfileReviews from "../components/profile/ProfileReviews.jsx";
 
                         // Guardar reporte en Firestore
                         await addDoc(collection(db, "reportes_perfiles"), {
-                            perfilReportado: idProfesional,
+                            perfilReportado: idPro,
                             nombreReportado: profesional.nombre,
                             reportadoPor: user.uid,
                             motivo: formValues.reason,
