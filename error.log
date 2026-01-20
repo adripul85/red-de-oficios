@@ -1,0 +1,10 @@
+[31m[1m14:53:58[22m [ERROR] [vite][39m [31m✗[39m Build failed in 250ms
+Unexpected ")"
+  [1mLocation:[22m
+    [4mD:/Documentos web/backup/Screenshot 08-01 - copia/reddeoficio/src/pages/panel/presupuestos.astro?astro&type=script&index=0&lang.ts:201:20[24m
+  [1mStack trace:[22m
+[2m    at failureErrorWithLog (D:\Documentos web\backup\Screenshot 08-01 - copia\reddeoficio\node_modules\esbuild\lib\main.js:1467:15)
+    at responseCallbacks.<computed> (D:\Documentos web\backup\Screenshot 08-01 - copia\reddeoficio\node_modules\esbuild\lib\main.js:603:9)
+    at Socket.readFromStdout (D:\Documentos web\backup\Screenshot 08-01 - copia\reddeoficio\node_modules\esbuild\lib\main.js:581:7)
+    at addChunk (node:internal/streams/readable:559:12)
+    at Readable.push (node:internal/streams/readable:390:5)[22m
