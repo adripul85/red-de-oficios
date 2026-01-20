@@ -94,14 +94,14 @@ import Footer from '../components/Footer.astro';
   e.preventDefault();
   
   // 1. Capturamos los valores
-  const nombre = document.getElementById('nombre').value;
-  const telefono = document.getElementById('telefono').value;
+  const nombre = (document.getElementById('nombre') as HTMLInputElement).value;
+  const telefono = (document.getElementById('telefono') as HTMLInputElement).value;
   // NUEVO: Capturamos el precio
-  const precio = document.getElementById('precio').value; 
-  const zona = document.getElementById('zona').value;
-  const categoria = document.getElementById('categoria').value;
-  const descripcion = document.getElementById('descripcion').value;
-    const es_24hs = document.getElementById('es_24hs').checked;
+  const precio = (document.getElementById('precio') as HTMLInputElement).value;
+  const zona = (document.getElementById('zona') as HTMLInputElement).value;
+  const categoria = (document.getElementById('categoria') as HTMLSelectElement).value;
+  const descripcion = (document.getElementById('descripcion') as HTMLTextAreaElement).value;
+    const es_24hs = (document.getElementById('es_24hs') as HTMLInputElement).checked;
   try {
     // 2. Guardamos en Firebase
     await addDoc(collection(db, "profesionales"), {

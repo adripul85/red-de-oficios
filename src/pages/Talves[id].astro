@@ -22,7 +22,9 @@ const { id } = Astro.params; // Esto captura lo que va en la URL
     </div>
 </Layout>
 
-<script define:vars={{ id }}>
+<div id="profile-data-id" data-id={id} class="hidden"></div>
+
+<script>
     import { db } from "../../firebase/client";
     import {
         collection,
@@ -34,6 +36,10 @@ const { id } = Astro.params; // Esto captura lo que va en la URL
     } from "firebase/firestore";
 
     async function loadProfile() {
+        const dataElement = document.getElementById("profile-data-id");
+        if (!dataElement) return;
+        const id = dataElement.dataset.id;
+
         console.log("Buscando perfil:", id);
 
         // Intenta buscar por SLUG primero

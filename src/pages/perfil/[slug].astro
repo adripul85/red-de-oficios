@@ -310,7 +310,9 @@ if (!profesional) return Astro.redirect("/404");
     })}
 />
 
-<script define:vars={{ idProfesional }}>
+<div id="profesional-data" data-id={idProfesional} class="hidden"></div>
+
+<script>
     import { onAuthStateChanged } from "firebase/auth";
     import { auth, db } from "../../firebase/client";
     import {
@@ -330,8 +332,16 @@ if (!profesional) return Astro.redirect("/404");
     document.addEventListener("astro:page-load", () => {
         console.log("🚀 [PERFIL] Página cargada/navegada");
 
+        const dataElement = document.getElementById("profesional-data");
+        if (!dataElement) return;
+        const idProfesional = dataElement.dataset.id;
+        if (!idProfesional) return;
+
         const guestView = document.getElementById("guest-view");
         const userView = document.getElementById("user-view");
+
+        if (!guestView || !userView) return;
+
         let currentUser = null;
 
         // 1. DETECTAR USUARIO (CLIENTE)
@@ -347,12 +357,15 @@ if (!profesional) return Astro.redirect("/404");
                     guestView.classList.add("hidden");
                     userView.classList.remove("hidden");
 
-                    document.getElementById("user-name-display").innerText =
-                        cliente.nombre;
+                    const userNameDisplay = document.getElementById("user-name-display");
+                    if (userNameDisplay) userNameDisplay.innerText = cliente.nombre;
+
                     const foto =
                         cliente.foto ||
                         `https://ui-avatars.com/api/?name=${cliente.nombre}&background=random`;
-                    document.getElementById("user-avatar").src = foto;
+
+                    const userAvatar = document.getElementById("user-avatar") as HTMLImageElement;
+                    if (userAvatar) userAvatar.src = foto;
                 } else {
                     // Es logueado pero NO es cliente (quizás es el mismo profesional)
                     if (user.uid === idProfesional) {
@@ -368,7 +381,7 @@ if (!profesional) return Astro.redirect("/404");
 
         // 2. LÓGICA DE ESTRELLAS
         const stars = document.querySelectorAll("#stars-selector .star");
-        const ratingInput = document.getElementById("rating-value");
+        const ratingInput = document.getElementById("rating-value") as HTMLInputElement;
         const ratingText = document.getElementById("rating-text");
         const labels = [
             "Malo 😡",
@@ -378,33 +391,38 @@ if (!profesional) return Astro.redirect("/404");
             "Excelente 🔥",
         ];
 
-        stars.forEach((star, index) => {
-            star.addEventListener("click", () => {
-                const value = index + 1;
-                ratingInput.value = value;
-                ratingText.innerText = labels[index];
+        if (ratingInput && ratingText) {
+            stars.forEach((star, index) => {
+                star.addEventListener("click", () => {
+                    const value = index + 1;
+                    ratingInput.value = value.toString();
+                    ratingText.innerText = labels[index];
 
-                // Pintar estrellas
-                stars.forEach((s, i) => {
-                    if (i < value) s.classList.add("text-yellow-400");
-                    else s.classList.remove("text-yellow-400");
+                    // Pintar estrellas
+                    stars.forEach((s, i) => {
+                        if (i < value) s.classList.add("text-yellow-400");
+                        else s.classList.remove("text-yellow-400");
+                    });
                 });
             });
-        });
+        }
 
         // 3. PUBLICAR RESEÑA
-        const btnSubmit = document.getElementById("btn-submit-review");
-        btnSubmit.addEventListener("click", async () => {
-            const rating = parseInt(ratingInput.value);
-            const comment = document.getElementById("review-comment").value;
+        const btnSubmit = document.getElementById("btn-submit-review") as HTMLButtonElement;
 
-            if (rating === 0)
-                return alert("Por favor selecciona las estrellas.");
-            if (comment.length < 5)
-                return alert("Escribe un comentario un poco más largo.");
+        if (btnSubmit && ratingInput) {
+            btnSubmit.addEventListener("click", async () => {
+                const rating = parseInt(ratingInput.value);
+                const commentInput = document.getElementById("review-comment") as HTMLTextAreaElement;
+                const comment = commentInput ? commentInput.value : "";
 
-            btnSubmit.disabled = true;
-            btnSubmit.innerText = "Publicando...";
+                if (rating === 0)
+                    return alert("Por favor selecciona las estrellas.");
+                if (comment.length < 5)
+                    return alert("Escribe un comentario un poco más largo.");
+
+                btnSubmit.disabled = true;
+                btnSubmit.innerText = "Publicando...";
 
             try {
                 // TRANSACCIÓN: Guardar reseña + Actualizar promedio del profesional
@@ -452,6 +470,7 @@ if (!profesional) return Astro.redirect("/404");
                 btnSubmit.innerText = "Publicar Reseña";
             }
         });
+        }
 
         // 4. CARGAR RESEÑAS EXISTENTES
         async function loadReviews() {

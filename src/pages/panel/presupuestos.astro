@@ -551,6 +551,11 @@ import { auth, db } from "../../firebase/client";
                 const modalContent = document.getElementById("modal-content");
                 const form = document.getElementById("form-presupuesto");
 
+                if (!loadingState || !emptyState || !contentTable || !listContainer || !modal || !modalContent || !form) {
+                    console.error("Faltan elementos del DOM");
+                    return;
+                }
+
                 let currentUser = null;
                 let items = [{ desc: "", cant: 1, precio: 0 }];
                 let allPresupuestos = {}; // Store fetched data by ID
