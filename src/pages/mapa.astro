@@ -126,7 +126,7 @@ const prosJson = JSON.stringify(profesionales);
       >
     </div>
 
-    <div id="map" class="map-container"></div>
+    <div id="map" class="map-container" data-pros={prosJson}></div>
   </div>
 </Layout>
 
@@ -137,7 +137,7 @@ const prosJson = JSON.stringify(profesionales);
 <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
 ></script>
 
-<script is:inline define:vars={{ prosJson }}>
+<script is:inline>
   // Variable global para limpiar el mapa anterior
   let mapInstance = null;
 
@@ -214,7 +214,10 @@ const prosJson = JSON.stringify(profesionales);
       const goldIcon = IconFactory("gold"); // PRO
       const blueIcon = IconFactory("blue"); // BASIC
 
+      const mapContainer = document.getElementById("map");
+      const prosJson = mapContainer.dataset.pros;
       const pros = JSON.parse(prosJson);
+
       console.log(`📍 [MAPA] Agregando ${pros.length} marcadores...`);
       const markers = [];
 

@@ -528,15 +528,6 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     items = [{ desc: "", cant: 1, precio: 0 }];
                     renderItems();
                 }
-                        "hidden",
-                        "opacity-0",
-                        "pointer-events-none",
-                    );
-                    modalContent.classList.remove("scale-95");
-                    modalContent.classList.add("scale-100");
-                    items = [{ desc: "", cant: 1, precio: 0 }];
-                    renderItems();
-                }
 
                 function closeModal() {
                     if (!modal || !modalContent) return;

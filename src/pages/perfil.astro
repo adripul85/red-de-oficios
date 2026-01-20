@@ -453,35 +453,6 @@ import ProfileReviews from "../components/profile/ProfileReviews.jsx";
 <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
 ></script>
 
-<script
-            doc.setTextColor(...textGray);
-            doc.setFont(undefined, "normal");
-            doc.text(
-                "Los precios son estimativos y pueden variar segun complejidad del trabajo.",
-                105,
-                pageHeight - 20,
-                { align: "center" },
-            );
-
-            // Branding
-            doc.setFontSize(9);
-            doc.setTextColor(...primaryDark);
-            doc.setFont(undefined, "bold");
-            doc.text("DeOficios.com.ar", 105, pageHeight - 12, {
-                align: "center",
-            });
-
-            doc.setFontSize(7);
-            doc.setTextColor(...textGray);
-            doc.setFont(undefined, "normal");
-            doc.text(
-                "Conectando profesionales con clientes desde 2024",
-                105,
-                pageHeight - 7,
-                { align: "center" },
-            );
-
-            // Guardar
 <script is:inline>
     document.addEventListener("astro:page-load", () => {
         // MAPA

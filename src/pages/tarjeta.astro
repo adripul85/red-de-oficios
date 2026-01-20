@@ -68,13 +68,14 @@ const numRating = parseFloat(rating);
             href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
             rel="stylesheet"
         />
-        <script define:vars={{ primary: "#A04A26" }}>
+        <script is:inline>
+            const primary = "#A04A26";
             tailwind.config = {
                 darkMode: "class",
                 theme: {
                     extend: {
                         colors: {
-                            primary: "#A04A26", // Rich Terracotta
+                            primary: primary, // Rich Terracotta
                             cream: "#FDF5E6", // Soft Natural Cream
                             charcoal: "#2C2420", // Deep Charcoal / Dark Brown
                             "accent-muted": "#8B6F63", // Muted earth tone for secondary labels

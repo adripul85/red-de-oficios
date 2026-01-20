@@ -230,7 +230,7 @@ if (!profesional) return Astro.redirect("/404");
                     </div>
                 </div>
 
-                <div id="reviews-list" class="space-y-4">
+                <div id="reviews-list" class="space-y-4" data-id-profesional={idProfesional}>
                     <div class="animate-pulse flex space-x-4">
                         <div class="h-10 w-10 bg-gray-200 rounded-full"></div>
                         <div class="flex-1 space-y-2 py-1">
@@ -310,7 +310,7 @@ if (!profesional) return Astro.redirect("/404");
     })}
 />
 
-<script define:vars={{ idProfesional }}>
+<script>
     import { onAuthStateChanged } from "firebase/auth";
     import { auth, db } from "../../firebase/client";
     import {
@@ -329,6 +329,11 @@ if (!profesional) return Astro.redirect("/404");
 
     document.addEventListener("astro:page-load", () => {
         console.log("🚀 [PERFIL] Página cargada/navegada");
+        const reviewsList = document.getElementById("reviews-list");
+        // @ts-ignore
+        const idProfesional = reviewsList?.dataset.idProfesional;
+
+        if (!idProfesional) return;
 
         const guestView = document.getElementById("guest-view");
         const userView = document.getElementById("user-view");

@@ -562,25 +562,29 @@ import ModernProfileCard from "../components/ModernProfileCard.astro";
 <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
 ></script>
 
-<script
-    is:inline
-    define:vars={{
-        portfolioJson,
-        serviciosJson,
-        nombre: profesional.nombre,
-        rubro: profesional.rubro_principal,
-        tel: profesional.telefono,
-        matricula: profesional.matricula,
-    }}
->
-    const images = JSON.parse(portfolioJson);
-    const services = JSON.parse(serviciosJson);
-    const proName = nombre;
-    const proRubro = rubro;
-    const proTel = tel;
-    const proMat = matricula;
+<div id="profile-data-hidden" class="hidden"
+    data-portfolio={portfolioJson}
+    data-services={serviciosJson}
+    data-name={profesional.nombre}
+    data-role={profesional.rubro_principal}
+    data-tel={profesional.telefono}
+    data-matricula={profesional.matricula}
+></div>
+
+<script is:inline>
     document.addEventListener("astro:page-load", () => {
         console.log("🚀 [PERFIL-INLINE] Página cargada/navegada");
+
+        const dataDiv = document.getElementById("profile-data-hidden");
+        if (!dataDiv) return;
+
+        const images = JSON.parse(dataDiv.dataset.portfolio || "[]");
+        const services = JSON.parse(dataDiv.dataset.services || "[]");
+        const proName = dataDiv.dataset.name;
+        const proRubro = dataDiv.dataset.role;
+        const proTel = dataDiv.dataset.tel;
+        const proMat = dataDiv.dataset.matricula;
+
         // LIGHTBOX
         const lightbox = document.getElementById("lightbox");
         const mainImg = document.getElementById("lightbox-img");
