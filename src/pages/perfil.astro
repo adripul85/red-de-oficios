@@ -1,7 +1,10 @@
-// @ts-nocheck
 ---
 import Layout from "../layouts/Layout.astro";
 import { db } from "../firebase/client";
+import ModernProfileCard from "../components/ModernProfileCard.astro";
+import ProfileLightbox from "../components/profile/ProfileLightbox.jsx";
+import ProfileBudgetModal from "../components/profile/ProfileBudgetModal.jsx";
+import ProfileReviews from "../components/profile/ProfileReviews.jsx";
 import { doc, getDoc, updateDoc, increment } from "firebase/firestore";
 
 const id = Astro.url.searchParams.get("id");
@@ -28,8 +31,6 @@ if (profesional.slug && profesional.web_propia) {
     return Astro.redirect(`/${profesional.slug}`);
 }
 
-
-
 // --- LÓGICA DE VISUALIZACIÓN ---
 const esExperto =
     profesional.plan === "experto" || profesional.plan === "semestral";
@@ -45,7 +46,7 @@ const seoTitle = profesional.seo_nombre || `${profesional.nombre} | DeOficios`;
 const seoDescription =
     profesional.seo_profesion ||
     `Contacta a ${profesional.nombre}, ${profesional.rubro_principal} en ${ubicacion}. Ver perfil, fotos y opiniones.`;
-const serviceIcons: Record<string, string> = {
+const serviceIcons = {
     "Aire Acondicionado": "❄️",
     Electricidad: "⚡",
     Electricista: "⚡",
@@ -67,7 +68,7 @@ const serviceIcons: Record<string, string> = {
     Durlock: "🏗️",
 };
 
-const getServiceIcon = (serviceName: any) => {
+const getServiceIcon = (serviceName) => {
     if (!serviceName || typeof serviceName !== "string") return "🛠️";
     // Buscar coincidencia parcial
     const lowerName = serviceName.toLowerCase();
@@ -80,9 +81,9 @@ const getServiceIcon = (serviceName: any) => {
 };
 
 const mappedServices = (profesional.servicios_lista || [])
-    .filter((s: any) => s)
+    .filter((s) => s)
     .slice(0, 4)
-    .map((s: any) => {
+    .map((s) => {
         const name = typeof s === 'string' ? s : (s.nombre || s.label || s.servicio || "Servicio");
         return {
             label: name,
@@ -122,11 +123,6 @@ for (let i = 0; i < levels.length; i++) {
         currentLevel = levels[i];
     }
 }
-
-import ModernProfileCard from "../components/ModernProfileCard.astro";
-import ProfileLightbox from "../components/profile/ProfileLightbox.jsx";
-import ProfileBudgetModal from "../components/profile/ProfileBudgetModal.jsx";
-import ProfileReviews from "../components/profile/ProfileReviews.jsx";
 ---
 
 <Layout
@@ -137,29 +133,56 @@ import ProfileReviews from "../components/profile/ProfileReviews.jsx";
     hideFooter={mostrarComoLanding}
     hideIA={mostrarComoLanding}
 >
-    <script
-        is:inline
-        src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
-    ></script>
+    <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script is:inline>
+        document.addEventListener("astro:page-load", () => {
+            const mapContainer = document.getElementById("mini-map");
+            if (mapContainer && window.L) {
+                const lat = parseFloat(mapContainer.dataset.lat);
+                const lng = parseFloat(mapContainer.dataset.lng);
+
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    if (mapContainer._leaflet_id) return; // Prevent re-initialization
+
+                    const map = L.map("mini-map", {
+                        center: [lat, lng],
+                        zoom: 15,
+                        attributionControl: false,
+                        zoomControl: false,
+                    });
+
+                    L.tileLayer(
+                        "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                        {
+                            maxZoom: 19,
+                        },
+                    ).addTo(map);
+
+                    const customIcon = L.divIcon({
+                        className: "custom-div-icon",
+                        html: "<div style='background-color: #ea580c; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);'></div>",
+                        iconSize: [12, 12],
+                        iconAnchor: [6, 6],
+                    });
+
+                    L.marker([lat, lng], { icon: customIcon }).addTo(map);
+                }
+            }
+        });
+    </script>
 
     {
         mostrarComoLanding ? (
             /* MODO LANDING NUEVO */
-            /* MODO LANDING NUEVO */
             <div class="landing-body font-sans min-h-screen bg-slate-100 flex items-center justify-center py-10 px-4 overflow-x-hidden">
                 <ModernProfileCard
                     name={profesional.nombre}
-                    role={
-                        profesional.seo_profesion || profesional.rubro_principal
-                    }
+                    role={profesional.seo_profesion || profesional.rubro_principal}
                     avatar={profesional.foto}
                     location={ubicacion}
                     rating={promedio.toFixed(1)}
-                    priceInfo={
-                        profesional.presupuestos_config?.activo
-                            ? "Presupuestos sin cargo"
-                            : "Consultar precio"
-                    }
+                    priceInfo={profesional.presupuestos_config?.activo ? "Presupuestos sin cargo" : "Consultar precio"}
                     services={mappedServices}
                     bio={profesional.descripcion}
                     experience={profesional.experiencia}
@@ -167,58 +190,55 @@ import ProfileReviews from "../components/profile/ProfileReviews.jsx";
                     tags={profesional.etiquetas}
                     whatsappUrl={`https://wa.me/549${profesional.telefono}?text=Hola, vi tu perfil en Red de Oficio y quería hacerte una consulta.`}
                 />
+                <div class="max-w-[360px] w-full mx-auto mt-8 bg-white/50 backdrop-blur-sm rounded-3xl p-6 border border-white/40 shadow-xl">
+                   <ProfileReviews client:visible idProfesional={idProfesional} />
+                </div>
             </div>
         ) : (
             /* MODO DIRECTORIO (NUEVO DISEÑO) */
             <div id="profile-directory" data-id={idProfesional} data-profesional-json={JSON.stringify(profesional)} class="bg-background-light font-sans min-h-screen text-neutral-black">
-                
-                <div class="max-w-5xl mx-auto px-6 md:px-12 lg:px-24 pt-8">
-                    <a href="/resultados" class="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-primary transition-colors">
-                        <span class="material-symbols-outlined text-lg">arrow_back</span>
-                        Volver a Resultados
+               <div class="max-w-5xl mx-auto px-6 md:px-12 lg:px-24 pt-8">
+                     <a href="/resultados" class="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-lg">arrow_back</span> Volver a Resultados
                     </a>
-                </div>
+               </div>
 
-                <main class="max-w-5xl mx-auto px-6 md:px-12 lg:px-24 py-10">
+               <main class="max-w-5xl mx-auto px-6 md:px-12 lg:px-24 py-10">
                     <!-- HEADER PROFILE CARD -->
                     <section class="bg-white rounded-xl p-6 md:p-8 mb-8 shadow-subtle flex flex-col md:flex-row justify-between items-center gap-6 border border-neutral-gray-light animate-fade-in-up">
                         <div class="flex flex-col md:flex-row items-center gap-8 text-center md:text-left w-full">
-                            <div class="relative group">
-                                <img 
-                                src={profesional.foto || ("https://ui-avatars.com/api/?name=" + profesional.nombre + "&background=random")} 
-                                    class="w-28 h-40 md:w-36 md:h-52 rounded-full border-4 border-white shadow-lg object-cover"
-                                />
+                             <div class="relative group">
+                                <img src={profesional.foto || ("https://ui-avatars.com/api/?name=" + profesional.nombre + "&background=random")} class="w-28 h-40 md:w-36 md:h-52 rounded-full border-4 border-white shadow-lg object-cover" />
                                 {profesional.verificado && (
                                     <div class="absolute bottom-2 right-2 bg-green-500 size-4 rounded-full border-2 border-white shadow-sm" title="En línea"></div>
                                 )}
-                            </div>
-                            <div class="flex-1">
+                             </div>
+                             <div class="flex-1">
                                 <div class="flex flex-col md:flex-row items-center gap-3 mb-2 justify-center md:justify-start flex-wrap">
                                     <div class="flex flex-col">
-                                        <h1 class="text-2xl font-extrabold text-neutral-black tracking-tight leading-none">{profesional.nombre}</h1>
-                                        {profesional.nombre_fantasia && (
+                                         <h1 class="text-2xl font-extrabold text-neutral-black tracking-tight leading-none">{profesional.nombre}</h1>
+                                         {profesional.nombre_fantasia && (
                                             <span class="text-sm font-bold text-neutral-gray text-center md:text-left">{profesional.nombre_fantasia}</span>
-                                        )}
+                                         )}
                                     </div>
-                                    
                                     {profesional.cuit && (
                                         <span class="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded border border-slate-200" title="CUIT/CUIL">
                                             {profesional.cuit}
                                         </span>
                                     )}
-
                                     {profesional.matricula?.es_matriculado && (
                                         <span class="bg-primary/10 text-primary text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest border border-primary/20 whitespace-nowrap">
                                             Matrícula: {profesional.matricula.numero || "Verificada"}
                                         </span>
                                     )}
-                                    <span class="bg-black text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm border border-transparent whitespace-nowrap" title={"Nivel calculado: " + xp + " XP"}>
+                                     <span class="bg-black text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm border border-transparent whitespace-nowrap" title={"Nivel calculado: " + xp + " XP"}>
                                         {currentLevel.name}
                                     </span>
                                 </div>
                                 <p class="text-neutral-gray-dark font-medium flex items-center justify-center md:justify-start gap-1.5 text-sm">
                                     <span class="material-symbols-outlined text-primary text-base">location_on</span>
-                                    <span class="capitalize">{ubicacion}</span> • 
+                                    <span class="capitalize">{ubicacion}</span>
+                                     • 
                                     {profesional.verificado && (
                                         <span class="text-primary font-bold">Identidad Verificada</span>
                                     )}
@@ -227,21 +247,19 @@ import ProfileReviews from "../components/profile/ProfileReviews.jsx";
                                     )}
                                 </p>
                                 <div class="mt-4 flex flex-wrap justify-center md:justify-start gap-4">
-                                    <div class="flex items-center gap-1.5">
+                                     <div class="flex items-center gap-1.5">
                                         <span class="material-symbols-outlined text-primary fill-1 text-lg">star</span>
                                         <span class="font-bold text-neutral-black text-base">{promedio.toFixed(1)}</span>
                                         <span class="text-neutral-gray text-xs font-medium">({votos} reseñas)</span>
-                                    </div>
-                                    <div class="flex items-center gap-2 text-neutral-gray text-xs font-medium">
+                                     </div>
+                                     <div class="flex items-center gap-2 text-neutral-gray text-xs font-medium">
                                         <span class="material-symbols-outlined text-lg">work</span>
                                         {profesional.rubro_principal}
-                                    </div>
+                                     </div>
                                 </div>
-                            </div>
+                             </div>
                         </div>
-                        <div class="w-full md:w-auto">
-                        </div>
-                    </section>
+                   </section>
 
                     <!-- NAV TABS -->
                     <nav class="flex border-b border-neutral-gray-light mb-10 overflow-x-auto">
@@ -264,13 +282,13 @@ import ProfileReviews from "../components/profile/ProfileReviews.jsx";
                                 <div class="mt-10">
                                     <h3 class="text-xs font-black text-neutral-gray uppercase tracking-[0.2em] mb-6">Servicios Ofrecidos</h3>
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        {profesional.servicios_lista?.map((s: any) => (
+                                        {profesional.servicios_lista?.map((s) => (
                                             <div class="flex items-center gap-3 p-3 rounded-xl bg-white border border-neutral-gray-light hover:border-primary/40 transition-colors">
                                                 <span class="material-symbols-outlined text-primary text-xl">check_circle</span>
                                                 <span class="text-xs font-bold text-neutral-black capitalize">{typeof s === 'object' ? (s.nombre || s.label || "Servicio") : s}</span>
                                             </div>
                                         ))}
-                                        {profesional.etiquetas?.map((tag: string) => (
+                                        {profesional.etiquetas?.map((tag) => (
                                             <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-primary/40 transition-colors">
                                                 <span class="material-symbols-outlined text-primary text-xl">check_circle</span>
                                                 <span class="text-xs font-bold text-slate-600 capitalize">{tag}</span>
@@ -370,7 +388,7 @@ import ProfileReviews from "../components/profile/ProfileReviews.jsx";
                                         <div class="flex flex-col gap-1 text-sm pt-2 border-t border-dashed border-neutral-gray-light">
                                             <span class="text-neutral-gray font-bold uppercase tracking-wider text-[11px]">Medios de Pago</span>
                                             <div class="flex flex-wrap gap-1">
-                                                {profesional.formas_pago.map((pago: string) => (
+                                                {profesional.formas_pago.map((pago) => (
                                                     <span class="bg-slate-50 text-slate-600 px-2 py-0.5 rounded textxs border border-slate-100">{pago}</span>
                                                 ))}
                                             </div>
@@ -381,7 +399,7 @@ import ProfileReviews from "../components/profile/ProfileReviews.jsx";
                                         <div class="flex flex-col gap-1 text-sm pt-2 border-t border-dashed border-neutral-gray-light">
                                             <span class="text-neutral-gray font-bold uppercase tracking-wider text-[11px]">Zonas de Cobertura</span>
                                             <p class="text-neutral-black font-medium text-xs leading-relaxed">
-                                                {profesional.zonas.map((z: any) => typeof z === 'object' ? (z.nombre || z.label) : z).join(", ")}
+                                                {profesional.zonas.map((z) => typeof z === 'object' ? (z.nombre || z.label) : z).join(", ")}
                                             </p>
                                         </div>
                                     )}
@@ -411,31 +429,19 @@ import ProfileReviews from "../components/profile/ProfileReviews.jsx";
                         </aside>
                     </div>
                 </main>
-                
-                <ProfileLightbox client:load images={profesional.portfolio || []} />
-                
-                <ProfileBudgetModal
-                    client:load
-                    services={profesional.servicios_lista}
-                    proName={profesional.nombre}
-                    proRubro={profesional.rubro_principal}
-                    proTel={profesional.telefono}
-                    proMat={profesional.matricula}
-                />
             </div>
         )
     }
 
-    <ProfileLightbox client:load portfolio={profesional.portfolio} />
+    <ProfileLightbox client:load images={profesional.portfolio || []} />
 
-    <!-- Modal de Selección de Presupuesto -->
     <ProfileBudgetModal
         client:load
         services={profesional.servicios_lista}
-        profesionalName={profesional.nombre}
-        profesionalRubro={profesional.rubro_principal}
-        profesionalTel={profesional.telefono}
-        profesionalMatricula={profesional.matricula}
+        proName={profesional.nombre}
+        proRubro={profesional.rubro_principal}
+        proTel={profesional.telefono}
+        proMat={profesional.matricula}
     />
 </Layout>
 
@@ -443,62 +449,6 @@ import ProfileReviews from "../components/profile/ProfileReviews.jsx";
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 />
-<script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-></script>
-
-<!-- SCRIPT ROTO TEMPORALMENTE (Generación PDF)
-            doc.setTextColor(...textGray);
-            doc.setFont(undefined, "normal");
-            doc.text(
-                "Los precios son estimativos y pueden variar segun complejidad del trabajo.",
-                105,
-                pageHeight - 20,
-                { align: "center" },
-            );
-
-            // Branding
-            doc.setFontSize(9);
-            doc.setTextColor(...primaryDark);
-            doc.setFont(undefined, "bold");
-            doc.text("DeOficios.com.ar", 105, pageHeight - 12, {
-                align: "center",
-            });
-
-            doc.setFontSize(7);
-            doc.setTextColor(...textGray);
-            doc.setFont(undefined, "normal");
-            doc.text(
-                "Conectando profesionales con clientes desde 2024",
-                105,
-                pageHeight - 7,
-                { align: "center" },
-            );
-
-            // Save
-            doc.save(`Presupuesto_${profesional.nombre}_DeOficios.pdf`);
-
-            // Cerrar modal
-            document.getElementById("budget-modal").classList.add("hidden");
-            document.body.style.overflow = "auto";
-
-            Swal.fire({
-                title: "¡Presupuesto Descargado!",
-                text: "El PDF se guardó en tu dispositivo",
-                icon: "success",
-                confirmButtonColor: "#3b82f6",
-                showConfirmButton: false,
-            });
-        } catch (error) {
-            console.error("Error generando tarjeta:", error);
-            Swal.fire(
-                "Error",
-                "No se pudo generar la tarjeta",
-                "error",
-            );
-        }
-    });
-    }); // End of astro:page-load
--->
 
 <style>
     /* Fix map */
