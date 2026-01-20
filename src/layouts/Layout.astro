@@ -71,6 +71,11 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+		/>
+
 		<!-- Preload critical fonts for faster rendering -->
 		<link
 			rel="preload"
@@ -87,6 +92,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
 		<title>{title}</title>
 		<ClientRouter />
+
+		<!-- SweetAlert2 -->
+		<script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
+		></script>
 	</head>
 	<body>
 		<!-- PREMIUM SPLASH SCREEN (Apple Music Style) -->
@@ -142,7 +151,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 				});
 			}
 		</script>
-		{!hideIA && <IAFloatingButton />}
 	</body>
 </html>
 
@@ -212,11 +220,21 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
 	/* ========== CSS VARIABLES ========== */
 	:root {
-		--primary: #ea580c;
+		--primary: #a34320;
 		--bg-light: #f9fafb;
 		--font-body: "Inter", sans-serif;
 		--font-heading: "Montserrat", sans-serif;
 	}
+	/*:root {
+	original:#ea580c
+		--color-primary: #bf4f26;
+		--color-primary-dark: #a34320;
+		--color-deep-black: #1a1a1a;
+		--color-off-white: #ffffff;
+		--color-light-gray: #f9f9f9;
+		--color-medium-gray: #555555;
+		--color-border-gray: #e5e7eb;
+	}*/
 	html {
 		font-family: var(--font-body);
 		background: #ffffff;

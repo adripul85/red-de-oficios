@@ -1,51 +1,54 @@
 ---
 import { CATEGORIES } from "../../data/categories";
 
-// 1. Mapa de Iconos (Coincidiendo con tus nombres exactos)
+// 1. Mapa de Iconos Actualizado
 const iconMap: Record<string, string> = {
   // Urgencias
-  "Plomero (Urgencias)": "🚨",
-  "Electricista (Urgencias)": "⚡",
-  "Gasista (Urgencias)": "🔥",
-  "Cerrajero (24hs)": "🔑",
+  Plomero: "💧",
+  Electricista: "⚡",
+  Gasista: "🔥",
+  Cerrajero: "🔑",
+  Destapaciones: "🚽",
+  "Técnico de Aire Acondicionado": "❄️",
+  "Técnico de Electrodomésticos": "🔌",
   // Construcción
   Albañil: "🧱",
   Pintor: "🎨",
   Techista: "🏠",
-  "Colocador de Pisos / Revestimientos": "🔲",
+  "Colocador de Pisos/Ceramista": "🔲",
   Durlockero: "🏗️",
   Herrero: "⚒️",
   Carpintero: "🪚",
+  Vidriero: "🪟",
   // Mantenimiento
   Jardinero: "🌿",
   Piletero: "🏊",
   Persianista: "🪟",
-  Vidriero: "🪟",
-  Fumigador: "🦟",
-  Limpieza: "🧹",
-  // Servicios
-  "Fletero / Mudanzas": "🚚",
-  "Técnico de Aire Acondicionado": "❄️",
-  "Técnico de Electrodomésticos": "🔌",
-  "Instalador de Cámaras y Alarmas": "📹",
-  // Estética
-  "Peluquero / Estilista": "💇‍♀️",
-  "Manicura / Pedicura": "💅",
-  "Maquillador / Maquilladora": "💄",
-  Masajista: "💆‍♀️",
-  // Eventos
-  "Pastelero / Catering": "🎂",
-  "DJ / Sonidista": "🎧",
   Tapicero: "🛋️",
-  "Zapatero / Modista": "🧵",
+  "Sastre / Modista": "🧵",
+  Zapatero: "👞",
+  Relojero: "⌚",
+  Matricero: "🔩",
+  // Eventos
+  "Pastelero/a": "🎂",
+  "DJ / Sonido": "🎧",
+  Fletero: "🚚",
+  Fumigador: "🦟",
+  // Estética
+  "Peinador / Estilista": "💇‍♀️",
+  Barbero: "💈",
+  "Maquillador / Maquilladora": "💄",
+  "Manicura / Pedicura": "💅",
+  // Seguridad
+  "Instalador de Cámaras de Seguridad": "📹",
+  "Técnico de PC / Celulares": "💻",
   default: "🛠️",
 };
 
 // 2. Aplanar lista completa para el JS
 const allRubros = CATEGORIES.flatMap((grupo) =>
   grupo.trades.map((trade) => ({
-    nombre: trade.name,
-    // Usamos el nombre como slug para la búsqueda
+    name: trade.name,
     slug: trade.name,
     icon: iconMap[trade.name] || iconMap["default"],
   })),
@@ -72,74 +75,47 @@ const allRubros = CATEGORIES.flatMap((grupo) =>
 </section>
 
 <script>
-  // Script para manejar animaciones y lógica simple
   document.addEventListener("astro:page-load", () => {
     const container = document.getElementById("random-container");
-    if (!container) return;
+    const dataDiv = document.getElementById("rubros-data");
+    if (!container || !dataDiv) return;
 
-    // Categorias definidas por el usuario
-    const mainCategories = [
-      {
-        name: "Urgencias",
-        icon: "🚨",
-        slug: "Urgencias",
-        desc: "Plomero, Luz, Gas, Llaves",
-        link: "/resultados?q=Urgencias",
-      },
-      {
-        name: "Obra y Refacción",
-        icon: "🏗️",
-        slug: "Obra",
-        desc: "Albañil, Pintor, Techista",
-        link: "/resultados?q=Construcción",
-      },
-      {
-        name: "Hogar",
-        icon: "🏠",
-        slug: "Hogar",
-        desc: "Jardín, Pileta, Persiana",
-        link: "/resultados?q=Mantenimiento",
-      },
-      {
-        name: "Servicios",
-        icon: "🚛",
-        slug: "Servicios",
-        desc: "Fletes, Aire, Reparaciones",
-        link: "/resultados?q=Servicios",
-      },
-      {
-        name: "Estética",
-        icon: "💇",
-        slug: "Estética",
-        desc: "Peluquería, Manicura, Masaje",
-        link: "/resultados?q=Estética",
-      },
-      {
-        name: "Eventos",
-        icon: "🥳",
-        slug: "Eventos",
-        desc: "Pastelería, DJ, Sonido",
-        link: "/resultados?q=Eventos",
-      },
-    ];
+    const allRubros = JSON.parse(dataDiv.getAttribute("data-list") || "[]");
 
-    // GENERAR HTML
-    const cardsHTML = mainCategories
+    // Función para obtener aleatorios
+    /**
+     * @param {any[]} arr - The array to get a subarray from.
+     * @param {number} size - The desired size of the subarray.
+     * @returns {any[]} A new array containing random elements from the original array.
+     */
+    function getRandomSubarray(arr, size) {
+      const shuffled = [...arr].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, size);
+    }
+
+    const randomCategories = getRandomSubarray(allRubros, 12); // Mostramos 12 aleatorios
+
+    const cardsHTML = randomCategories
       .map(
         (cat) => `
-      <a href="${cat.link}" class="category-card fade-in">
+      <a href="/resultados?q=${encodeURIComponent(cat.slug)}" class="category-card fade-in">
         <span class="icon">${cat.icon}</span>
-        <span class="name">${cat.name}</span>
-        <span class="desc" style="font-size: 0.7rem; color: #9ca3af; text-align: center;">${cat.desc}</span>
+        <span class="name">${cat.name || "Rubro"}</span>
       </a>
     `,
       )
       .join("");
 
-    container.innerHTML = cardsHTML;
+    const viewAllCard = `
+      <a href="/resultados" class="category-card view-all fade-in">
+        <span class="icon">🔍</span>
+        <span class="name">Ver todos<br>los rubros</span>
+      </a>
+    `;
+
+    container.innerHTML = cardsHTML + viewAllCard;
   });
 
-  // Fallback por si no usas View Transitions
   document.addEventListener("DOMContentLoaded", () => {
     document.dispatchEvent(new Event("astro:page-load"));
   });

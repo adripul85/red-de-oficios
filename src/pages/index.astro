@@ -92,7 +92,14 @@ try {
               <a href={`/perfil?id=${pro.id}`} class="pro-card card-top">
                 <div class="pro-image">
                   {pro.foto ? (
-                    <img src={pro.foto} alt={`Foto de ${pro.nombre}`} />
+                    <img
+                      src={pro.foto}
+                      alt={`Foto de ${pro.nombre}`}
+                      loading="lazy"
+                      decoding="async"
+                      width="300"
+                      height="200"
+                    />
                   ) : (
                     <div class="placeholder">
                       {pro.nombre ? pro.nombre[0].toUpperCase() : "U"}
@@ -176,7 +183,14 @@ try {
               <a href={`/perfil?id=${pro.id}`} class="pro-card">
                 <div class="pro-image">
                   {pro.foto ? (
-                    <img src={pro.foto} alt={`Foto de ${pro.nombre}`} />
+                    <img
+                      src={pro.foto}
+                      alt={`Foto de ${pro.nombre}`}
+                      loading="lazy"
+                      decoding="async"
+                      width="300"
+                      height="180"
+                    />
                   ) : (
                     <div class="placeholder">
                       {pro.nombre ? pro.nombre[0].toUpperCase() : "U"}

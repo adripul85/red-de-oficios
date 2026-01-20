@@ -37,6 +37,11 @@ if (slug) {
 
 if (!profesional) return Astro.redirect("/404");
 
+// SI NO TIENE MODO LANDING ACTIVADO, REDIRECCIONAR AL PERFIL CON ID
+if (!profesional.web_propia) {
+    return Astro.redirect(`/perfil?id=${idProfesional}`);
+}
+
 // --- LÓGICA DE VISUALIZACIÓN ---
 const esExperto =
     profesional.plan === "experto" || profesional.plan === "semestral";
@@ -446,7 +451,14 @@ import ModernProfileCard from "../components/ModernProfileCard.astro";
                                             {ubicacion}
                                         </p>
                                     </div>
+                                    </div>
                                 )}
+                            
+                            <div class="mt-4 pt-4 border-t border-gray-100 text-center">
+                                <a href="/reportar" class="text-xs text-gray-400 hover:text-red-500 font-medium flex items-center justify-center gap-1 transition">
+                                    <span>🚩</span> Reportar este perfil
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </main>

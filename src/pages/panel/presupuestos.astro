@@ -1,5 +1,7 @@
 ---
 import { auth, db } from "../../firebase/client";
+import Sidebar from "../../components/panel/Sidebar.astro";
+import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 ---
 
 <html lang="es">
@@ -44,11 +46,6 @@ import { auth, db } from "../../firebase/client";
             .modal-content {
                 transition: transform 0.3s ease-in-out;
             }
-            /* Mobile Menu Toggle */
-            .mobile-menu-toggle {
-                transform: rotate(0deg);
-                transition: transform 0.3s ease-in-out;
-            }
 
             /* Page Transitions */
             @keyframes fadeIn {
@@ -65,213 +62,24 @@ import { auth, db } from "../../firebase/client";
             .fade-in {
                 animation: fadeIn 0.3s ease-out;
             }
-
-            /* Mobile Sidebar */
-            .mobile-sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease-in-out;
-            }
-
-            .mobile-sidebar.active {
-                transform: translateX(0);
-            }
-
-            /* Overlay */
-            .sidebar-overlay {
-                opacity: 0;
-                visibility: hidden;
-                transition:
-                    opacity 0.3s ease-in-out,
-                    visibility 0.3s ease-in-out;
-            }
-
-            .sidebar-overlay.active {
-                opacity: 1;
-                visibility: visible;
-            }
         </style>
     </head>
-    <body class="text-slate-800">
-        <!-- Mobile Sidebar Overlay -->
-        <div
-            id="sidebar-overlay"
-            class="sidebar-overlay fixed inset-0 bg-black/50 z-40 md:hidden"
-        >
-        </div>
-
+    <body
+        class="text-slate-800"
+        <!--
+        Mobile
+        Sidebar
+        Overlay
+        Removed
+        (handled
+        by
+        component)
+        --
+    >
         <div class="flex h-screen overflow-hidden">
-            <!-- SIDEBAR (Copiado de index.astro para consistencia) -->
-            <aside
-                class="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 h-full"
-            >
-                <div
-                    class="h-16 flex items-center px-6 border-b border-slate-100"
-                >
-                    <a href="/" class="text-xl font-bold text-slate-800">
-                        DeOficios<span class="text-orange-600">Pro</span>
-                    </a>
-                </div>
-                <div class="flex-1 overflow-y-auto py-4">
-                    <nav class="px-3 space-y-1">
-                        <a
-                            href="/panel"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
-                        >
-                            <span class="text-xl">📊</span>
-                            <span class="font-medium text-sm">Dashboard</span>
-                        </a>
-                        <a
-                            href="/panel/oportunidades"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
-                        >
-                            <span class="text-xl">🎯</span>
-                            <span class="font-medium text-sm"
-                                >Oportunidades</span
-                            >
-                        </a>
-                        <a
-                            href="/panel/presupuestos"
-                            class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg group transition-colors"
-                        >
-                            <span class="text-xl">📝</span>
-                            <span class="font-semibold text-sm"
-                                >Presupuestos</span
-                            >
-                        </a>
-                        <a
-                            href="/panel/finanzas"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
-                        >
-                            <span class="text-xl">💰</span>
-                            <span class="font-medium text-sm">Finanzas</span>
-                        </a>
-                        <a
-                            href="/panel/mi-equipo"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
-                        >
-                            <span class="text-xl">👷</span>
-                            <span class="font-medium text-sm">Mi Equipo</span>
-                        </a>
-                        <a
-                            href="/panel/clientes"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
-                        >
-                            <span class="text-xl">👥</span>
-                            <span class="font-medium text-sm">Clientes</span>
-                        </a>
-                    </nav>
-                </div>
-
-                <div
-                    class="mt-auto pt-4 border-t border-slate-200 space-y-2 p-4"
-                >
-                    <a
-                        href="/mi-perfil"
-                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                    >
-                        <span>👤</span>
-                        <span class="font-medium text-sm">Mi Perfil</span>
-                    </a>
-
-                    <button
-                        id="btn-logout"
-                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-red-600 transition-colors"
-                    >
-                        <span>🚪</span>
-                        <span class="font-medium text-sm">Cerrar Sesión</span>
-                    </button>
-                </div>
-            </aside>
-
-            <!-- Mobile Sidebar -->
-            <aside
-                id="mobile-sidebar"
-                class="mobile-sidebar md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col"
-            >
-                <div
-                    class="h-16 flex items-center justify-between px-6 border-b border-slate-100"
-                >
-                    <a href="/" class="text-xl font-bold text-slate-800">
-                        DeOficios<span class="text-orange-600">Pro</span>
-                    </a>
-                    <button
-                        id="close-sidebar"
-                        class="text-2xl text-slate-600 hover:text-slate-900"
-                    >
-                        ✕
-                    </button>
-                </div>
-
-                <div class="flex-1 overflow-y-auto py-4">
-                    <nav class="px-3 space-y-1">
-                        <a
-                            href="/panel"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
-                        >
-                            <span class="text-xl">📊</span>
-                            <span class="font-medium text-sm">Dashboard</span>
-                        </a>
-                        <a
-                            href="/panel/oportunidades"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
-                        >
-                            <span class="text-xl">🎯</span>
-                            <span class="font-medium text-sm"
-                                >Oportunidades</span
-                            >
-                        </a>
-                        <a
-                            href="/panel/presupuestos"
-                            class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg"
-                        >
-                            <span class="text-xl">📝</span>
-                            <span class="font-semibold text-sm"
-                                >Presupuestos</span
-                            >
-                        </a>
-                        <a
-                            href="/panel/finanzas"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
-                        >
-                            <span class="text-xl">💰</span>
-                            <span class="font-medium text-sm">Finanzas</span>
-                        </a>
-                        <a
-                            href="/panel/mi-equipo"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
-                        >
-                            <span class="text-xl">👷</span>
-                            <span class="font-medium text-sm">Mi Equipo</span>
-                        </a>
-                        <a
-                            href="/panel/clientes"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 rounded-lg"
-                        >
-                            <span class="text-xl">👥</span>
-                            <span class="font-medium text-sm">Clientes</span>
-                        </a>
-                    </nav>
-                </div>
-
-                <div
-                    class="mt-auto pt-4 border-t border-slate-200 space-y-2 px-3 pb-4"
-                >
-                    <a
-                        href="/mi-perfil"
-                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                    >
-                        <span>👤</span>
-                        <span class="font-medium text-sm">Mi Perfil</span>
-                    </a>
-                    <button
-                        id="btn-logout-mobile"
-                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-red-600 transition-colors"
-                    >
-                        <span>🚪</span>
-                        <span class="font-medium text-sm">Cerrar Sesión</span>
-                    </button>
-                </div>
-            </aside>
+            <!-- SIDEBARS -->
+            <Sidebar currentPath={Astro.url.pathname} />
+            <MobileSidebar currentPath={Astro.url.pathname} />
 
             <!-- MAIN CONTENT -->
             <main
@@ -538,6 +346,25 @@ import { auth, db } from "../../firebase/client";
             } from "firebase/firestore";
             import { auth, db } from "../../firebase/client";
 
+            // Add jsPDF type definition to window
+            declare global {
+                interface Window {
+                    jspdf: any;
+                    updateStatus: (
+                        id: string,
+                        newStatus: string,
+                    ) => Promise<void>;
+                    deleteBudget: (id: string) => Promise<void>;
+                    printPDF: (id: string) => Promise<void>;
+                    updateItem: (
+                        index: number,
+                        field: string,
+                        value: string,
+                    ) => void;
+                    removeItem: (index: number) => void;
+                }
+            }
+
             // Execute immediately - IIFE pattern
             (function () {
                 console.log("🚀 [PRESUPUESTOS] Página cargada/navegada");
@@ -549,11 +376,13 @@ import { auth, db } from "../../firebase/client";
                     document.getElementById("presupuestos-list");
                 const modal = document.getElementById("modal-presupuesto");
                 const modalContent = document.getElementById("modal-content");
-                const form = document.getElementById("form-presupuesto");
+                const form = document.getElementById(
+                    "form-presupuesto",
+                ) as HTMLFormElement;
 
-                let currentUser = null;
+                let currentUser: any = null;
                 let items = [{ desc: "", cant: 1, precio: 0 }];
-                let allPresupuestos = {}; // Store fetched data by ID
+                let allPresupuestos: any = {}; // Store fetched data by ID
 
                 // AUTH CHECK
                 onAuthStateChanged(auth, async (user) => {
@@ -566,7 +395,7 @@ import { auth, db } from "../../firebase/client";
                 });
 
                 // LOAD DATA
-                function loadPresupuestos(uid) {
+                function loadPresupuestos(uid: string) {
                     // UPDATE: Usar subcolección profesionales/{uid}/presupuestos para cumplir reglas de seguridad
                     const q = query(
                         collection(db, "profesionales", uid, "presupuestos"),
@@ -575,14 +404,14 @@ import { auth, db } from "../../firebase/client";
                     onSnapshot(
                         q,
                         (snapshot) => {
-                            loadingState.classList.add("hidden");
+                            loadingState?.classList.add("hidden");
 
                             if (snapshot.empty) {
-                                emptyState.classList.remove("hidden");
-                                contentTable.classList.add("hidden");
+                                emptyState?.classList.remove("hidden");
+                                contentTable?.classList.add("hidden");
                             } else {
-                                emptyState.classList.add("hidden");
-                                contentTable.classList.remove("hidden");
+                                emptyState?.classList.add("hidden");
+                                contentTable?.classList.remove("hidden");
 
                                 // Update cache
                                 snapshot.docs.forEach(
@@ -612,9 +441,10 @@ import { auth, db } from "../../firebase/client";
                     );
                 }
 
-                function renderList(docs) {
+                function renderList(docs: any[]) {
+                    if (!listContainer) return;
                     listContainer.innerHTML = "";
-                    docs.forEach((doc) => {
+                    docs.forEach((doc: any) => {
                         const data = doc.data();
                         const date = data.fecha
                             ? new Date(
@@ -668,26 +498,36 @@ import { auth, db } from "../../firebase/client";
                 // MODAL LOGIC
                 document
                     .getElementById("btn-nuevo")
-                    .addEventListener("click", () => openModal());
+                    ?.addEventListener("click", () => openModal());
                 document
                     .getElementById("btn-close-modal")
-                    .addEventListener("click", closeModal);
+                    ?.addEventListener("click", closeModal);
                 document
                     .getElementById("btn-cancel")
-                    .addEventListener("click", closeModal);
+                    ?.addEventListener("click", closeModal);
                 document
                     .getElementById("modal-overlay")
-                    .addEventListener("click", closeModal);
+                    ?.addEventListener("click", closeModal);
 
                 document
                     .getElementById("btn-add-item")
-                    .addEventListener("click", () => {
+                    ?.addEventListener("click", () => {
                         items.push({ desc: "", cant: 1, precio: 0 });
                         renderItems();
                     });
 
                 function openModal() {
+                    if (!modal || !modalContent) return;
                     modal.classList.remove(
+                        "hidden",
+                        "opacity-0",
+                        "pointer-events-none",
+                    );
+                    modalContent.classList.remove("scale-95");
+                    modalContent.classList.add("scale-100");
+                    items = [{ desc: "", cant: 1, precio: 0 }];
+                    renderItems();
+                }
                         "hidden",
                         "opacity-0",
                         "pointer-events-none",
@@ -699,11 +539,12 @@ import { auth, db } from "../../firebase/client";
                 }
 
                 function closeModal() {
+                    if (!modal || !modalContent) return;
                     modal.classList.add("opacity-0", "pointer-events-none");
                     modalContent.classList.remove("scale-100");
                     modalContent.classList.add("scale-95");
                     setTimeout(() => modal.classList.add("hidden"), 300);
-                    form.reset();
+                    if (form) form.reset();
                 }
 
                 // DYNAMIC ITEMS
@@ -712,13 +553,17 @@ import { auth, db } from "../../firebase/client";
                         (sum, i) => sum + i.cant * i.precio,
                         0,
                     );
-                    document.getElementById("total-display").innerText =
-                        `$${total.toLocaleString()}`;
+                    const totalDisplay =
+                        document.getElementById("total-display");
+                    if (totalDisplay) {
+                        totalDisplay.innerText = `$${total.toLocaleString()}`;
+                    }
                 }
 
                 function renderItems() {
                     const container =
                         document.getElementById("items-container");
+                    if (!container) return;
                     container.innerHTML = "";
 
                     items.forEach((item, index) => {
@@ -736,14 +581,18 @@ import { auth, db } from "../../firebase/client";
                     calculateTotal();
                 }
 
-                window.updateItem = (index, field, value) => {
+                window.updateItem = (
+                    index: number,
+                    field: string,
+                    value: string,
+                ) => {
                     items[index][field] =
                         field === "desc" ? value : Number(value);
                     // Solo recalculamos total, NO renderizamos todo para no perder foco
                     calculateTotal();
                 };
 
-                window.removeItem = (index) => {
+                window.removeItem = (index: number) => {
                     if (items.length > 1) {
                         items.splice(index, 1);
                         renderItems();
@@ -808,7 +657,7 @@ import { auth, db } from "../../firebase/client";
                 });
 
                 // ACTIONS
-                window.updateStatus = async (id, newStatus) => {
+                window.updateStatus = async (id: string, newStatus: string) => {
                     try {
                         // UPDATE: Referencia a subcolección
                         const ref = doc(
@@ -826,7 +675,7 @@ import { auth, db } from "../../firebase/client";
                     }
                 };
 
-                window.deleteBudget = async (id) => {
+                window.deleteBudget = async (id: string) => {
                     const confirmed = await showConfirm(
                         "Eliminar Presupuesto",
                         "¿Estás seguro de que quieres eliminar este presupuesto? Esta acción no se puede deshacer.",
@@ -862,7 +711,7 @@ import { auth, db } from "../../firebase/client";
                     }
                 };
 
-                window.printPDF = async (id) => {
+                window.printPDF = async (id: string) => {
                     const p = allPresupuestos[id];
                     if (!p)
                         return showAlert(
@@ -967,7 +816,11 @@ import { auth, db } from "../../firebase/client";
                 };
 
                 // === ALERT SYSTEM ===
-                function showAlert(title, message, type = "info") {
+                function showAlert(
+                    title: string,
+                    message: string,
+                    type = "info",
+                ) {
                     return new Promise((resolve) => {
                         const modal = document.getElementById("alert-modal");
                         const titleEl = document.getElementById("alert-title");
@@ -1010,8 +863,8 @@ import { auth, db } from "../../firebase/client";
                 }
 
                 function showConfirm(
-                    title,
-                    message,
+                    title: string,
+                    message: string,
                     actionText = "Aceptar",
                     actionClass = "bg-orange-600",
                 ) {
@@ -1048,38 +901,10 @@ import { auth, db } from "../../firebase/client";
                     });
                 }
 
-                // Mobile Sidebar Toggle
-                const mobileSidebar = document.getElementById("mobile-sidebar");
-                const sidebarOverlay =
-                    document.getElementById("sidebar-overlay");
-                const openSidebarBtn = document.getElementById("open-sidebar");
-                const closeSidebarBtn =
-                    document.getElementById("close-sidebar");
-
-                function openMobileSidebar() {
-                    mobileSidebar?.classList.add("active");
-                    sidebarOverlay?.classList.add("active");
-                }
-
-                function closeMobileSidebar() {
-                    mobileSidebar?.classList.remove("active");
-                    sidebarOverlay?.classList.remove("active");
-                }
-
-                openSidebarBtn?.addEventListener("click", openMobileSidebar);
-                closeSidebarBtn?.addEventListener("click", closeMobileSidebar);
-                sidebarOverlay?.addEventListener("click", closeMobileSidebar);
-
-                // Mobile logout
                 document
                     .getElementById("btn-logout-mobile")
                     ?.addEventListener("click", async () => {
-                        try {
-                            await signOut(auth);
-                            window.location.href = "/ingresar";
-                        } catch (error) {
-                            console.error("Error al cerrar sesión:", error);
-                        }
+                        // Logout logic now handled by MobileSidebar component
                     });
 
                 // Add fade-in animation to main content

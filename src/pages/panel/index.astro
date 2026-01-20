@@ -1,6 +1,7 @@
 ---
 import { auth } from "../../firebase/client";
-// Aquí irían los imports de base de datos para traer metricas reales
+import Sidebar from "../../components/panel/Sidebar.astro";
+import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 ---
 
 <html lang="es">
@@ -89,229 +90,9 @@ import { auth } from "../../firebase/client";
         </div>
 
         <div class="flex h-screen overflow-hidden">
-            <!-- Desktop Sidebar -->
-            <aside
-                class="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 h-full"
-            >
-                <div
-                    class="h-16 flex items-center px-6 border-b border-slate-100"
-                >
-                    <a href="/" class="text-xl font-bold text-slate-800">
-                        DeOficios<span class="text-orange-600">Pro</span>
-                    </a>
-                </div>
+            <Sidebar currentPath={Astro.url.pathname} />
 
-                <div class="flex-1 overflow-y-auto py-4">
-                    <nav class="px-3 space-y-1">
-                        <a
-                            href="/panel"
-                            class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg group transition-colors"
-                        >
-                            <span class="text-xl">📊</span>
-                            <span class="font-semibold text-sm">Dashboard</span>
-                        </a>
-
-                        <a
-                            href="/panel/oportunidades"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors relative"
-                        >
-                            <span class="text-xl">🎯</span>
-                            <span class="font-medium text-sm"
-                                >Oportunidades</span
-                            >
-                            <span
-                                id="badge-oportunidades"
-                                class="ml-auto bg-orange-600 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden"
-                            ></span>
-                        </a>
-
-                        <a
-                            href="/panel/presupuestos"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
-                        >
-                            <span class="text-xl">📝</span>
-                            <span class="font-medium text-sm">Presupuestos</span
-                            >
-                        </a>
-
-                        <a
-                            href="/panel/finanzas"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
-                        >
-                            <span class="text-xl">💰</span>
-                            <span class="font-medium text-sm">Finanzas</span>
-                        </a>
-
-                        <a
-                            href="/panel/mi-equipo"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
-                        >
-                            <span class="text-xl">👷</span>
-                            <span class="font-medium text-sm">Mi Equipo</span>
-                        </a>
-
-                        <a
-                            href="/panel/clientes"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
-                        >
-                            <span class="text-xl">👥</span>
-                            <span class="font-medium text-sm">Clientes</span>
-                        </a>
-                    </nav>
-
-                    <div class="px-6 mt-8 mb-2">
-                        <h4
-                            class="text-xs font-bold text-slate-400 uppercase tracking-wider"
-                        >
-                            Tu Nivel
-                        </h4>
-                    </div>
-                    <div class="px-6">
-                        <div
-                            class="bg-slate-100 rounded-xl p-4 border border-slate-200"
-                        >
-                            <div class="flex justify-between items-center mb-2">
-                                <span
-                                    id="level-name"
-                                    class="font-bold text-sm text-indigo-600"
-                                    >Cargando...</span
-                                >
-                                <span
-                                    id="level-number"
-                                    class="text-xs text-slate-500">Lvl ?</span
-                                >
-                            </div>
-                            <div
-                                class="w-full bg-slate-200 rounded-full h-2 mb-2"
-                            >
-                                <div
-                                    id="level-progress"
-                                    class="bg-indigo-600 h-2 rounded-full transition-all duration-1000"
-                                    style="width: 0%"
-                                >
-                                </div>
-                            </div>
-                            <p id="level-next" class="text-xs text-slate-500">
-                                Calculando puntos...
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-auto pt-4 border-t border-slate-200 space-y-2">
-                    <a
-                        href="/mi-perfil"
-                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                    >
-                        <span>👤</span>
-                        <span class="font-medium text-sm">Mi Perfil</span>
-                    </a>
-
-                    <button
-                        id="btn-logout"
-                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-red-600 transition-colors"
-                    >
-                        <span>🚪</span>
-                        <span class="font-medium text-sm">Cerrar Sesión</span>
-                    </button>
-                </div>
-            </aside>
-
-            <!-- Mobile Sidebar -->
-            <aside
-                id="mobile-sidebar"
-                class="md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col transform -translate-x-full transition-transform duration-300"
-            >
-                <div
-                    class="h-16 flex items-center justify-between px-6 border-b border-slate-100"
-                >
-                    <a href="/" class="text-xl font-bold text-slate-800">
-                        DeOficios<span class="text-orange-600">Pro</span>
-                    </a>
-                    <button
-                        id="close-sidebar"
-                        class="text-2xl text-slate-600 hover:text-slate-900"
-                    >
-                        ✕
-                    </button>
-                </div>
-
-                <div class="flex-1 overflow-y-auto py-4">
-                    <nav class="px-3 space-y-1">
-                        <a
-                            href="/panel"
-                            class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg group transition-colors"
-                        >
-                            <span class="text-xl">📊</span>
-                            <span class="font-semibold text-sm">Dashboard</span>
-                        </a>
-
-                        <a
-                            href="/panel/oportunidades"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors relative"
-                        >
-                            <span class="text-xl">🎯</span>
-                            <span class="font-medium text-sm"
-                                >Oportunidades</span
-                            >
-                            <span
-                                id="badge-oportunidades-mobile"
-                                class="ml-auto bg-orange-600 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden"
-                            ></span>
-                        </a>
-
-                        <a
-                            href="/panel/presupuestos"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
-                        >
-                            <span class="text-xl">📝</span>
-                            <span class="font-medium text-sm">Presupuestos</span
-                            >
-                        </a>
-
-                        <a
-                            href="/panel/finanzas"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
-                        >
-                            <span class="text-xl">💰</span>
-                            <span class="font-medium text-sm">Finanzas</span>
-                        </a>
-
-                        <a
-                            href="/panel/mi-equipo"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
-                        >
-                            <span class="text-xl">👷</span>
-                            <span class="font-medium text-sm">Mi Equipo</span>
-                        </a>
-
-                        <a
-                            href="/panel/clientes"
-                            class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg group transition-colors"
-                        >
-                            <span class="text-xl">👥</span>
-                            <span class="font-medium text-sm">Clientes</span>
-                        </a>
-                    </nav>
-                </div>
-
-                <div class="p-4 border-t border-slate-200">
-                    <a
-                        href="/mi-perfil"
-                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors mb-1"
-                    >
-                        <span>👤</span>
-                        <span class="font-medium text-sm">Mi Perfil</span>
-                    </a>
-                    <button
-                        id="btn-logout-mobile"
-                        class="flex items-center gap-3 px-3 py-2 w-full text-slate-600 hover:text-red-600 transition-colors"
-                    >
-                        <span>🚪</span>
-                        <span class="font-medium text-sm">Cerrar Sesión</span>
-                    </button>
-                </div>
-            </aside>
+            <MobileSidebar currentPath={Astro.url.pathname} />
 
             <!-- MAIN CONTENT -->
             <main
@@ -347,7 +128,10 @@ import { auth } from "../../firebase/client";
                                     class="text-sm font-bold text-slate-800"
                                     id="user-name"
                                 >
-                                    Cargando...
+                                    <div
+                                        class="h-4 w-24 bg-slate-200 rounded animate-pulse inline-block"
+                                    >
+                                    </div>
                                 </p>
                                 <p
                                     class="text-xs text-slate-500"
@@ -421,9 +205,12 @@ import { auth } from "../../firebase/client";
                             </p>
                             <h3
                                 id="kpi-ingresos"
-                                class="text-2xl font-bold text-slate-800"
+                                class="text-2xl font-bold text-slate-800 flex items-center"
                             >
-                                $0
+                                <div
+                                    class="h-8 w-24 bg-slate-100 rounded animate-pulse"
+                                >
+                                </div>
                             </h3>
                         </div>
 
@@ -443,9 +230,12 @@ import { auth } from "../../firebase/client";
                             </p>
                             <h3
                                 id="kpi-presupuestos"
-                                class="text-2xl font-bold text-slate-800"
+                                class="text-2xl font-bold text-slate-800 flex items-center"
                             >
-                                0
+                                <div
+                                    class="h-8 w-16 bg-slate-100 rounded animate-pulse"
+                                >
+                                </div>
                             </h3>
                         </div>
 
@@ -468,9 +258,12 @@ import { auth } from "../../firebase/client";
                             </p>
                             <h3
                                 id="kpi-visitas"
-                                class="text-2xl font-bold text-slate-800"
+                                class="text-2xl font-bold text-slate-800 flex items-center"
                             >
-                                0
+                                <div
+                                    class="h-8 w-16 bg-slate-100 rounded animate-pulse"
+                                >
+                                </div>
                             </h3>
                         </div>
 
@@ -487,9 +280,12 @@ import { auth } from "../../firebase/client";
                             </p>
                             <h3
                                 id="total-points-card"
-                                class="text-2xl font-bold"
+                                class="text-2xl font-bold flex items-center"
                             >
-                                --- pts
+                                <div
+                                    class="h-8 w-20 bg-white/20 rounded animate-pulse"
+                                >
+                                </div>
                             </h3>
                         </div>
                     </div>
@@ -525,13 +321,32 @@ import { auth } from "../../firebase/client";
                                 </div>
                                 <div
                                     id="performance-chart"
-                                    class="h-64 flex items-end justify-between gap-2 px-4"
+                                    class="h-64 flex items-end justify-between gap-2 px-4 pb-2"
                                 >
-                                    <!-- Dynamic bars will be inserted here -->
+                                    <!-- Skeleton Bars -->
                                     <div
-                                        class="w-full h-full flex items-center justify-center text-slate-400 text-sm"
+                                        class="w-full bg-slate-100 rounded-t h-1/4 animate-pulse"
                                     >
-                                        Cargando datos...
+                                    </div>
+                                    <div
+                                        class="w-full bg-slate-100 rounded-t h-2/4 animate-pulse"
+                                    >
+                                    </div>
+                                    <div
+                                        class="w-full bg-slate-100 rounded-t h-1/3 animate-pulse"
+                                    >
+                                    </div>
+                                    <div
+                                        class="w-full bg-slate-100 rounded-t h-3/4 animate-pulse"
+                                    >
+                                    </div>
+                                    <div
+                                        class="w-full bg-slate-100 rounded-t h-1/2 animate-pulse"
+                                    >
+                                    </div>
+                                    <div
+                                        class="w-full bg-slate-100 rounded-t h-2/3 animate-pulse"
+                                    >
                                     </div>
                                 </div>
                                 <div
@@ -576,11 +391,69 @@ import { auth } from "../../firebase/client";
                                         class="divide-y divide-slate-100"
                                     >
                                         <tr>
-                                            <td
-                                                colspan="4"
-                                                class="text-center py-8 text-slate-500"
-                                            >
-                                                Cargando presupuestos...
+                                            <td colspan="4" class="p-0">
+                                                <div class="space-y-4 p-4">
+                                                    <div
+                                                        class="flex items-center space-x-4 animate-pulse"
+                                                    >
+                                                        <div
+                                                            class="h-4 w-24 bg-slate-100 rounded"
+                                                        >
+                                                        </div>
+                                                        <div
+                                                            class="h-4 w-16 bg-slate-100 rounded"
+                                                        >
+                                                        </div>
+                                                        <div
+                                                            class="h-6 w-20 bg-slate-100 rounded-full"
+                                                        >
+                                                        </div>
+                                                        <div
+                                                            class="h-4 w-20 bg-slate-100 rounded ml-auto"
+                                                        >
+                                                        </div>
+                                                    </div>
+                                                    <div
+                                                        class="flex items-center space-x-4 animate-pulse"
+                                                    >
+                                                        <div
+                                                            class="h-4 w-32 bg-slate-100 rounded"
+                                                        >
+                                                        </div>
+                                                        <div
+                                                            class="h-4 w-12 bg-slate-100 rounded"
+                                                        >
+                                                        </div>
+                                                        <div
+                                                            class="h-6 w-20 bg-slate-100 rounded-full"
+                                                        >
+                                                        </div>
+                                                        <div
+                                                            class="h-4 w-20 bg-slate-100 rounded ml-auto"
+                                                        >
+                                                        </div>
+                                                    </div>
+                                                    <div
+                                                        class="flex items-center space-x-4 animate-pulse"
+                                                    >
+                                                        <div
+                                                            class="h-4 w-20 bg-slate-100 rounded"
+                                                        >
+                                                        </div>
+                                                        <div
+                                                            class="h-4 w-20 bg-slate-100 rounded"
+                                                        >
+                                                        </div>
+                                                        <div
+                                                            class="h-6 w-20 bg-slate-100 rounded-full"
+                                                        >
+                                                        </div>
+                                                        <div
+                                                            class="h-4 w-20 bg-slate-100 rounded ml-auto"
+                                                        >
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -602,11 +475,42 @@ import { auth } from "../../firebase/client";
                                     </h3>
                                 </div>
                                 <div id="team-members-list" class="space-y-3">
-                                    <p
-                                        class="text-slate-500 text-sm text-center py-4"
+                                    <div
+                                        class="flex items-center gap-3 py-2 animate-pulse"
                                     >
-                                        Cargando equipo...
-                                    </p>
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-slate-100"
+                                        >
+                                        </div>
+                                        <div class="flex-1 space-y-2">
+                                            <div
+                                                class="h-3 w-24 bg-slate-100 rounded"
+                                            >
+                                            </div>
+                                            <div
+                                                class="h-2 w-16 bg-slate-100 rounded"
+                                            >
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="flex items-center gap-3 py-2 animate-pulse"
+                                    >
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-slate-100"
+                                        >
+                                        </div>
+                                        <div class="flex-1 space-y-2">
+                                            <div
+                                                class="h-3 w-32 bg-slate-100 rounded"
+                                            >
+                                            </div>
+                                            <div
+                                                class="h-2 w-12 bg-slate-100 rounded"
+                                            >
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div
                                     class="mt-4 pt-4 border-t border-slate-200"
@@ -652,10 +556,42 @@ import { auth } from "../../firebase/client";
                                     class="space-y-3 relative z-10"
                                 >
                                     <!-- Rendered by JS -->
+                                    <!-- Rendered by JS / Skeleton -->
                                     <div
-                                        class="text-indigo-200 text-sm animate-pulse"
+                                        class="flex items-center gap-3 animate-pulse opacity-70"
                                     >
-                                        Cargando misiones...
+                                        <div
+                                            class="w-5 h-5 rounded-full bg-indigo-500/30"
+                                        >
+                                        </div>
+                                        <div
+                                            class="h-3 w-3/4 bg-indigo-500/30 rounded"
+                                        >
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="flex items-center gap-3 animate-pulse opacity-50"
+                                    >
+                                        <div
+                                            class="w-5 h-5 rounded-full bg-indigo-500/30"
+                                        >
+                                        </div>
+                                        <div
+                                            class="h-3 w-1/2 bg-indigo-500/30 rounded"
+                                        >
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="flex items-center gap-3 animate-pulse opacity-30"
+                                    >
+                                        <div
+                                            class="w-5 h-5 rounded-full bg-indigo-500/30"
+                                        >
+                                        </div>
+                                        <div
+                                            class="h-3 w-2/3 bg-indigo-500/30 rounded"
+                                        >
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="mt-6 pt-4 border-t border-white/10">
@@ -672,459 +608,413 @@ import { auth } from "../../firebase/client";
                     <div class="h-10"></div>
                 </div>
             </main>
+        </div>
+    </body>
 
-            <script>
-                import { auth, db } from "../../firebase/client";
-                import { onAuthStateChanged, signOut } from "firebase/auth";
-                import {
-                    doc,
-                    getDoc,
-                    getDocFromServer,
-                    collection,
-                    query,
-                    where,
-                    getDocs,
-                    orderBy,
-                    limit,
-                    Timestamp,
-                } from "firebase/firestore";
+    <script>
+        import { auth, db } from "../../firebase/client";
+        import { onAuthStateChanged, signOut } from "firebase/auth";
+        import {
+            doc,
+            getDoc,
+            getDocFromServer,
+            collection,
+            query,
+            where,
+            getDocs,
+            orderBy,
+            limit,
+            Timestamp,
+            onSnapshot,
+        } from "firebase/firestore";
 
+        console.log("💡 [DASHBOARD] Script loaded, executing immediately...");
+
+        // Execute immediately - don't wait for event
+        (function () {
+            console.log("🚀 [DASHBOARD] Running dashboard initialization...");
+
+            const nameEl = document.getElementById("user-name");
+            const avatarEl = document.getElementById("user-avatar");
+            const logoutBtn = document.getElementById("btn-logout");
+            const badgeOportunidades = document.getElementById(
+                "badge-oportunidades",
+            );
+
+            console.log("📋 [DASHBOARD] DOM elements:", {
+                nameEl,
+                avatarEl,
+                logoutBtn,
+                badgeOportunidades,
+            });
+
+            onAuthStateChanged(auth, async (user) => {
                 console.log(
-                    "💡 [DASHBOARD] Script loaded, executing immediately...",
+                    "🔐 [DASHBOARD] onAuthStateChanged fired, user:",
+                    user ? user.uid : "NO USER",
                 );
 
-                // Execute immediately - don't wait for event
-                (function () {
-                    console.log(
-                        "🚀 [DASHBOARD] Running dashboard initialization...",
-                    );
-
-                    const nameEl = document.getElementById("user-name");
-                    const avatarEl = document.getElementById("user-avatar");
-                    const logoutBtn = document.getElementById("btn-logout");
-                    const badgeOportunidades = document.getElementById(
-                        "badge-oportunidades",
-                    );
-
-                    console.log("📋 [DASHBOARD] DOM elements:", {
-                        nameEl,
-                        avatarEl,
-                        logoutBtn,
-                        badgeOportunidades,
-                    });
-
-                    onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    try {
                         console.log(
-                            "🔐 [DASHBOARD] onAuthStateChanged fired, user:",
-                            user ? user.uid : "NO USER",
+                            "👤 [DASHBOARD] User authenticated, fetching data...",
+                        );
+                        // Verificar si es profesional (seguridad básica frontend)
+                        const docRef = doc(db, "profesionales", user.uid);
+                        // OPTIMIZATION: Use getDoc for cache first strategy
+                        const docSnap = await getDoc(docRef);
+
+                        console.log(
+                            "📄 [DASHBOARD] Document snapshot exists:",
+                            docSnap.exists(),
                         );
 
-                        if (user) {
-                            try {
+                        if (docSnap.exists()) {
+                            const data = docSnap.data();
+                            console.log("✅ [DASHBOARD] User data loaded:", {
+                                nombre: data.nombre,
+                                plan: data.plan,
+                            });
+
+                            if (nameEl) nameEl.textContent = data.nombre;
+
+                            const planLabel =
+                                document.getElementById("user-plan-label");
+                            if (planLabel)
+                                planLabel.textContent =
+                                    data.plan || "Plan Profesional";
+
+                            if (avatarEl)
+                                (avatarEl as HTMLImageElement).src =
+                                    data.foto ||
+                                    `https://ui-avatars.com/api/?name=${data.nombre}`;
+
+                            // GAMIFICACION (Immediate UI update)
+                            console.log(
+                                "🎮 [DASHBOARD] Calling calculateGamification...",
+                            );
+                            calculateGamification(user.uid, data);
+
+                            // Cargar datos del dashboard (Parallel)
+                            console.log(
+                                "📊 [DASHBOARD] Calling loadDashboardData...",
+                            );
+                            // Remove await to let it load in background while UI is responsive
+                            loadDashboardData(user.uid, data).then(() => {
                                 console.log(
-                                    "👤 [DASHBOARD] User authenticated, fetching data...",
+                                    "✅ [DASHBOARD] loadDashboardData completed",
                                 );
-                                // Verificar si es profesional (seguridad básica frontend)
-                                const docRef = doc(
-                                    db,
-                                    "profesionales",
-                                    user.uid,
-                                );
-                                // OPTIMIZATION: Use getDoc for cache first strategy
-                                const docSnap = await getDoc(docRef);
+                            });
 
-                                console.log(
-                                    "📄 [DASHBOARD] Document snapshot exists:",
-                                    docSnap.exists(),
-                                );
-
-                                if (docSnap.exists()) {
-                                    const data = docSnap.data();
-                                    console.log(
-                                        "✅ [DASHBOARD] User data loaded:",
-                                        {
-                                            nombre: data.nombre,
-                                            plan: data.plan,
-                                        },
-                                    );
-
-                                    if (nameEl)
-                                        nameEl.textContent = data.nombre;
-
-                                    const planLabel =
-                                        document.getElementById(
-                                            "user-plan-label",
-                                        );
-                                    if (planLabel)
-                                        planLabel.textContent =
-                                            data.plan || "Plan Profesional";
-
-                                    if (avatarEl)
-                                        avatarEl.src =
-                                            data.foto ||
-                                            `https://ui-avatars.com/api/?name=${data.nombre}`;
-
-                                    // GAMIFICACION (Immediate UI update)
-                                    console.log(
-                                        "🎮 [DASHBOARD] Calling calculateGamification...",
-                                    );
-                                    calculateGamification(user.uid, data);
-
-                                    // Cargar datos del dashboard (Parallel)
-                                    console.log(
-                                        "📊 [DASHBOARD] Calling loadDashboardData...",
-                                    );
-                                    // Remove await to let it load in background while UI is responsive
-                                    loadDashboardData(user.uid, data).then(
-                                        () => {
-                                            console.log(
-                                                "✅ [DASHBOARD] loadDashboardData completed",
-                                            );
-                                        },
-                                    );
-
-                                    // === SISTEMA DE NOTIFICACIONES ===
-                                    setupNotifications(user.uid);
-                                } else {
-                                    window.location.href = "/";
-                                }
-                            } catch (error) {
-                                console.error("Error cargando perfil:", error);
-                                // Si hay error de permisos, intentar recargar después de un delay
-                                if (error.code === "permission-denied") {
-                                    console.log(
-                                        "Error de permisos detectado. Reintentando en 2 segundos...",
-                                    );
-                                    setTimeout(() => {
-                                        window.location.reload();
-                                    }, 2000);
-                                }
-                            }
+                            // === SISTEMA DE NOTIFICACIONES ===
+                            setupNotifications(user.uid);
                         } else {
-                            // No logueado
-                            window.location.href = "/ingresar";
+                            window.location.href = "/";
                         }
-                    });
-
-                    // === FUNCIÓN PARA CARGAR DATOS DEL DASHBOARD ===
-                    async function loadDashboardData(
-                        uid: string,
-                        userData: any,
-                    ) {
-                        // Removed dynamic imports (already at top)
-
-                        try {
-                            // 1. KPI: Visitas al perfil (Sync)
-                            const visitas = userData.vistas_perfil || 0;
-                            const kpiVisitas =
-                                document.getElementById("kpi-visitas");
-                            if (kpiVisitas) {
-                                kpiVisitas.textContent =
-                                    visitas.toLocaleString();
-                            }
-
-                            // 2. Parallelize heavy tasks
-                            const tasks = [];
-
-                            // Task: Ingresos
-                            tasks.push(
-                                (async () => {
-                                    const now = new Date();
-                                    const firstDayOfMonth = new Date(
-                                        now.getFullYear(),
-                                        now.getMonth(),
-                                        1,
-                                    );
-                                    const qFinanzas = query(
-                                        collection(
-                                            db,
-                                            "profesionales",
-                                            uid,
-                                            "finanzas",
-                                        ),
-                                        where("tipo", "==", "ingreso"),
-                                        where(
-                                            "fecha",
-                                            ">=",
-                                            Timestamp.fromDate(firstDayOfMonth),
-                                        ),
-                                    );
-                                    const finanzasSnap =
-                                        await getDocs(qFinanzas);
-                                    let totalIngresos = 0;
-                                    finanzasSnap.forEach((doc) => {
-                                        totalIngresos += doc.data().monto || 0;
-                                    });
-                                    const kpiIngresos =
-                                        document.getElementById("kpi-ingresos");
-                                    if (kpiIngresos)
-                                        kpiIngresos.textContent =
-                                            "$" +
-                                            totalIngresos.toLocaleString();
-                                })(),
+                    } catch (error) {
+                        console.error("Error cargando perfil:", error);
+                        // Si hay error de permisos, intentar recargar después de un delay
+                        if (error.code === "permission-denied") {
+                            console.log(
+                                "Error de permisos detectado. Reintentando en 2 segundos...",
                             );
-
-                            // Task: Presupuestos Activos
-                            tasks.push(
-                                (async () => {
-                                    const qPresupuestos = query(
-                                        collection(
-                                            db,
-                                            "profesionales",
-                                            uid,
-                                            "presupuestos",
-                                        ),
-                                        where("estado", "in", [
-                                            "Pendiente",
-                                            "Aprobado",
-                                        ]),
-                                    );
-                                    const totalPresupuestos = (
-                                        await getDocs(qPresupuestos)
-                                    ).size;
-                                    const kpiPresupuestos =
-                                        document.getElementById(
-                                            "kpi-presupuestos",
-                                        );
-                                    if (kpiPresupuestos)
-                                        kpiPresupuestos.textContent =
-                                            totalPresupuestos.toString();
-                                })(),
-                            );
-
-                            // Task: External Loaders
-                            tasks.push(loadLatestBudgets(uid));
-                            tasks.push(loadTeamWidget(uid));
-                            tasks.push(loadPerformanceChart(uid, 6));
-
-                            await Promise.all(tasks);
-
-                            // Event listener para cambio de período
-                            const periodSelect = document.getElementById(
-                                "chart-period-select",
-                            );
-                            periodSelect?.addEventListener(
-                                "change",
-                                async (e) => {
-                                    const months = parseInt(
-                                        (e.target as HTMLSelectElement).value,
-                                    );
-                                    await loadPerformanceChart(uid, months);
-                                },
-                            );
-                        } catch (error) {
-                            console.error(
-                                "Error cargando datos del dashboard:",
-                                error,
-                            );
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
                         }
                     }
+                } else {
+                    // No logueado
+                    window.location.href = "/ingresar";
+                }
+            });
 
-                    // === FUNCIÓN PARA CARGAR EL GRÁFICO DE RENDIMIENTO ===
-                    async function loadPerformanceChart(
-                        uid: string,
-                        months: number,
-                    ) {
-                        // Removed dynamic imports
+            // === FUNCIÓN PARA CARGAR DATOS DEL DASHBOARD ===
+            async function loadDashboardData(uid: string, userData: any) {
+                // Removed dynamic imports (already at top)
 
-                        try {
-                            const chartContainer =
-                                document.getElementById("performance-chart");
-                            const labelsContainer =
-                                document.getElementById("chart-labels");
-                            const totalEl =
-                                document.getElementById("chart-total");
+                try {
+                    // 1. KPI: Visitas al perfil (Sync)
+                    const visitas = userData.vistas_perfil || 0;
+                    const kpiVisitas = document.getElementById("kpi-visitas");
+                    if (kpiVisitas) {
+                        kpiVisitas.textContent = visitas.toLocaleString();
+                    }
 
-                            if (!chartContainer) return;
+                    // 2. Parallelize heavy tasks
+                    const tasks = [];
 
-                            // Calcular fecha de inicio según los meses seleccionados
-                            const startDate = new Date();
-                            startDate.setMonth(
-                                startDate.getMonth() - months + 1,
+                    // Task: Ingresos
+                    tasks.push(
+                        (async () => {
+                            const now = new Date();
+                            const firstDayOfMonth = new Date(
+                                now.getFullYear(),
+                                now.getMonth(),
+                                1,
                             );
-                            startDate.setDate(1);
-                            startDate.setHours(0, 0, 0, 0);
-
-                            // Obtener finanzas del período
-                            const q = query(
+                            const qFinanzas = query(
                                 collection(
                                     db,
                                     "profesionales",
                                     uid,
                                     "finanzas",
                                 ),
-                                where("fecha", ">=", startDate),
                                 where("tipo", "==", "ingreso"),
+                                where(
+                                    "fecha",
+                                    ">=",
+                                    Timestamp.fromDate(firstDayOfMonth),
+                                ),
                             );
-
-                            const snapshot = await getDocs(q);
-
-                            // Agrupar por mes
-                            const monthlyData: { [key: string]: number } = {};
-                            const monthNames = [
-                                "Ene",
-                                "Feb",
-                                "Mar",
-                                "Abr",
-                                "May",
-                                "Jun",
-                                "Jul",
-                                "Ago",
-                                "Sep",
-                                "Oct",
-                                "Nov",
-                                "Dic",
-                            ];
-
-                            // Inicializar todos los meses con 0
-                            for (let i = 0; i < months; i++) {
-                                const d = new Date();
-                                d.setMonth(d.getMonth() - (months - 1 - i));
-                                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-                                monthlyData[key] = 0;
-                            }
-
-                            // Sumar ingresos por mes
-                            let totalEarnings = 0;
-                            snapshot.docs.forEach((doc) => {
-                                const data = doc.data();
-                                const fecha =
-                                    data.fecha?.toDate?.() ||
-                                    new Date(data.fecha);
-                                const key = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}`;
-                                if (monthlyData.hasOwnProperty(key)) {
-                                    monthlyData[key] += data.monto || 0;
-                                }
-                                totalEarnings += data.monto || 0;
+                            const finanzasSnap = await getDocs(qFinanzas);
+                            let totalIngresos = 0;
+                            finanzasSnap.forEach((doc) => {
+                                totalIngresos += doc.data().monto || 0;
                             });
+                            const kpiIngresos =
+                                document.getElementById("kpi-ingresos");
+                            if (kpiIngresos)
+                                kpiIngresos.textContent =
+                                    "$" + totalIngresos.toLocaleString();
+                        })(),
+                    );
 
-                            // Encontrar el máximo para escalar las barras
-                            const values = Object.values(monthlyData);
-                            const maxValue = Math.max(...values, 1); // Evitar división por 0
-
-                            // Encontrar el mes actual para resaltarlo
-                            const currentMonth = new Date();
-                            const currentKey = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}`;
-
-                            // Generar barras del gráfico
-                            const sortedKeys = Object.keys(monthlyData).sort();
-                            const barsHTML = sortedKeys
-                                .map((key) => {
-                                    const value = monthlyData[key];
-                                    const heightPercent = Math.max(
-                                        (value / maxValue) * 100,
-                                        5,
-                                    ); // Mínimo 5% para visualización
-                                    const isCurrentMonth = key === currentKey;
-                                    const [year, month] = key.split("-");
-                                    const monthLabel =
-                                        monthNames[parseInt(month) - 1];
-
-                                    const barClass = isCurrentMonth
-                                        ? "w-full bg-orange-500 rounded-t-lg shadow-lg shadow-orange-200 relative group cursor-pointer transition-all"
-                                        : "w-full bg-orange-100 rounded-t-lg hover:bg-orange-200 transition-all relative group cursor-pointer";
-
-                                    return `
-                                <div class="${barClass}" style="height: ${heightPercent}%">
-                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                                        $${value.toLocaleString()}
-                                    </span>
-                                </div>
-                            `;
-                                })
-                                .join("");
-
-                            // Generar labels de meses
-                            const labelsHTML =
-                                sortedKeys
-                                    .map((key) => {
-                                        const [year, month] = key.split("-");
-                                        return monthNames[parseInt(month) - 1];
-                                    })
-                                    .join("</span><span>") || "";
-
-                            // Renderizar
-                            chartContainer.innerHTML =
-                                barsHTML ||
-                                '<div class="w-full h-full flex items-center justify-center text-slate-400">Sin datos de ingresos</div>';
-
-                            if (labelsContainer) {
-                                labelsContainer.innerHTML = labelsHTML
-                                    ? `<span>${labelsHTML}</span>`
-                                    : "";
-                            }
-
-                            if (totalEl) {
-                                totalEl.textContent = `$${totalEarnings.toLocaleString()} total`;
-                            }
-                        } catch (error) {
-                            console.error(
-                                "Error cargando gráfico de rendimiento:",
-                                error,
-                            );
-                            const chartContainer =
-                                document.getElementById("performance-chart");
-                            if (chartContainer) {
-                                chartContainer.innerHTML =
-                                    '<div class="w-full h-full flex items-center justify-center text-slate-400">Error cargando datos</div>';
-                            }
-                        }
-                    }
-
-                    // === FUNCIÓN PARA CARGAR ÚLTIMOS PRESUPUESTOS ===
-                    async function loadLatestBudgets(uid: string) {
-                        // Removed dynamic imports
-
-                        try {
-                            const q = query(
+                    // Task: Presupuestos Activos
+                    tasks.push(
+                        (async () => {
+                            const qPresupuestos = query(
                                 collection(
                                     db,
                                     "profesionales",
                                     uid,
                                     "presupuestos",
                                 ),
-                                orderBy("fecha", "desc"),
-                                limit(5),
+                                where("estado", "in", [
+                                    "Pendiente",
+                                    "Aprobado",
+                                ]),
                             );
+                            const totalPresupuestos = (
+                                await getDocs(qPresupuestos)
+                            ).size;
+                            const kpiPresupuestos =
+                                document.getElementById("kpi-presupuestos");
+                            if (kpiPresupuestos)
+                                kpiPresupuestos.textContent =
+                                    totalPresupuestos.toString();
+                        })(),
+                    );
 
-                            const snapshot = await getDocs(q);
-                            const tbody = document.getElementById(
-                                "latest-budgets-tbody",
-                            );
+                    // Task: External Loaders
+                    tasks.push(loadLatestBudgets(uid));
+                    tasks.push(loadTeamWidget(uid));
+                    tasks.push(loadPerformanceChart(uid, 6));
 
-                            if (!tbody) return;
+                    await Promise.all(tasks);
 
-                            if (snapshot.empty) {
-                                tbody.innerHTML = `
+                    // Event listener para cambio de período
+                    const periodSelect = document.getElementById(
+                        "chart-period-select",
+                    );
+                    periodSelect?.addEventListener("change", async (e) => {
+                        const months = parseInt(
+                            (e.target as HTMLSelectElement).value,
+                        );
+                        await loadPerformanceChart(uid, months);
+                    });
+                } catch (error) {
+                    console.error("Error cargando datos del dashboard:", error);
+                }
+            }
+
+            // === FUNCIÓN PARA CARGAR EL GRÁFICO DE RENDIMIENTO ===
+            async function loadPerformanceChart(uid: string, months: number) {
+                // Removed dynamic imports
+
+                try {
+                    const chartContainer =
+                        document.getElementById("performance-chart");
+                    const labelsContainer =
+                        document.getElementById("chart-labels");
+                    const totalEl = document.getElementById("chart-total");
+
+                    if (!chartContainer) return;
+
+                    // Calcular fecha de inicio según los meses seleccionados
+                    const startDate = new Date();
+                    startDate.setMonth(startDate.getMonth() - months + 1);
+                    startDate.setDate(1);
+                    startDate.setHours(0, 0, 0, 0);
+
+                    // Obtener finanzas del período
+                    const q = query(
+                        collection(db, "profesionales", uid, "finanzas"),
+                        where("fecha", ">=", startDate),
+                        where("tipo", "==", "ingreso"),
+                    );
+
+                    const snapshot = await getDocs(q);
+
+                    // Agrupar por mes
+                    const monthlyData: { [key: string]: number } = {};
+                    const monthNames = [
+                        "Ene",
+                        "Feb",
+                        "Mar",
+                        "Abr",
+                        "May",
+                        "Jun",
+                        "Jul",
+                        "Ago",
+                        "Sep",
+                        "Oct",
+                        "Nov",
+                        "Dic",
+                    ];
+
+                    // Inicializar todos los meses con 0
+                    for (let i = 0; i < months; i++) {
+                        const d = new Date();
+                        d.setMonth(d.getMonth() - (months - 1 - i));
+                        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+                        monthlyData[key] = 0;
+                    }
+
+                    // Sumar ingresos por mes
+                    let totalEarnings = 0;
+                    snapshot.docs.forEach((doc) => {
+                        const data = doc.data();
+                        const fecha =
+                            data.fecha?.toDate?.() || new Date(data.fecha);
+                        const key = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}`;
+                        if (monthlyData.hasOwnProperty(key)) {
+                            monthlyData[key] += data.monto || 0;
+                        }
+                        totalEarnings += data.monto || 0;
+                    });
+
+                    // Encontrar el máximo para escalar las barras
+                    const values = Object.values(monthlyData);
+                    const maxValue = Math.max(...values, 1); // Evitar división por 0
+
+                    // Encontrar el mes actual para resaltarlo
+                    const currentMonth = new Date();
+                    const currentKey = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}`;
+
+                    // Generar barras del gráfico
+                    const sortedKeys = Object.keys(monthlyData).sort();
+                    const barsHTML = sortedKeys
+                        .map((key) => {
+                            const value = monthlyData[key];
+                            const heightPercent = Math.max(
+                                (value / maxValue) * 100,
+                                5,
+                            ); // Mínimo 5% para visualización
+                            const isCurrentMonth = key === currentKey;
+                            const [year, month] = key.split("-");
+                            const monthLabel = monthNames[parseInt(month) - 1];
+
+                            const barClass = isCurrentMonth
+                                ? "w-full bg-orange-500 rounded-t-lg shadow-lg shadow-orange-200 relative group cursor-pointer transition-all"
+                                : "w-full bg-orange-100 rounded-t-lg hover:bg-orange-200 transition-all relative group cursor-pointer";
+
+                            return `
+                                <div class="${barClass}" style="height: ${heightPercent}%">
+                                    <span class="opacity-0 group-hover:opacity-100 absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
+                                        $${value.toLocaleString()}
+                                    </span>
+                                </div>
+                            `;
+                        })
+                        .join("");
+
+                    // Generar labels de meses
+                    const labelsHTML =
+                        sortedKeys
+                            .map((key) => {
+                                const [year, month] = key.split("-");
+                                return monthNames[parseInt(month) - 1];
+                            })
+                            .join("</span><span>") || "";
+
+                    // Renderizar
+                    chartContainer.innerHTML =
+                        barsHTML ||
+                        '<div class="w-full h-full flex items-center justify-center text-slate-400">Sin datos de ingresos</div>';
+
+                    if (labelsContainer) {
+                        labelsContainer.innerHTML = labelsHTML
+                            ? `<span>${labelsHTML}</span>`
+                            : "";
+                    }
+
+                    if (totalEl) {
+                        totalEl.textContent = `$${totalEarnings.toLocaleString()} total`;
+                    }
+                } catch (error) {
+                    console.error(
+                        "Error cargando gráfico de rendimiento:",
+                        error,
+                    );
+                    const chartContainer =
+                        document.getElementById("performance-chart");
+                    if (chartContainer) {
+                        chartContainer.innerHTML =
+                            '<div class="w-full h-full flex items-center justify-center text-slate-400">Error cargando datos</div>';
+                    }
+                }
+            }
+
+            // === FUNCIÓN PARA CARGAR ÚLTIMOS PRESUPUESTOS ===
+            async function loadLatestBudgets(uid: string) {
+                // Removed dynamic imports
+
+                try {
+                    const q = query(
+                        collection(db, "profesionales", uid, "presupuestos"),
+                        orderBy("fecha", "desc"),
+                        limit(5),
+                    );
+
+                    const snapshot = await getDocs(q);
+                    const tbody = document.getElementById(
+                        "latest-budgets-tbody",
+                    );
+
+                    if (!tbody) return;
+
+                    if (snapshot.empty) {
+                        tbody.innerHTML = `
                             <tr>
                                 <td colspan="4" class="text-center py-8 text-slate-500">
                                     No tienes presupuestos aún. <a href="/panel/presupuestos" class="text-orange-600 font-bold hover:underline">Crear uno</a>
                                 </td>
                             </tr>
                         `;
-                                return;
-                            }
+                        return;
+                    }
 
-                            const statusColors = {
-                                Pendiente: "bg-yellow-100 text-yellow-700",
-                                Aprobado: "bg-green-100 text-green-700",
-                                Cobrado: "bg-blue-100 text-blue-700",
-                                Rechazado: "bg-red-100 text-red-700",
-                            };
+                    const statusColors: Record<string, string> = {
+                        Pendiente: "bg-yellow-100 text-yellow-700",
+                        Aprobado: "bg-green-100 text-green-700",
+                        Cobrado: "bg-blue-100 text-blue-700",
+                        Rechazado: "bg-red-100 text-red-700",
+                    };
 
-                            tbody.innerHTML = snapshot.docs
-                                .map((doc) => {
-                                    const data = doc.data();
-                                    const fecha = data.createdAt
-                                        ? new Date(
-                                              data.createdAt.seconds * 1000,
-                                          ).toLocaleDateString()
-                                        : "Sin fecha";
-                                    const statusClass =
-                                        statusColors[data.estado] ||
-                                        "bg-slate-100 text-slate-700";
+                    tbody.innerHTML = snapshot.docs
+                        .map((doc) => {
+                            const data = doc.data();
+                            const fecha = data.createdAt
+                                ? new Date(
+                                      data.createdAt.seconds * 1000,
+                                  ).toLocaleDateString()
+                                : "Sin fecha";
+                            const statusClass =
+                                statusColors[data.estado] ||
+                                "bg-slate-100 text-slate-700";
 
-                                    return `
+                            return `
                                 <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
                                     <td class="py-3 px-4 font-medium text-slate-800">${data.cliente}</td>
                                     <td class="py-3 px-4 text-slate-600">$${(data.total || 0).toLocaleString()}</td>
@@ -1136,52 +1026,49 @@ import { auth } from "../../firebase/client";
                                     <td class="py-3 px-4 text-slate-500 text-sm">${fecha}</td>
                                 </tr>
                             `;
-                                })
-                                .join("");
-                        } catch (error) {
-                            console.error(
-                                "Error cargando presupuestos:",
-                                error,
-                            );
-                        }
-                    }
+                        })
+                        .join("");
+                } catch (error) {
+                    console.error("Error cargando presupuestos:", error);
+                }
+            }
 
-                    // === FUNCIÓN PARA CARGAR WIDGET DE EQUIPO ===
-                    async function loadTeamWidget(uid: string) {
-                        // Removed dynamic imports
+            // === FUNCIÓN PARA CARGAR WIDGET DE EQUIPO ===
+            async function loadTeamWidget(uid: string) {
+                // Removed dynamic imports
 
-                        try {
-                            const q = query(
-                                collection(db, "profesionales", uid, "equipo"),
-                                where("activo", "==", true),
-                            );
+                try {
+                    const q = query(
+                        collection(db, "profesionales", uid, "equipo"),
+                        where("activo", "==", true),
+                    );
 
-                            const snapshot = await getDocs(q);
-                            const teamList =
-                                document.getElementById("team-members-list");
+                    const snapshot = await getDocs(q);
+                    const teamList =
+                        document.getElementById("team-members-list");
 
-                            if (!teamList) return;
+                    if (!teamList) return;
 
-                            if (snapshot.empty) {
-                                teamList.innerHTML = `
+                    if (snapshot.empty) {
+                        teamList.innerHTML = `
                             <p class="text-slate-500 text-sm text-center py-4">
                                 No tienes miembros en tu equipo. <a href="/panel/mi-equipo" class="text-orange-600 font-bold hover:underline">Agregar</a>
                             </p>
                         `;
-                                return;
-                            }
+                        return;
+                    }
 
-                            let totalPendiente = 0;
-                            const membersHTML = snapshot.docs
-                                .slice(0, 3)
-                                .map((doc) => {
-                                    const data = doc.data();
-                                    totalPendiente += data.pendientePago || 0;
-                                    const initial = data.nombre
-                                        ? data.nombre.charAt(0).toUpperCase()
-                                        : "?";
+                    let totalPendiente = 0;
+                    const membersHTML = snapshot.docs
+                        .slice(0, 3)
+                        .map((doc) => {
+                            const data = doc.data();
+                            totalPendiente += data.pendientePago || 0;
+                            const initial = data.nombre
+                                ? data.nombre.charAt(0).toUpperCase()
+                                : "?";
 
-                                    return `
+                            return `
                                 <div class="flex items-center gap-3 py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors -mx-2 px-2 rounded-lg">
                                     <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-bold border border-indigo-100 shadow-sm">
                                         ${initial}
@@ -1199,61 +1086,105 @@ import { auth } from "../../firebase/client";
                                     </div>
                                 </div>
                             `;
-                                })
-                                .join("");
+                        })
+                        .join("");
 
-                            const teamContainer =
-                                document.getElementById("team-members-list");
-                            if (teamContainer) {
-                                if (snapshot.empty) {
-                                    teamContainer.innerHTML = `
+                    const teamContainer =
+                        document.getElementById("team-members-list");
+                    if (teamContainer) {
+                        if (snapshot.empty) {
+                            teamContainer.innerHTML = `
                                         <div class="text-center py-6">
                                             <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-2 text-xl">👷</div>
                                             <p class="text-slate-500 text-sm">Aún no tienes equipo</p>
                                         </div>
                                     `;
-                                } else {
-                                    teamContainer.innerHTML = membersHTML;
-                                }
-                            }
-
-                            // Actualizar total pendiente
-                            const totalPendienteEl =
-                                document.getElementById("team-total-pending");
-                            if (totalPendienteEl) {
-                                totalPendienteEl.textContent =
-                                    "$" + totalPendiente.toLocaleString();
-                            }
-                        } catch (error) {
-                            console.error("Error cargando equipo:", error);
+                        } else {
+                            teamContainer.innerHTML = membersHTML;
                         }
                     }
 
-                    // === FUNCIÓN DE NOTIFICACIONES ===
-                    async function setupNotifications(uid: string) {
-                        // Removed dynamic imports
+                    // Actualizar total pendiente
+                    const totalPendienteEl =
+                        document.getElementById("team-total-pending");
+                    if (totalPendienteEl) {
+                        totalPendienteEl.textContent =
+                            "$" + totalPendiente.toLocaleString();
+                    }
+                } catch (error) {
+                    console.error("Error cargando equipo:", error);
+                }
+            }
 
-                        // 1. Registrar Service Worker
-                        if ("serviceWorker" in navigator) {
-                            try {
-                                const registration =
-                                    await navigator.serviceWorker.register(
-                                        "/sw.js",
-                                    );
-                                console.log(
-                                    "[Panel] Service Worker registrado",
-                                );
-                            } catch (error) {
-                                console.error(
-                                    "[Panel] Error registrando SW:",
-                                    error,
-                                );
-                            }
-                        }
+            // === FUNCIÓN DE NOTIFICACIONES ===
+            async function setupNotifications(uid: string) {
+                // Removed dynamic imports
 
-                        // 2. Escuchar notificaciones en tiempo real
-                        // Escuchamos la subcolección 'notificaciones' del usuario
-                        const qNotifs = query(
+                // 1. Registrar Service Worker
+                if ("serviceWorker" in navigator) {
+                    try {
+                        const registration =
+                            await navigator.serviceWorker.register("/sw.js");
+                        console.log("[Panel] Service Worker registrado");
+                    } catch (error) {
+                        console.error("[Panel] Error registrando SW:", error);
+                    }
+                }
+
+                // 2. Escuchar notificaciones en tiempo real
+                // Escuchamos la subcolección 'notificaciones' del usuario
+                const qNotifs = query(
+                    collection(db, "profesionales", uid, "notificaciones"),
+                    where("leido", "==", false),
+                    orderBy("fecha", "desc"),
+                    limit(10),
+                );
+
+                let isFirstLoad = true;
+
+                // Referencias UI
+                const btnBell = document.getElementById("btn-notifications");
+                const dropdown = document.getElementById(
+                    "notification-dropdown",
+                );
+                const notifList = document.getElementById("notification-list");
+                const badgeBell = document.getElementById("badge-bell");
+                const badgeSidebar = document.getElementById(
+                    "badge-oportunidades",
+                );
+                const markReadBtn = document.getElementById("mark-all-read");
+
+                // Toggle Dropdown
+                btnBell?.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    dropdown?.classList.toggle("hidden");
+                });
+
+                // Close on click outside
+                document.addEventListener("click", (e) => {
+                    if (
+                        dropdown &&
+                        !dropdown.classList.contains("hidden") &&
+                        !dropdown.contains(e.target as Node) &&
+                        !btnBell?.contains(e.target as Node)
+                    ) {
+                        dropdown.classList.add("hidden");
+                    }
+                });
+
+                // Mark all read
+                markReadBtn?.addEventListener("click", async () => {
+                    try {
+                        const { writeBatch, doc, onSnapshot } =
+                            await import("firebase/firestore");
+                        const batch = writeBatch(db);
+
+                        // Get current unread notifs from the snapshot listener
+                        // (Wait, we can't easily access the snapshot outside.
+                        //  Let's just fetch them once or check if we can access the latest snapshot.
+                        //  Better: perform a one-time getDocs for unread notifs to be safe)
+
+                        const unreadQ = query(
                             collection(
                                 db,
                                 "profesionales",
@@ -1261,130 +1192,68 @@ import { auth } from "../../firebase/client";
                                 "notificaciones",
                             ),
                             where("leido", "==", false),
-                            orderBy("fecha", "desc"),
-                            limit(10),
                         );
 
-                        let isFirstLoad = true;
+                        const unreadSnaps = await getDocs(unreadQ);
 
-                        // Referencias UI
-                        const btnBell =
-                            document.getElementById("btn-notifications");
-                        const dropdown = document.getElementById(
-                            "notification-dropdown",
+                        if (unreadSnaps.empty) {
+                            dropdown?.classList.add("hidden");
+                            return;
+                        }
+
+                        unreadSnaps.forEach((d) => {
+                            const ref = doc(
+                                db,
+                                "profesionales",
+                                uid,
+                                "notificaciones",
+                                d.id,
+                            );
+                            batch.update(ref, { leido: true });
+                        });
+
+                        await batch.commit();
+                        console.log(
+                            "[Panel] Todas las notificaciones marcadas como leídas",
                         );
-                        const notifList =
-                            document.getElementById("notification-list");
-                        const badgeBell = document.getElementById("badge-bell");
-                        const badgeSidebar = document.getElementById(
-                            "badge-oportunidades",
-                        );
-                        const markReadBtn =
-                            document.getElementById("mark-all-read");
+                        dropdown?.classList.add("hidden");
+                    } catch (e) {
+                        console.error("Error marking all read:", e);
+                    }
+                });
 
-                        // Toggle Dropdown
-                        btnBell?.addEventListener("click", (e) => {
-                            e.stopPropagation();
-                            dropdown?.classList.toggle("hidden");
-                        });
+                onSnapshot(qNotifs, (snapshot) => {
+                    const count = snapshot.size;
 
-                        // Close on click outside
-                        document.addEventListener("click", (e) => {
-                            if (
-                                dropdown &&
-                                !dropdown.classList.contains("hidden") &&
-                                !dropdown.contains(e.target as Node) &&
-                                !btnBell?.contains(e.target as Node)
-                            ) {
-                                dropdown.classList.add("hidden");
-                            }
-                        });
+                    // Actualizar badges
+                    if (count > 0) {
+                        if (badgeBell) badgeBell.classList.remove("hidden");
+                        if (badgeSidebar) {
+                            badgeSidebar.textContent = count.toString();
+                            badgeSidebar.classList.remove("hidden");
+                        }
+                    } else {
+                        if (badgeBell) badgeBell.classList.add("hidden");
+                        if (badgeSidebar) badgeSidebar.classList.add("hidden");
+                    }
 
-                        // Mark all read
-                        markReadBtn?.addEventListener("click", async () => {
-                            try {
-                                const { writeBatch, doc } =
-                                    await import("firebase/firestore");
-                                const batch = writeBatch(db);
-
-                                // Get current unread notifs from the snapshot listener
-                                // (Wait, we can't easily access the snapshot outside.
-                                //  Let's just fetch them once or check if we can access the latest snapshot.
-                                //  Better: perform a one-time getDocs for unread notifs to be safe)
-
-                                const unreadQ = query(
-                                    collection(
-                                        db,
-                                        "profesionales",
-                                        uid,
-                                        "notificaciones",
-                                    ),
-                                    where("leido", "==", false),
-                                );
-
-                                const unreadSnaps = await getDocs(unreadQ);
-
-                                if (unreadSnaps.empty) {
-                                    dropdown?.classList.add("hidden");
-                                    return;
-                                }
-
-                                unreadSnaps.forEach((d) => {
-                                    const ref = doc(
-                                        db,
-                                        "profesionales",
-                                        uid,
-                                        "notificaciones",
-                                        d.id,
-                                    );
-                                    batch.update(ref, { leido: true });
-                                });
-
-                                await batch.commit();
-                                console.log(
-                                    "[Panel] Todas las notificaciones marcadas como leídas",
-                                );
-                                dropdown?.classList.add("hidden");
-                            } catch (e) {
-                                console.error("Error marking all read:", e);
-                            }
-                        });
-
-                        onSnapshot(qNotifs, (snapshot) => {
-                            const count = snapshot.size;
-
-                            // Actualizar badges
-                            if (count > 0) {
-                                if (badgeBell)
-                                    badgeBell.classList.remove("hidden");
-                                if (badgeSidebar) {
-                                    badgeSidebar.textContent = count.toString();
-                                    badgeSidebar.classList.remove("hidden");
-                                }
-                            } else {
-                                if (badgeBell)
-                                    badgeBell.classList.add("hidden");
-                                if (badgeSidebar)
-                                    badgeSidebar.classList.add("hidden");
-                            }
-
-                            if (notifList) {
-                                if (count === 0) {
-                                    notifList.innerHTML =
-                                        '<div class="p-4 text-center text-slate-400 text-xs">No tienes notificaciones nuevas</div>';
-                                } else {
-                                    notifList.innerHTML = snapshot.docs
-                                        .map((doc) => {
-                                            const data = doc.data();
-                                            const time = data.fecha
-                                                ? new Date(
-                                                      data.fecha.seconds * 1000,
-                                                  ).toLocaleTimeString([], {
-                                                      hour: "2-digit",
-                                                      minute: "2-digit",
-                                                  })
-                                                : "";
-                                            return `
+                    if (notifList) {
+                        if (count === 0) {
+                            notifList.innerHTML =
+                                '<div class="p-4 text-center text-slate-400 text-xs">No tienes notificaciones nuevas</div>';
+                        } else {
+                            notifList.innerHTML = snapshot.docs
+                                .map((doc) => {
+                                    const data = doc.data();
+                                    const time = data.fecha
+                                        ? new Date(
+                                              data.fecha.seconds * 1000,
+                                          ).toLocaleTimeString([], {
+                                              hour: "2-digit",
+                                              minute: "2-digit",
+                                          })
+                                        : "";
+                                    return `
                                             <div class="px-4 py-3 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer" onclick="window.location.href='/panel/oportunidades'">
                                                 <div class="flex justify-between items-start mb-1">
                                                     <p class="text-xs font-bold text-slate-800">${data.titulo || "Nueva Notificación"}</p>
@@ -1393,202 +1262,193 @@ import { auth } from "../../firebase/client";
                                                 <p class="text-xs text-slate-500 line-clamp-2">${data.mensaje || ""}</p>
                                             </div>
                                         `;
-                                        })
-                                        .join("");
-                                }
-                            }
-
-                            // Mostrar notificación del navegador para nuevas (solo si agregada recientemente)
-                            // Evitar spam en carga inicial
-                            if (isFirstLoad) {
-                                isFirstLoad = false;
-                                return;
-                            }
-
-                            snapshot.docChanges().forEach((change) => {
-                                if (change.type === "added") {
-                                    const notif = change.doc.data();
-
-                                    if (Notification.permission === "granted") {
-                                        new Notification(
-                                            notif.titulo ||
-                                                "¡Nueva oportunidad!",
-                                            {
-                                                body:
-                                                    notif.mensaje ||
-                                                    "Tienes una nueva solicitud",
-                                                icon: "/icon-192.png",
-                                                badge: "/favicon.svg",
-                                                tag: "notif-" + change.doc.id,
-                                            },
-                                        );
-                                    }
-                                }
-                            });
-                        });
-
-                        // REMOVE ACTIVE OPPORTUNITIES COUNT FROM BADGE
-                        // The user requested that once seen, notifications stop.
-                        // Relying purely on the 'notificaciones' collection above achieves this.
-                        // If they read the notification or click it, we should mark it as read eventually.
-                        // For now this implementation only shows *unread* notifications in the badge.
-
-                        // Initialize FCM
-                        if (uid) {
-                            initMessaging(uid);
-                        }
-
-                        async function initMessaging(uid: string) {
-                            try {
-                                if (
-                                    typeof window === "undefined" ||
-                                    !("serviceWorker" in navigator)
-                                )
-                                    return;
-
-                                const { messaging } =
-                                    await import("../../firebase/client");
-                                if (!messaging) return;
-
-                                const { getToken } =
-                                    await import("firebase/messaging");
-                                const { doc, setDoc } =
-                                    await import("firebase/firestore");
-
-                                const permission =
-                                    await Notification.requestPermission();
-                                if (permission !== "granted") return;
-
-                                const token = await getToken(messaging, {
-                                    vapidKey:
-                                        "BHSe6NiGcSqBkQw7vpb_jqUh87IpYX5jj8ZiZmbDBS7ekm5NIgP3IxqU3mdpiVefN2VTebf8ol_BYVGN0gWLN-k",
-                                    serviceWorkerRegistration:
-                                        await navigator.serviceWorker.ready,
-                                });
-
-                                if (token) {
-                                    const tokenRef = doc(
-                                        db,
-                                        "profesionales",
-                                        uid,
-                                        "fcmTokens",
-                                        token,
-                                    );
-                                    await setDoc(tokenRef, {
-                                        token: token,
-                                        device: navigator.userAgent,
-                                        updatedAt: new Date(),
-                                    });
-                                }
-                            } catch (e) {
-                                console.log("[FCM] Error:", e);
-                            }
+                                })
+                                .join("");
                         }
                     }
 
-                    logoutBtn?.addEventListener("click", async () => {
-                        await signOut(auth);
-                        window.location.href = "/";
-                    });
+                    // Mostrar notificación del navegador para nuevas (solo si agregada recientemente)
+                    // Evitar spam en carga inicial
+                    if (isFirstLoad) {
+                        isFirstLoad = false;
+                        return;
+                    }
 
-                    // --- SIDEBAR MOBILE LOGIC ---
-                    const mobileSidebar =
-                        document.getElementById("mobile-sidebar");
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === "added") {
+                            const notif = change.doc.data();
 
-                    // --- GAMIFICATION LOGIC ---
-                    async function calculateGamification(uid, userData) {
-                        // 1. Calcular Puntos base
-                        let xp = 0;
-
-                        // Perfil
-                        const hasPhoto =
-                            userData.foto &&
-                            !userData.foto.includes("ui-avatars");
-                        const hasRubro = !!userData.rubro;
-                        const hasZona = !!userData.zona;
-
-                        if (hasPhoto) xp += 100;
-                        if (hasRubro) xp += 50;
-                        if (hasZona) xp += 50;
-
-                        // Misiones Mockeadas (para MVP)
-                        const dailyMissions = [
-                            {
-                                id: "profile",
-                                text: "Completa tu perfil",
-                                xp: 200,
-                                done: hasPhoto && hasRubro && hasZona,
-                            },
-                            {
-                                id: "photos",
-                                text: "Sube 3 fotos a Galería",
-                                xp: 150,
-                                done: false,
-                            }, // Placeholder
-                            {
-                                id: "review",
-                                text: "Consigue 5 estrellas",
-                                xp: 300,
-                                done: userData.rating >= 4.5,
-                            },
-                        ];
-
-                        // Sumar XP
-                        dailyMissions.forEach((m) => {
-                            if (m.done) xp += m.xp;
-                        });
-
-                        // 2. Determinar Nivel
-                        const levels = [
-                            { name: "Novato 🌱", threshold: 0 },
-                            { name: "Aprendiz 🔨", threshold: 500 },
-                            { name: "Profesional 👷", threshold: 1500 },
-                            { name: "Experto 🦁", threshold: 5000 },
-                            { name: "Maestro 👑", threshold: 50000 },
-                        ];
-
-                        let currentLevel = levels[0];
-                        let nextLevel = levels[1];
-
-                        for (let i = 0; i < levels.length; i++) {
-                            if (xp >= levels[i].threshold) {
-                                currentLevel = levels[i];
-                                nextLevel = levels[i + 1] || {
-                                    name: "Leyenda",
-                                    threshold: 100000,
-                                };
+                            if (Notification.permission === "granted") {
+                                new Notification(
+                                    notif.titulo || "¡Nueva oportunidad!",
+                                    {
+                                        body:
+                                            notif.mensaje ||
+                                            "Tienes una nueva solicitud",
+                                        icon: "/icon-192.png",
+                                        badge: "/favicon.svg",
+                                        tag: "notif-" + change.doc.id,
+                                    },
+                                );
                             }
                         }
+                    });
+                });
 
-                        // 3. Renderizar UI
-                        // Sidebar
-                        const progressPct = Math.min(
-                            100,
-                            (xp / nextLevel.threshold) * 100,
-                        );
+                // REMOVE ACTIVE OPPORTUNITIES COUNT FROM BADGE
+                // The user requested that once seen, notifications stop.
+                // Relying purely on the 'notificaciones' collection above achieves this.
+                // If they read the notification or click it, we should mark it as read eventually.
+                // For now this implementation only shows *unread* notifications in the badge.
 
-                        const lvlName = document.getElementById("level-name");
-                        const lvlNum = document.getElementById("level-number");
-                        const lvlProg =
-                            document.getElementById("level-progress");
-                        const lvlNext = document.getElementById("level-next");
+                // Initialize FCM
+                if (uid) {
+                    initMessaging(uid);
+                }
 
-                        if (lvlName) lvlName.innerText = currentLevel.name;
-                        if (lvlNum)
-                            lvlNum.innerText = `Lvl ${levels.indexOf(currentLevel) + 1}`;
-                        if (lvlProg) lvlProg.style.width = `${progressPct}%`;
-                        if (lvlNext)
-                            lvlNext.innerText = `Faltan ${nextLevel.threshold - xp} pts para ${nextLevel.name.split(" ")[0]}`;
+                async function initMessaging(uid: string) {
+                    try {
+                        if (
+                            typeof window === "undefined" ||
+                            !("serviceWorker" in navigator)
+                        )
+                            return;
 
-                        // Card total
-                        const cardTotal =
-                            document.getElementById("total-points-card");
-                        if (cardTotal) cardTotal.innerText = `${xp} pts`;
+                        const { messaging } =
+                            await import("../../firebase/client");
+                        if (!messaging) return;
 
-                        // Misiones Widget
-                        const missionsHtml = dailyMissions
-                            .map(
-                                (m) => `
+                        const { getToken } = await import("firebase/messaging");
+                        const { doc, setDoc } =
+                            await import("firebase/firestore");
+
+                        const permission =
+                            await Notification.requestPermission();
+                        if (permission !== "granted") return;
+
+                        const token = await getToken(messaging, {
+                            vapidKey:
+                                "BHSe6NiGcSqBkQw7vpb_jqUh87IpYX5jj8ZiZmbDBS7ekm5NIgP3IxqU3mdpiVefN2VTebf8ol_BYVGN0gWLN-k",
+                            serviceWorkerRegistration:
+                                await navigator.serviceWorker.ready,
+                        });
+
+                        if (token) {
+                            const tokenRef = doc(
+                                db,
+                                "profesionales",
+                                uid,
+                                "fcmTokens",
+                                token,
+                            );
+                            await setDoc(tokenRef, {
+                                token: token,
+                                device: navigator.userAgent,
+                                updatedAt: new Date(),
+                            });
+                        }
+                    } catch (e) {
+                        console.log("[FCM] Error:", e);
+                    }
+                }
+            }
+
+            logoutBtn?.addEventListener("click", async () => {
+                await signOut(auth);
+                window.location.href = "/";
+            });
+
+            // === GAMIFICATION LOGIC ===
+            async function calculateGamification(uid, userData) {
+                // 1. Calcular Puntos base
+                let xp = 0;
+
+                // Perfil
+                const hasPhoto =
+                    userData.foto && !userData.foto.includes("ui-avatars");
+                const hasRubro = !!userData.rubro;
+                const hasZona = !!userData.zona;
+
+                if (hasPhoto) xp += 100;
+                if (hasRubro) xp += 50;
+                if (hasZona) xp += 50;
+
+                // Misiones Mockeadas (para MVP)
+                const dailyMissions = [
+                    {
+                        id: "profile",
+                        text: "Completa tu perfil",
+                        xp: 200,
+                        done: hasPhoto && hasRubro && hasZona,
+                    },
+                    {
+                        id: "photos",
+                        text: "Sube 3 fotos a Galería",
+                        xp: 150,
+                        done: false,
+                    }, // Placeholder
+                    {
+                        id: "review",
+                        text: "Consigue 5 estrellas",
+                        xp: 300,
+                        done: userData.rating >= 4.5,
+                    },
+                ];
+
+                // Sumar XP
+                dailyMissions.forEach((m) => {
+                    if (m.done) xp += m.xp;
+                });
+
+                // 2. Determinar Nivel
+                const levels = [
+                    { name: "Novato 🌱", threshold: 0 },
+                    { name: "Aprendiz 🔨", threshold: 500 },
+                    { name: "Profesional 👷", threshold: 1500 },
+                    { name: "Experto 🦁", threshold: 5000 },
+                    { name: "Maestro 👑", threshold: 50000 },
+                ];
+
+                let currentLevel = levels[0];
+                let nextLevel = levels[1];
+
+                for (let i = 0; i < levels.length; i++) {
+                    if (xp >= levels[i].threshold) {
+                        currentLevel = levels[i];
+                        nextLevel = levels[i + 1] || {
+                            name: "Leyenda",
+                            threshold: 100000,
+                        };
+                    }
+                }
+
+                // 3. Renderizar UI
+                // Sidebar
+                const progressPct = Math.min(
+                    100,
+                    (xp / nextLevel.threshold) * 100,
+                );
+
+                const lvlName = document.getElementById("level-name");
+                const lvlNum = document.getElementById("level-number");
+                const lvlProg = document.getElementById("level-progress");
+                const lvlNext = document.getElementById("level-next");
+
+                if (lvlName) lvlName.innerText = currentLevel.name;
+                if (lvlNum)
+                    lvlNum.innerText = `Lvl ${levels.indexOf(currentLevel) + 1}`;
+                if (lvlProg) lvlProg.style.width = `${progressPct}%`;
+                if (lvlNext)
+                    lvlNext.innerText = `Faltan ${nextLevel.threshold - xp} pts para ${nextLevel.name.split(" ")[0]}`;
+
+                // Card total
+                const cardTotal = document.getElementById("total-points-card");
+                if (cardTotal) cardTotal.innerText = `${xp} pts`;
+
+                // Misiones Widget
+                const missionsHtml = dailyMissions
+                    .map(
+                        (m) => `
                     <div class="flex items-center gap-3">
                          <div class="w-5 h-5 rounded-full border-2 ${m.done ? "border-green-400 bg-green-400" : "border-white/30"} flex items-center justify-center text-indigo-900 text-xs font-bold">
                             ${m.done ? "✓" : ""}
@@ -1598,120 +1458,24 @@ import { auth } from "../../firebase/client";
                          </p>
                     </div>
                 `,
-                            )
-                            .join("");
+                    )
+                    .join("");
 
-                        const missionsList =
-                            document.getElementById("misiones-list");
-                        if (missionsList) missionsList.innerHTML = missionsHtml;
-                    }
-                    function setupMobileSidebar() {
-                        const mobileSidebar =
-                            document.getElementById("mobile-sidebar");
-                        const sidebarOverlay =
-                            document.getElementById("sidebar-overlay");
+                const missionsList = document.getElementById("misiones-list");
+                if (missionsList) missionsList.innerHTML = missionsHtml;
+            }
 
-                        // Support multiple open buttons
-                        const openSidebarBtns =
-                            document.querySelectorAll("#open-sidebar");
-                        const closeSidebarBtn =
-                            document.getElementById("close-sidebar");
-                        const logoutBtnMobile =
-                            document.getElementById("btn-logout-mobile");
-
-                        console.log("📱 [SIDEBAR] Setup:", {
-                            found: !!mobileSidebar,
-                            buttons: openSidebarBtns.length,
-                            overlay: !!sidebarOverlay,
-                        });
-
-                        if (!mobileSidebar) return;
-
-                        function openMobileSidebar(e) {
-                            e?.preventDefault();
-                            e?.stopPropagation();
-                            console.log("📱 [SIDEBAR] Opening...");
-                            mobileSidebar.classList.remove("-translate-x-full");
-                            if (sidebarOverlay) {
-                                sidebarOverlay.classList.remove("hidden");
-                                requestAnimationFrame(() => {
-                                    sidebarOverlay.classList.remove(
-                                        "opacity-0",
-                                    );
-                                    sidebarOverlay.classList.add("opacity-100");
-                                });
-                            }
-                        }
-
-                        function closeMobileSidebar(e) {
-                            e?.preventDefault();
-                            console.log("📱 [SIDEBAR] Closing...");
-                            mobileSidebar.classList.add("-translate-x-full");
-                            if (sidebarOverlay) {
-                                sidebarOverlay.classList.remove("opacity-100");
-                                sidebarOverlay.classList.add("opacity-0");
-                                setTimeout(() => {
-                                    sidebarOverlay.classList.add("hidden");
-                                }, 300);
-                            }
-                        }
-
-                        openSidebarBtns.forEach(
-                            (btn) => (btn.onclick = openMobileSidebar),
-                        );
-                        if (closeSidebarBtn)
-                            closeSidebarBtn.onclick = closeMobileSidebar;
-                        if (sidebarOverlay)
-                            sidebarOverlay.onclick = closeMobileSidebar;
-
-                        if (logoutBtnMobile) {
-                            logoutBtnMobile.onclick = async (e) => {
-                                e.preventDefault();
-                                try {
-                                    await signOut(auth);
-                                    window.location.href = "/ingresar";
-                                } catch (error) {
-                                    console.error(
-                                        "Error al cerrar sesión:",
-                                        error,
-                                    );
-                                }
-                            };
-                        }
-
-                        document
-                            .querySelector("main")
-                            ?.classList.add("fade-in");
-                    }
-
-                    // Initial run
-                    setupMobileSidebar();
-
-                    // View Transitions support
-                    document.addEventListener(
-                        "astro:page-load",
-                        setupMobileSidebar,
-                    );
-                    document.addEventListener(
-                        "astro:after-swap",
-                        setupMobileSidebar,
-                    );
-
-                    // Service Worker
-                    if ("serviceWorker" in navigator) {
-                        window.addEventListener("load", () => {
-                            navigator.serviceWorker
-                                .register("/sw.js")
-                                .then((reg) =>
-                                    console.log("✅ SW registrado:", reg.scope),
-                                )
-                                .catch((err) =>
-                                    console.log("❌ Error SW:", err),
-                                );
-                        });
-                    }
-                })(); // End of IIFE
-            </script>
-        </div>
-    </body>
+            // Service Worker
+            if ("serviceWorker" in navigator) {
+                window.addEventListener("load", () => {
+                    navigator.serviceWorker
+                        .register("/sw.js")
+                        .then((reg) =>
+                            console.log("✅ SW registrado:", reg.scope),
+                        )
+                        .catch((err) => console.log("❌ Error SW:", err));
+                });
+            }
+        })(); // End of IIFE
+    </script>
 </html>

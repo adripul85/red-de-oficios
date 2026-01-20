@@ -1,0 +1,456 @@
+---
+import { db } from "../firebase/client";
+import { doc, getDoc } from "firebase/firestore";
+
+const id = Astro.url.searchParams.get("id");
+let profesional = null;
+
+if (id) {
+    try {
+        const docRef = doc(db, "profesionales", id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            profesional = docSnap.data();
+        }
+    } catch (e) {
+        console.error("Error:", e);
+    }
+}
+
+if (!profesional) {
+    return Astro.redirect("/");
+}
+
+// Data Mapping
+const name = profesional.nombre || "Profesional";
+const role =
+    profesional.seo_profesion || profesional.rubro_principal || "Profesional";
+const avatar =
+    profesional.foto ||
+    `https://ui-avatars.com/api/?name=${name}&background=random`;
+const location =
+    profesional.zona ||
+    profesional.ubicacion_exacta?.direccion_texto ||
+    "Argentina";
+const rating = (profesional.promedio || 0).toFixed(1);
+const reviewsCount = profesional.total_votos || 0;
+const experience = profesional.experiencia || "Varios años";
+// Stats defaults
+const jobsCount = "100+"; // Placeholder or real data if available
+const responseTime = "< 2hs"; // Placeholder
+const warranty = profesional.garantia?.ofrece
+    ? profesional.garantia.tiempo
+        ? `${profesional.garantia.tiempo} días`
+        : "Escrita"
+    : "Consultar";
+const whatsappUrl = `https://wa.me/549${profesional.telefono}?text=Hola, vi tu tarjeta digital y quería hacerte una consulta.`;
+const profileUrl = `${Astro.url.origin}/perfil?id=${id}`;
+const phone = profesional.telefono || "";
+
+// Star Logic
+const numRating = parseFloat(rating);
+---
+
+<!doctype html>
+<html class="light" lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>Tarjeta Digital | {name}</title>
+        <script
+            src="https://cdn.tailwindcss.com?plugins=forms,container-queries"
+        ></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+            rel="stylesheet"
+        />
+        <script define:vars={{ primary: "#A04A26" }}>
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: "#A04A26", // Rich Terracotta
+                            cream: "#FDF5E6", // Soft Natural Cream
+                            charcoal: "#2C2420", // Deep Charcoal / Dark Brown
+                            "accent-muted": "#8B6F63", // Muted earth tone for secondary labels
+                            "background-light": "#FDF5E6",
+                            "background-dark": "#1A1512",
+                        },
+                        fontFamily: {
+                            display: ["Manrope", "sans-serif"],
+                        },
+                        borderRadius: {
+                            DEFAULT: "0.25rem",
+                            lg: "0.5rem",
+                            xl: "0.75rem",
+                            full: "9999px",
+                        },
+                    },
+                },
+            };
+        </script>
+        <style type="text/tailwindcss">
+            body {
+                font-family: "Manrope", sans-serif;
+            }
+            .material-symbols-outlined {
+                font-variation-settings:
+                    "FILL" 0,
+                    "wght" 400,
+                    "GRAD" 0,
+                    "opsz" 24;
+            }
+            .fill-icon {
+                font-variation-settings: "FILL" 1;
+            }
+        </style>
+    </head>
+    <body
+        class="bg-cream dark:bg-background-dark min-h-screen flex flex-col font-display text-charcoal"
+    >
+        <header
+            class="w-full border-b border-primary/10 dark:border-white/10 bg-cream/80 backdrop-blur-md dark:bg-background-dark/80 px-6 lg:px-40 py-3 flex items-center justify-between sticky top-0 z-50"
+        >
+            <div class="flex items-center gap-3">
+                <div class="text-primary">
+                    <svg
+                        fill="none"
+                        height="32"
+                        viewBox="0 0 48 48"
+                        width="32"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M13.8261 30.5736C16.7203 29.8826 20.2244 29.4783 24 29.4783C27.7756 29.4783 31.2797 29.8826 34.1739 30.5736C36.9144 31.2278 39.9967 32.7669 41.3563 33.8352L24.8486 7.36089C24.4571 6.73303 23.5429 6.73303 23.1514 7.36089L6.64374 33.8352C8.00331 32.7669 11.0856 31.2278 13.8261 30.5736Z"
+                            fill="currentColor"></path>
+                        <path
+                            clip-rule="evenodd"
+                            d="M39.998 35.764C39.9944 35.7463 39.9875 35.7155 39.9748 35.6706C39.9436 35.5601 39.8949 35.4259 39.8346 35.2825C39.8168 35.2403 39.7989 35.1993 39.7813 35.1602C38.5103 34.2887 35.9788 33.0607 33.7095 32.5189C30.9875 31.8691 27.6413 31.4783 24 31.4783C20.3587 31.4783 17.0125 31.8691 14.2905 32.5189C12.0012 33.0654 9.44505 34.3104 8.18538 35.1832C8.17384 35.2075 8.16216 35.233 8.15052 35.2592C8.09919 35.3751 8.05721 35.4886 8.02977 35.589C8.00356 35.6848 8.00039 35.7333 8.00004 35.7388C8.00004 35.739 8 35.7393 8.00004 35.7388C8.00004 35.7641 8.0104 36.0767 8.68485 36.6314C9.34546 37.1746 10.4222 37.7531 11.9291 38.2772C14.9242 39.319 19.1919 40 24 40C28.8081 40 33.0758 39.319 36.0709 38.2772C37.5778 37.7531 38.6545 37.1746 39.3151 36.6314C39.9006 36.1499 39.9857 35.8511 39.998 35.764ZM4.95178 32.7688L21.4543 6.30267C22.6288 4.4191 25.3712 4.41909 26.5457 6.30267L43.0534 32.777C43.0709 32.8052 43.0878 32.8338 43.104 32.8629L41.3563 33.8352C43.104 32.8629 43.1038 32.8626 43.104 32.8629L43.1051 32.865L43.1065 32.8675L43.1101 32.8739L43.1199 32.8918C43.1276 32.906 43.1377 32.9246 43.1497 32.9473C43.1738 32.9925 43.2062 33.0545 43.244 33.1299C43.319 33.2792 43.4196 33.489 43.5217 33.7317C43.6901 34.1321 44 34.9311 44 35.7391C44 37.4427 43.003 38.7775 41.8558 39.7209C40.6947 40.6757 39.1354 41.4464 37.385 42.0552C33.8654 43.2794 29.133 44 24 44C18.867 44 14.1346 43.2794 10.615 42.0552C8.86463 41.4464 7.30529 40.6757 6.14419 39.7209C4.99695 38.7775 3.99999 37.4427 3.99999 35.7391C3.99999 34.8725 4.29264 34.0922 4.49321 33.6393C4.60375 33.3898 4.71348 33.1804 4.79687 33.0311C4.83898 32.9556 4.87547 32.8935 4.9035 32.8471C4.91754 32.8238 4.92954 32.8043 4.93916 32.7889L4.94662 32.777L4.95178 32.7688ZM35.9868 29.004L24 9.77997L12.0131 29.004C12.4661 28.8609 12.9179 28.7342 13.3617 28.6282C16.4281 27.8961 20.0901 27.4783 24 27.4783C27.9099 27.4783 31.5719 27.8961 34.6383 28.6282C35.082 28.7342 35.5339 28.8609 35.9868 29.004Z"
+                            fill="currentColor"
+                            fill-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <h1
+                    class="text-xl font-extrabold tracking-tight text-charcoal dark:text-white"
+                >
+                    Oficios Argentina
+                </h1>
+            </div>
+            <nav class="hidden md:flex items-center gap-8">
+                <a
+                    class="text-sm font-semibold text-charcoal/80 dark:text-cream/80 hover:text-primary transition-colors"
+                    href="/">Explorar</a
+                >
+                <a
+                    class="text-sm font-semibold text-charcoal/80 dark:text-cream/80 hover:text-primary transition-colors"
+                    href="/?s=profesionales">Profesionales</a
+                >
+                <a
+                    href="/mi-perfil"
+                    class="bg-primary text-cream text-sm font-bold px-5 py-2 rounded-lg hover:brightness-110 transition-all"
+                >
+                    Mi Perfil
+                </a>
+            </nav>
+        </header>
+
+        <main class="flex-grow flex items-center justify-center p-6">
+            <div class="flex flex-col items-center gap-8 w-full max-w-4xl">
+                <a
+                    class="flex items-center gap-2 text-primary font-bold self-start ml-2 md:ml-0 hover:opacity-80"
+                    href={`/perfil?id=${id}`}
+                >
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    Volver al Perfil Completo
+                </a>
+                <div
+                    class="w-full bg-cream dark:bg-background-dark rounded-2xl overflow-hidden shadow-[0_32px_64px_-12px_rgba(44,36,32,0.15)] flex flex-col md:flex-row min-h-[500px] border border-primary/5"
+                >
+                    <div
+                        class="w-full md:w-[45%] bg-primary p-10 flex flex-col items-center justify-center text-center text-cream relative overflow-hidden"
+                    >
+                        <div
+                            class="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#FDF5E6_1px,transparent_1px)] [background-size:20px_20px]"
+                        >
+                        </div>
+                        <div class="relative mb-6 z-10">
+                            <div
+                                class="w-44 h-44 rounded-full border-4 border-cream/20 p-1.5 shadow-2xl"
+                            >
+                                <div
+                                    class="w-full h-full rounded-full bg-cover bg-center ring-4 ring-primary bg-white"
+                                    style={`background-image: url('${avatar}');`}
+                                >
+                                </div>
+                            </div>
+                            <div
+                                class="absolute bottom-3 right-3 bg-cream text-primary rounded-full p-2 shadow-xl flex items-center justify-center"
+                            >
+                                <span
+                                    class="material-symbols-outlined fill-icon !text-xl"
+                                    >verified</span
+                                >
+                            </div>
+                        </div>
+                        <h2 class="text-3xl font-black mb-1 z-10 capitalize">
+                            {name}
+                        </h2>
+                        <p
+                            class="text-cream/90 text-lg font-medium mb-8 z-10 capitalize"
+                        >
+                            {role}
+                        </p>
+                        <div
+                            class="flex flex-col gap-3 w-full max-w-[220px] z-10"
+                        >
+                            <div
+                                class="flex items-center justify-center gap-2 bg-cream/10 py-2.5 px-4 rounded-xl backdrop-blur-md border border-cream/10"
+                            >
+                                <span class="material-symbols-outlined text-sm"
+                                    >location_on</span
+                                >
+                                <span class="text-sm font-semibold"
+                                    >{location}</span
+                                >
+                            </div>
+                            <div
+                                class="flex items-center justify-center gap-2 bg-cream/10 py-2.5 px-4 rounded-xl backdrop-blur-md border border-cream/10"
+                            >
+                                <span class="material-symbols-outlined text-sm"
+                                    >schedule</span
+                                >
+                                <span class="text-sm font-semibold"
+                                    >Exp: {experience}</span
+                                >
+                            </div>
+                        </div>
+                        <div
+                            class="absolute bottom-10 left-0 right-0 opacity-20 pointer-events-none"
+                        >
+                            <span
+                                class="text-[10px] tracking-[0.5em] font-black uppercase"
+                                >Oficios Argentina</span
+                            >
+                        </div>
+                    </div>
+                    <div
+                        class="w-full md:w-[55%] p-10 flex flex-col justify-between dark:text-cream bg-white/30 dark:bg-transparent"
+                    >
+                        <div>
+                            <div class="flex justify-between items-start mb-10">
+                                <div>
+                                    <h3
+                                        class="text-[10px] font-bold uppercase tracking-[0.2em] text-accent-muted mb-2"
+                                    >
+                                        Reputación
+                                    </h3>
+                                    <div class="flex items-center gap-4">
+                                        <span
+                                            class="text-5xl font-black text-charcoal dark:text-cream"
+                                            >{rating}</span
+                                        >
+                                        <div class="flex flex-col">
+                                            <div class="flex text-primary">
+                                                {
+                                                    Array.from({
+                                                        length: 5,
+                                                    }).map((_, i) => {
+                                                        const isFull =
+                                                            numRating >= i + 1;
+                                                        const isHalf =
+                                                            !isFull &&
+                                                            numRating > i &&
+                                                            numRating < i + 1;
+                                                        return (
+                                                            <span
+                                                                class={`material-symbols-outlined !text-xl ${isFull ? "fill-icon" : ""}`}
+                                                            >
+                                                                {isHalf
+                                                                    ? "star_half"
+                                                                    : "star"}
+                                                            </span>
+                                                        );
+                                                    })
+                                                }
+                                            </div>
+                                            <p
+                                                class="text-[9px] text-accent-muted font-black tracking-wider uppercase mt-1"
+                                            >
+                                                {reviewsCount} reseñas verificadas
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button
+                                    class="p-3 rounded-full border border-charcoal/10 hover:bg-primary/5 dark:hover:bg-white/5 transition-all"
+                                    onclick={`navigator.share({title: '${name} - Tarjeta Digital', text: 'Conocé mi perfil en Oficios Argentina', url: '${profileUrl}'})`}
+                                >
+                                    <span
+                                        class="material-symbols-outlined text-charcoal dark:text-cream"
+                                        >share</span
+                                    >
+                                </button>
+                            </div>
+                            <div
+                                class="flex flex-col items-center justify-center bg-cream/50 dark:bg-white/5 rounded-2xl p-8 mb-10 border border-charcoal/5 dark:border-white/5 shadow-inner"
+                            >
+                                <div
+                                    class="bg-white p-4 rounded-2xl shadow-sm mb-5"
+                                >
+                                    <div
+                                        class="w-36 h-36 bg-cover bg-center"
+                                        style={`background-image: url('https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(profileUrl)}');`}
+                                    >
+                                    </div>
+                                </div>
+                                <p
+                                    class="text-sm font-bold text-charcoal dark:text-cream mb-1"
+                                >
+                                    Escaneá para ver mis trabajos
+                                </p>
+                                <p
+                                    class="text-xs text-accent-muted font-medium"
+                                >
+                                    Acceso instantáneo desde el celular
+                                </p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-5">
+                            <a
+                                href={whatsappUrl}
+                                target="_blank"
+                                class="flex items-center justify-center gap-2 bg-[#25D366] text-white py-4 rounded-xl font-bold hover:brightness-105 active:scale-[0.98] transition-all shadow-lg shadow-green-500/20"
+                            >
+                                <span class="material-symbols-outlined !text-xl"
+                                    >chat</span
+                                >
+                                WhatsApp
+                            </a>
+                            <a
+                                href={phone
+                                    ? `tel:${phone}`
+                                    : "javascript:void(0)"}
+                                class="flex items-center justify-center gap-2 bg-primary text-cream py-4 rounded-xl font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/20"
+                            >
+                                <span class="material-symbols-outlined !text-xl"
+                                    >call</span
+                                >
+                                Llamar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                    <div
+                        class="bg-white dark:bg-background-dark/50 p-6 rounded-2xl border border-primary/10 shadow-sm flex items-center gap-4"
+                    >
+                        <div class="bg-primary/10 p-4 rounded-xl text-primary">
+                            <span
+                                class="material-symbols-outlined fill-icon !text-3xl"
+                                >check_circle</span
+                            >
+                        </div>
+                        <div>
+                            <p
+                                class="text-[10px] font-black text-accent-muted uppercase tracking-widest"
+                            >
+                                Trabajos
+                            </p>
+                            <p
+                                class="text-2xl font-black text-charcoal dark:text-cream"
+                            >
+                                450+
+                            </p>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-background-dark/50 p-6 rounded-2xl border border-primary/10 shadow-sm flex items-center gap-4"
+                    >
+                        <div class="bg-primary/10 p-4 rounded-xl text-primary">
+                            <span
+                                class="material-symbols-outlined fill-icon !text-3xl"
+                                >bolt</span
+                            >
+                        </div>
+                        <div>
+                            <p
+                                class="text-[10px] font-black text-accent-muted uppercase tracking-widest"
+                            >
+                                Respuesta
+                            </p>
+                            <p
+                                class="text-2xl font-black text-charcoal dark:text-cream"
+                            >
+                                &lt; 2hs
+                            </p>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-background-dark/50 p-6 rounded-2xl border border-primary/10 shadow-sm flex items-center gap-4"
+                    >
+                        <div class="bg-primary/10 p-4 rounded-xl text-primary">
+                            <span
+                                class="material-symbols-outlined fill-icon !text-3xl"
+                                >workspace_premium</span
+                            >
+                        </div>
+                        <div>
+                            <p
+                                class="text-[10px] font-black text-accent-muted uppercase tracking-widest"
+                            >
+                                Garantía
+                            </p>
+                            <p
+                                class="text-2xl font-black text-charcoal dark:text-cream"
+                            >
+                                {warranty}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer
+            class="w-full py-12 px-6 bg-cream/50 dark:bg-background-dark/50 border-t border-primary/10 mt-auto"
+        >
+            <div
+                class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8"
+            >
+                <div class="flex items-center gap-3 opacity-80">
+                    <div class="text-primary grayscale brightness-75">
+                        <svg
+                            fill="none"
+                            height="24"
+                            viewBox="0 0 48 48"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                d="M13.8261 30.5736C16.7203 29.8826 20.2244 29.4783 24 29.4783C27.7756 29.4783 31.2797 29.8826 34.1739 30.5736C36.9144 31.2278 39.9967 32.7669 41.3563 33.8352L24.8486 7.36089C24.4571 6.73303 23.5429 6.73303 23.1514 7.36089L6.64374 33.8352C8.00331 32.7669 11.0856 31.2278 13.8261 30.5736Z"
+                                fill="currentColor"></path>
+                            <path
+                                clip-rule="evenodd"
+                                d="M39.998 35.764C39.9944 35.7463 39.9875 35.7155 39.9748 35.6706C39.9436 35.5601 39.8949 35.4259 39.8346 35.2825C39.8168 35.2403 39.7989 35.1993 39.7813 35.1602C38.5103 34.2887 35.9788 33.0607 33.7095 32.5189C30.9875 31.8691 27.6413 31.4783 24 31.4783C20.3587 31.4783 17.0125 31.8691 14.2905 32.5189C12.0012 33.0654 9.44505 34.3104 8.18538 35.1832C8.17384 35.2075 8.16216 35.233 8.15052 35.2592C8.09919 35.3751 8.05721 35.4886 8.02977 35.589C8.00356 35.6848 8.00039 35.7333 8.00004 35.7388C8.00004 35.739 8 35.7393 8.00004 35.7388C8.00004 35.7641 8.0104 36.0767 8.68485 36.6314C9.34546 37.1746 10.4222 37.7531 11.9291 38.2772C14.9242 39.319 19.1919 40 24 40C28.8081 40 33.0758 39.319 36.0709 38.2772C37.5778 37.7531 38.6545 37.1746 39.3151 36.6314C39.9006 36.1499 39.9857 35.8511 39.998 35.764ZM4.95178 32.7688L21.4543 6.30267C22.6288 4.4191 25.3712 4.41909 26.5457 6.30267L43.0534 32.777C43.0709 32.8052 43.0878 32.8338 43.104 32.8629L41.3563 33.8352C43.104 32.8629 43.1038 32.8626 43.104 32.8629L43.1051 32.865L43.1065 32.8675L43.1101 32.8739L43.1199 32.8918C43.1276 32.906 43.1377 32.9246 43.1497 32.9473C43.1738 32.9925 43.2062 33.0545 43.244 33.1299C43.319 33.2792 43.4196 33.489 43.5217 33.7317C43.6901 34.1321 44 34.9311 44 35.7391C44 37.4427 43.003 38.7775 41.8558 39.7209C40.6947 40.6757 39.1354 41.4464 37.385 42.0552C33.8654 43.2794 29.133 44 24 44C18.867 44 14.1346 43.2794 10.615 42.0552C8.86463 41.4464 7.30529 40.6757 6.14419 39.7209C4.99695 38.7775 3.99999 37.4427 3.99999 35.7391C3.99999 34.8725 4.29264 34.0922 4.49321 33.6393C4.60375 33.3898 4.71348 33.1804 4.79687 33.0311C4.83898 32.9556 4.87547 32.8935 4.9035 32.8471C4.91754 32.8238 4.92954 32.8043 4.93916 32.7889L4.94662 32.777L4.95178 32.7688ZM35.9868 29.004L24 9.77997L12.0131 29.004C12.4661 28.8609 12.9179 28.7342 13.3617 28.6282C16.4281 27.8961 20.0901 27.4783 24 27.4783C27.9099 27.4783 31.5719 27.8961 34.6383 28.6282C35.082 28.7342 35.5339 28.8609 35.9868 29.004Z"
+                                fill="currentColor"
+                                fill-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <p
+                        class="text-xs font-bold text-charcoal dark:text-cream uppercase tracking-tighter"
+                    >
+                        Oficios Argentina
+                    </p>
+                </div>
+                <p class="text-xs text-accent-muted font-medium">
+                    © 2026 Red de Profesionales de Confianza. Todos los derechos
+                    reservados.
+                </p>
+            </div>
+        </footer>
+    </body>
+</html>

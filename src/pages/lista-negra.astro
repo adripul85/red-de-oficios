@@ -1,0 +1,207 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Lista Negra de Profesionales - DeOficios">
+    <div class="bg-gray-50 min-h-screen py-12">
+        <div class="max-w-4xl mx-auto px-4">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <div
+                    class="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-6"
+                >
+                    <span class="text-4xl">🚫</span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    Lista Negra de Profesionales
+                </h1>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    En DeOficios, la seguridad y confianza de nuestra comunidad
+                    es prioridad. Esta lista incluye profesionales que han sido
+                    permamente inhabilitados por violar nuestros Términos y
+                    Condiciones.
+                </p>
+            </div>
+
+            <!-- Search Section -->
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-12">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">
+                    Consultar Estado de Profesional
+                </h2>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1">
+                        <label
+                            class="block text-sm font-medium text-gray-700 mb-1"
+                            >Buscar por DNI o CUIT</label
+                        >
+                        <input
+                            type="text"
+                            id="search-input"
+                            placeholder="Ej: 20-12345678-9"
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition outline-none"
+                        />
+                    </div>
+                    <div class="flex items-end">
+                        <button
+                            id="btn-check"
+                            class="w-full md:w-auto bg-gray-900 hover:bg-black text-white font-bold py-3 px-8 rounded-lg transition duration-200 flex items-center justify-center gap-2"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                            >
+                                <path
+                                    fill-rule="evenodd"
+                                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            Verificar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Result Container -->
+                <div id="result-container" class="mt-8 hidden">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Information Cards -->
+            <div class="grid md:grid-cols-2 gap-6">
+                <div
+                    class="bg-white p-6 rounded-lg shadow-sm border border-gray-100"
+                >
+                    <h3
+                        class="font-bold text-red-600 mb-3 flex items-center gap-2"
+                    >
+                        <span class="text-xl">⚠️</span> Motivos de Inhabilitación
+                    </h3>
+                    <ul class="text-sm text-gray-600 space-y-2">
+                        <li>• Falsificación de identidad o documentación.</li>
+                        <li>
+                            • Comportamiento abusivo, violento o
+                            discriminatorio.
+                        </li>
+                        <li>
+                            • Robos o daños intencionales a la propiedad del
+                            cliente.
+                        </li>
+                        <li>
+                            • Reiterados incumplimientos graves de servicios
+                            pactados.
+                        </li>
+                    </ul>
+                </div>
+
+                <div
+                    class="bg-white p-6 rounded-lg shadow-sm border border-gray-100"
+                >
+                    <h3
+                        class="font-bold text-blue-600 mb-3 flex items-center gap-2"
+                    >
+                        <span class="text-xl">🛡️</span> Reportar un Problema
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Si has tenido una mala experiencia con un profesional
+                        verificado, por favor repórtalo para que podamos
+                        investigar.
+                    </p>
+                    <a
+                        href="mailto:denuncias@deoficios.com.ar"
+                        class="text-sm font-bold text-blue-600 hover:underline"
+                    >
+                        Enviar denuncia &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { db } from "../firebase/client"; // Adjust path if needed
+    import { collection, query, where, getDocs } from "firebase/firestore";
+
+    document
+        .getElementById("btn-check")
+        ?.addEventListener("click", async () => {
+            const input = document.getElementById(
+                "search-input",
+            ) as HTMLInputElement;
+            const container = document.getElementById("result-container");
+            const val = input?.value.trim();
+
+            if (!container) return;
+
+            // Reset UI
+            container.classList.remove("hidden");
+            container.innerHTML =
+                '<div class="text-center text-gray-500">Buscando...</div>';
+
+            if (!val || val.length < 7) {
+                container.innerHTML = `
+        <div class="bg-yellow-50 text-yellow-800 p-4 rounded-lg flex items-center gap-3">
+          <span>⚠️ Inserta un DNI o CUIT válido.</span>
+        </div>`;
+                return;
+            }
+
+            try {
+                // Logic: Search in 'profesionales' collection for 'cuit' or 'dni' matches that are suspended
+                // Note: This assumes you have 'cuit' field and a status/flag.
+                // Since we don't have a dedicated blacklist collection, we check the main one.
+
+                const q = query(
+                    collection(db, "profesionales"),
+                    where("cuit", "==", val),
+                    where("estado", "==", "suspendido"), // Assuming this state exists
+                );
+
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    // FOUND IN BLACKLIST
+                    const doc = querySnapshot.docs[0].data();
+                    container.innerHTML = `
+          <div class="bg-red-50 border border-red-200 p-6 rounded-lg animate-fade-in">
+            <div class="flex items-center gap-4 mb-4">
+              <div class="bg-red-500 text-white p-3 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-red-800">Profesional Inhabilitado</h3>
+                <p class="text-red-600 font-medium">Este profesional se encuentra en nuestra Lista Negra.</p>
+              </div>
+            </div>
+            <div class="text-sm text-red-700 bg-red-100 p-3 rounded">
+              <strong>Razón:</strong> Violación de términos y condiciones (Incumplimiento grave / Denuncias).
+            </div>
+          </div>
+        `;
+                } else {
+                    // NOT FOUND
+                    container.innerHTML = `
+           <div class="bg-green-50 border border-green-200 p-6 rounded-lg text-center animate-fade-in">
+             <div class="inline-flex bg-green-100 text-green-600 p-3 rounded-full mb-3">
+               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+               </svg>
+             </div>
+             <p class="text-green-800 font-bold text-lg">No encontrado en la lista negra</p>
+             <p class="text-green-600 text-sm">El CUIT/DNI ingresado no figura en nuestra base de inhabilitados.</p>
+           </div>
+        `;
+                }
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = `
+        <div class="bg-gray-100 text-gray-500 p-4 rounded-lg text-center">
+          Error al consultar. Intente nuevamente.
+        </div>`;
+            }
+        });
+</script>

@@ -42,6 +42,7 @@ const profesionales = snapshot.docs
     let nivel = "basico";
     if (esExperto) nivel = "experto";
     else if (esPro) nivel = "pro";
+    else return null; // Eliminar pines azules (básicos)
 
     return {
       id: doc.id,
