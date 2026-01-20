@@ -255,6 +255,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 updateDoc,
                 arrayUnion,
                 getDoc,
+                deleteField,
             } from "firebase/firestore";
             import { onAuthStateChanged } from "firebase/auth";
 
@@ -455,6 +456,27 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             }
                         }
 
+                        // Query 3: Mis Presupuestos / Aceptados (para que sigan apareciendo en 'Contactadas' o una nueva tab)
+                        const qAceptados = query(
+                            collection(db, "solicitudes"),
+                            where("profesionalId", "==", currentUser.uid),
+                            orderBy("fecha", "desc"),
+                        );
+                        console.log(
+                            "🔍 [OPORTUNIDADES] Ejecutando query aceptados...",
+                        );
+                        try {
+                            const snapAceptados = await getDocs(qAceptados);
+                            snapAceptados.docs.forEach((doc) => {
+                                allSolicitudes.set(doc.id, {
+                                    id: doc.id,
+                                    ...doc.data(),
+                                });
+                            });
+                        } catch (e) {
+                            console.warn("⚠️ Query aceptados falló:", e);
+                        }
+
                         // Convertir Map a Array y ordenar por fecha
                         todasSolicitudes = Array.from(
                             allSolicitudes.values(),
@@ -501,7 +523,11 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         );
 
                         if (activeTab === "nuevas")
-                            return !contactado && !descartado;
+                            return (
+                                !contactado &&
+                                !descartado &&
+                                sol.status === "nueva"
+                            ); // Only show truly new ones
                         if (activeTab === "contactadas") return contactado;
                         if (activeTab === "descartadas") return descartado;
                         return false;
@@ -599,6 +625,12 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                     ? `<span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-full">Nuevo</span>`
                                     : "";
 
+                            const isAcceptedByMe =
+                                sol.profesionalId === currentUser.uid;
+                            const acceptedBadge = isAcceptedByMe
+                                ? `<span class="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded-full border border-purple-200">💎 Tu Trabajo</span>`
+                                : "";
+
                             return `
                         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 hover:shadow-md transition">
                             <!-- Info Principal -->
@@ -608,6 +640,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                         <span class="bg-slate-100 text-slate-700 text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wide">${sol.rubro}</span>
                                         ${urgenteBadge}
                                         ${nuevoBadge}
+                                        ${acceptedBadge}
                                         ${
                                             sol.presupuesto
                                                 ? `<span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">💰 Presupuesto: $${sol.presupuesto}</span>`
@@ -638,6 +671,11 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                             ? `
                                         <span class="text-green-600 font-bold text-xs bg-green-50 px-2 py-1 rounded">✅ Contactado</span>
                                     `
+                                            : ""
+                                    }
+                                    ${
+                                        sol.profesionalId === currentUser.uid
+                                            ? `<span class="text-purple-600 font-bold text-xs bg-purple-50 px-2 py-1 rounded border border-purple-100">📌 Presupuestando</span>`
                                             : ""
                                     }
                                 </div>
@@ -680,6 +718,13 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                 ${
                                     activeTab === "contactadas"
                                         ? `
+                                    ${
+                                        sol.profesionalId === currentUser.uid
+                                            ? `<button onclick="liberarOportunidad('${sol.id}')" class="w-full mb-2 px-4 py-2 border border-orange-200 text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition flex items-center justify-center gap-2 text-xs">
+                                        🔄 Cancelar / Liberar
+                                    </button>`
+                                            : ""
+                                    }
                                     <div class="text-center py-4 bg-green-50 rounded-lg border border-green-100">
                                         <span class="block text-2xl mb-1">💬</span>
                                         <p class="text-green-800 font-bold text-sm">Conversación Iniciada</p>
@@ -712,11 +757,17 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         return;
                     }
 
-                    // 1. Marcar como contactado en DB
+                    // 1. Marcar como contactado en DB Y Bloquear para mi (status: aceptada)
                     try {
                         const solRef = doc(db, "solicitudes", id);
                         await updateDoc(solRef, {
                             contactadosPor: arrayUnion(currentUser.uid),
+                            status: "aceptada",
+                            profesionalId: currentUser.uid,
+                            profesionalNombre:
+                                currentUser.displayName || "Profesional",
+                            profesionalFoto: currentUser.photoURL || "",
+                            fechaAceptacion: new Date(),
                         });
 
                         // Actualizar estado local
@@ -726,6 +777,8 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                 return {
                                     ...s,
                                     contactadosPor: [...prev, currentUser.uid],
+                                    status: "aceptada",
+                                    profesionalId: currentUser.uid,
                                 };
                             }
                             return s;
@@ -809,6 +862,44 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     }
                 }
 
+                async function liberarOportunidad(id) {
+                    if (
+                        !confirm(
+                            "¿Liberar esta oportunidad? Volverá a estar disponible para otros profesionales.",
+                        )
+                    )
+                        return;
+
+                    try {
+                        const solRef = doc(db, "solicitudes", id);
+
+                        await updateDoc(solRef, {
+                            status: "nueva",
+                            profesionalId: deleteField(),
+                            profesionalNombre: deleteField(),
+                            profesionalFoto: deleteField(),
+                            fechaAceptacion: deleteField(),
+                        });
+
+                        // Update local state and remove from view if needed
+                        todasSolicitudes = todasSolicitudes.map((s) => {
+                            if (s.id === id) {
+                                const copy = { ...s };
+                                delete copy.profesionalId;
+                                copy.status = "nueva";
+                                return copy;
+                            }
+                            return s;
+                        });
+
+                        renderOportunidades();
+                        alert("Oportunidad liberada correctamente.");
+                    } catch (e) {
+                        console.error(e);
+                        alert("Error al liberar oportunidad");
+                    }
+                }
+
                 // MODAL SYSTEM
                 function showAlert(title, message, icon = "✨") {
                     document.getElementById("alert-title").innerText = title;
@@ -830,6 +921,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 window.contactarCliente = contactarCliente;
                 window.descartarSolicitud = descartarSolicitud;
                 window.eliminarOportunidad = eliminarOportunidad;
+                (window as any).liberarOportunidad = liberarOportunidad;
                 window.restaurarSolicitud = async function (id: any) {
                     showAlert(
                         "Próximamente",
