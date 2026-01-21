@@ -304,12 +304,12 @@ try {
   }
   .section-header h2 {
     font-size: 2.2rem;
-    color: #1f2937;
+    @apply text-gray-900 dark:text-gray-100;
     margin-bottom: 10px;
     line-height: 1.2;
   }
   .section-header p {
-    color: #6b7280;
+    @apply text-gray-500 dark:text-gray-400;
     font-size: 1.1rem;
   }
 
@@ -359,7 +359,7 @@ try {
 
   /* Buscador */
   .search-box {
-    background: white;
+    @apply bg-white dark:bg-gray-800 transition-colors duration-300;
     padding: 6px;
     border-radius: 50px;
     display: flex;
@@ -376,7 +376,7 @@ try {
     font-size: 1rem;
     outline: none;
     background: transparent;
-    color: #333;
+    @apply text-gray-800 dark:text-gray-100;
   }
   .search-box button {
     background: #ea580c;
@@ -430,8 +430,7 @@ try {
   /* ... RESTO DE ESTILOS IGUAL QUE ANTES ... */
 
   .how-it-works {
-    background: #f9fafb;
-    border-top: 1px solid #e5e7eb;
+    @apply bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 transition-colors duration-300;
     border-bottom: 1px solid #e5e7eb;
   }
 
@@ -448,7 +447,7 @@ try {
   .step-icon {
     width: 80px;
     height: 80px;
-    background: white;
+    @apply bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -456,17 +455,16 @@ try {
     font-size: 2.2rem;
     margin: 0 auto 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    border: 2px solid #e5e7eb;
     color: #ea580c;
   }
   .step-card h3 {
     font-size: 1.3rem;
     margin-bottom: 10px;
-    color: #1f2937;
+    @apply text-gray-900 dark:text-gray-100;
   }
   .step-card p {
     font-size: 1rem;
-    color: #6b7280;
+    @apply text-gray-500 dark:text-gray-400;
     line-height: 1.5;
   }
 
@@ -521,13 +519,12 @@ try {
     gap: 30px;
   }
   .pro-card {
-    background: white;
+    @apply bg-white dark:bg-gray-800 border dark:border-gray-700 transition-all duration-300;
     border-radius: 12px;
     overflow: hidden;
-    border: 1px solid #e5e7eb;
+    @apply border-gray-200;
     text-decoration: none;
     color: inherit;
-    transition: 0.3s;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -536,7 +533,7 @@ try {
   .pro-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-    border-color: #ea580c;
+    @apply border-orange-600 dark:border-orange-500;
   }
   .card-top {
     border: 2px solid #fbbf24 !important;
@@ -591,10 +588,10 @@ try {
   .pro-info h3 {
     margin: 0 0 5px;
     font-size: 1.1rem;
-    color: #1f2937;
+    @apply text-gray-900 dark:text-gray-100;
   }
   .pro-info .category {
-    color: #ea580c;
+    @apply text-orange-600 dark:text-orange-500;
     font-size: 0.8rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -603,7 +600,7 @@ try {
   }
   .pro-info .zona {
     font-size: 0.9rem;
-    color: #6b7280;
+    @apply text-gray-500 dark:text-gray-400;
     margin: 0;
     display: flex;
     align-items: center;

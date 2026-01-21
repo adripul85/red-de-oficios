@@ -3,6 +3,7 @@ export default {
 	// ESTA LÍNEA ES LA CLAVE 👇
 	// El asterisco ** significa "cualquier carpeta" y *.astro significa "cualquier archivo Astro"
 	content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
+	darkMode: 'class',
 
 	theme: {
 		extend: {

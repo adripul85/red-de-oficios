@@ -29,6 +29,18 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 <!doctype html>
 <html lang="es">
 	<head>
+		<script is:inline>
+			// DARK MODE INIT - Prevents FOUC
+			if (
+				localStorage.theme === "dark" ||
+				(!("theme" in localStorage) &&
+					window.matchMedia("(prefers-color-scheme: dark)").matches)
+			) {
+				document.documentElement.classList.add("dark");
+			} else {
+				document.documentElement.classList.remove("dark");
+			}
+		</script>
 		<!-- Google tag (gtag.js) -->
 		<script
 			async
@@ -97,7 +109,9 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		<script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
 		></script>
 	</head>
-	<body>
+	<body
+		class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300"
+	>
 		<!-- PREMIUM SPLASH SCREEN (Apple Music Style) -->
 		<div id="custom-splash-screen">
 			<img
