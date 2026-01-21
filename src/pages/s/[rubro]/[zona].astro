@@ -1,0 +1,204 @@
+---
+// src/pages/s/[rubro]/[zona].astro
+export const prerender = false; // Renderizado en el servidor para que sea dinámico
+
+import Layout from "../../../layouts/Layout.astro";
+import { db } from "../../../firebase/client";
+import { collection, getDocs, query, where } from "firebase/firestore";
+
+// 1. Obtener parámetros de la URL
+const { rubro, zona } = Astro.params;
+
+// 2. Función para "limpiar" textos para comparar (quita tildes y mayúsculas)
+const normalize = (text) =>
+    text
+        ?.toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") || "";
+
+// Títulos bonitos para la vista (ej: "plomero" -> "Plomero")
+const rubroDisplay =
+    rubro.charAt(0).toUpperCase() + rubro.slice(1).replace(/-/g, " ");
+const zonaDisplay =
+    zona.charAt(0).toUpperCase() + zona.slice(1).replace(/-/g, " ");
+
+// 3. Buscar en Firebase
+let profesionales = [];
+let loading = true;
+
+try {
+    // Traemos los profesionales (Idealmente filtrarías en Firebase, pero por tema de tildes/slugs
+    // a veces es mejor traer la colección y filtrar en JS si no son millones de datos)
+    const q = query(
+        collection(db, "profesionales"),
+        where("verificado", "==", true),
+    );
+    const snapshot = await getDocs(q);
+
+    const todos = snapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() }) as any,
+    );
+
+    // Filtramos en el servidor
+    profesionales = todos.filter((p) => {
+        // Comparamos el rubro y la zona normalizados (y arrays)
+
+        // Rubros: Checkrubro_principal OR rubros array
+        const pRubroPrincipal = normalize(p.rubro_principal);
+        const pRubros = (p.rubros || []).map((r) => normalize(r));
+        const allProRubros = [pRubroPrincipal, ...pRubros];
+
+        // Zonas: Check zona OR zonas array
+        const pZonaPrincipal = normalize(p.zona);
+        const pZonas = (p.zonas || []).map((z) => normalize(z));
+        const allProZonas = [pZonaPrincipal, ...pZonas];
+
+        const searchRubro = normalize(rubro);
+        const searchZona = normalize(zona);
+
+        // Coincidencia laxa (si la zona URL es "gba-norte" y en DB dice "GBA Norte", hace match)
+        const rubroMatch = allProRubros.some((r) => r.includes(searchRubro));
+        const zonaMatch = allProZonas.some((z) => z.includes(searchZona));
+
+        return rubroMatch && zonaMatch;
+    });
+} catch (e) {
+    console.error(e);
+}
+
+// SEO: Título y Descripción optimizados para Google
+const pageTitle = `${rubroDisplay}s en ${zonaDisplay} | Profesionales Verificados - DeOficios`;
+const pageDesc = `Encontrá los mejores ${rubroDisplay}s en ${zonaDisplay}. Perfiles validados, reseñas reales y precios transparentes. Contactá directo por WhatsApp.`;
+---
+
+<Layout title={pageTitle} description={pageDesc}>
+    <head>
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDesc} />
+    </head>
+
+    <div class="bg-gray-50 min-h-screen">
+        <div class="bg-white border-b border-gray-200 py-12 px-4">
+            <div class="max-w-7xl mx-auto text-center">
+                <p
+                    class="text-orange-600 font-bold tracking-widest text-xs uppercase mb-2"
+                >
+                    Directorio de Confianza
+                </p>
+                <h1
+                    class="text-4xl md:text-5xl font-black text-slate-900 mb-4 capitalize"
+                >
+                    {rubroDisplay}s en <span class="text-orange-600"
+                        >{zonaDisplay}</span
+                    >
+                </h1>
+                <p class="text-gray-500 max-w-2xl mx-auto text-lg">
+                    Listado de profesionales verificados listos para trabajar en
+                    tu zona.
+                </p>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 py-12">
+            {
+                profesionales.length > 0 ? (
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {profesionales.map((pro) => (
+                            <a
+                                href={`/perfil?id=${pro.id || pro.uid}`}
+                                class="block group h-full"
+                            >
+                                <article class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-xl hover:border-orange-500/30 transition-all duration-300 h-full flex flex-col">
+                                    <div class="flex items-center gap-4 mb-4">
+                                        <img
+                                            src={
+                                                pro.foto ||
+                                                `https://ui-avatars.com/api/?name=${pro.nombre || "U"}&background=random`
+                                            }
+                                            class="w-16 h-16 rounded-2xl object-cover border-2 border-gray-100 group-hover:border-orange-500 transition-colors"
+                                        />
+                                        <div>
+                                            <h3 class="font-bold text-lg text-slate-900 group-hover:text-orange-600 transition-colors capitalize">
+                                                {pro.nombre?.toLowerCase()}
+                                            </h3>
+                                            <div class="flex items-center gap-1 text-xs font-bold text-gray-400 uppercase">
+                                                <span class="material-symbols-outlined text-sm">
+                                                    location_on
+                                                </span>
+                                                {pro.zona || zonaDisplay}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <p class="text-gray-600 text-sm mb-4 line-clamp-2 flex-1">
+                                        {pro.descripcion ||
+                                            "Profesional registrado en DeOficios."}
+                                    </p>
+
+                                    <div class="flex items-center justify-between pt-4 border-t border-gray-50 mt-auto">
+                                        <div class="flex items-center gap-1 text-yellow-500 font-bold">
+                                            <span class="material-symbols-outlined text-lg">
+                                                star
+                                            </span>
+                                            {pro.promedio
+                                                ? Number(pro.promedio).toFixed(
+                                                      1,
+                                                  )
+                                                : "Nuevo"}
+                                        </div>
+                                        <span class="text-orange-600 font-bold text-sm group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                                            Ver Perfil →
+                                        </span>
+                                    </div>
+                                </article>
+                            </a>
+                        ))}
+                    </div>
+                ) : (
+                    <div class="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-200">
+                        <div class="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
+                            🕵️
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">
+                            Aún no hay {rubroDisplay}s en esta zona
+                        </h3>
+                        <p class="text-gray-500 mb-6 max-w-md mx-auto">
+                            ¡Sé el primero! Si trabajas en este rubro,
+                            regístrate ahora y aparece primero en Google.
+                        </p>
+                        <a
+                            href="/ingresar?rol=profesional"
+                            class="inline-block bg-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-700 transition-colors shadow-lg"
+                        >
+                            Registrarme como Profesional
+                        </a>
+                    </div>
+                )
+            }
+
+            <div class="mt-20 pt-10 border-t border-gray-200">
+                <h4 class="font-bold text-gray-800 mb-4">
+                    Búsquedas relacionadas en {zonaDisplay}
+                </h4>
+                <div class="flex flex-wrap gap-3">
+                    {
+                        [
+                            "Electricista",
+                            "Plomero",
+                            "Gasista",
+                            "Pintor",
+                            "Albañil",
+                        ].map((r) => (
+                            <a
+                                href={`/s/${r.toLowerCase()}/${zona.toLowerCase()}`}
+                                class="text-sm text-gray-500 bg-white border border-gray-200 px-4 py-2 rounded-full hover:border-orange-500 hover:text-orange-600 transition-colors"
+                            >
+                                {r} en {zonaDisplay}
+                            </a>
+                        ))
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>

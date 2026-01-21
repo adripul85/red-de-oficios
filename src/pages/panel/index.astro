@@ -1118,8 +1118,6 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
             // === FUNCIÓN DE NOTIFICACIONES ===
             async function setupNotifications(uid: string) {
-                // Removed dynamic imports
-
                 // 1. Registrar Service Worker
                 if ("serviceWorker" in navigator) {
                     try {
@@ -1131,8 +1129,31 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     }
                 }
 
-                // 2. Escuchar notificaciones en tiempo real
-                // Escuchamos la subcolección 'notificaciones' del usuario
+                // 2. Fetch Profile for Badge Logic (Rubros/Zonas)
+                let misRubros = [];
+                let misZonas = [];
+                try {
+                    const pDoc = await getDoc(doc(db, "profesionales", uid));
+                    if (pDoc.exists()) {
+                        const pd = pDoc.data();
+                        misRubros =
+                            pd.rubros?.length > 0
+                                ? pd.rubros
+                                : pd.rubro_principal
+                                  ? [pd.rubro_principal]
+                                  : [];
+                        misZonas =
+                            pd.zonas?.length > 0
+                                ? pd.zonas
+                                : pd.zona
+                                  ? [pd.zona]
+                                  : [];
+                    }
+                } catch (e) {
+                    console.error("Error fetching profile for badges", e);
+                }
+
+                // 3. Listener Notificaciones (Campana / Lista)
                 const qNotifs = query(
                     collection(db, "profesionales", uid, "notificaciones"),
                     where("leido", "==", false),
@@ -1175,15 +1196,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 // Mark all read
                 markReadBtn?.addEventListener("click", async () => {
                     try {
-                        const { writeBatch, doc, onSnapshot } =
+                        const { writeBatch } =
                             await import("firebase/firestore");
                         const batch = writeBatch(db);
-
-                        // Get current unread notifs from the snapshot listener
-                        // (Wait, we can't easily access the snapshot outside.
-                        //  Let's just fetch them once or check if we can access the latest snapshot.
-                        //  Better: perform a one-time getDocs for unread notifs to be safe)
-
                         const unreadQ = query(
                             collection(
                                 db,
@@ -1193,7 +1208,6 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             ),
                             where("leido", "==", false),
                         );
-
                         const unreadSnaps = await getDocs(unreadQ);
 
                         if (unreadSnaps.empty) {
@@ -1202,14 +1216,16 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         }
 
                         unreadSnaps.forEach((d) => {
-                            const ref = doc(
-                                db,
-                                "profesionales",
-                                uid,
-                                "notificaciones",
-                                d.id,
+                            batch.update(
+                                doc(
+                                    db,
+                                    "profesionales",
+                                    uid,
+                                    "notificaciones",
+                                    d.id,
+                                ),
+                                { leido: true },
                             );
-                            batch.update(ref, { leido: true });
                         });
 
                         await batch.commit();
@@ -1225,16 +1241,10 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 onSnapshot(qNotifs, (snapshot) => {
                     const count = snapshot.size;
 
-                    // Actualizar badges
-                    if (count > 0) {
-                        if (badgeBell) badgeBell.classList.remove("hidden");
-                        if (badgeSidebar) {
-                            badgeSidebar.textContent = count.toString();
-                            badgeSidebar.classList.remove("hidden");
-                        }
-                    } else {
-                        if (badgeBell) badgeBell.classList.add("hidden");
-                        if (badgeSidebar) badgeSidebar.classList.add("hidden");
+                    // Update Bell Badge Only
+                    if (badgeBell) {
+                        if (count > 0) badgeBell.classList.remove("hidden");
+                        else badgeBell.classList.add("hidden");
                     }
 
                     if (notifList) {
@@ -1254,21 +1264,20 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                           })
                                         : "";
                                     return `
-                                            <div class="px-4 py-3 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer" onclick="window.location.href='/panel/oportunidades'">
-                                                <div class="flex justify-between items-start mb-1">
-                                                    <p class="text-xs font-bold text-slate-800">${data.titulo || "Nueva Notificación"}</p>
-                                                    <span class="text-[10px] text-slate-400">${time}</span>
-                                                </div>
-                                                <p class="text-xs text-slate-500 line-clamp-2">${data.mensaje || ""}</p>
-                                            </div>
-                                        `;
+                                    <div class="px-4 py-3 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer" onclick="window.location.href='/panel/oportunidades'">
+                                        <div class="flex justify-between items-start mb-1">
+                                            <p class="text-xs font-bold text-slate-800">${data.titulo || "Nueva Notificación"}</p>
+                                            <span class="text-[10px] text-slate-400">${time}</span>
+                                        </div>
+                                        <p class="text-xs text-slate-500 line-clamp-2">${data.mensaje || ""}</p>
+                                    </div>
+                                `;
                                 })
                                 .join("");
                         }
                     }
 
-                    // Mostrar notificación del navegador para nuevas (solo si agregada recientemente)
-                    // Evitar spam en carga inicial
+                    // Browser Notification
                     if (isFirstLoad) {
                         isFirstLoad = false;
                         return;
@@ -1277,7 +1286,6 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     snapshot.docChanges().forEach((change) => {
                         if (change.type === "added") {
                             const notif = change.doc.data();
-
                             if (Notification.permission === "granted") {
                                 new Notification(
                                     notif.titulo || "¡Nueva oportunidad!",
@@ -1295,9 +1303,50 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     });
                 });
 
-                // REMOVE ACTIVE OPPORTUNITIES COUNT FROM BADGE
-                // The user requested that once seen, notifications stop.
-                // Relying purely on the 'notificaciones' collection above achieves this.
+                // 4. Opportunities Badge Listener (REAL COUNT)
+                if (misRubros.length > 0) {
+                    try {
+                        const qBadge = query(
+                            collection(db, "solicitudes"),
+                            where("rubro", "in", misRubros),
+                            where("status", "==", "nueva"),
+                        );
+
+                        onSnapshot(qBadge, (snap) => {
+                            let badgeCount = 0;
+                            snap.docs.forEach((d) => {
+                                const data = d.data();
+                                const zonaMatch =
+                                    misZonas.length === 0 ||
+                                    misZonas.includes(data.zona);
+                                const notDeleted =
+                                    !data.eliminadosPor?.includes(uid);
+                                if (zonaMatch && notDeleted) badgeCount++;
+                            });
+
+                            // Update Sidebar Badge
+                            const badgeMobile = document.getElementById(
+                                "badge-oportunidades-mobile",
+                            );
+                            [badgeSidebar, badgeMobile].forEach((b) => {
+                                if (b) {
+                                    if (badgeCount > 0) {
+                                        b.textContent = badgeCount.toString();
+                                        b.classList.remove("hidden");
+                                    } else {
+                                        b.classList.add("hidden");
+                                    }
+                                }
+                            });
+                        });
+                    } catch (e) {
+                        console.error(
+                            "Error referencing opportunities badge:",
+                            e,
+                        );
+                    }
+                }
+
                 // If they read the notification or click it, we should mark it as read eventually.
                 // For now this implementation only shows *unread* notifications in the badge.
 

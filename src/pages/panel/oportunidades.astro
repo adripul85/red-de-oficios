@@ -360,22 +360,34 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         }
 
                         const profData = profDoc.data();
-                        const miRubro = profData.rubro_principal;
-                        const miZona = profData.zona;
+
+                        // OBTENER TODOS LOS RUBROS Y ZONAS DISPONIBLES DEL PERFIL
+                        // Prioridad: Arrays nuevos -> Campos legacy -> Defaults
+                        const misRubros =
+                            profData.rubros?.length > 0
+                                ? profData.rubros
+                                : profData.rubro_principal
+                                  ? [profData.rubro_principal]
+                                  : [];
+
+                        const misZonas =
+                            profData.zonas?.length > 0
+                                ? profData.zonas
+                                : profData.zona
+                                  ? [profData.zona]
+                                  : [];
 
                         console.log(
-                            "🔍 [OPORTUNIDADES] Mi rubro:",
-                            miRubro,
-                            "Mi zona:",
-                            miZona,
+                            "🔍 [OPORTUNIDADES] Mis rubros:",
+                            misRubros,
+                            "Mis zonas:",
+                            misZonas,
                         );
 
-                        // 2. Buscar solicitudes que coincidan con mi rubro Y zona
-                        // ESTRATEGIA: Combinar dos queries
-                        //   a) Donde soy candidato (old way)
-                        //   b) Donde el rubro y zona coinciden (new way - para no perder oportunidades)
+                        // 2. Buscar solicitudes que coincidan con mis rubros
+                        // Firestore 'in' limitation: max 10 items (App limit is 5, so we are safe)
 
-                        const allSolicitudes = new Map(); // Usar Map para evitar duplicados
+                        const allSolicitudes = new Map();
 
                         // Query 1: Donde soy candidato (el sistema me seleccionó)
                         const qCandidato = query(
@@ -389,18 +401,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             limit(50),
                         );
 
-                        console.log(
-                            "🔍 [OPORTUNIDADES] Ejecutando query candidatos...",
-                        );
                         const snapCandidato = await getDocs(qCandidato);
-                        console.log(
-                            "🔍 [OPORTUNIDADES] Docs de candidatos:",
-                            snapCandidato.size,
-                        );
-
                         snapCandidato.docs.forEach((doc) => {
                             const data = doc.data();
-                            // Filter out if I deleted it
                             if (
                                 !data.eliminadosPor?.includes(currentUser.uid)
                             ) {
@@ -411,35 +414,33 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             }
                         });
 
-                        // Query 2: Donde coincide mi rubro y zona (oportunidades que el sistema no me asignó pero son relevantes)
-                        if (miRubro && miZona) {
-                            const qRubroZona = query(
-                                collection(db, "solicitudes"),
-                                where("rubro", "==", miRubro),
-                                where("zona", "==", miZona),
-                                where("status", "==", "nueva"),
-                                orderBy("fecha", "desc"),
-                                limit(50),
-                            );
-
-                            console.log(
-                                "🔍 [OPORTUNIDADES] Ejecutando query rubro/zona...",
-                            );
+                        // Query 2: Coincidencia por Rubro (Multi-Rubro)
+                        if (misRubros.length > 0) {
                             try {
-                                const snapRubroZona = await getDocs(qRubroZona);
-                                console.log(
-                                    "🔍 [OPORTUNIDADES] Docs de rubro/zona:",
-                                    snapRubroZona.size,
+                                const qRubros = query(
+                                    collection(db, "solicitudes"),
+                                    where("rubro", "in", misRubros), // BUSCAR EN LISTA DE RUBROS
+                                    where("status", "==", "nueva"),
+                                    orderBy("fecha", "desc"),
+                                    limit(50),
                                 );
 
-                                snapRubroZona.docs.forEach((doc) => {
+                                const snapRubros = await getDocs(qRubros);
+
+                                snapRubros.docs.forEach((doc) => {
                                     if (!allSolicitudes.has(doc.id)) {
                                         const data = doc.data();
-                                        if (
+
+                                        // FILTRADO CLIENT-SIDE POR ZONA Y ELIMINADOS
+                                        const zonaMatch =
+                                            misZonas.length === 0 ||
+                                            misZonas.includes(data.zona);
+                                        const notDeleted =
                                             !data.eliminadosPor?.includes(
                                                 currentUser.uid,
-                                            )
-                                        ) {
+                                            );
+
+                                        if (zonaMatch && notDeleted) {
                                             allSolicitudes.set(doc.id, {
                                                 id: doc.id,
                                                 ...data,
@@ -447,11 +448,10 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                         }
                                     }
                                 });
-                            } catch (indexError) {
-                                // Si falla por falta de índice, solo usar query de candidatos
-                                console.warn(
-                                    "⚠️ Query rubro/zona falló (posible índice faltante):",
-                                    indexError,
+                            } catch (error) {
+                                console.error(
+                                    "⚠️ Query multi-rubro falló:",
+                                    error,
                                 );
                             }
                         }
