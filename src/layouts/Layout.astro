@@ -3,6 +3,7 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import IAFloatingButton from "../components/IAFloatingButton.astro";
 import "../styles/global.css";
+import GlobalBanner from "../components/GlobalBanner.astro";
 import { ClientRouter } from "astro:transitions";
 
 interface Props {
@@ -112,6 +113,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 	<body
 		class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300"
 	>
+		<GlobalBanner />
 		<!-- PREMIUM SPLASH SCREEN (Apple Music Style) -->
 		<div id="custom-splash-screen">
 			<img

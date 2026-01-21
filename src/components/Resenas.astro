@@ -36,6 +36,16 @@ try {
               <span class="stars">{"⭐".repeat(op.puntuacion)}</span>
             </div>
             <p class="comment">"{op.comentario}"</p>
+            {op.fotoTrabajo && (
+              <div class="review-photo mt-3">
+                <img
+                  src={op.fotoTrabajo}
+                  alt="Evidencia de trabajo"
+                  class="rounded-lg max-h-48 object-cover cursor-zoom-in"
+                  onclick={`window.open('${op.fotoTrabajo}', '_blank')`}
+                />
+              </div>
+            )}
             <small class="date">
               {op.fecha?.seconds
                 ? new Date(op.fecha.seconds * 1000).toLocaleDateString()

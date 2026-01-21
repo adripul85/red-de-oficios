@@ -182,7 +182,7 @@ for (let i = 0; i < levels.length; i++) {
                     avatar={profesional.foto}
                     location={ubicacion}
                     rating={promedio.toFixed(1)}
-                    priceInfo={profesional.presupuestos_config?.activo ? "Presupuestos sin cargo" : "Consultar precio"}
+                    priceInfo={profesional.presupuestos_config?.activo ? "Presupuestos sin cargo" : (profesional.precio_visita ? `Precio visita: $${Number(profesional.precio_visita).toLocaleString('es-AR')}` : "Consultar precio")}
                     services={mappedServices}
                     bio={profesional.descripcion}
                     experience={profesional.experiencia}
@@ -358,7 +358,9 @@ for (let i = 0; i < levels.length; i++) {
                                     <div class="flex justify-between items-center text-sm">
                                         <span class="text-neutral-gray font-bold uppercase tracking-wider text-[11px]">Presupuesto</span>
                                         <span class="font-black text-primary">
-                                            {profesional.presupuestos_config?.activo ? "Sin Cargo" : "Consultar"}
+                                            {profesional.presupuestos_config?.activo 
+                                              ? "Sin Cargo" 
+                                              : (profesional.precio_visita ? `$${Number(profesional.precio_visita).toLocaleString('es-AR')}` : "Consultar")}
                                         </span>
                                     </div>
                                     <div class="flex justify-between items-center text-sm">

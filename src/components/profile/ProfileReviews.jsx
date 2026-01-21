@@ -48,7 +48,7 @@ export default function ProfileReviews({ idProfesional }) {
     const loadReviews = async () => {
         try {
             const q = query(
-                collection(db, `profesionales/${idProfesional}/reseñas`),
+                collection(db, `profesionales/${idProfesional}/resenas`),
                 orderBy("fecha", "desc")
             );
             const snapshot = await getDocs(q);
@@ -81,7 +81,7 @@ export default function ProfileReviews({ idProfesional }) {
                 const nuevoPromedio = nuevaSuma / nuevoTotal;
 
                 // 1. Crear reseña
-                const reseñaRef = doc(collection(db, `profesionales/${idProfesional}/reseñas`));
+                const reseñaRef = doc(collection(db, `profesionales/${idProfesional}/resenas`));
                 transaction.set(reseñaRef, {
                     clienteId: currentUser.uid,
                     clienteNombre: currentUser.nombre,

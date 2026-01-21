@@ -210,7 +210,13 @@ import Layout from "../layouts/Layout.astro";
                             data-tab="comentarios"
                             class="tab-btn flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-white/50"
                         >
-                            ⭐ Mis Valoraciones
+                            ⭐ Valoraciones
+                        </button>
+                        <button
+                            data-tab="codigos"
+                            class="tab-btn flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-white/50"
+                        >
+                            🛡️ Mis Códigos
                         </button>
                     </div>
 
@@ -485,6 +491,62 @@ import Layout from "../layouts/Layout.astro";
                             >
                                 <p class="text-slate-500">
                                     Aún no has valorado a ningún profesional.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-codigos" class="tab-panel hidden space-y-6">
+                        <!-- Card Mis Códigos de Seguridad -->
+                        <div
+                            class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
+                        >
+                            <div class="flex items-center gap-3 mb-6">
+                                <div
+                                    class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-xl"
+                                >
+                                    🛡️
+                                </div>
+                                <div>
+                                    <h3
+                                        class="text-xl font-bold text-slate-900"
+                                    >
+                                        Códigos de Seguridad
+                                    </h3>
+                                    <p class="text-sm text-slate-500">
+                                        Tus visitas programadas
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div
+                                class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-6"
+                            >
+                                <p
+                                    class="text-xs text-indigo-800 leading-relaxed"
+                                >
+                                    <strong>¡Seguridad Primero!</strong> Mostrale
+                                    este código al profesional cuando llegue a tu
+                                    domicilio para confirmar que es el experto asignado
+                                    por DeOficios.
+                                </p>
+                            </div>
+
+                            <div id="codigos-list" class="grid gap-4">
+                                <!-- Se llena dinámicamente -->
+                            </div>
+
+                            <div
+                                id="empty-codigos"
+                                class="hidden text-center py-12"
+                            >
+                                <p class="text-slate-500">
+                                    Aún no has generado códigos de seguridad.
+                                </p>
+                                <p class="text-xs text-slate-400 mt-2">
+                                    Los códigos se generan automáticamente
+                                    cuando contactás a un profesional por
+                                    WhatsApp.
                                 </p>
                             </div>
                         </div>
@@ -801,6 +863,7 @@ import Layout from "../layouts/Layout.astro";
                     await Promise.all([
                         loadClientReviews(user.uid),
                         loadMisSolicitudes(user.uid),
+                        loadMisCodigos(user.uid),
                     ]);
 
                     if (loading) loading.classList.add("hidden");
@@ -1079,6 +1142,60 @@ import Layout from "../layouts/Layout.astro";
                 }
             } catch (e) {
                 console.error("Error cargando solicitudes:", e);
+            }
+        }
+
+        async function loadMisCodigos(userId: string) {
+            const list = document.getElementById("codigos-list");
+            const empty = document.getElementById("empty-codigos");
+            if (!list) return;
+
+            try {
+                const { collection, query, where, onSnapshot, orderBy } =
+                    await import("firebase/firestore");
+                const q = query(
+                    collection(db, "contactos"),
+                    where("clienteId", "==", userId),
+                    orderBy("fecha", "desc"),
+                );
+
+                onSnapshot(q, (snapshot) => {
+                    if (snapshot.empty) {
+                        empty?.classList.remove("hidden");
+                        list.innerHTML = "";
+                        return;
+                    }
+
+                    empty?.classList.add("hidden");
+                    list.innerHTML = snapshot.docs
+                        .map((docSnap) => {
+                            const data = docSnap.data();
+                            const fecha = data.fecha?.toDate
+                                ? data.fecha.toDate().toLocaleDateString()
+                                : "Reciente";
+
+                            return `
+                            <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between gap-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-xl border border-slate-100">
+                                        👷
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-slate-900">${data.proNombre}</h4>
+                                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">${fecha}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Tu Código</p>
+                                    <p class="text-2xl font-black text-indigo-600 tracking-[0.2em] font-mono bg-white px-3 py-1 rounded-lg border border-indigo-100 shadow-inner">${data.token}</p>
+                                </div>
+                            </div>
+                        `;
+                        })
+                        .join("");
+                });
+            } catch (e) {
+                console.error("Error cargando códigos:", e);
             }
         }
 

@@ -99,13 +99,27 @@ if (!profesional) return Astro.redirect("/404");
 
                 {
                     profesional.telefono && (
-                        <a
-                            href={`https://wa.me/549${profesional.telefono}?text=Hola, te vi en DeOficios`}
-                            target="_blank"
-                            class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full shadow-md transition-transform transform hover:scale-105 flex items-center gap-2"
-                        >
-                            <span class="text-xl">💬</span> Contactar
-                        </a>
+                        <div class="flex flex-wrap items-center justify-center md:justify-start gap-4">
+                            <button
+                                id="btn-whatsapp-contact"
+                                data-whatsapp={profesional.telefono}
+                                data-pro-id={idProfesional}
+                                data-pro-name={profesional.nombre}
+                                class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full shadow-md transition-transform transform hover:scale-105 flex items-center gap-2"
+                            >
+                                <span class="text-xl">💬</span> Contactar
+                            </button>
+
+                            <button
+                                id="btn-vcard-download"
+                                data-name={profesional.nombre}
+                                data-phone={profesional.telefono}
+                                data-rubro={profesional.rubro_principal}
+                                class="bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 font-bold py-3 px-6 rounded-full shadow-sm transition-transform transform hover:scale-105 flex items-center gap-2"
+                            >
+                                <span class="text-xl">📲</span> Guardar
+                            </button>
+                        </div>
                     )
                 }
             </div>
@@ -313,6 +327,7 @@ if (!profesional) return Astro.redirect("/404");
 <script define:vars={{ idProfesional }}>
     import { onAuthStateChanged } from "firebase/auth";
     import { auth, db } from "../../firebase/client";
+    import Swal from "sweetalert2";
     import {
         doc,
         getDoc,
@@ -496,6 +511,123 @@ if (!profesional) return Astro.redirect("/404");
                 container.innerHTML += html;
             });
         }
+
+        // 5. SAFETY TOKEN & WHATSAPP CONTACT
+        const btnContact = document.getElementById("btn-whatsapp-contact");
+        btnContact?.addEventListener("click", async () => {
+            const whatsapp = btnContact.dataset.whatsapp;
+            const proId = btnContact.dataset.proId;
+            const proName = btnContact.dataset.proName;
+
+            // Generate 4 digit token
+            const safetyToken = Math.floor(
+                1000 + Math.random() * 9000,
+            ).toString();
+
+            // @ts-ignore
+            Swal.fire({
+                title: "🛡️ Código de Seguridad",
+                html: `
+                    <p class="mb-4">Tu código de verificación para <strong>${proName}</strong> es:</p>
+                    <div class="text-4xl font-bold tracking-widest text-orange-600 bg-orange-50 py-4 rounded-xl border-2 border-orange-200 mb-4">
+                        ${safetyToken}
+                    </div>
+                    <p class="text-xs text-gray-500 uppercase font-bold tracking-tight">Mostrale este código al profesional al llegar</p>
+                `,
+                confirmButtonText: "Ir a WhatsApp 💬",
+                confirmButtonColor: "#16a34a",
+                showCancelButton: true,
+                cancelButtonText: "Cancelar",
+                reverseButtons: true,
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    // Log the contact event
+                    try {
+                        await addDoc(collection(db, "contactos"), {
+                            proId: proId,
+                            proNombre: proName,
+                            clienteId: currentUser?.uid || "anonimo",
+                            clienteNombre: currentUser?.nombre || "Anonimo",
+                            token: safetyToken,
+                            fecha: serverTimestamp(),
+                            visto: false,
+                        });
+
+                        // Redirect to WA
+                        window.open(
+                            `https://wa.me/549${whatsapp}?text=${encodeURIComponent(`Hola ${proName}, te contacto desde DeOficios. Mi código de seguridad es ${safetyToken}`)}`,
+                            "_blank",
+                        );
+
+                        // SHOW FEEDBACK PROMPT after a delay
+                        setTimeout(() => {
+                            // @ts-ignore
+                            Swal.fire({
+                                title: "¿Pudiste contactarlo? 🤔",
+                                text: "Tu feedback nos ayuda a mantener profesionales activos.",
+                                icon: "question",
+                                showDenyButton: true,
+                                showCancelButton: true,
+                                confirmButtonText: "✅ Sí, todo bien",
+                                denyButtonText: "❌ No contestó",
+                                cancelButtonText: "🚩 Reportar Perfil",
+                                confirmButtonColor: "#16a34a",
+                                denyButtonColor: "#ef4444",
+                                cancelButtonColor: "#374151",
+                            }).then(async (res) => {
+                                let feedbackType = "";
+                                if (res.isConfirmed) feedbackType = "positivo";
+                                else if (res.isDenied)
+                                    feedbackType = "sin_respuesta";
+                                else if (
+                                    res.isDismissed &&
+                                    res.dismiss === "cancel"
+                                )
+                                    feedbackType = "reporte";
+
+                                if (feedbackType) {
+                                    // Save feedback
+                                    await addDoc(
+                                        collection(db, "feedback_contactos"),
+                                        {
+                                            proId: proId,
+                                            tipo: feedbackType,
+                                            fecha: serverTimestamp(),
+                                            uid: currentUser?.uid || "anonimo",
+                                        },
+                                    );
+                                }
+                            });
+                        }, 5000);
+                    } catch (e) {
+                        console.error("Error logging contact:", e);
+                    }
+                }
+            });
+        });
+
+        // 6. vCARD DOWNLOAD
+        const btnVCard = document.getElementById("btn-vcard-download");
+        btnVCard?.addEventListener("click", () => {
+            const name = btnVCard.dataset.name;
+            const phone = btnVCard.dataset.phone;
+            const rubro = btnVCard.dataset.rubro;
+
+            const vcard = `BEGIN:VCARD
+VERSION:3.0
+FN:${name} (DeOficios)
+ORG:DeOficios - ${rubro}
+TEL;TYPE=CELL,VOICE:+549${phone}
+END:VCARD`;
+
+            const blob = new Blob([vcard], { type: "text/vcard" });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${name.replace(/\s+/g, "_")}_DeOficios.vcf`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        });
 
         loadReviews();
     }); // End of astro:page-load

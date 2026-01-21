@@ -273,17 +273,14 @@ try {
   *::after {
     box-sizing: border-box;
   }
-  html,
-  body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    overflow-x: hidden;
-  }
+  /* REMOVED html, body styles to allow Layout to control them */
+
   main {
     width: 100%;
     display: flex;
     flex-direction: column;
+    /* Ensure background follows theme */
+    @apply bg-white dark:bg-gray-900 transition-colors duration-300;
   }
   .container {
     width: 100%;

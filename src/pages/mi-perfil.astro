@@ -498,6 +498,22 @@ import Layout from "../layouts/Layout.astro";
                                         />
                                     </div>
 
+                                    <div>
+                                        <label
+                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
+                                            >Valor Visita / Mano de Obra
+                                            (Opcional)</label
+                                        ><input
+                                            type="number"
+                                            id="precio_visita"
+                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
+                                            placeholder="Ej: 3500"
+                                            data-allow-free
+                                        />
+                                    </div>
+                                </div>
+
+                                <div class="grid md:grid-cols-2 gap-6 mb-4">
                                     <div class="relative">
                                         <label
                                             class="flex text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider justify-between"
@@ -1968,6 +1984,7 @@ import Layout from "../layouts/Layout.astro";
             }
 
             setVal("certificados", data.certificados);
+            setVal("precio_visita", data.precio_visita);
 
             setVal("telefono", data.telefono);
             setVal("descripcion", data.descripcion);
@@ -2188,6 +2205,8 @@ import Layout from "../layouts/Layout.astro";
 
                 // @ts-ignore
                 telefono: document.getElementById("telefono").value,
+                // @ts-ignore
+                precio_visita: document.getElementById("precio_visita").value,
                 // @ts-ignore
                 descripcion: document.getElementById("descripcion").value,
                 etiquetas: userTags,
@@ -3318,3 +3337,65 @@ import Layout from "../layouts/Layout.astro";
         </div>
     </div>
 </div>
+
+<script>
+    import { auth } from "../firebase/client";
+
+    document.addEventListener("astro:page-load", () => {
+        const btnGift = document.getElementById("btn-giftcard");
+
+        if (btnGift) {
+            // Remover listeners previos para evitar duplicados en navegaciones
+            const newBtn = btnGift.cloneNode(true);
+            if (btnGift.parentNode) {
+                btnGift.parentNode.replaceChild(newBtn, btnGift);
+            }
+
+            // @ts-ignore
+            newBtn.addEventListener("click", async () => {
+                const user = auth.currentUser;
+                if (!user) return alert("Debes iniciar sesión primero");
+
+                const code = prompt("🎁 Ingresá tu código promocional:");
+                if (!code) return;
+
+                // @ts-ignore
+                newBtn.innerHTML = "⏳ Verificando...";
+                // @ts-ignore
+                newBtn.disabled = true;
+
+                try {
+                    const token = await user.getIdToken();
+
+                    const res = await fetch("/api/canjear", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({
+                            codigoUsuario: code,
+                        }),
+                    });
+
+                    const data = await res.json();
+
+                    if (res.ok) {
+                        alert(data.message);
+                        window.location.reload();
+                    } else {
+                        alert("❌ Error: " + data.error);
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert("Error de conexión");
+                } finally {
+                    // @ts-ignore
+                    newBtn.innerHTML = "<span>🎁</span> Canjear Giftcard";
+                    // @ts-ignore
+                    newBtn.disabled = false;
+                }
+            });
+        }
+    });
+</script>

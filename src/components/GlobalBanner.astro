@@ -1,0 +1,62 @@
+---
+
+---
+
+<div
+    id="global-announcement-banner"
+    class="hidden bg-orange-600 dark:bg-orange-700 text-white py-2 px-4 text-center text-sm font-bold relative z-[100] shadow-md animate-slide-down"
+>
+    <div class="container mx-auto flex items-center justify-center gap-2">
+        <span id="banner-emoji">📢</span>
+        <p id="banner-text">Cargando aviso...</p>
+    </div>
+</div>
+
+<script>
+    import { db } from "../firebase/client";
+    import { doc, onSnapshot } from "firebase/firestore";
+
+    const banner = document.getElementById("global-announcement-banner");
+    const bannerText = document.getElementById("banner-text");
+    const bannerEmoji = document.getElementById("banner-emoji");
+
+    // Listen to global configuration
+    onSnapshot(doc(db, "configuracion", "aviso_global"), (doc) => {
+        if (doc.exists()) {
+            const data = doc.data();
+            if (data.activo) {
+                if (bannerText) bannerText.textContent = data.mensaje || "";
+                if (bannerEmoji) bannerEmoji.textContent = data.emoji || "📢";
+
+                // Dynamic coloring if available
+                if (data.color) {
+                    banner?.style.setProperty("background-color", data.color);
+                }
+
+                banner?.classList.remove("hidden");
+                // Add padding to body to avoid overlapping header
+                document.body.style.paddingTop = banner?.offsetHeight + "px";
+            } else {
+                banner?.classList.add("hidden");
+                document.body.style.paddingTop = "0px";
+            }
+        } else {
+            banner?.classList.add("hidden");
+            document.body.style.paddingTop = "0px";
+        }
+    });
+</script>
+
+<style>
+    @keyframes slide-down {
+        from {
+            transform: translateY(-100%);
+        }
+        to {
+            transform: translateY(0);
+        }
+    }
+    .animate-slide-down {
+        animation: slide-down 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+</style>

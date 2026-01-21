@@ -407,10 +407,14 @@
   .mobile-menu {
     @apply bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800;
     padding: 15px;
-    position: absolute;
+    position: fixed;
+    z-index: 9999; /* Higher than everything */
     width: 100%;
+    top: 70px; /* Below header */
     left: 0;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    max-height: calc(100vh - 70px);
+    overflow-y: auto;
   }
   .mobile-link {
     display: block;

@@ -7,28 +7,49 @@ import { db } from "../../../firebase/client";
 import { collection, getDocs, query, where } from "firebase/firestore";
 
 // 1. Obtener parámetros de la URL
+
+import { LOCATIONS } from "../../../data/locations";
+
+// 1. Obtener parámetros de la URL
 const { rubro, zona } = Astro.params;
 
-// 2. Función para "limpiar" textos para comparar (quita tildes y mayúsculas)
+// 2. Función para "limpiar" textos para comparar
 const normalize = (text) =>
     text
         ?.toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "") || "";
 
-// Títulos bonitos para la vista (ej: "plomero" -> "Plomero")
+// Títulos bonitos
 const rubroDisplay =
     rubro.charAt(0).toUpperCase() + rubro.slice(1).replace(/-/g, " ");
 const zonaDisplay =
     zona.charAt(0).toUpperCase() + zona.slice(1).replace(/-/g, " ");
 
-// 3. Buscar en Firebase
+// 3. IDENTIFICAR ZONAS OBJETIVO (Manejo de Grupos como "Capital Federal")
+const searchZona = normalize(zona);
+let targetZones = [searchZona]; // Por defecto buscamos coincidencia directa
+
+// Buscar si el slug corresponde a un Grupo (ej: 'capital-federal' match con 'Capital Federal (CABA)')
+const groupMatch = LOCATIONS.find((g) => {
+    const groupNameNorm = normalize(g.group);
+    // Chequeamos variaciones comunes
+    return (
+        groupNameNorm.includes(searchZona) ||
+        (searchZona === "caba" && groupNameNorm.includes("capital"))
+    );
+});
+
+if (groupMatch) {
+    // Si es un grupo, buscamos en TODAS sus zonas + el nombre del grupo
+    const groupZonesNorm = groupMatch.zones.map((z) => normalize(z));
+    targetZones = [normalize(groupMatch.group), ...groupZonesNorm];
+}
+
+// 4. Buscar en Firebase
 let profesionales = [];
-let loading = true;
 
 try {
-    // Traemos los profesionales (Idealmente filtrarías en Firebase, pero por tema de tildes/slugs
-    // a veces es mejor traer la colección y filtrar en JS si no son millones de datos)
     const q = query(
         collection(db, "profesionales"),
         where("verificado", "==", true),
@@ -39,26 +60,26 @@ try {
         (doc) => ({ id: doc.id, ...doc.data() }) as any,
     );
 
-    // Filtramos en el servidor
     profesionales = todos.filter((p) => {
-        // Comparamos el rubro y la zona normalizados (y arrays)
-
-        // Rubros: Checkrubro_principal OR rubros array
+        // --- MATCH RUBRO ---
         const pRubroPrincipal = normalize(p.rubro_principal);
         const pRubros = (p.rubros || []).map((r) => normalize(r));
         const allProRubros = [pRubroPrincipal, ...pRubros];
+        const searchRubro = normalize(rubro);
 
-        // Zonas: Check zona OR zonas array
+        const rubroMatch = allProRubros.some((r) => r.includes(searchRubro));
+
+        // --- MATCH ZONA (Expandido) ---
         const pZonaPrincipal = normalize(p.zona);
         const pZonas = (p.zonas || []).map((z) => normalize(z));
         const allProZonas = [pZonaPrincipal, ...pZonas];
 
-        const searchRubro = normalize(rubro);
-        const searchZona = normalize(zona);
-
-        // Coincidencia laxa (si la zona URL es "gba-norte" y en DB dice "GBA Norte", hace match)
-        const rubroMatch = allProRubros.some((r) => r.includes(searchRubro));
-        const zonaMatch = allProZonas.some((z) => z.includes(searchZona));
+        // Verificamos si ALGUNA de las zonas del profesional coincide con ALGUNA de las zonas objetivo (Grupo o Single)
+        const zonaMatch = allProZonas.some((proZ) =>
+            targetZones.some(
+                (targetZ) => proZ.includes(targetZ) || targetZ.includes(proZ),
+            ),
+        );
 
         return rubroMatch && zonaMatch;
     });

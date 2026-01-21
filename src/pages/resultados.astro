@@ -14,8 +14,10 @@ const q = searchParams.get("q") || "";
 const snapshot = await getDocs(collection(db, "profesionales"));
 const todos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
+import { calculateRankingScore } from "../utils/ranking";
+
 // 3. FILTRADO DE TEXTO (LÓGICA MEJORADA PARA BÚSQUEDA COMBINADA)
-const resultados = todos.filter((pro: any) => {
+const resultados = todos.filter((pro) => {
   const termino = q.toLowerCase().trim();
 
   // EXCLUIR STAFF
@@ -40,7 +42,7 @@ const resultados = todos.filter((pro: any) => {
 
     const zonaLower = pro.zona?.toLowerCase() || "";
     const matchZona = zonaLower.includes(palabra);
-    const matchTags = pro.etiquetas?.some((t: string) =>
+    const matchTags = pro.etiquetas?.some((t) =>
       t.toLowerCase().includes(palabra),
     );
 
@@ -51,18 +53,15 @@ const resultados = todos.filter((pro: any) => {
   return matches.some((m) => m === true);
 });
 
-// Ordenar: Premium primero (Experto > Impulso > Free)
-const getPlanWeight = (plan: string) => {
-  if (plan === "experto" || plan === "semestral") return 3;
-  if (plan === "impulso" || plan === "mensual") return 2;
-  return 1;
-};
+// Recalcular Score para cada resultado (On the fly for now, later should be in DB)
+const resultadosConScore = resultados.map((p) => ({
+  ...p,
+  realScore: calculateRankingScore(p),
+}));
 
-resultados.sort((a: any, b: any) => {
-  const weightA = getPlanWeight(a.plan);
-  const weightB = getPlanWeight(b.plan);
-  return weightB - weightA;
-});
+resultadosConScore.sort((a, b) => b.realScore - a.realScore);
+
+const resultadosFinales = resultadosConScore;
 ---
 
 <Layout
@@ -177,8 +176,10 @@ resultados.sort((a: any, b: any) => {
       </button>
     </div>
 
-    <div class="flex flex-col lg:flex-row gap-12">
-      <aside class="w-full lg:w-72 shrink-0 space-y-10 sticky top-28 h-fit">
+    <div class="flex flex-col lg:flex-row gap-12 relative z-0">
+      <aside
+        class="w-full lg:w-72 shrink-0 space-y-10 lg:sticky lg:top-28 h-fit z-10 static"
+      >
         <div>
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-xl font-black uppercase tracking-tight">Filtros</h2>
@@ -355,19 +356,23 @@ resultados.sort((a: any, b: any) => {
                 </div>
               </div>
               <div class="flex items-center justify-between pt-5 border-t border-gray-100 mt-auto">
-                <div class="flex flex-col">
-                  <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest">
-                    Desde
-                  </span>
-                  {p.presupuestos_config?.activo ? (
-                    <span class="text-lg font-black text-neutral-black">
-                      GRATIS
-                    </span>
-                  ) : (
-                    <span class="text-lg font-black text-neutral-black">
-                      $3.500
-                      <span class="text-xs font-bold text-gray-400">/h</span>
-                    </span>
+                <div class="flex flex-col min-h-[40px] justify-center text-left">
+                  {(p.presupuestos_config?.activo ||
+                    (p.precio_visita && p.precio_visita !== "")) && (
+                    <>
+                      <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest leading-none mb-1">
+                        Desde
+                      </span>
+                      {p.presupuestos_config?.activo ? (
+                        <span class="text-lg font-black text-neutral-black leading-none uppercase">
+                          Gratis
+                        </span>
+                      ) : (
+                        <span class="text-lg font-black text-neutral-black leading-none">
+                          ${Number(p.precio_visita).toLocaleString("es-AR")}
+                        </span>
+                      )}
+                    </>
                   )}
                 </div>
                 <a

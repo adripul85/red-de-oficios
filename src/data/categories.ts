@@ -51,6 +51,7 @@ export const CATEGORIES: CategoryGroup[] = [
         group: "🥳 Eventos, Gastronomía y Logística",
         trades: [
             { name: "Pastelero/a", subtrades: ["Tortas personalizadas", "Mesas dulces", "Eventos"] },
+            { name: "Souvenirs", subtrades: ["Personalizados", "Eventos", "Regalos corporativos", "Artesanías"] },
             { name: "DJ / Sonido", subtrades: ["Musicalización de fiestas", "Iluminación"] },
             { name: "Fletero", subtrades: ["Mudanzas", "Traslados cortos", "Repartos"] },
             { name: "Fumigador", subtrades: ["Control de plagas", "Desinfección"] }

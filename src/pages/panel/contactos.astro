@@ -1,0 +1,184 @@
+---
+import { auth, db } from "../../firebase/client";
+import Sidebar from "../../components/panel/Sidebar.astro";
+import MobileSidebar from "../../components/panel/MobileSidebar.astro";
+---
+
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Mis Contactos - DeOficios Pro</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            body {
+                font-family: "Inter", sans-serif;
+                background-color: #f8fafc;
+            }
+            .token-pill {
+                font-family: monospace;
+                letter-spacing: 2px;
+            }
+        </style>
+    </head>
+    <body class="text-slate-800">
+        <div class="flex h-screen overflow-hidden">
+            <Sidebar currentPath={Astro.url.pathname} />
+            <MobileSidebar currentPath={Astro.url.pathname} />
+
+            <main class="flex-1 flex flex-col h-screen overflow-hidden">
+                <header
+                    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6"
+                >
+                    <h2 class="text-lg font-bold text-slate-800">
+                        🛡️ Códigos de Seguridad
+                    </h2>
+                    <p
+                        class="text-xs text-slate-500 max-w-xs text-right hidden md:block"
+                    >
+                        Verificá que el código del cliente coincida antes de
+                        comenzar el trabajo.
+                    </p>
+                </header>
+
+                <div class="flex-1 overflow-y-auto p-6 bg-slate-50">
+                    <div class="max-w-4xl mx-auto">
+                        <div
+                            class="bg-indigo-600 rounded-2xl p-6 text-white mb-8 shadow-lg shadow-indigo-200"
+                        >
+                            <h3 class="text-xl font-bold mb-2">
+                                Seguridad Primero 🛡️
+                            </h3>
+                            <p class="text-indigo-100 text-sm">
+                                Cuando un cliente te contacta por WhatsApp, el
+                                sistema le genera un código de 4 dígitos. Pedile
+                                ese código cuando llegues al lugar para
+                                confirmar que la visita fue coordinada por
+                                DeOficios.
+                            </p>
+                        </div>
+
+                        <div
+                            class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden"
+                        >
+                            <div
+                                class="p-6 border-b border-slate-100 flex justify-between items-center"
+                            >
+                                <h3 class="font-bold text-slate-800">
+                                    Contactos Recientes
+                                </h3>
+                                <div
+                                    id="status-indicator"
+                                    class="flex items-center gap-2 text-xs font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full"
+                                >
+                                    <span
+                                        class="w-2 h-2 bg-green-500 rounded-full animate-pulse"
+                                    ></span> EN VIVO
+                                </div>
+                            </div>
+
+                            <div
+                                id="contactos-list"
+                                class="divide-y divide-slate-100"
+                            >
+                                <div class="p-12 text-center text-slate-400">
+                                    <div
+                                        class="animate-spin text-4xl mb-4 text-slate-200"
+                                    >
+                                        🔄
+                                    </div>
+                                    <p>Buscando contactos...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <script>
+            import { auth, db } from "../../firebase/client";
+            import { onAuthStateChanged } from "firebase/auth";
+            import {
+                collection,
+                query,
+                where,
+                orderBy,
+                onSnapshot,
+                limit,
+            } from "firebase/firestore";
+
+            const listContainer = document.getElementById("contactos-list");
+
+            onAuthStateChanged(auth, (user) => {
+                if (!user) {
+                    window.location.href = "/ingresar";
+                    return;
+                }
+
+                // Listen to contacts where proId == user.uid
+                const q = query(
+                    collection(db, "contactos"),
+                    where("proId", "==", user.uid),
+                    orderBy("fecha", "desc"),
+                    limit(50),
+                );
+
+                onSnapshot(q, (snapshot) => {
+                    if (snapshot.empty) {
+                        listContainer.innerHTML = `
+                            <div class="p-12 text-center text-slate-400">
+                                <p class="text-4xl mb-4">💬</p>
+                                <p class="font-medium text-slate-600">Aún no tienes contactos registrados</p>
+                                <p class="text-sm">Cuando alguien te contacte por WhatsApp aparecerá acá.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    listContainer.innerHTML = snapshot.docs
+                        .map((doc) => {
+                            const data = doc.data();
+                            const fecha = data.fecha?.toDate() || new Date();
+                            const timeStr = fecha.toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                            });
+                            const dateStr = fecha.toLocaleDateString();
+
+                            return `
+                        <div class="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-white border-2 border-slate-100 shadow-sm rounded-full flex items-center justify-center text-xl">
+                                    👤
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800">${data.clienteNombre}</h4>
+                                    <p class="text-xs text-slate-500">${dateStr} • ${timeStr}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center gap-6">
+                                <div class="text-right hidden md:block">
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Código de Seguridad</p>
+                                    <p class="text-2xl font-black text-orange-600 tracking-widest token-pill">${data.token}</p>
+                                </div>
+                                <div class="md:hidden flex items-center justify-between border-t pt-4 border-slate-100 w-full">
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Código</p>
+                                    <p class="text-xl font-black text-orange-600 tracking-widest token-pill">${data.token}</p>
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                        })
+                        .join("");
+                });
+            });
+        </script>
+    </body>
+</html>
