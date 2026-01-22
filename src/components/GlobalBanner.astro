@@ -21,30 +21,43 @@
     const bannerEmoji = document.getElementById("banner-emoji");
 
     // Listen to global configuration
-    onSnapshot(doc(db, "configuracion", "aviso_global"), (doc) => {
-        if (doc.exists()) {
-            const data = doc.data();
-            if (data.activo) {
-                if (bannerText) bannerText.textContent = data.mensaje || "";
-                if (bannerEmoji) bannerEmoji.textContent = data.emoji || "📢";
+    onSnapshot(
+        doc(db, "configuracion", "aviso_global"),
+        (doc) => {
+            if (doc.exists()) {
+                const data = doc.data();
+                if (data.activo) {
+                    if (bannerText) bannerText.textContent = data.mensaje || "";
+                    if (bannerEmoji)
+                        bannerEmoji.textContent = data.emoji || "📢";
 
-                // Dynamic coloring if available
-                if (data.color) {
-                    banner?.style.setProperty("background-color", data.color);
+                    // Dynamic coloring if available
+                    if (data.color) {
+                        banner?.style.setProperty(
+                            "background-color",
+                            data.color,
+                        );
+                    }
+
+                    banner?.classList.remove("hidden");
+                    // Add padding to body to avoid overlapping header
+                    document.body.style.paddingTop =
+                        banner?.offsetHeight + "px";
+                } else {
+                    banner?.classList.add("hidden");
+                    document.body.style.paddingTop = "0px";
                 }
-
-                banner?.classList.remove("hidden");
-                // Add padding to body to avoid overlapping header
-                document.body.style.paddingTop = banner?.offsetHeight + "px";
             } else {
                 banner?.classList.add("hidden");
                 document.body.style.paddingTop = "0px";
             }
-        } else {
+        },
+        (error) => {
+            console.error("❌ [GlobalBanner] Error en listener:", error);
             banner?.classList.add("hidden");
             document.body.style.paddingTop = "0px";
-        }
-    });
+        },
+    );
 </script>
 
 <style>

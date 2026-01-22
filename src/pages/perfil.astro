@@ -188,7 +188,11 @@ for (let i = 0; i < levels.length; i++) {
                     experience={profesional.experiencia}
                     category={profesional.rubro_principal}
                     tags={profesional.etiquetas}
-                    whatsappUrl={`https://wa.me/549${profesional.telefono}?text=Hola, vi tu perfil en Red de Oficio y quería hacerte una consulta.`}
+                    id="btn-whatsapp-contact"
+                    whatsappUrl="#"
+                    data-whatsapp={profesional.telefono}
+                    data-pro-id={idProfesional}
+                    data-pro-name={profesional.nombre}
                 />
                 <div class="max-w-[360px] w-full mx-auto mt-8 bg-white/50 backdrop-blur-sm rounded-3xl p-6 border border-white/40 shadow-xl">
                    <ProfileReviews client:visible idProfesional={idProfesional} />
@@ -339,9 +343,15 @@ for (let i = 0; i < levels.length; i++) {
                                 </div>
                                 <div class="space-y-4">
                                      {profesional.telefono && (
-                                        <a href={`https://wa.me/549${profesional.telefono}`} target="_blank" class="w-full flex items-center justify-center gap-3 bg-[#25D366] text-white rounded-xl py-4.5 font-black shadow-lg hover:opacity-95 transition-all text-base h-16">
+                                        <button 
+                                            id="btn-whatsapp-contact"
+                                            data-whatsapp={profesional.telefono}
+                                            data-pro-id={idProfesional}
+                                            data-pro-name={profesional.nombre}
+                                            class="w-full flex items-center justify-center gap-3 bg-[#25D366] text-white rounded-xl py-4.5 font-black shadow-lg hover:opacity-95 transition-all text-base h-16"
+                                        >
                                             <span class="text-2xl">💬</span> WhatsApp
-                                        </a>
+                                        </button>
                                      )}
                                      
                                      {profesional.servicios_lista?.length > 0 && (
@@ -445,6 +455,115 @@ for (let i = 0; i < levels.length; i++) {
         proTel={profesional.telefono}
         proMat={profesional.matricula}
     />
+
+    <script is:inline>
+        document.addEventListener("astro:page-load", () => {
+            const btnContact = document.getElementById("btn-whatsapp-contact");
+            if (!btnContact) return;
+
+            btnContact.addEventListener("click", async (e) => {
+                e.preventDefault();
+                
+                // Intentar obtener idProfesional desde el atributo data si no está disponible directamente
+                const proId = btnContact.getAttribute("data-pro-id");
+                const proName = btnContact.getAttribute("data-pro-name");
+                const whatsapp = btnContact.getAttribute("data-whatsapp");
+
+                if (!proId || !proName || !whatsapp) {
+                    console.error("Faltan datos para el contacto:", { proId, proName, whatsapp });
+                    return;
+                }
+
+                // Generar token de 4 dígitos
+                const safetyToken = Math.floor(1000 + Math.random() * 9000).toString();
+
+                if (typeof Swal === 'undefined') {
+                    // Fallback si SweetAlert no cargó
+                    window.open(`https://wa.me/549${whatsapp}?text=Hola ${proName}, te contacto desde DeOficios. Mi código es ${safetyToken}`, "_blank");
+                    return;
+                }
+
+                Swal.fire({
+                    title: "🛡️ Código de Seguridad",
+                    html: `
+                        <p class="mb-4 text-gray-600">Tu código de verificación para <strong>${proName}</strong> es:</p>
+                        <div class="text-4xl font-black tracking-widest text-orange-600 bg-orange-50 py-4 rounded-xl border-2 border-orange-200 mb-4 shadow-inner">
+                            ${safetyToken}
+                        </div>
+                        <p class="text-xs text-gray-500 uppercase font-black tracking-tight">Mostrale este código al profesional al llegar</p>
+                    `,
+                    confirmButtonText: "Ir a WhatsApp 💬",
+                    confirmButtonColor: "#16a34a",
+                    showCancelButton: true,
+                    cancelButtonText: "Cancelar",
+                    reverseButtons: true,
+                    customClass: {
+                        popup: 'rounded-3xl'
+                    }
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            // Import dinámico para no cargar firebase si no es necesario al inicio
+                            const { addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+                            const { db, auth } = await import("/src/firebase/client.js");
+                            
+                            const user = auth.currentUser;
+
+                            // Registrar el contacto en la DB
+                            await addDoc(collection(db, "contactos"), {
+                                proId: proId,
+                                proNombre: proName,
+                                clienteId: user?.uid || "anonimo",
+                                clienteNombre: user?.displayName || "Anonimo",
+                                token: safetyToken,
+                                fecha: serverTimestamp(),
+                                visto: false,
+                            });
+
+                            // Abrir WhatsApp
+                            const waUrl = `https://wa.me/549${whatsapp}?text=${encodeURIComponent(`Hola ${proName}, te contacto desde DeOficios. Mi código de seguridad es ${safetyToken}`)}`;
+                            window.open(waUrl, "_blank");
+
+                            // Feedback prompt después de unos segundos
+                            setTimeout(() => {
+                                Swal.fire({
+                                    title: "¿Pudiste contactarlo? 🤔",
+                                    text: "Tu feedback nos ayuda a mejorar.",
+                                    icon: "question",
+                                    showDenyButton: true,
+                                    showCancelButton: true,
+                                    confirmButtonText: "✅ Sí",
+                                    denyButtonText: "❌ No contestó",
+                                    cancelButtonText: "🚩 Reportar",
+                                    confirmButtonColor: "#16a34a",
+                                    denyButtonColor: "#ef4444",
+                                }).then(async (res) => {
+                                    let type = "";
+                                    if (res.isConfirmed) type = "positivo";
+                                    else if (res.isDenied) type = "sin_respuesta";
+                                    else if (res.isDismissed && res.dismiss === "cancel") type = "reporte";
+
+                                    if (type) {
+                                        await addDoc(collection(db, "feedback_contactos"), {
+                                            proId: proId,
+                                            tipo: type,
+                                            fecha: serverTimestamp(),
+                                            uid: user?.uid || "anonimo",
+                                        });
+                                    }
+                                });
+                            }, 5000);
+
+                        } catch (err) {
+                            console.error("Error en contacto:", err);
+                            // Fallback de emergencia
+                            window.open(`https://wa.me/549${whatsapp}`, "_blank");
+                        }
+                    }
+                });
+            });
+        });
+    </script>
 </Layout>
 
 <link

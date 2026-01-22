@@ -1401,45 +1401,53 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 }
             });
 
-            onSnapshot(qNotifs, (snapshot) => {
-                const count = snapshot.size;
+            onSnapshot(
+                qNotifs,
+                (snapshot) => {
+                    const count = snapshot.size;
 
-                // Update Bell Badge Only
-                if (badgeBell) {
-                    if (count > 0) {
-                        badgeBell.classList.remove("hidden");
-                        console.log(
-                            "🔔 [NOTIFICATIONS] Badge ON. Unread count:",
-                            count,
-                        );
-                        snapshot.docs.forEach((d) =>
-                            console.log("   - Unread:", d.id, d.data().titulo),
-                        );
-                    } else {
-                        badgeBell.classList.add("hidden");
-                        console.log("🔕 [NOTIFICATIONS] Badge OFF. Count is 0");
+                    // Update Bell Badge Only
+                    if (badgeBell) {
+                        if (count > 0) {
+                            badgeBell.classList.remove("hidden");
+                            console.log(
+                                "🔔 [NOTIFICATIONS] Badge ON. Unread count:",
+                                count,
+                            );
+                            snapshot.docs.forEach((d) =>
+                                console.log(
+                                    "   - Unread:",
+                                    d.id,
+                                    d.data().titulo,
+                                ),
+                            );
+                        } else {
+                            badgeBell.classList.add("hidden");
+                            console.log(
+                                "🔕 [NOTIFICATIONS] Badge OFF. Count is 0",
+                            );
+                        }
                     }
-                }
 
-                if (notifList) {
-                    if (count === 0) {
-                        notifList.innerHTML =
-                            '<div class="p-4 text-center text-slate-400 text-xs">No tienes notificaciones nuevas</div>';
-                    } else {
-                        notifList.innerHTML = snapshot.docs
-                            .map((doc) => {
-                                const data = doc.data();
-                                const time = data.fecha
-                                    ? new Date(
-                                          data.fecha.seconds * 1000,
-                                      ).toLocaleTimeString([], {
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                      })
-                                    : "";
+                    if (notifList) {
+                        if (count === 0) {
+                            notifList.innerHTML =
+                                '<div class="p-4 text-center text-slate-400 text-xs">No tienes notificaciones nuevas</div>';
+                        } else {
+                            notifList.innerHTML = snapshot.docs
+                                .map((doc) => {
+                                    const data = doc.data();
+                                    const time = data.fecha
+                                        ? new Date(
+                                              data.fecha.seconds * 1000,
+                                          ).toLocaleTimeString([], {
+                                              hour: "2-digit",
+                                              minute: "2-digit",
+                                          })
+                                        : "";
 
-                                // Make item distinct and clickable
-                                return `
+                                    // Make item distinct and clickable
+                                    return `
                                     <div class="notif-item px-4 py-3 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer" data-id="${doc.id}" data-link="/panel/oportunidades">
                                         <div class="flex justify-between items-start mb-1">
                                             <p class="text-xs font-bold text-slate-800">${data.titulo || "Nueva Notificación"}</p>
@@ -1448,55 +1456,142 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                         <p class="text-xs text-slate-500 line-clamp-2">${data.mensaje || ""}</p>
                                     </div>
                                 `;
-                            })
-                            .join("");
+                                })
+                                .join("");
 
-                        // Add event listeners to new items
-                        notifList
-                            .querySelectorAll(".notif-item")
-                            .forEach((item) => {
-                                item.addEventListener("click", async (e) => {
-                                    // Prevent propagation if needed
-                                    const id = item.getAttribute("data-id");
-                                    const link = item.getAttribute("data-link");
-                                    if (id && link) {
-                                        // Mark as read
-                                        await markAsRead(uid, id);
-                                        // Navigate
-                                        window.location.href = link;
-                                    }
+                            // Add event listeners to new items
+                            notifList
+                                .querySelectorAll(".notif-item")
+                                .forEach((item) => {
+                                    item.addEventListener(
+                                        "click",
+                                        async (e) => {
+                                            // Prevent propagation if needed
+                                            const id =
+                                                item.getAttribute("data-id");
+                                            const link =
+                                                item.getAttribute("data-link");
+                                            if (id && link) {
+                                                // Mark as read
+                                                await markAsRead(uid, id);
+                                                // Navigate
+                                                window.location.href = link;
+                                            }
+                                        },
+                                    );
                                 });
-                            });
-                    }
-                }
-
-                // Browser Notification
-                if (isFirstLoad) {
-                    isFirstLoad = false;
-                    return;
-                }
-
-                snapshot.docChanges().forEach((change) => {
-                    if (change.type === "added") {
-                        const notif = change.doc.data();
-                        if (Notification.permission === "granted") {
-                            new Notification(
-                                notif.titulo || "¡Nueva oportunidad!",
-                                {
-                                    body:
-                                        notif.mensaje ||
-                                        "Tienes una nueva solicitud",
-                                    icon: "/icon-192.png",
-                                    // @ts-ignore
-                                    badge: "/favicon.svg",
-                                    tag: "notif-" + change.doc.id,
-                                },
-                            );
                         }
                     }
-                });
-            });
 
+                    // Browser Notification
+                    if (isFirstLoad) {
+                        isFirstLoad = false;
+                        return;
+                    }
+
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === "added") {
+                            const notif = change.doc.data();
+                            if (Notification.permission === "granted") {
+                                new Notification(
+                                    notif.titulo || "¡Nueva oportunidad!",
+                                    {
+                                        body:
+                                            notif.mensaje ||
+                                            "Tienes una nueva solicitud",
+                                        icon: "/icon-192.png",
+                                        // @ts-ignore
+                                        badge: "/favicon.svg",
+                                        tag: "notif-" + change.doc.id,
+                                    },
+                                );
+                            }
+                        }
+                    });
+                },
+                (error) => {
+                    console.error(
+                        "❌ [Panel] Error en listener de notificaciones:",
+                        error,
+                    );
+                },
+            );
+
+            // 0. CHECK ROLE PROTECTION (CRITICAL)
+            const checkRole = async (user) => {
+                try {
+                    const docSnap = await getDoc(doc(db, "clientes", user.uid));
+                    if (!docSnap.exists()) {
+                        window.location.href = "/mi-cuenta";
+                        return;
+                    }
+                    const data = docSnap.data();
+                    if (data.rol !== "profesional" && data.rol !== "experto") {
+                        console.warn(
+                            "⛔ [AUTH] Acceso denegado: Usuario no profesional.",
+                        );
+                        window.location.href = "/mi-cuenta";
+                    } else {
+                        // Update UI for Pro
+                        if (userNameEl)
+                            userNameEl.innerText = data.nombre || "Usuario";
+                        if (userAvatarEl && data.foto)
+                            userAvatarEl.src = data.foto;
+                        if (userPlanLabel && data.rol === "experto") {
+                            userPlanLabel.innerText = "Plan Experto ⚡";
+                            userPlanLabel.classList.add("text-orange-500");
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error verificando rol:", error);
+                }
+            };
+
+            // 0. CHECK ROLE PROTECTION (CRITICAL)
+            const checkRole = async (user) => {
+                try {
+                    const docSnap = await getDoc(doc(db, "clientes", user.uid));
+                    if (!docSnap.exists()) {
+                        // Pro account mismatch? Redirect to ingresa.
+                        window.location.href = "/ingresar";
+                        return;
+                    }
+                    const data = docSnap.data();
+                    if (data.rol !== "profesional" && data.rol !== "experto") {
+                        console.warn(
+                            "⛔ [AUTH] Acceso denegado: Usuario no profesional.",
+                        );
+                        window.location.href = "/mi-cuenta";
+                    } else {
+                        // Update UI for Pro
+                        if (userNameEl)
+                            userNameEl.innerText = data.nombre || "Usuario";
+                        if (userAvatarEl && data.foto)
+                            userAvatarEl.src = data.foto;
+                        if (userPlanLabel && data.rol === "experto") {
+                            userPlanLabel.innerText = "Plan Experto ⚡";
+                            userPlanLabel.classList.add("text-orange-500");
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error verificando rol:", error);
+                }
+            };
+
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) {
+                    window.location.href = "/ingresar";
+                } else {
+                    // Check Role before showing content
+                    await checkRole(user);
+
+                    // ... rest of the logic
+                    currentUser = user;
+                    loadStats(user.uid);
+                    loadNotifications(user.uid);
+                    // ...
+                }
+            });
             // 4. Opportunities Badge Listener (REAL COUNT)
             if (misRubros.length > 0) {
                 try {
@@ -1506,33 +1601,42 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         where("status", "==", "nueva"),
                     );
 
-                    onSnapshot(qBadge, (snap) => {
-                        let badgeCount = 0;
-                        snap.docs.forEach((d) => {
-                            const data = d.data();
-                            const zonaMatch =
-                                misZonas.length === 0 ||
-                                misZonas.includes(data.zona);
-                            const notDeleted =
-                                !data.eliminadosPor?.includes(uid);
-                            if (zonaMatch && notDeleted) badgeCount++;
-                        });
+                    onSnapshot(
+                        qBadge,
+                        (snap) => {
+                            let badgeCount = 0;
+                            snap.docs.forEach((d) => {
+                                const data = d.data();
+                                const zonaMatch =
+                                    misZonas.length === 0 ||
+                                    misZonas.includes(data.zona);
+                                const notDeleted =
+                                    !data.eliminadosPor?.includes(uid);
+                                if (zonaMatch && notDeleted) badgeCount++;
+                            });
 
-                        // Update Sidebar Badge
-                        const badgeMobile = document.getElementById(
-                            "badge-oportunidades-mobile",
-                        );
-                        [badgeSidebar, badgeMobile].forEach((b) => {
-                            if (b) {
-                                if (badgeCount > 0) {
-                                    b.textContent = badgeCount.toString();
-                                    b.classList.remove("hidden");
-                                } else {
-                                    b.classList.add("hidden");
+                            // Update Sidebar Badge
+                            const badgeMobile = document.getElementById(
+                                "badge-oportunidades-mobile",
+                            );
+                            [badgeSidebar, badgeMobile].forEach((b) => {
+                                if (b) {
+                                    if (badgeCount > 0) {
+                                        b.textContent = badgeCount.toString();
+                                        b.classList.remove("hidden");
+                                    } else {
+                                        b.classList.add("hidden");
+                                    }
                                 }
-                            }
-                        });
-                    });
+                            });
+                        },
+                        (error) => {
+                            console.error(
+                                "❌ [Panel] Error en listener de badge:",
+                                error,
+                            );
+                        },
+                    );
                 } catch (e) {
                     console.error("Error referencing opportunities badge:", e);
                 }

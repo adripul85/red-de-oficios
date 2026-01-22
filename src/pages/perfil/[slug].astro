@@ -506,6 +506,15 @@ if (!profesional) return Astro.redirect("/404");
                         <span class="text-xs text-gray-400">${fecha}</span>
                     </div>
                     <p class="mt-2 text-gray-600 text-sm">${r.comentario}</p>
+                    ${
+                        r.fotoTrabajo
+                            ? `
+                    <div class="mt-3 rounded-xl overflow-hidden border border-gray-100 max-w-xs shadow-sm">
+                        <img src="${r.fotoTrabajo}" class="w-full h-auto object-cover cursor-pointer hover:opacity-90 transition" onclick="window.open('${r.fotoTrabajo}', '_blank')">
+                    </div>
+                    `
+                            : ""
+                    }
                 </div>
             `;
                 container.innerHTML += html;

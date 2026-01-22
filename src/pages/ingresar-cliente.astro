@@ -363,9 +363,40 @@ import Layout from "../layouts/Layout.astro";
                     return;
                 }
 
-                window.location.href = returnUrl;
+                // Check user role
+                const docSnap = await getDoc(doc(db, "clientes", user.uid));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.rol === "profesional" || data.rol === "experto") {
+                        window.location.href = "/panel";
+                    } else {
+                        window.location.href = "/mi-cuenta";
+                    }
+                } else {
+                    // Should not happen for registered users, but fallback:
+                    window.location.href = "/mi-cuenta";
+                }
             } catch (error: any) {
-                feedback.textContent = "❌ Email o contraseña incorrectos";
+                console.error("Login error:", error);
+
+                let msg = "❌ Email o contraseña incorrectos";
+                let showRegisterLink = false;
+
+                if (
+                    error.code === "auth/user-not-found" ||
+                    error.code === "auth/invalid-credential"
+                ) {
+                    msg = "⚠️ Usuario no encontrado. ¿Querés crear una cuenta?";
+                    showRegisterLink = true;
+                } else if (error.code === "auth/wrong-password") {
+                    msg = "❌ Contraseña incorrecta.";
+                }
+
+                feedback.innerHTML = msg;
+                if (showRegisterLink) {
+                    feedback.innerHTML += `<br><button id="btn-switch-to-register" class="text-indigo-600 underline mt-2 font-bold hover:text-indigo-800" type="button">Ir a Registrarse</button>`;
+                }
+
                 feedback.classList.remove("hidden");
                 feedback.classList.add(
                     "bg-red-50",
@@ -373,6 +404,17 @@ import Layout from "../layouts/Layout.astro";
                     "dark:bg-red-900/20",
                     "dark:text-red-400",
                 );
+
+                // Add listener to new button
+                setTimeout(() => {
+                    document
+                        .getElementById("btn-switch-to-register")
+                        ?.addEventListener("click", () => {
+                            document
+                                .getElementById("btn-tab-register")
+                                ?.click();
+                        });
+                }, 100);
             }
         });
 
@@ -448,19 +490,41 @@ import Layout from "../layouts/Layout.astro";
                     auth,
                     new GoogleAuthProvider(),
                 );
-                const docSnap = await getDoc(
-                    doc(db, "clientes", result.user.uid),
-                );
+
+                // Fetch user data to check role
+                const docRef = doc(db, "clientes", result.user.uid);
+                const docSnap = await getDoc(docRef);
+
+                let targetUrl = "/mi-cuenta"; // Default for clients
+
                 if (!docSnap.exists()) {
-                    await setDoc(doc(db, "clientes", result.user.uid), {
+                    // New User -> Create as Cliente
+                    await setDoc(docRef, {
                         nombre: result.user.displayName || "Usuario Google",
                         email: result.user.email,
                         foto: result.user.photoURL,
                         rol: "cliente",
                         createdAt: new Date(),
                     });
+                    // Force mi-cuenta for new users
+                    window.location.href = "/mi-cuenta";
+                    return;
+                } else {
+                    // Existing User -> Check Role
+                    const data = docSnap.data();
+                    if (data.rol === "profesional" || data.rol === "experto") {
+                        targetUrl = "/panel";
+                    } else {
+                        targetUrl = "/mi-cuenta";
+                    }
                 }
-                window.location.href = returnUrl;
+
+                // If returnUrl is set and safe, valid, use it?
+                // Better to force role-based home to avoid cross-contamination
+                // unless we strictly validate returnUrl permissions (hard to do here).
+                // Let's prioritize correct panel.
+
+                window.location.href = targetUrl;
             } catch (error: any) {
                 alert("Error con Google: " + error.message);
             }

@@ -185,6 +185,27 @@ import Layout from "../layouts/Layout.astro";
                             </svg>
                             Cerrar Sesión
                         </button>
+
+                        <!-- Botón Borrar Cuenta -->
+                        <button
+                            id="btn-delete-account"
+                            class="w-full mt-4 py-2 px-4 text-slate-400 hover:text-red-500 text-xs font-semibold hover:bg-red-50 rounded-xl transition-all flex items-center justify-center gap-2"
+                        >
+                            <svg
+                                class="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                ></path>
+                            </svg>
+                            Borrar mi cuenta
+                        </button>
                     </div>
                 </div>
 
@@ -637,6 +658,88 @@ import Layout from "../layouts/Layout.astro";
                     }
                 });
 
+            // BTN DELETE ACCOUNT
+            document
+                .getElementById("btn-delete-account")
+                ?.addEventListener("click", async () => {
+                    const result = await Swal.fire({
+                        title: "¿Borrar Cuenta Permanentemente?",
+                        html: `
+                                <p class="text-sm text-gray-600 mb-4">Esta acción es <strong>irreversible</strong>. Se eliminarán:</p>
+                                <ul class="text-left text-xs text-gray-500 list-disc pl-8 mb-4">
+                                    <li>Tu perfil de cliente</li>
+                                    <li>Tu historial de solicitudes</li>
+                                    <li>Tus favoritos y valoraciones</li>
+                                </ul>
+                                <p class="text-sm font-bold text-red-600">¿Estás absolutamente seguro?</p>
+                            `,
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#ef4444",
+                        cancelButtonColor: "#64748b",
+                        confirmButtonText: "Sí, borrar todo",
+                        cancelButtonText: "Cancelar",
+                        reverseButtons: true,
+                        input: "text",
+                        inputPlaceholder: 'Escribe "BORRAR" para confirmar',
+                        inputValidator: (value) => {
+                            if (value !== "BORRAR") {
+                                return 'Debes escribir "BORRAR" para confirmar';
+                            }
+                        },
+                    });
+
+                    if (result.isConfirmed) {
+                        try {
+                            Swal.fire({
+                                title: "Borrando...",
+                                text: "Por favor espera",
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                },
+                            });
+
+                            const user = auth.currentUser;
+                            if (!user) return;
+
+                            // 1. Borrar datos de Firestore
+                            const { deleteDoc, doc } =
+                                await import("firebase/firestore");
+                            await deleteDoc(doc(db, "clientes", user.uid));
+
+                            // 2. Borrar usuario de Auth
+                            await user.delete();
+
+                            await Swal.fire({
+                                title: "Cuenta Eliminada",
+                                text: "Lamentamos verte partir. Tu cuenta ha sido borrada.",
+                                icon: "success",
+                                timer: 2000,
+                                showConfirmButton: false,
+                            });
+
+                            window.location.href = "/";
+                        } catch (error: any) {
+                            console.error("Error al borrar cuenta:", error);
+                            if (error.code === "auth/requires-recent-login") {
+                                Swal.fire({
+                                    title: "Seguridad",
+                                    text: "Para borrar tu cuenta, necesitas haber iniciado sesión recientemente. Por favor cierra sesión, vuelve a ingresar e intenta nuevamente.",
+                                    icon: "info",
+                                    confirmButtonText: "Entendido",
+                                });
+                            } else {
+                                Swal.fire(
+                                    "Error",
+                                    "No se pudo borrar la cuenta. Intenta más tarde.",
+                                    "error",
+                                );
+                            }
+                        }
+                    }
+                });
+
             // TAB SWITCHING LOGIC
             const tabBtns = document.querySelectorAll(".tab-btn");
             const tabPanels = document.querySelectorAll(".tab-panel");
@@ -1017,10 +1120,12 @@ import Layout from "../layouts/Layout.astro";
                     console.warn(
                         "⚠️ FALTA ÍNDICE COMPUESTO. Haz clic en el enlace de arriba para crearlo.",
                     );
-                    list.innerHTML = `<div class="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-amber-800 text-sm">
-                        <p class="font-bold mb-1">⚠️ Falta un índice en Firestore</p>
-                        <p>Para ver tus valoraciones, debes crear un índice en la consola de Firebase. Revisa la consola del navegador (F12) para encontrar el enlace de creación automática.</p>
-                    </div>`;
+                    if (list) {
+                        list.innerHTML = `<div class="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-amber-800 text-sm">
+                            <p class="font-bold mb-1">⚠️ Falta un índice en Firestore</p>
+                            <p>Para ver tus valoraciones, debes crear un índice en la consola de Firebase. Revisa la consola del navegador (F12) para encontrar el enlace de creación automática.</p>
+                        </div>`;
+                    }
                 } else {
                     empty?.classList.remove("hidden");
                 }
@@ -1029,119 +1134,148 @@ import Layout from "../layouts/Layout.astro";
 
         async function loadMisSolicitudes(userId: string) {
             const list = document.getElementById("solicitudes-list");
-            const empty = document.getElementById("solicitudes-empty");
-            const loading = document.getElementById("solicitudes-loading");
+            const loading = document.getElementById("loading-solicitudes");
+            const empty = document.getElementById("empty-solicitudes");
+
             if (!list) return;
 
+            loading?.classList.remove("hidden");
+            empty?.classList.add("hidden");
+            list.innerHTML = "";
+
             try {
-                const { collection, query, where, getDocs, orderBy, limit } =
+                const { collection, query, where, onSnapshot, orderBy } =
                     await import("firebase/firestore");
+
                 const q = query(
                     collection(db, "solicitudes"),
                     where("clienteId", "==", userId),
-                    orderBy("fecha", "desc"),
-                    limit(10),
+                    // orderBy("fecha", "desc"), // TODO: Check composite index requirement
                 );
-                const snap = await getDocs(q);
 
-                loading?.classList.add("hidden");
+                // USAR onSnapshot EN LUGAR DE getDocs PARA TIEMPO REAL
+                onSnapshot(
+                    q,
+                    (snap) => {
+                        loading?.classList.add("hidden");
 
-                if (snap.empty) {
-                    empty?.classList.remove("hidden");
-                    list.innerHTML = "";
-                } else {
-                    empty?.classList.add("hidden");
-                    list.innerHTML = snap.docs
-                        .map((doc) => {
-                            const s = doc.data();
-                            const fecha = s.fecha?.toDate
-                                ? s.fecha.toDate().toLocaleDateString("es-AR")
-                                : "Reciente";
-                            const contactados = s.contactados?.length || 0;
-                            const candidatos = s.candidatos?.length || 0;
+                        if (snap.empty) {
+                            empty?.classList.remove("hidden");
+                            list.innerHTML = "";
+                        } else {
+                            empty?.classList.add("hidden");
+                            list.innerHTML = snap.docs
+                                .map((doc) => {
+                                    const s = doc.data();
+                                    const fecha = s.fecha?.toDate
+                                        ? s.fecha
+                                              .toDate()
+                                              .toLocaleDateString("es-AR")
+                                        : "Reciente";
+                                    const contactados =
+                                        s.contactados?.length || 0; // Legacy field
+                                    const candidatos =
+                                        s.candidatos?.length || 0;
 
-                            let statusLabel = "Nueva",
-                                statusClass = "bg-slate-100 text-slate-600",
-                                icon = "📝";
+                                    // Calcular cantidad real de interesados (contactadosPor + presupuestos)
+                                    const postulados =
+                                        s.contactadosPor?.length || 0;
 
-                            let actionsHTML = `
-                                <button 
-                                    onclick="borrarSolicitud('${doc.id}')"
-                                    class="text-xs text-red-500 font-bold hover:underline transition-all mt-1"
-                                >
-                                    Eliminar Solicitud
-                                </button>
-                            `;
+                                    let statusLabel = "Nueva",
+                                        statusClass =
+                                            "bg-slate-100 text-slate-600",
+                                        icon = "📝";
 
-                            if (s.status === "completada") {
-                                statusLabel = "Finalizada";
-                                statusClass = "bg-gray-100 text-gray-700";
-                                icon = "🏁";
-                            } else if (
-                                s.status === "aceptada" ||
-                                s.status === "en_progreso"
-                            ) {
-                                // Customize message with Professional Name
-                                const proName =
-                                    s.profesionalNombre || "El profesional";
-                                statusLabel = `${proName} está armando tu presupuesto`;
-                                statusClass =
-                                    "bg-blue-100 text-blue-800 font-bold border border-blue-200";
-                                icon = "👨‍🔧";
-
-                                // Allow cancelling/returning to pool
-                                actionsHTML = `
-                                    <div class="flex gap-2 mt-2">
-                                        <button 
-                                            onclick="cancelarTrabajo('${doc.id}')"
-                                            class="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded font-bold hover:bg-orange-200 transition"
-                                            title="El profesional no respondió o no hubo arreglo"
-                                        >
-                                            🔄 Volver a Publicar
-                                        </button>
-                                        <button 
-                                            onclick="borrarSolicitud('${doc.id}')"
-                                            class="text-xs text-red-400 hover:text-red-600 transition"
-                                        >
-                                            Eliminar
-                                        </button>
-                                    </div>
+                                    let actionsHTML = `
+                                    <button 
+                                        onclick="borrarSolicitud('${doc.id}')"
+                                        class="text-xs text-red-500 font-bold hover:underline transition-all mt-1"
+                                    >
+                                        Eliminar Solicitud
+                                    </button>
                                 `;
-                            } else if (contactados > 0) {
-                                statusLabel = `${contactados} presupuestos`;
-                                statusClass = "bg-blue-100 text-blue-700";
-                                icon = "💬";
-                            } else if (candidatos > 0) {
-                                statusLabel = "Buscando expertos...";
-                                statusClass = "bg-yellow-100 text-yellow-700";
-                                icon = "🔍";
-                            }
 
-                            return `
-                        <div class="bg-slate-50 hover:bg-slate-100 rounded-xl p-4 transition-colors border border-slate-100 group">
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <span>${icon}</span>
-                                        <h4 class="font-semibold text-slate-800">${s.rubro || "Servicio"}</h4>
+                                    if (s.status === "completada") {
+                                        statusLabel = "Finalizada";
+                                        statusClass =
+                                            "bg-gray-100 text-gray-700";
+                                        icon = "🏁";
+                                    } else if (
+                                        s.status === "aceptada" ||
+                                        s.status === "en_progreso"
+                                    ) {
+                                        const proName =
+                                            s.profesionalNombre ||
+                                            "El profesional";
+                                        statusLabel = `${proName} está armando tu presupuesto`;
+                                        statusClass =
+                                            "bg-blue-100 text-blue-800 font-bold border border-blue-200";
+                                        icon = "👨‍🔧";
+
+                                        actionsHTML = `
+                                        <div class="flex gap-2 mt-2">
+                                            <button 
+                                                onclick="cancelarTrabajo('${doc.id}')"
+                                                class="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded font-bold hover:bg-orange-200 transition"
+                                                title="El profesional no respondió o no hubo arreglo"
+                                            >
+                                                🔄 Volver a Publicar
+                                            </button>
+                                            <button 
+                                                onclick="borrarSolicitud('${doc.id}')"
+                                                class="text-xs text-red-400 hover:text-red-600 transition"
+                                            >
+                                                Eliminar
+                                            </button>
+                                        </div>
+                                    `;
+                                    } else if (postulados > 0) {
+                                        statusLabel = `${postulados} profesionales interesados`;
+                                        statusClass =
+                                            "bg-blue-100 text-blue-700 font-bold";
+                                        icon = "💬";
+                                    } else if (candidatos > 0) {
+                                        statusLabel = "Buscando expertos...";
+                                        statusClass =
+                                            "bg-yellow-100 text-yellow-700";
+                                        icon = "🔍";
+                                    }
+
+                                    return `
+                            <div class="bg-slate-50 hover:bg-slate-100 rounded-xl p-4 transition-colors border border-slate-100 group">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span>${icon}</span>
+                                            <h4 class="font-semibold text-slate-800">${s.rubro || "Servicio"}</h4>
+                                        </div>
+                                        <p class="text-sm text-slate-500 mb-2">📍 ${s.zona || "Sin zona"}</p>
+                                        ${actionsHTML}
                                     </div>
-                                    <p class="text-sm text-slate-500 mb-2">📍 ${s.zona || "Sin zona"}</p>
-                                    ${actionsHTML}
-                                </div>
-                                <div class="text-right max-w-[50%]">
-                                    <span class="inline-block px-2 py-1 text-xs font-bold rounded-full ${statusClass} text-center leading-tight">
-                                        ${statusLabel}
-                                    </span>
-                                    <p class="text-xs text-slate-400 mt-2">${fecha}</p>
+                                    <div class="text-right max-w-[50%]">
+                                        <span class="inline-block px-2 py-1 text-xs font-bold rounded-full ${statusClass} text-center leading-tight">
+                                            ${statusLabel}
+                                        </span>
+                                        <p class="text-xs text-slate-400 mt-2">${fecha}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `;
-                        })
-                        .join("");
-                }
+                        `;
+                                })
+                                .join("");
+                        }
+                    },
+                    (error: any) => {
+                        console.error(
+                            "❌ Error en listener solicitudes:",
+                            error,
+                        );
+                        loading?.classList.add("hidden");
+                    },
+                );
             } catch (e) {
                 console.error("Error cargando solicitudes:", e);
+                loading?.classList.add("hidden");
             }
         }
 
@@ -1156,50 +1290,105 @@ import Layout from "../layouts/Layout.astro";
                 const q = query(
                     collection(db, "contactos"),
                     where("clienteId", "==", userId),
-                    orderBy("fecha", "desc"),
+                    // orderBy("fecha", "desc"), // TODO: Check if this requires composite index or affects rules
                 );
 
-                onSnapshot(q, (snapshot) => {
-                    if (snapshot.empty) {
-                        empty?.classList.remove("hidden");
-                        list.innerHTML = "";
-                        return;
-                    }
+                onSnapshot(
+                    q,
+                    (snapshot) => {
+                        if (snapshot.empty) {
+                            empty?.classList.remove("hidden");
+                            list.innerHTML = "";
+                            return;
+                        }
 
-                    empty?.classList.add("hidden");
-                    list.innerHTML = snapshot.docs
-                        .map((docSnap) => {
-                            const data = docSnap.data();
-                            const fecha = data.fecha?.toDate
-                                ? data.fecha.toDate().toLocaleDateString()
-                                : "Reciente";
+                        empty?.classList.add("hidden");
+                        list.innerHTML = snapshot.docs
+                            .map((docSnap) => {
+                                const data = docSnap.data();
+                                const fecha = data.fecha?.toDate
+                                    ? data.fecha.toDate().toLocaleDateString()
+                                    : "Reciente";
 
-                            return `
-                            <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between gap-4">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-xl border border-slate-100">
-                                        👷
+                                return `
+                                <div class="p-5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between gap-4">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-xl border border-slate-100">
+                                            👷
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-slate-900">${data.proNombre}</h4>
+                                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">${fecha}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h4 class="font-bold text-slate-900">${data.proNombre}</h4>
-                                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">${fecha}</p>
+                                    <div class="text-right">
+                                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Tu Código</p>
+                                        <div class="flex items-center gap-2 justify-end">
+                                            <p class="text-2xl font-black text-indigo-600 tracking-[0.2em] font-mono bg-white px-3 py-1 rounded-lg border border-indigo-100 shadow-inner">${data.token}</p>
+                                            <button onclick="window.deleteContact('${docSnap.id}')" class="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Eliminar contacto">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="text-right">
-                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Tu Código</p>
-                                    <p class="text-2xl font-black text-indigo-600 tracking-[0.2em] font-mono bg-white px-3 py-1 rounded-lg border border-indigo-100 shadow-inner">${data.token}</p>
+                            `;
+                            })
+                            .join("");
+                    },
+                    (error: any) => {
+                        console.error(
+                            "❌ [MI-CUENTA] Error en listener de códigos:",
+                            error,
+                        );
+                        if (error.code === "permission-denied") {
+                            if (list)
+                                list.innerHTML = `
+                                <div class="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-amber-800 text-xs">
+                                    <p class="font-bold mb-1">🛡️ Acceso Restringido</p>
+                                    <p>No tienes permisos para ver tus códigos de seguridad. Esto puede deberse a que las reglas de la base de datos no están actualizadas.</p>
                                 </div>
-                            </div>
-                        `;
-                        })
-                        .join("");
-                });
+                            `;
+                            empty?.classList.add("hidden");
+                        }
+                    },
+                );
             } catch (e) {
                 console.error("Error cargando códigos:", e);
             }
         }
 
         // --- FUNCIONES GLOBALES DE GESTIÓN ---
+        (window as any).deleteContact = async (id: string) => {
+            const result = await Swal.fire({
+                title: "¿Eliminar Contacto?",
+                text: "Esto borrará el código de seguridad de tu lista.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#ef4444",
+                cancelButtonColor: "#64748b",
+                confirmButtonText: "Sí, eliminar",
+                cancelButtonText: "Cancelar",
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const { deleteDoc, doc } = await import("firebase/firestore");
+                await deleteDoc(doc(db, "contactos", id));
+
+                Swal.fire({
+                    title: "Eliminado",
+                    text: "El contacto ha sido eliminado.",
+                    icon: "success",
+                    timer: 1500,
+                    showConfirmButton: false,
+                });
+            } catch (e) {
+                console.error(e);
+                Swal.fire("Error", "No se pudo eliminar el contacto.", "error");
+            }
+        };
+
         (window as any).cancelarTrabajo = async (id: string) => {
             if (!currentUser) return;
 

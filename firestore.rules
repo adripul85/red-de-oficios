@@ -190,6 +190,38 @@ service cloud.firestore {
       );
     }
 
+    // --- 8. CONTACTOS Y SEGURIDAD ---
+    match /contactos/{contactoId} {
+      // 1. GET (Leer un documento específico): Si soy cliente o pro en ese doc
+      allow get: if isSignedIn() && (
+        resource.data.clienteId == request.auth.uid || 
+        resource.data.proId == request.auth.uid
+      );
+      
+      // 2. LIST (Queries): 
+      // Si la query filtra puramente por mi ID.
+      allow list: if isSignedIn() && (
+          resource.data.clienteId == request.auth.uid || 
+          resource.data.proId == request.auth.uid
+      );
+
+      // Crear: Cualquier usuario
+      allow create: if true;
+      // Actualizar: El profesional (para marcar como visto) o Admin
+      allow update: if isStaff() || (isSignedIn() && request.auth.uid == resource.data.proId);
+      
+      // Eliminar: Si soy participante (cliente o pro)
+      allow delete: if isSignedIn() && (
+        resource.data.clienteId == request.auth.uid || 
+        resource.data.proId == request.auth.uid
+      );
+    }
+
+    match /feedback_contactos/{feedbackId} {
+      allow create: if true;
+      allow read: if isStaff();
+    }
+
     // --- ESTA LÍNEA DEBE ESTAR AL FINAL (Bloqueo por defecto) ---
     match /{document=**} { 
       allow read, write: if false; 

@@ -253,8 +253,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 	}*/
 	html {
 		font-family: var(--font-body);
-		background: #ffffff;
 		scroll-behavior: smooth;
+	}
+	html.dark {
+		background-color: #111827; /* gray-900 */
 	}
 	body {
 		margin: 0;

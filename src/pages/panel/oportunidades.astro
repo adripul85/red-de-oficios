@@ -256,6 +256,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 arrayUnion,
                 getDoc,
                 deleteField,
+                addDoc,
             } from "firebase/firestore";
             import { onAuthStateChanged } from "firebase/auth";
 
@@ -325,8 +326,17 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     });
                 });
 
+                // Variable global para almacenar los unsubscribe de los listeners
+                let unsubscribers: any[] = [];
+
                 async function loadOportunidades() {
-                    console.log("🔍 [OPORTUNIDADES] Iniciando carga...");
+                    console.log(
+                        "🔍 [OPORTUNIDADES] Iniciando carga en tiempo real...",
+                    );
+
+                    // Limpiar listeners anteriores si existen
+                    unsubscribers.forEach((unsub) => unsub());
+                    unsubscribers = [];
 
                     // Ocultar todo inicialmente
                     [loading, grid, emptyState, errorState].forEach((el) => {
@@ -337,8 +347,8 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     });
 
                     try {
-                        loading.style.display = "block";
-                        loading.classList.remove("hidden");
+                        if (loading) loading.style.display = "block";
+                        if (loading) loading.classList.remove("hidden");
 
                         console.log(
                             "🔍 [OPORTUNIDADES] Consultando Firestore para UID:",
@@ -354,15 +364,15 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             console.error(
                                 "❌ No se encontró el perfil del profesional",
                             );
-                            errorState.style.display = "block";
-                            errorState.classList.remove("hidden");
+                            if (errorState) errorState.style.display = "block";
+                            if (errorState)
+                                errorState.classList.remove("hidden");
                             return;
                         }
 
                         const profData = profDoc.data();
 
                         // OBTENER TODOS LOS RUBROS Y ZONAS DISPONIBLES DEL PERFIL
-                        // Prioridad: Arrays nuevos -> Campos legacy -> Defaults
                         const misRubros =
                             profData.rubros?.length > 0
                                 ? profData.rubros
@@ -377,19 +387,31 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                   ? [profData.zona]
                                   : [];
 
-                        console.log(
-                            "🔍 [OPORTUNIDADES] Mis rubros:",
-                            misRubros,
-                            "Mis zonas:",
-                            misZonas,
-                        );
+                        // 2. CONFIGURAR LISTENERS EN TIEMPO REAL
+                        // Usamos onSnapshot en lugar de getDocs
+                        const { onSnapshot } =
+                            await import("firebase/firestore");
 
-                        // 2. Buscar solicitudes que coincidan con mis rubros
-                        // Firestore 'in' limitation: max 10 items (App limit is 5, so we are safe)
+                        const updateUI = () => {
+                            // Convertir Map a Array y ordenar por fecha
+                            todasSolicitudes = Array.from(
+                                allSolicitudes.values(),
+                            ).sort((a, b) => {
+                                const fechaA =
+                                    a.fecha?.toDate?.() ||
+                                    new Date(a.fecha || 0);
+                                const fechaB =
+                                    b.fecha?.toDate?.() ||
+                                    new Date(b.fecha || 0);
+                                return fechaB - fechaA;
+                            });
+                            renderOportunidades();
+                            if (loading) loading.style.display = "none";
+                        };
 
                         const allSolicitudes = new Map();
 
-                        // Query 1: Donde soy candidato (el sistema me seleccionó)
+                        // Listener 1: Donde soy candidato (el sistema me seleccionó)
                         const qCandidato = query(
                             collection(db, "solicitudes"),
                             where(
@@ -401,107 +423,94 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             limit(50),
                         );
 
-                        const snapCandidato = await getDocs(qCandidato);
-                        snapCandidato.docs.forEach((doc) => {
-                            const data = doc.data();
-                            if (
-                                !data.eliminadosPor?.includes(currentUser.uid)
-                            ) {
-                                allSolicitudes.set(doc.id, {
-                                    id: doc.id,
-                                    ...data,
-                                });
-                            }
+                        const unsub1 = onSnapshot(qCandidato, (snapshot) => {
+                            snapshot.docs.forEach((doc) => {
+                                const data = doc.data();
+                                if (
+                                    !data.eliminadosPor?.includes(
+                                        currentUser.uid,
+                                    )
+                                ) {
+                                    allSolicitudes.set(doc.id, {
+                                        id: doc.id,
+                                        ...data,
+                                    });
+                                }
+                            });
+                            updateUI();
                         });
+                        unsubscribers.push(unsub1);
 
-                        // Query 2: Coincidencia por Rubro (Multi-Rubro)
+                        // Listener 2: Coincidencia por Rubro (Multi-Rubro)
                         if (misRubros.length > 0) {
-                            try {
-                                const qRubros = query(
-                                    collection(db, "solicitudes"),
-                                    where("rubro", "in", misRubros), // BUSCAR EN LISTA DE RUBROS
-                                    where("status", "==", "nueva"),
-                                    orderBy("fecha", "desc"),
-                                    limit(50),
-                                );
+                            const qRubros = query(
+                                collection(db, "solicitudes"),
+                                where("rubro", "in", misRubros),
+                                where("status", "==", "nueva"),
+                                // orderBy("fecha", "desc"), // Requires composite index: https://console.firebase.google.com/
+                                limit(50),
+                            );
 
-                                const snapRubros = await getDocs(qRubros);
+                            const unsub2 = onSnapshot(
+                                qRubros,
+                                (snapshot) => {
+                                    snapshot.docs.forEach((doc) => {
+                                        if (!allSolicitudes.has(doc.id)) {
+                                            const data = doc.data();
+                                            // FILTRADO CLIENT-SIDE POR ZONA Y ELIMINADOS
+                                            const zonaMatch =
+                                                misZonas.length === 0 ||
+                                                misZonas.includes(data.zona);
+                                            const notDeleted =
+                                                !data.eliminadosPor?.includes(
+                                                    currentUser.uid,
+                                                );
 
-                                snapRubros.docs.forEach((doc) => {
-                                    if (!allSolicitudes.has(doc.id)) {
-                                        const data = doc.data();
-
-                                        // FILTRADO CLIENT-SIDE POR ZONA Y ELIMINADOS
-                                        const zonaMatch =
-                                            misZonas.length === 0 ||
-                                            misZonas.includes(data.zona);
-                                        const notDeleted =
-                                            !data.eliminadosPor?.includes(
-                                                currentUser.uid,
-                                            );
-
-                                        if (zonaMatch && notDeleted) {
-                                            allSolicitudes.set(doc.id, {
-                                                id: doc.id,
-                                                ...data,
-                                            });
+                                            if (zonaMatch && notDeleted) {
+                                                allSolicitudes.set(doc.id, {
+                                                    id: doc.id,
+                                                    ...data,
+                                                });
+                                            }
                                         }
-                                    }
-                                });
-                            } catch (error) {
-                                console.error(
-                                    "⚠️ Query multi-rubro falló:",
-                                    error,
-                                );
-                            }
+                                    });
+                                    updateUI();
+                                },
+                                (error) => {
+                                    console.warn(
+                                        "⚠️ Listener multi-rubro falló (puede ser falta de permisos):",
+                                        error,
+                                    );
+                                },
+                            );
+                            unsubscribers.push(unsub2);
                         }
 
-                        // Query 3: Mis Presupuestos / Aceptados (para que sigan apareciendo en 'Contactadas' o una nueva tab)
+                        // Listener 3: Mis Presupuestos / Aceptados
                         const qAceptados = query(
                             collection(db, "solicitudes"),
                             where("profesionalId", "==", currentUser.uid),
                             orderBy("fecha", "desc"),
                         );
-                        console.log(
-                            "🔍 [OPORTUNIDADES] Ejecutando query aceptados...",
-                        );
-                        try {
-                            const snapAceptados = await getDocs(qAceptados);
-                            snapAceptados.docs.forEach((doc) => {
+
+                        const unsub3 = onSnapshot(qAceptados, (snapshot) => {
+                            snapshot.docs.forEach((doc) => {
                                 allSolicitudes.set(doc.id, {
                                     id: doc.id,
                                     ...doc.data(),
                                 });
                             });
-                        } catch (e) {
-                            console.warn("⚠️ Query aceptados falló:", e);
-                        }
-
-                        // Convertir Map a Array y ordenar por fecha
-                        todasSolicitudes = Array.from(
-                            allSolicitudes.values(),
-                        ).sort((a, b) => {
-                            const fechaA =
-                                a.fecha?.toDate?.() || new Date(a.fecha);
-                            const fechaB =
-                                b.fecha?.toDate?.() || new Date(b.fecha);
-                            return fechaB - fechaA;
+                            updateUI();
                         });
-
-                        console.log(
-                            "🔍 [OPORTUNIDADES] Total docs combinados:",
-                            todasSolicitudes.length,
-                        );
-
-                        renderOportunidades();
+                        unsubscribers.push(unsub3);
                     } catch (error) {
-                        console.error("❌ [OPORTUNIDADES] Error:", error);
-                        errorState.style.display = "block";
-                        errorState.classList.remove("hidden");
-                    } finally {
-                        loading.style.display = "none";
-                        loading.classList.add("hidden");
-                        console.log("🔍 [OPORTUNIDADES] Carga finalizada");
+                        console.error(
+                            "❌ [OPORTUNIDADES] Error configurando listeners:",
+                            error,
+                        );
+                        if (errorState) errorState.style.display = "block";
+                        if (errorState) errorState.classList.remove("hidden");
+                        if (loading) loading.style.display = "none";
                     }
                 }
 
@@ -522,12 +531,13 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             currentUser.uid,
                         );
 
-                        if (activeTab === "nuevas")
+                        if (activeTab === "nuevas") {
                             return (
                                 !contactado &&
                                 !descartado &&
                                 sol.status === "nueva"
-                            ); // Only show truly new ones
+                            );
+                        }
                         if (activeTab === "contactadas") return contactado;
                         if (activeTab === "descartadas") return descartado;
                         return false;
@@ -568,70 +578,81 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     // Empty State Logic
                     if (filtered.length === 0) {
                         console.log("⚠️ [RENDER] Mostrando empty state");
-                        grid.style.display = "none";
-                        emptyState.style.display = "";
-                        emptyState.classList.remove("hidden");
+                        if (grid) grid.style.display = "none";
+                        if (emptyState) emptyState.style.display = "";
+                        if (emptyState) emptyState.classList.remove("hidden");
 
                         if (activeTab === "nuevas") {
-                            emptyTitle.innerText =
-                                "No hay nuevas oportunidades";
-                            emptyDesc.innerText =
-                                "Te avisaremos cuando alguien busque un servicio en tu zona.";
+                            if (emptyTitle)
+                                emptyTitle.innerText =
+                                    "No hay nuevas oportunidades";
+                            if (emptyDesc)
+                                emptyDesc.innerText =
+                                    "Te avisaremos cuando alguien busque un servicio en tu zona.";
                         } else if (activeTab === "contactadas") {
-                            emptyTitle.innerText =
-                                "Aún no has contactado a nadie";
-                            emptyDesc.innerText =
-                                "Las oportunidades que contactes aparecerán aquí.";
+                            if (emptyTitle)
+                                emptyTitle.innerText =
+                                    "Aún no has contactado a nadie";
+                            if (emptyDesc)
+                                emptyDesc.innerText =
+                                    "Las oportunidades que contactes aparecerán aquí.";
                         } else {
-                            emptyTitle.innerText = "Papelera vacía";
-                            emptyDesc.innerText =
-                                "Las oportunidades descartadas aparecerán aquí.";
+                            if (emptyTitle)
+                                emptyTitle.innerText = "Papelera vacía";
+                            if (emptyDesc)
+                                emptyDesc.innerText =
+                                    "Las oportunidades descartadas aparecerán aquí.";
                         }
                         return;
                     }
 
-                    console.log("🎨 [RENDER] Mostrando grid...");
-                    emptyState.style.display = "none";
-                    grid.style.display = "grid";
-                    grid.classList.remove("hidden");
+                    if (loading) loading.style.display = "none";
+                    if (grid) grid.style.display = "grid";
+                    if (grid) grid.classList.remove("hidden");
 
                     console.log(
                         "🎨 [RENDER] Generando HTML para",
                         filtered.length,
                         "items",
                     );
-                    grid.innerHTML = filtered
-                        .map((sol) => {
-                            // Formatear fecha
-                            let fechaStr = "Reciente";
-                            if (sol.fecha && sol.fecha.seconds) {
-                                const date = new Date(sol.fecha.seconds * 1000);
-                                fechaStr = new Intl.DateTimeFormat("es-AR", {
-                                    day: "numeric",
-                                    month: "short",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                }).format(date);
-                            }
+                    if (grid)
+                        grid.innerHTML = filtered
+                            .map((sol) => {
+                                // Formatear fecha
+                                let fechaStr = "Reciente";
+                                if (sol.fecha && sol.fecha.seconds) {
+                                    const date = new Date(
+                                        sol.fecha.seconds * 1000,
+                                    );
+                                    fechaStr = new Intl.DateTimeFormat(
+                                        "es-AR",
+                                        {
+                                            day: "numeric",
+                                            month: "short",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                        },
+                                    ).format(date);
+                                }
 
-                            // Badges
-                            const urgenteBadge = sol.urgente
-                                ? `<span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">🚨 Urgente</span>`
-                                : "";
-
-                            const nuevoBadge =
-                                !sol.leidoPor?.includes(currentUser.uid) &&
-                                activeTab === "nuevas"
-                                    ? `<span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-full">Nuevo</span>`
+                                // Badges
+                                const urgenteBadge = sol.urgente
+                                    ? `<span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">🚨 Urgente</span>`
                                     : "";
 
-                            const isAcceptedByMe =
-                                sol.profesionalId === currentUser.uid;
-                            const acceptedBadge = isAcceptedByMe
-                                ? `<span class="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded-full border border-purple-200">💎 Tu Trabajo</span>`
-                                : "";
+                                const nuevoBadge =
+                                    !sol.leidoPor?.includes(currentUser.uid) &&
+                                    activeTab === "nuevas"
+                                        ? `<span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-full">Nuevo</span>`
+                                        : "";
 
-                            return `
+                                const isAcceptedByMe =
+                                    sol.profesionalId === currentUser.uid;
+                                const acceptedBadge = isAcceptedByMe
+                                    ? `<span class="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded-full border border-purple-200">💎 Tu Trabajo</span>`
+                                    : "";
+
+                                return `
                         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 hover:shadow-md transition">
                             <!-- Info Principal -->
                             <div class="flex-1">
@@ -736,8 +757,8 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             </div>
                         </div>
                     `;
-                        })
-                        .join("");
+                            })
+                            .join("");
 
                     console.log(
                         "🎨 [RENDER] HTML generado, longitud:",
@@ -757,8 +778,69 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         return;
                     }
 
-                    // 1. Marcar como contactado en DB Y Bloquear para mi (status: aceptada)
                     try {
+                        // 0. Generar Token de Seguridad
+                        const token = Math.floor(
+                            100000 + Math.random() * 900000,
+                        ).toString();
+                        console.log("🔐 [CONTACTAR] Generando token:", token);
+
+                        // 1. Guardar en Colección 'contactos' (Para que ambos vean el código)
+                        const solData = todasSolicitudes.find(
+                            (s) => s.id === id,
+                        );
+                        console.log(
+                            "🔍 [CONTACTAR] Datos de solicitud encontrados:",
+                            solData,
+                        );
+
+                        if (!solData) {
+                            console.error(
+                                "❌ [CONTACTAR] No se encontró solData para ID:",
+                                id,
+                            );
+                            alert(
+                                "Error interno: No se encontraron datos de la solicitud.",
+                            );
+                            return;
+                        }
+
+                        const contactoData = {
+                            clienteId: solData.clienteId || "unknown",
+                            clienteNombre: nombre,
+                            proId: currentUser.uid,
+                            proNombre: currentUser.displayName || "Profesional",
+                            rubro: solData.rubro || "Servicio",
+                            fecha: new Date(),
+                            token: token,
+                            solicitudId: id,
+                        };
+                        console.log(
+                            "💾 [CONTACTAR] Intentando crear contacto:",
+                            contactoData,
+                        );
+
+                        try {
+                            const contactRef = await addDoc(
+                                collection(db, "contactos"),
+                                contactoData,
+                            );
+                            console.log(
+                                "✅ [CONTACTAR] Contacto creado con ID:",
+                                contactRef.id,
+                            );
+                        } catch (docError) {
+                            console.error(
+                                "❌ [CONTACTAR] Error creando documento en 'contactos':",
+                                docError,
+                            );
+                            alert(
+                                "Error al generar código de seguridad. Revisa la consola.",
+                            );
+                            // Continue anyway to open WhatsApp but warn user
+                        }
+
+                        // 2. Marcar como contactado en DB Y Bloquear para mi (status: aceptada)
                         const solRef = doc(db, "solicitudes", id);
                         await updateDoc(solRef, {
                             contactadosPor: arrayUnion(currentUser.uid),
@@ -786,8 +868,33 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                         renderOportunidades();
 
-                        // 2. Abrir WhatsApp
-                        const mensaje = `Hola ${nombre}, soy ${currentUser.displayName || "profesional"} de DeOficios. Vi tu pedido de ${todasSolicitudes.find((s) => s.id === id)?.rubro || "trabajo"} y me interesa pasarte un presupuesto.`;
+                        // 3. Enviar Email Notificación (Simulado)
+                        if (solData?.clienteEmail) {
+                            fetch("/api/send-email", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    to: solData.clienteEmail,
+                                    subject: `¡${currentUser.displayName || "Un profesional"} ha aceptado tu solicitud! 🚀`,
+                                    html: `
+                                        <h2>¡Buenas noticias, ${nombre}!</h2>
+                                        <p>El profesional <strong>${currentUser.displayName || "DeOficios Pro"}</strong> ha visto tu solicitud para <strong>${solData.rubro}</strong> y quiere contactarte.</p>
+                                        <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
+                                            <p style="margin: 0; font-size: 12px; color: #6b7280; text-transform: uppercase; font-weight: bold;">Tu Código de Seguridad</p>
+                                            <p style="margin: 5px 0 0 0; font-size: 24px; font-weight: 900; letter-spacing: 5px; color: #ea580c;">${token}</p>
+                                            <p style="margin: 10px 0 0 0; font-size: 11px; color: #6b7280;">Pídele este código al profesional cuando llegue a tu domicilio.</p>
+                                        </div>
+                                        <p>Te escribirá por WhatsApp a la brevedad.</p>
+                                    `,
+                                    type: "Solicitud Aceptada",
+                                }),
+                            }).catch((err) =>
+                                console.error("Error enviando email:", err),
+                            );
+                        }
+
+                        // 4. Abrir WhatsApp
+                        const mensaje = `Hola ${nombre}, soy ${currentUser.displayName || "profesional"} de DeOficios. Vi tu pedido de ${solData?.rubro || "trabajo"} y mi código de seguridad es ${token}. Me interesa pasarte un presupuesto.`;
                         const url = `https://wa.me/549${telefono}?text=${encodeURIComponent(mensaje)}`;
                         window.open(url, "_blank");
                     } catch (e) {

@@ -6,11 +6,13 @@ import { LOCATIONS } from "../data/locations";
 
 <Layout title="Pedir Presupuesto - DeOficios">
     <div class="max-w-2xl mx-auto px-4 py-10">
-        <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+        <div
+            class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 transition-colors"
+        >
             <div class="text-center mb-8">
                 <a
                     href="/mi-cuenta"
-                    class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-orange-600 mb-6 transition-colors"
+                    class="inline-flex items-center text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-orange-600 mb-6 transition-colors"
                 >
                     <svg
                         class="w-5 h-5 mr-1"
@@ -26,12 +28,14 @@ import { LOCATIONS } from "../data/locations";
                     </svg>
                     Volver a Mi Cuenta
                 </a>
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                <h1
+                    class="text-3xl font-bold text-gray-900 dark:text-white mb-2"
+                >
                     ¡Pedí presupuesto gratis! 🚀
                 </h1>
-                <p class="text-gray-500">
+                <p class="text-gray-500 dark:text-gray-400">
                     Contanos qué necesitás y avisaremos a los <span
-                        class="text-orange-600 font-bold"
+                        class="text-orange-600 dark:text-orange-500 font-bold"
                         >mejores profesionales</span
                     > de tu zona.
                 </p>
@@ -39,32 +43,31 @@ import { LOCATIONS } from "../data/locations";
 
             <form id="solicitud-form" class="space-y-5">
                 <div>
-                    <label class="block font-bold text-gray-700 mb-1"
-                        >Tu Nombre Completo</label
-                    >
-                    <input
-                        type="text"
-                        id="clienteNombre"
-                        class="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-orange-500 outline-none"
-                        placeholder="Ej: Juan Pérez"
-                        required
-                    />
-                </div>
-                <div>
-                    <label class="block font-bold text-gray-700 mb-1"
+                    <label
+                        class="block font-bold text-gray-700 dark:text-gray-200 mb-1"
                         >¿Qué servicio buscás?</label
                     >
                     <select
                         id="rubro"
-                        class="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-orange-500 outline-none"
+                        class="w-full p-3 border dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none transition-colors"
                         required
                     >
-                        <option value="">Selecciona una categoría...</option>
+                        <option value="" class="dark:bg-gray-800"
+                            >Selecciona una categoría...</option
+                        >
                         {
                             CATEGORIES.map((cat) => (
-                                <optgroup label={cat.group}>
+                                <optgroup
+                                    label={cat.group}
+                                    class="dark:bg-gray-800 font-bold"
+                                >
                                     {cat.trades.map((t) => (
-                                        <option value={t.name}>{t.name}</option>
+                                        <option
+                                            value={t.name}
+                                            class="dark:bg-gray-800"
+                                        >
+                                            {t.name}
+                                        </option>
                                     ))}
                                 </optgroup>
                             ))
@@ -73,20 +76,31 @@ import { LOCATIONS } from "../data/locations";
                 </div>
 
                 <div>
-                    <label class="block font-bold text-gray-700 mb-1"
+                    <label
+                        class="block font-bold text-gray-700 dark:text-gray-200 mb-1"
                         >¿En qué barrio?</label
                     >
                     <select
                         id="zona"
-                        class="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-orange-500 outline-none"
+                        class="w-full p-3 border dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none transition-colors"
                         required
                     >
-                        <option value="">Selecciona tu zona...</option>
+                        <option value="" class="dark:bg-gray-800"
+                            >Selecciona tu zona...</option
+                        >
                         {
                             LOCATIONS.map((l) => (
-                                <optgroup label={l.group}>
+                                <optgroup
+                                    label={l.group}
+                                    class="dark:bg-gray-800 font-bold"
+                                >
                                     {l.zones.map((z) => (
-                                        <option value={z}>{z}</option>
+                                        <option
+                                            value={z}
+                                            class="dark:bg-gray-800"
+                                        >
+                                            {z}
+                                        </option>
                                     ))}
                                 </optgroup>
                             ))
@@ -95,19 +109,20 @@ import { LOCATIONS } from "../data/locations";
                 </div>
 
                 <div>
-                    <label class="block font-bold text-gray-700 mb-1"
+                    <label
+                        class="block font-bold text-gray-700 dark:text-gray-200 mb-1"
                         >Tu WhatsApp (para que te contacten)</label
                     >
                     <div class="flex">
                         <span
-                            class="inline-flex items-center px-4 rounded-l-lg border border-r-0 border-gray-300 bg-gray-100 text-gray-600 font-bold text-sm"
+                            class="inline-flex items-center px-4 rounded-l-lg border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 font-bold text-sm"
                         >
                             +54 9
                         </span>
                         <input
                             type="tel"
                             id="telefono"
-                            class="w-full p-3 border rounded-r-lg bg-gray-50 focus:ring-2 focus:ring-orange-500 outline-none"
+                            class="w-full p-3 border rounded-r-lg dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none transition-colors"
                             placeholder="11 1234 5678"
                             pattern="[0-9\s]+"
                             required
@@ -116,42 +131,45 @@ import { LOCATIONS } from "../data/locations";
                 </div>
 
                 <div>
-                    <label class="block font-bold text-gray-700 mb-1"
+                    <label
+                        class="block font-bold text-gray-700 dark:text-gray-200 mb-1"
                         >Detalles del trabajo</label
                     >
                     <textarea
                         id="detalle"
                         rows="4"
-                        class="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-orange-500 outline-none"
+                        class="w-full p-3 border dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none transition-colors"
                         placeholder="Ej: Necesito pintar un living de 4x4, paredes y techo..."
                         required></textarea>
                 </div>
 
                 <!-- Campo de presupuesto opcional -->
                 <div>
-                    <label class="block font-bold text-gray-700 mb-1">
+                    <label
+                        class="block font-bold text-gray-700 dark:text-gray-200 mb-1"
+                    >
                         Mi presupuesto estimado es de... <span
-                            class="text-gray-400 font-normal text-sm"
+                            class="text-gray-400 font-normal text-sm dark:text-gray-500"
                             >(opcional)</span
                         >
                     </label>
                     <div class="flex">
                         <span
-                            class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500"
+                            class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-600 text-gray-500 dark:text-gray-300"
                         >
                             $
                         </span>
                         <input
                             type="text"
                             id="presupuesto"
-                            class="w-full p-3 border rounded-r-lg bg-gray-50 focus:ring-2 focus:ring-orange-500 outline-none"
+                            class="w-full p-3 border rounded-r-lg dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none transition-colors"
                             placeholder="Ej: 50.000"
                         />
                     </div>
                 </div>
 
                 <div
-                    class="flex items-center gap-3 p-4 bg-orange-50 rounded-lg border border-orange-100"
+                    class="flex items-center gap-3 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-100 dark:border-orange-900/30"
                 >
                     <input
                         type="checkbox"
@@ -160,7 +178,7 @@ import { LOCATIONS } from "../data/locations";
                     />
                     <label
                         for="urgente"
-                        class="font-bold text-orange-800 cursor-pointer"
+                        class="font-bold text-orange-800 dark:text-orange-300 cursor-pointer"
                         >¡Es una urgencia! (Servicio 24hs)</label
                     >
                 </div>
@@ -182,16 +200,16 @@ import { LOCATIONS } from "../data/locations";
         class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
     >
         <div
-            class="bg-white rounded-3xl p-8 max-w-md mx-4 shadow-2xl transform transition-all scale-95 opacity-0"
+            class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-md mx-4 shadow-2xl transform transition-all scale-95 opacity-0 border dark:border-gray-700"
             id="modal-content"
         >
             <!-- Checkmark animado -->
             <div class="flex justify-center mb-6">
                 <div
-                    class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center"
+                    class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center"
                 >
                     <svg
-                        class="w-12 h-12 text-green-600"
+                        class="w-12 h-12 text-green-600 dark:text-green-500"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -206,22 +224,27 @@ import { LOCATIONS } from "../data/locations";
             </div>
 
             <!-- Título -->
-            <h2 class="text-2xl font-bold text-gray-900 text-center mb-3">
+            <h2
+                class="text-2xl font-bold text-gray-900 dark:text-white text-center mb-3"
+            >
                 ¡Solicitud Enviada! 🎉
             </h2>
 
             <!-- Mensaje -->
-            <p class="text-gray-600 text-center mb-6" id="modal-message">
+            <p
+                class="text-gray-600 dark:text-gray-400 text-center mb-6"
+                id="modal-message"
+            >
                 Hemos notificado a los mejores profesionales de tu zona.
             </p>
 
             <!-- Contador de profesionales -->
             <div
-                class="bg-orange-50 rounded-2xl p-4 mb-6 border border-orange-100"
+                class="bg-orange-50 dark:bg-orange-900/20 rounded-2xl p-4 mb-6 border border-orange-100 dark:border-orange-900/30"
             >
                 <div class="flex items-center justify-center gap-3">
                     <svg
-                        class="w-6 h-6 text-orange-600"
+                        class="w-6 h-6 text-orange-600 dark:text-orange-500"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                     >
@@ -229,7 +252,7 @@ import { LOCATIONS } from "../data/locations";
                             d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"
                         ></path>
                     </svg>
-                    <span class="font-bold text-gray-900"
+                    <span class="font-bold text-gray-900 dark:text-white"
                         ><span id="pros-count">0</span> profesionales notificados</span
                     >
                 </div>
@@ -239,7 +262,7 @@ import { LOCATIONS } from "../data/locations";
             <div class="flex gap-3">
                 <button
                     id="btn-close-modal"
-                    class="flex-1 py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all"
+                    class="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold rounded-xl transition-all"
                 >
                     Cerrar
                 </button>
@@ -256,23 +279,43 @@ import { LOCATIONS } from "../data/locations";
 
 <script>
     import { db, auth } from "../firebase/client";
-
     import { onAuthStateChanged } from "firebase/auth";
+    import { doc, getDoc } from "firebase/firestore";
 
     // Wrap everything in astro:page-load for View Transitions compatibility
     document.addEventListener("astro:page-load", () => {
         console.log("🚀 [SOLICITAR] Página cargada/navegada");
 
-        let currentUser = null;
-        onAuthStateChanged(auth, (user) => {
-            if (user) currentUser = user;
-            else {
-                // Guardar datos y redirigir si no está logueado (Lógica opcional)
+        let currentUser: any = null;
+        let userDisplayName = "";
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                // Intentar obtener el nombre del documento de cliente si no hay displayName
+                try {
+                    const clientDoc = await getDoc(
+                        doc(db, "clientes", user.uid),
+                    );
+                    if (clientDoc.exists()) {
+                        userDisplayName =
+                            clientDoc.data().nombre ||
+                            user.displayName ||
+                            "Usuario";
+                    } else {
+                        userDisplayName = user.displayName || "Usuario";
+                    }
+                } catch (e) {
+                    userDisplayName = user.displayName || "Usuario";
+                }
+            } else {
+                // Redirigir si no está logueado
+                window.location.href = "/ingresar-cliente?redirect=/solicitar";
             }
         });
 
         const form = document.getElementById("solicitud-form");
-        const btn = document.getElementById("btn-enviar");
+        const btn = document.getElementById("btn-enviar") as HTMLButtonElement;
 
         form?.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -281,21 +324,36 @@ import { LOCATIONS } from "../data/locations";
                     "Por favor, inicia sesión como cliente para pedir presupuestos.",
                 );
 
-            btn.disabled = true;
-            btn.innerText = "Buscando profesionales...";
+            if (!userDisplayName && currentUser) {
+                userDisplayName = currentUser.displayName || "Usuario";
+            }
 
-            const clienteNombre =
-                document.getElementById("clienteNombre").value;
-            const rubro = document.getElementById("rubro").value;
-            const zona = document.getElementById("zona").value;
-            const telefonoInput = document.getElementById("telefono").value;
-            const presupuesto = document.getElementById("presupuesto").value;
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = "Buscando profesionales...";
+            }
+
+            const rubro = (
+                document.getElementById("rubro") as HTMLSelectElement
+            ).value;
+            const zona = (document.getElementById("zona") as HTMLSelectElement)
+                .value;
+            const telefonoInput = (
+                document.getElementById("telefono") as HTMLInputElement
+            ).value;
+            const presupuesto = (
+                document.getElementById("presupuesto") as HTMLInputElement
+            ).value;
 
             // Limpiar teléfono para guardarlo limpio (solo números)
             const telefono = telefonoInput.replace(/[^0-9]/g, "");
 
-            const detalle = document.getElementById("detalle").value;
-            const urgente = document.getElementById("urgente").checked;
+            const detalle = (
+                document.getElementById("detalle") as HTMLTextAreaElement
+            ).value;
+            const urgente = (
+                document.getElementById("urgente") as HTMLInputElement
+            ).checked;
 
             try {
                 const response = await fetch("/api/crear-solicitud", {
@@ -305,7 +363,8 @@ import { LOCATIONS } from "../data/locations";
                     },
                     body: JSON.stringify({
                         clienteId: currentUser.uid,
-                        clienteNombre: clienteNombre,
+                        clienteNombre: userDisplayName,
+                        clienteEmail: currentUser.email, // Send email to API
                         clienteAvatar: currentUser.photoURL || "",
                         rubro,
                         zona,
@@ -319,6 +378,7 @@ import { LOCATIONS } from "../data/locations";
                 const data = await response.json();
 
                 if (!response.ok) {
+                    console.error("❌ [API ERROR DATA]:", data);
                     throw new Error(data.error || "Error al crear solicitud");
                 }
 
@@ -327,27 +387,37 @@ import { LOCATIONS } from "../data/locations";
                 const modalContent = document.getElementById("modal-content");
                 const prosCountEl = document.getElementById("pros-count");
 
-                prosCountEl.innerText = data.candidatosCount || 0;
-                modal.classList.remove("hidden");
+                if (prosCountEl)
+                    prosCountEl.innerText = data.candidatosCount || 0;
+                if (modal) modal.classList.remove("hidden");
 
                 // Animación de entrada
                 setTimeout(() => {
-                    modalContent.classList.remove("scale-95", "opacity-0");
-                    modalContent.classList.add("scale-100", "opacity-100");
+                    if (modalContent) {
+                        modalContent.classList.remove("scale-95", "opacity-0");
+                        modalContent.classList.add("scale-100", "opacity-100");
+                    }
                 }, 10);
 
                 // Configurar cierre del modal
-                document.getElementById("btn-close-modal").onclick = () => {
-                    window.location.href = "/mi-cuenta";
-                };
+                const closeBtn = document.getElementById("btn-close-modal");
+                if (closeBtn) {
+                    closeBtn.onclick = () => {
+                        window.location.href = "/mi-cuenta";
+                    };
+                }
 
-                btn.disabled = false;
-                btn.innerText = "Solicitud Enviada ✅";
-            } catch (error) {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = "Solicitud Enviada ✅";
+                }
+            } catch (error: any) {
                 console.error(error);
                 alert(error.message || "Hubo un error. Intenta nuevamente.");
-                btn.disabled = false;
-                btn.innerText = "Enviar Solicitud a Expertos 📨";
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = "Enviar Solicitud a Expertos 📨";
+                }
             }
         });
     }); // End of astro:page-load

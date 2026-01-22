@@ -215,6 +215,20 @@ export default function ProfileReviews({ idProfesional }) {
                                     <span className="text-xs text-gray-400">{fecha}</span>
                                 </div>
                                 <p className="mt-2 text-gray-600 text-sm whitespace-pre-wrap">{r.comentario}</p>
+
+                                {r.fotoTrabajo && (
+                                    <div className="mt-4 group relative inline-block overflow-hidden rounded-2xl border border-gray-100 shadow-sm cursor-zoom-in">
+                                        <img
+                                            src={r.fotoTrabajo}
+                                            className="max-h-60 w-auto object-cover transition-transform duration-500 group-hover:scale-105"
+                                            alt="Foto del trabajo realizado"
+                                            onClick={() => window.open(r.fotoTrabajo, '_blank')}
+                                        />
+                                        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <span className="bg-white/90 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-800 shadow-sm">Ver mas grande</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         );
                     })
