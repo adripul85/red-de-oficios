@@ -5,6 +5,7 @@ import IAFloatingButton from "../components/IAFloatingButton.astro";
 import "../styles/global.css";
 import GlobalBanner from "../components/GlobalBanner.astro";
 import BottomNav from "../components/BottomNav.astro";
+import AiAssistant from "../components/AiAssistant.astro";
 import { ClientRouter } from "astro:transitions";
 
 interface Props {
@@ -116,6 +117,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 			<slot />
 		</main>
 		{!hideFooter && <Footer />}
+		<AiAssistant />
 		<BottomNav currentPath={Astro.url.pathname} />
 
 		<!-- Splash Screen Script -->

@@ -109,26 +109,6 @@ if (!trendingTags || trendingTags.length === 0) {
           </span>
         </label>
 
-        <!-- Toggle IA moderno -->
-        <label class="flex items-center gap-3 cursor-pointer group">
-          <div class="relative">
-            <input type="checkbox" id="check-ia" class="sr-only peer" />
-            <div
-              class="w-14 h-8 bg-slate-200 rounded-full peer-checked:bg-purple-600 transition-all duration-300 shadow-inner"
-            >
-            </div>
-            <div
-              class="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6 shadow-md"
-            >
-            </div>
-          </div>
-          <span
-            class="text-sm font-bold text-slate-700 group-hover:text-purple-600 transition flex items-center gap-1"
-          >
-            ✨ Búsqueda con IA
-          </span>
-        </label>
-
         <!-- Tendencias -->
         <div class="flex items-center gap-2 flex-wrap">
           <span class="text-sm text-slate-500 font-medium">Tendencias:</span>
@@ -187,17 +167,6 @@ if (!trendingTags || trendingTags.length === 0) {
           hidden.value = "24hs";
           // @ts-ignore
           form.appendChild(hidden);
-        }
-
-        // Agregar parámetro IA si está marcado
-        // @ts-ignore
-        if (document.getElementById("check-ia")?.checked) {
-          const hiddenIA = document.createElement("input");
-          hiddenIA.type = "hidden";
-          hiddenIA.name = "ai";
-          hiddenIA.value = "true";
-          // @ts-ignore
-          form.appendChild(hiddenIA);
         }
 
         // Logging de búsqueda para tendencias

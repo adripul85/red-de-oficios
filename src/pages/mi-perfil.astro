@@ -942,14 +942,16 @@ import Layout from "../layouts/Layout.astro";
                                     <label
                                         class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
                                         >Instagram</label
-                                    ><div class="flex">
+                                    >
+                                    <div class="flex">
                                         <span
-                                            class="bg-gray-100 border border-r-0 p-2 rounded-l text-gray-500"
-                                            >@</span
-                                        ><input
+                                            class="bg-gray-100 border border-r-0 border-slate-200 p-3 rounded-l-lg text-gray-500 flex items-center justify-center min-w-[40px]"
+                                            >📸</span
+                                        >
+                                        <input
                                             type="text"
                                             id="instagram"
-                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700 rounded-l-none"
+                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg rounded-l-none px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
                                             placeholder="usuario"
                                         />
                                     </div>
@@ -957,13 +959,92 @@ import Layout from "../layouts/Layout.astro";
                                 <div>
                                     <label
                                         class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
-                                        >Web</label
-                                    ><input
-                                        type="url"
-                                        id="website"
-                                        class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
-                                        placeholder="https://"
-                                    />
+                                        >Facebook</label
+                                    >
+                                    <div class="flex">
+                                        <span
+                                            class="bg-gray-100 border border-r-0 border-slate-200 p-3 rounded-l-lg text-gray-500 flex items-center justify-center min-w-[40px]"
+                                            >f</span
+                                        >
+                                        <input
+                                            type="text"
+                                            id="facebook"
+                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg rounded-l-none px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
+                                            placeholder="usuario o URL"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
+                                        >TikTok</label
+                                    >
+                                    <div class="flex">
+                                        <span
+                                            class="bg-gray-100 border border-r-0 border-slate-200 p-3 rounded-l-lg text-gray-500 flex items-center justify-center min-w-[40px]"
+                                            >🎵</span
+                                        >
+                                        <input
+                                            type="text"
+                                            id="tiktok"
+                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg rounded-l-none px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
+                                            placeholder="@usuario"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
+                                        >YouTube</label
+                                    >
+                                    <div class="flex">
+                                        <span
+                                            class="bg-gray-100 border border-r-0 border-slate-200 p-3 rounded-l-lg text-gray-500 flex items-center justify-center min-w-[40px]"
+                                            >▶️</span
+                                        >
+                                        <input
+                                            type="text"
+                                            id="youtube"
+                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg rounded-l-none px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
+                                            placeholder="Canal o URL"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
+                                        >Twitch / Kick</label
+                                    >
+                                    <div class="flex">
+                                        <span
+                                            class="bg-gray-100 border border-r-0 border-slate-200 p-3 rounded-l-lg text-gray-500 flex items-center justify-center min-w-[40px]"
+                                            >👾</span
+                                        >
+                                        <input
+                                            type="text"
+                                            id="twitch"
+                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg rounded-l-none px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
+                                            placeholder="usuario"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
+                                        >Sitio Web</label
+                                    >
+                                    <div class="flex">
+                                        <span
+                                            class="bg-gray-100 border border-r-0 border-slate-200 p-3 rounded-l-lg text-gray-500 flex items-center justify-center min-w-[40px]"
+                                            >🌐</span
+                                        >
+                                        <input
+                                            type="url"
+                                            id="website"
+                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg rounded-l-none px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
+                                            placeholder="https://..."
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2016,7 +2097,6 @@ import Layout from "../layouts/Layout.astro";
             setVal("tiktok", data.redes?.tiktok);
             setVal("youtube", data.redes?.youtube);
             setVal("twitch", data.redes?.twitch);
-            setVal("kick", data.redes?.kick);
             setVal("website", data.redes?.web);
             setVal("slug_custom", data.slug); // Cargar slug
             // @ts-ignore
@@ -2236,8 +2316,6 @@ import Layout from "../layouts/Layout.astro";
                     youtube: document.getElementById("youtube").value,
                     // @ts-ignore
                     twitch: document.getElementById("twitch").value,
-                    // @ts-ignore
-                    kick: document.getElementById("kick").value,
                     // @ts-ignore
                     web: document.getElementById("website").value,
                 },
