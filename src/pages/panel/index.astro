@@ -1522,36 +1522,6 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 try {
                     const docSnap = await getDoc(doc(db, "clientes", user.uid));
                     if (!docSnap.exists()) {
-                        window.location.href = "/mi-cuenta";
-                        return;
-                    }
-                    const data = docSnap.data();
-                    if (data.rol !== "profesional" && data.rol !== "experto") {
-                        console.warn(
-                            "⛔ [AUTH] Acceso denegado: Usuario no profesional.",
-                        );
-                        window.location.href = "/mi-cuenta";
-                    } else {
-                        // Update UI for Pro
-                        if (userNameEl)
-                            userNameEl.innerText = data.nombre || "Usuario";
-                        if (userAvatarEl && data.foto)
-                            userAvatarEl.src = data.foto;
-                        if (userPlanLabel && data.rol === "experto") {
-                            userPlanLabel.innerText = "Plan Experto ⚡";
-                            userPlanLabel.classList.add("text-orange-500");
-                        }
-                    }
-                } catch (error) {
-                    console.error("Error verificando rol:", error);
-                }
-            };
-
-            // 0. CHECK ROLE PROTECTION (CRITICAL)
-            const checkRole = async (user) => {
-                try {
-                    const docSnap = await getDoc(doc(db, "clientes", user.uid));
-                    if (!docSnap.exists()) {
                         // Pro account mismatch? Redirect to ingresa.
                         window.location.href = "/ingresar";
                         return;
