@@ -817,7 +817,28 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         // === SISTEMA DE NOTIFICACIONES ===
                         setupNotifications(user.uid);
                     } else {
-                        window.location.href = "/";
+                        // DB returned false for permissions or missing doc
+                        console.error(
+                            "❌ [DASHBOARD] CRITICAL: Profile document not found for UID:",
+                            user.uid,
+                        );
+                        alert(
+                            "Error crítico: No se encuentra tu perfil profesional en la base de datos. UID: " +
+                                user.uid,
+                        );
+                        // Do NOT redirect automatically, let the user see the error.
+                        // window.location.href = "/";
+
+                        // Debug: Check if they exist in Clients?
+                        const clientSpan = await getDoc(
+                            doc(db, "clientes", user.uid),
+                        );
+                        if (clientSpan.exists()) {
+                            alert(
+                                "Tu usuario existe como CLIENTE, no como Profesional. Contacta soporte.",
+                            );
+                            window.location.href = "/mi-cuenta";
+                        }
                     }
                 } catch (error) {
                     console.error("Error cargando perfil:", error);
@@ -1517,51 +1538,6 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 },
             );
 
-            // 0. CHECK ROLE PROTECTION (CRITICAL)
-            const checkRole = async (user) => {
-                try {
-                    const docSnap = await getDoc(doc(db, "clientes", user.uid));
-                    if (!docSnap.exists()) {
-                        // Pro account mismatch? Redirect to ingresa.
-                        window.location.href = "/ingresar";
-                        return;
-                    }
-                    const data = docSnap.data();
-                    if (data.rol !== "profesional" && data.rol !== "experto") {
-                        console.warn(
-                            "⛔ [AUTH] Acceso denegado: Usuario no profesional.",
-                        );
-                        window.location.href = "/mi-cuenta";
-                    } else {
-                        // Update UI for Pro
-                        if (userNameEl)
-                            userNameEl.innerText = data.nombre || "Usuario";
-                        if (userAvatarEl && data.foto)
-                            userAvatarEl.src = data.foto;
-                        if (userPlanLabel && data.rol === "experto") {
-                            userPlanLabel.innerText = "Plan Experto ⚡";
-                            userPlanLabel.classList.add("text-orange-500");
-                        }
-                    }
-                } catch (error) {
-                    console.error("Error verificando rol:", error);
-                }
-            };
-
-            onAuthStateChanged(auth, async (user) => {
-                if (!user) {
-                    window.location.href = "/ingresar";
-                } else {
-                    // Check Role before showing content
-                    await checkRole(user);
-
-                    // ... rest of the logic
-                    currentUser = user;
-                    loadStats(user.uid);
-                    loadNotifications(user.uid);
-                    // ...
-                }
-            });
             // 4. Opportunities Badge Listener (REAL COUNT)
             if (misRubros.length > 0) {
                 try {
@@ -1601,14 +1577,11 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             });
                         },
                         (error) => {
-                            console.error(
-                                "❌ [Panel] Error en listener de badge:",
-                                error,
-                            );
+                            console.error("Error watcher badge:", error);
                         },
                     );
                 } catch (e) {
-                    console.error("Error referencing opportunities badge:", e);
+                    console.error("Error setting up badge listener", e);
                 }
             }
 

@@ -1,7 +1,7 @@
-// DeOficios Pro - Optimized Service Worker v2
-const CACHE_VERSION = 'deoficios-v2';
-const STATIC_CACHE = 'deoficios-static-v2';
-const DYNAMIC_CACHE = 'deoficios-dynamic-v2';
+// DeOficios Pro - Optimized Service Worker v3
+const CACHE_VERSION = 'deoficios-v3';
+const STATIC_CACHE = 'deoficios-static-v3';
+const DYNAMIC_CACHE = 'deoficios-dynamic-v3';
 
 // Assets críticos que se precargan
 const PRECACHE_ASSETS = [
