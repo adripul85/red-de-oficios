@@ -1,0 +1,226 @@
+---
+const { currentPath = "" } = Astro.props;
+
+interface MenuItem {
+    label: string;
+    icon: string;
+    path: string;
+    primary?: boolean;
+    adminOnly?: boolean;
+    authRequired?: boolean;
+}
+
+const menuItems: MenuItem[] = [
+    { label: "Inicio", icon: "🏠", path: "/" },
+    { label: "Buscar", icon: "🔍", path: "/resultados" },
+    { label: "Publicar", icon: "➕", path: "/solicitar", primary: true },
+    { label: "Mapa", icon: "🗺️", path: "/mapa" },
+    { label: "Perfil", icon: "👤", path: "/app/perfil" },
+];
+---
+
+<nav class="bottom-nav-mobile md:hidden">
+    <div class="bottom-nav-container">
+        {
+            menuItems.map((item) => (
+                <a
+                    href={item.path}
+                    class:list={[
+                        "nav-item",
+                        {
+                            active:
+                                currentPath === item.path ||
+                                (item.path !== "/" &&
+                                    currentPath.startsWith(item.path)),
+                        },
+                        { "primary-action": item.primary },
+                        { "auth-item": item.authRequired || item.adminOnly },
+                    ]}
+                    data-admin={item.adminOnly}
+                >
+                    <span
+                        class="icon"
+                        id={item.label === "Perfil" ? "profile-icon" : ""}
+                    >
+                        {item.icon}
+                    </span>
+                    <span
+                        class="label"
+                        id={item.label === "Perfil" ? "profile-label" : ""}
+                    >
+                        {item.label}
+                    </span>
+                </a>
+            ))
+        }
+    </div>
+</nav>
+
+<style>
+    .bottom-nav-mobile {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 70px;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        z-index: 1000;
+        padding-bottom: env(safe-area-inset-bottom);
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .bottom-nav-container {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        height: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 0 10px;
+    }
+
+    .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #64748b;
+        flex: 1;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+
+    .nav-item .icon {
+        font-size: 1.5rem;
+        margin-bottom: 2px;
+        transition: transform 0.2s;
+    }
+
+    .nav-item .label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    .nav-item.active {
+        color: #ea580c;
+    }
+
+    .nav-item.active .icon {
+        transform: translateY(-2px);
+    }
+
+    /* Primary Center Button (App Style) */
+    .nav-item.primary-action {
+        background: #ea580c;
+        color: white;
+        height: 50px;
+        width: 50px;
+        min-width: 50px;
+        border-radius: 18px;
+        margin-bottom: 15px;
+        box-shadow: 0 8px 15px rgba(234, 88, 12, 0.3);
+        flex: none;
+    }
+
+    .nav-item.primary-action .icon {
+        margin-bottom: 0;
+        font-size: 1.4rem;
+    }
+
+    .nav-item.primary-action .label {
+        display: none;
+    }
+
+    .nav-item.primary-action:active {
+        transform: scale(0.9);
+    }
+
+    /* Auth handling (handled via client script in future or simple CSS) */
+    .auth-item {
+        /* Initially visible, could be hidden/shown via JS toggle */
+    }
+
+    /* Haptic effect simulator */
+    .nav-item:active {
+        opacity: 0.7;
+    }
+</style>
+
+<script>
+    import { auth, db } from "../firebase/client";
+    import { onAuthStateChanged } from "firebase/auth";
+    import { doc, getDoc } from "firebase/firestore";
+
+    function updateBottomNavVisibility() {
+        onAuthStateChanged(auth, async (user) => {
+            const authItems = document.querySelectorAll(".nav-item.auth-item");
+            const adminItems = document.querySelectorAll(
+                '.nav-item[data-admin="true"]',
+            );
+            const profileIcon = document.getElementById("profile-icon");
+            const profileLabel = document.getElementById("profile-label");
+
+            if (user) {
+                try {
+                    // 1. Fetch User Data for Avatar (Parallel Check)
+                    let avatarSrc = null;
+
+                    // Check Cache first
+                    const cachedAvatar = localStorage.getItem(
+                        `userAvatar_${user.uid}`,
+                    );
+                    if (cachedAvatar) {
+                        avatarSrc = cachedAvatar;
+                    } else {
+                        // Check Pro collection
+                        const proRef = doc(db, "profesionales", user.uid);
+                        const proSnap = await getDoc(proRef);
+
+                        if (proSnap.exists()) {
+                            avatarSrc = proSnap.data().foto || null;
+                        } else {
+                            // Check Client collection
+                            const clientRef = doc(db, "clientes", user.uid);
+                            const clientSnap = await getDoc(clientRef);
+                            if (clientSnap.exists()) {
+                                avatarSrc = clientSnap.data().foto || null;
+                            }
+                        }
+
+                        // Save to cache if found
+                        if (avatarSrc)
+                            localStorage.setItem(
+                                `userAvatar_${user.uid}`,
+                                avatarSrc,
+                            );
+                    }
+
+                    // Update UI with Avatar
+                    if (avatarSrc && profileIcon) {
+                        profileIcon.innerHTML = `<img src="${avatarSrc}" alt="Perfil" style="width:24px;height:24px;border-radius:50%;object-fit:cover;">`;
+                    }
+
+                    // 2. Admin Check
+                    /* ... (Existing Admin Logic if needed, or simplified) ... */
+                    // We might remove admin logic if "Mensajes" is gone,
+                    // BUT "Mensajes" might be accessed via other ways, currently BottomNav has "Mapa".
+                    // The prompt removed "Mensajes" from BottomNav, so admin check here is less critical
+                    // unless we have other admin-only items in future.
+                } catch (error) {
+                    console.error("Error BottomNav:", error);
+                }
+            } else {
+                // Reset to default icon if logged out
+                if (profileIcon) profileIcon.innerText = "👤";
+            }
+        });
+    }
+
+    updateBottomNavVisibility();
+</script>

@@ -293,7 +293,7 @@ import Layout from "../layouts/Layout.astro";
         email,
         password,
       );
-      window.location.href = "/panel";
+      window.location.href = "/mi-perfil";
     } catch (error) {
       console.error(error);
       alert("Error al ingresar: " + error.message);
@@ -331,7 +331,7 @@ import Layout from "../layouts/Layout.astro";
           if (data.rol === "cliente") {
             window.location.href = "/mi-cuenta";
           } else {
-            window.location.href = "/panel";
+            window.location.href = "/mi-perfil";
           }
         }
       }

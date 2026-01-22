@@ -83,10 +83,11 @@ import Layout from "../../layouts/Layout.astro";
             <a href="/foro" class="admin-btn">
                 <span class="btn-icon">🏘️</span>
                 <span class="btn-label">Foro</span>
-                <a href="/admin/validaciones" class="admin-btn">
-                    <span class="btn-icon">✅</span>
-                    <span class="btn-label">Validaciones</span>
-                </a>
+            </a>
+
+            <a href="/admin/validaciones" class="admin-btn">
+                <span class="btn-icon">✅</span>
+                <span class="btn-label">Validaciones</span>
             </a>
 
             <a
@@ -109,16 +110,15 @@ import Layout from "../../layouts/Layout.astro";
         getDoc,
         collection,
         getCountFromServer,
+        query,
+        where,
+        onSnapshot,
     } from "firebase/firestore";
 
     document.addEventListener("astro:page-load", () => {
         console.log("🚀 [ADMIN] Página cargada/navegada");
 
-        const staffName = document.getElementById("staff-name");
-        const staffRole = document.getElementById("staff-role");
-        const financeCard = document.getElementById("finance-card");
-        const adminSettings = document.getElementById("admin-settings");
-        const countUsers = document.getElementById("count-users");
+        let unsubscribe: (() => void) | null = null;
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -145,13 +145,24 @@ import Layout from "../../layouts/Layout.astro";
                         return;
                     }
 
-                    staffName.textContent = data.nombre || user.email;
-                    staffRole.textContent = rolLimpio.toUpperCase();
+                    const staffName = document.getElementById("staff-name");
+                    const staffRole = document.getElementById("staff-role");
+                    const financeCard = document.getElementById("finance-card");
+                    const adminSettings =
+                        document.getElementById("admin-settings");
+                    const countUsers = document.getElementById("count-users");
+
+                    if (staffName)
+                        staffName.textContent = data.nombre || user.email;
+                    if (staffRole)
+                        staffRole.textContent = rolLimpio.toUpperCase();
 
                     if (rolLimpio === "admin") {
-                        financeCard.classList.remove("hidden");
-                        adminSettings.classList.remove("hidden");
-                        if (adminSettings) adminSettings.style.display = "flex";
+                        if (financeCard) financeCard.classList.remove("hidden");
+                        if (adminSettings) {
+                            adminSettings.classList.remove("hidden");
+                            adminSettings.style.display = "flex";
+                        }
 
                         // Mostrar botón de Finanzas para admin
                         const adminFinanzas =
@@ -161,14 +172,50 @@ import Layout from "../../layouts/Layout.astro";
                             adminFinanzas.style.display = "flex";
                         }
                     } else {
-                        staffRole.style.background = "#dbeafe";
-                        staffRole.style.color = "#1e40af";
+                        if (staffRole) {
+                            staffRole.style.background = "#dbeafe";
+                            staffRole.style.color = "#1e40af";
+                        }
                     }
 
                     // Stats
                     const coll = collection(db, "profesionales");
-                    const snapshot = await getCountFromServer(coll);
-                    countUsers.textContent = snapshot.data().count.toString();
+                    const snapshotCount = await getCountFromServer(coll);
+                    if (countUsers)
+                        countUsers.textContent = snapshotCount
+                            .data()
+                            .count.toString();
+
+                    // 🔔 Badge for Validations (Real-time)
+                    const validationsBtn = document.querySelector(
+                        'a[href="/admin/validaciones"]',
+                    );
+                    if (validationsBtn) {
+                        const qValidations = query(
+                            collection(db, "profesionales"),
+                            where("validacion_estado", "==", "pendiente"),
+                        );
+                        unsubscribe = onSnapshot(qValidations, (snapshot) => {
+                            const count = snapshot.size;
+                            // @ts-ignore
+                            let badge =
+                                validationsBtn.querySelector(".badge-notify");
+                            if (count > 0) {
+                                if (!badge) {
+                                    badge = document.createElement("span");
+                                    badge.className = "badge-notify";
+                                    validationsBtn.appendChild(badge);
+                                }
+                                // @ts-ignore
+                                badge.innerText =
+                                    count > 9 ? "+9" : count.toString();
+                                // @ts-ignore
+                                badge.style.display = "flex";
+                                // @ts-ignore
+                                badge.style.display = "none";
+                            }
+                        });
+                    }
                 } catch (e) {
                     console.error("Error admin", e);
                 }
@@ -176,6 +223,15 @@ import Layout from "../../layouts/Layout.astro";
                 window.location.href = "/ingresar";
             }
         });
+
+        // Cleanup on page transition
+        document.addEventListener(
+            "astro:before-preparation",
+            () => {
+                if (unsubscribe) unsubscribe();
+            },
+            { once: true },
+        );
 
         document
             .getElementById("btn-logout-admin")
@@ -327,6 +383,42 @@ import Layout from "../../layouts/Layout.astro";
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         transition: all 0.2s ease;
         height: 140px; /* Altura fija para uniformidad */
+        position: relative;
+    }
+
+    .badge-notify {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        background: #ef4444;
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: bold;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        animation: pulse-ring 2s infinite;
+        z-index: 10;
+    }
+
+    @keyframes pulse-ring {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        }
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+        }
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+        }
     }
 
     .admin-btn:hover {

@@ -44,6 +44,9 @@ export const POST: APIRoute = async ({ request }) => {
                 } else if (description.toLowerCase().includes("experto")) {
                     nuevoPlan = "experto";
                     mesesASumar = 6;
+                } else if (description.toLowerCase().includes("profesional")) {
+                    nuevoPlan = "profesional";
+                    mesesASumar = 3;
                 }
 
                 // Calcular fecha de vencimiento

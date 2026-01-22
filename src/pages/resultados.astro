@@ -4,64 +4,88 @@ import { db } from "../firebase/client";
 import { collection, getDocs } from "firebase/firestore";
 import { LOCATIONS } from "../data/locations";
 import { CATEGORIES } from "../data/categories";
+import { findProfessionalsByDescription } from "../firebase/semanticSearch";
 
 // 1. OBTENER PARÁMETROS
 const { searchParams } = Astro.url;
 const q = searchParams.get("q") || "";
+const useAI = searchParams.get("ai") === "true";
 // ... (rest of imports logic is fine, just adding LOCATIONS)
 
 // 2. BUSCAR EN FIREBASE
-const snapshot = await getDocs(collection(db, "profesionales"));
-const todos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+let resultadosFinales: any[] = [];
+let aiResults: any[] = [];
+
+if (useAI && q && q !== "todos") {
+  try {
+    console.log("🤖 [AI SEARCH] Intentando búsqueda semántica para:", q);
+    aiResults = await findProfessionalsByDescription(q);
+    resultadosFinales = aiResults;
+  } catch (error) {
+    console.error("❌ [AI SEARCH] Error:", error);
+    // Fallback a búsqueda normal si falla la IA
+    const snapshot = await getDocs(collection(db, "profesionales"));
+    const todos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    resultadosFinales = filterNormal(todos, q);
+  }
+} else {
+  const snapshot = await getDocs(collection(db, "profesionales"));
+  const todos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  resultadosFinales = filterNormal(todos, q);
+}
+
+function filterNormal(todos: any[], queryText: string) {
+  return todos.filter((pro) => {
+    const termino = queryText.toLowerCase().trim();
+
+    // EXCLUIR STAFF
+    const esStaff =
+      pro.rol === "admin" || pro.rol === "moderador" || pro.rol === "moderator";
+    if (esStaff) return false;
+
+    if (termino === "" || termino === "todos") {
+      return true;
+    }
+
+    const palabras = termino.split(/\s+/).filter((p) => p.length > 0);
+    const matches = palabras.map((palabra) => {
+      const matchNombre = pro.nombre?.toLowerCase().includes(palabra);
+      const rubros = [pro.rubro_principal, ...(pro.rubros || [])].filter(
+        Boolean,
+      );
+      const matchRubro = rubros.some((r) => r.toLowerCase().includes(palabra));
+      const zonaLower = pro.zona?.toLowerCase() || "";
+      const matchZona = zonaLower.includes(palabra);
+      const matchTags = pro.etiquetas?.some((t: string) =>
+        t.toLowerCase().includes(palabra),
+      );
+      return matchNombre || matchRubro || matchZona || matchTags;
+    });
+    return matches.some((m) => m === true);
+  });
+}
 
 import { calculateRankingScore } from "../utils/ranking";
 
-// 3. FILTRADO DE TEXTO (LÓGICA MEJORADA PARA BÚSQUEDA COMBINADA)
-const resultados = todos.filter((pro) => {
-  const termino = q.toLowerCase().trim();
-
-  // EXCLUIR STAFF
-  const esStaff =
-    pro.rol === "admin" || pro.rol === "moderador" || pro.rol === "moderator";
-  if (esStaff) return false;
-
-  if (termino === "" || termino === "todos") {
-    return true;
-  }
-
-  // Dividir el término en palabras para búsqueda combinada
-  const palabras = termino.split(/\s+/).filter((p) => p.length > 0);
-
-  // Para cada palabra, verificar si coincide con algún campo
-  const matches = palabras.map((palabra) => {
-    const matchNombre = pro.nombre?.toLowerCase().includes(palabra);
-
-    // Support for both single rubro and multiple rubros array
-    const rubros = [pro.rubro_principal, ...(pro.rubros || [])].filter(Boolean);
-    const matchRubro = rubros.some((r) => r.toLowerCase().includes(palabra));
-
-    const zonaLower = pro.zona?.toLowerCase() || "";
-    const matchZona = zonaLower.includes(palabra);
-    const matchTags = pro.etiquetas?.some((t) =>
-      t.toLowerCase().includes(palabra),
-    );
-
-    return matchNombre || matchRubro || matchZona || matchTags;
-  });
-
-  // Retornar true si AL MENOS UNA palabra tiene match (Búsqueda menos estricta / OR)
-  return matches.some((m) => m === true);
+// 3. RECALCULAR SCORE Y ORDENAR
+const resultadosConScore = resultadosFinales.map((p) => {
+  // Si viene de IA, puede que tenga un campo de similitud
+  const similarity = p.similarity || 0;
+  return {
+    ...p,
+    realScore: calculateRankingScore(p),
+    similarity: similarity,
+  };
 });
 
-// Recalcular Score para cada resultado (On the fly for now, later should be in DB)
-const resultadosConScore = resultados.map((p) => ({
-  ...p,
-  realScore: calculateRankingScore(p),
-}));
+// Si es IA, priorizar similitud. Si no, Ranking Score.
+if (useAI && aiResults.length > 0) {
+  resultadosConScore.sort((a, b) => b.similarity - a.similarity);
+} else {
+  resultadosConScore.sort((a, b) => b.realScore - a.realScore);
+}
 
-resultadosConScore.sort((a, b) => b.realScore - a.realScore);
-
-const resultadosFinales = resultadosConScore;
+const resultadosVisuales = resultadosConScore;
 ---
 
 <Layout
@@ -106,9 +130,30 @@ const resultadosFinales = resultadosConScore;
         {q === "todos" ? "Todos los Profesionales" : q}
       </h1>
       <p class="text-gray-500 font-medium tracking-tight">
-        {resultados.length} profesionales certificados disponibles
+        {resultadosVisuales.length} profesionales certificados disponibles
       </p>
-      <div class="flex gap-3 mt-8 overflow-x-auto pb-2 scrollbar-hide">
+
+      <!-- SEARCH BAR (Mobile Friendly) -->
+      <form
+        action="/resultados"
+        method="GET"
+        class="mt-6 mb-4 relative w-full max-w-lg"
+      >
+        <input
+          type="text"
+          name="q"
+          value={q !== "todos" ? q : ""}
+          placeholder="¿Qué estás buscando? (Ej: Electricista, Gasista...)"
+          class="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-100 bg-gray-50 text-gray-800 font-bold focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-100 outline-none transition-all"
+        />
+        <span
+          class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined"
+          >search</span
+        >
+        <button type="submit" class="hidden">Buscar</button>
+      </form>
+
+      <div class="flex gap-3 mt-4 overflow-x-auto pb-2 scrollbar-hide">
         <div class="relative w-full max-w-xs">
           <select
             class="filter-rubro w-full appearance-none bg-white border-2 border-secondary-gray px-5 py-2.5 rounded-full text-xs font-black tracking-widest uppercase text-gray-600 hover:border-primary focus:border-primary focus:ring-0 outline-none cursor-pointer transition-all pr-10"
@@ -281,7 +326,7 @@ const resultadosFinales = resultadosConScore;
         id="cards-container"
       >
         {
-          resultados.map((p: any) => (
+          resultadosVisuales.map((p: any) => (
             <div
               class="card-professional-item bg-slate-50 rounded-2xl soft-shadow card-hover border border-transparent hover:border-primary/10 flex flex-col p-6 h-full relative"
               data-verified={p.verificado ? "true" : "false"}
@@ -353,6 +398,14 @@ const resultadosFinales = resultadosConScore;
                       24hs
                     </span>
                   )}
+                  {useAI && p.similarity > 0 && (
+                    <span class="text-[10px] bg-purple-50 text-purple-600 px-3 py-1.5 rounded-md font-bold uppercase tracking-widest flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[14px]">
+                        auto_awesome
+                      </span>
+                      {Math.round(p.similarity * 100)}% Coincidencia
+                    </span>
+                  )}
                 </div>
               </div>
               <div class="flex items-center justify-between pt-5 border-t border-gray-100 mt-auto">
@@ -388,7 +441,7 @@ const resultadosFinales = resultadosConScore;
       </div>
 
       {
-        resultados.length === 0 && (
+        resultadosVisuales.length === 0 && (
           <div class="w-full text-center py-20 col-span-3">
             <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
               <span class="material-symbols-outlined text-4xl text-gray-300">
@@ -421,7 +474,7 @@ const resultadosFinales = resultadosConScore;
       Cargar más resultados
     </button>
     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-      Mostrando {resultados.length} profesionales
+      Mostrando {resultadosVisuales.length} profesionales
     </p>
   </div>
 </Layout>

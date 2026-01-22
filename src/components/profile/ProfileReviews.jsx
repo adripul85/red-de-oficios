@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db, auth } from '../../firebase/client';
+import { db, auth, storage } from '../../firebase/client';
 import {
     collection,
     query,
@@ -11,6 +11,7 @@ import {
     serverTimestamp
 } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export default function ProfileReviews({ idProfesional }) {
     const [currentUser, setCurrentUser] = useState(null);
@@ -20,6 +21,8 @@ export default function ProfileReviews({ idProfesional }) {
     const [comment, setComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [hoverRating, setHoverRating] = useState(0);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
 
     // 1. Detectar Auth y Cargar Reseñas
     useEffect(() => {
@@ -69,6 +72,15 @@ export default function ProfileReviews({ idProfesional }) {
         setIsSubmitting(true);
 
         try {
+            let fotoTrabajo = null;
+
+            // 1. Upload Photo if selected
+            if (selectedFile) {
+                const storageRef = ref(storage, `resenas/${idProfesional}_${Date.now()}_${selectedFile.name}`);
+                const uploadResult = await uploadBytes(storageRef, selectedFile);
+                fotoTrabajo = await getDownloadURL(uploadResult.ref);
+            }
+
             await runTransaction(db, async (transaction) => {
                 const proRef = doc(db, "profesionales", idProfesional);
                 const proDoc = await transaction.get(proRef);
@@ -88,6 +100,7 @@ export default function ProfileReviews({ idProfesional }) {
                     clienteFoto: currentUser.foto || null,
                     estrellas: rating,
                     comentario: comment,
+                    fotoTrabajo: fotoTrabajo, // Save photo URL
                     fecha: serverTimestamp(),
                 });
 
@@ -102,6 +115,8 @@ export default function ProfileReviews({ idProfesional }) {
             alert("¡Gracias! Tu opinión ayuda a la comunidad.");
             setComment("");
             setRating(0);
+            setSelectedFile(null);
+            setPreviewUrl(null);
             loadReviews(); // Recargar lista
         } catch (error) {
             console.error(error);
@@ -178,6 +193,51 @@ export default function ProfileReviews({ idProfesional }) {
                             rows={3}
                             placeholder="¿Cumplió con lo pactado? ¿Fue puntual? Cuéntanos..."
                         />
+
+                        {/* PHOTO UPLOAD UI */}
+                        <div className="mb-6">
+                            <label className="block font-bold mb-3 text-gray-700 text-sm flex items-center gap-2">
+                                📸 Evidencia (Opcional):
+                                <span className="text-xs font-normal text-gray-400 italic">Muestra el trabajo realizado</span>
+                            </label>
+
+                            <div className="flex items-center gap-4">
+                                <label className="flex flex-col items-center justify-center w-24 h-24 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all group overflow-hidden">
+                                    <div className="flex flex-col items-center justify-center">
+                                        <span className="text-3xl text-gray-300 group-hover:text-blue-500 transition-colors">+</span>
+                                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Subir Foto</span>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files[0];
+                                            if (file) {
+                                                setSelectedFile(file);
+                                                setPreviewUrl(URL.createObjectURL(file));
+                                            }
+                                        }}
+                                    />
+                                </label>
+
+                                {previewUrl && (
+                                    <div className="relative w-24 h-24 group animate-in zoom-in duration-300">
+                                        <img src={previewUrl} className="w-full h-full object-cover rounded-2xl shadow-sm border-2 border-blue-100" />
+                                        <button
+                                            onClick={() => {
+                                                setSelectedFile(null);
+                                                setPreviewUrl(null);
+                                            }}
+                                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-lg hover:bg-red-600 transition-colors active:scale-90"
+                                            title="Eliminar foto"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
 
                         <button
                             onClick={handleSubmit}

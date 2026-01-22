@@ -14,12 +14,15 @@ service cloud.firestore {
     
     
     // Verifica si es Admin o Moderador leyendo su perfil de profesional
-    // NOTA: Deshabilitado temporalmente para evitar problemas de permisos recursivos
     function isStaff() {
-       return false; // Temporalmente deshabilitado
-       // return isSignedIn() && (
-       //   get(/databases/$(database)/documents/profesionales/$(request.auth.uid)).data.rol in ['admin', 'moderador', 'moderator']
-       // );
+       return isSignedIn() && (
+         request.auth.uid == 'oZ6sEtoOHhXGnOlrK9v2LssFDex2' ||
+         exists(/databases/$(database)/documents/profesionales/$(request.auth.uid)) &&
+         (
+           get(/databases/$(database)/documents/profesionales/$(request.auth.uid)).data.get('rol', 'profesional').lower() in ['admin', 'moderador', 'moderator', 'administrador'] ||
+           get(/databases/$(database)/documents/profesionales/$(request.auth.uid)).data.get('role', 'profesional').lower() in ['admin', 'moderador', 'moderator', 'administrador']
+         )
+       );
     }
 
     // --- 1. PERFILES DE PROFESIONALES ---

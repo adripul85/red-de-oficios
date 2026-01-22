@@ -4,6 +4,7 @@ import Footer from "../components/Footer.astro";
 import IAFloatingButton from "../components/IAFloatingButton.astro";
 import "../styles/global.css";
 import GlobalBanner from "../components/GlobalBanner.astro";
+import BottomNav from "../components/BottomNav.astro";
 import { ClientRouter } from "astro:transitions";
 
 interface Props {
@@ -30,18 +31,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 <!doctype html>
 <html lang="es">
 	<head>
-		<script is:inline>
-			// DARK MODE INIT - Prevents FOUC
-			if (
-				localStorage.theme === "dark" ||
-				(!("theme" in localStorage) &&
-					window.matchMedia("(prefers-color-scheme: dark)").matches)
-			) {
-				document.documentElement.classList.add("dark");
-			} else {
-				document.documentElement.classList.remove("dark");
-			}
-		</script>
 		<!-- Google tag (gtag.js) -->
 		<script
 			async
@@ -110,9 +99,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		<script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
 		></script>
 	</head>
-	<body
-		class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300"
-	>
+	<body class="bg-white text-gray-900 transition-colors duration-300">
 		<GlobalBanner />
 		<!-- PREMIUM SPLASH SCREEN (Apple Music Style) -->
 		<div id="custom-splash-screen">
@@ -125,8 +112,11 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		</div>
 
 		{!hideHeader && <Header />}
-		<slot />
+		<main class="pseudo-app-main">
+			<slot />
+		</main>
 		{!hideFooter && <Footer />}
+		<BottomNav currentPath={Astro.url.pathname} />
 
 		<!-- Splash Screen Script -->
 		<script is:inline>
@@ -255,9 +245,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		font-family: var(--font-body);
 		scroll-behavior: smooth;
 	}
-	html.dark {
-		background-color: #111827; /* gray-900 */
-	}
 	body {
 		margin: 0;
 		min-height: 100vh;
@@ -288,6 +275,24 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		max-width: 100%;
 		height: auto;
 		display: block;
+	}
+
+	/* ========== PSEUDO-APP MOBILE UI ========== */
+	@media (max-width: 768px) {
+		.pseudo-app-main {
+			padding-bottom: 80px; /* Space for BottomNav */
+		}
+
+		/* Mobile-only app feel */
+		.card-app {
+			@apply bg-white rounded-3xl border border-gray-100 shadow-sm p-4 mb-4;
+		}
+
+		/* Smooth transitions for links to feel like App view transitions */
+		a,
+		button {
+			-webkit-tap-highlight-color: transparent;
+		}
 	}
 </style>
 <script>

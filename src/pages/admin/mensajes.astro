@@ -98,6 +98,18 @@ import Layout from "../../layouts/Layout.astro";
     } from "firebase/firestore";
     import { onAuthStateChanged } from "firebase/auth";
 
+    declare global {
+        interface Window {
+            deleteMsg: (id: string) => Promise<void>;
+            toggleReply: (id: string) => void;
+            sendReply: (
+                id: string,
+                email: string,
+                nombre: string,
+            ) => Promise<void>;
+        }
+    }
+
     document.addEventListener("astro:page-load", () => {
         console.log("🚀 [ADMIN-MENSAJES] Página cargada/navegada");
 
@@ -134,9 +146,17 @@ import Layout from "../../layouts/Layout.astro";
                 const userDoc = await getDoc(
                     doc(db, "profesionales", user.uid),
                 );
-                if (!userDoc.exists() || userDoc.data().rol !== "admin") {
+                const dataUser = userDoc.data();
+                const rol = (
+                    dataUser?.rol ||
+                    dataUser?.role ||
+                    ""
+                ).toLowerCase();
+
+                if (!userDoc.exists() || rol !== "admin") {
                     console.error("❌ [ADMIN-MENSAJES] Usuario no es admin");
-                    list.innerHTML = `<div class="text-center p-10 bg-red-50 rounded-xl"><h3 class="text-red-600">⛔ Acceso Denegado</h3><p>No tienes permisos de administrador.</p></div>`;
+                    if (list)
+                        list.innerHTML = `<div class="text-center p-10 bg-red-50 rounded-xl"><h3 class="text-red-600">⛔ Acceso Denegado</h3><p>No tienes permisos de administrador.</p></div>`;
                     return;
                 }
 
@@ -148,6 +168,10 @@ import Layout from "../../layouts/Layout.astro";
                     collection(db, "mensajes_web"),
                     orderBy("fecha", "desc"),
                 );
+
+                // Re-obtener el elemento 'list' aquí para asegurar que referenciamos el nodo actual del DOM en Astro
+                const list = document.getElementById("msg-list");
+
                 const snap = await getDocs(q);
 
                 console.log(
@@ -156,17 +180,20 @@ import Layout from "../../layouts/Layout.astro";
 
                 if (snap.empty) {
                     // @ts-ignore
-                    list.innerHTML = `<div class="text-center p-10 bg-gray-50 rounded-xl"><h3 class="text-gray-600">📭 Sin mensajes</h3><p>No hay mensajes de contacto aún.</p></div>`;
+                    if (list)
+                        list.innerHTML = `<div class="text-center p-10 bg-gray-50 rounded-xl"><h3 class="text-gray-600">📭 Sin mensajes</h3><p>No hay mensajes de contacto aún.</p></div>`;
                     return;
                 }
 
                 // @ts-ignore
-                list.innerHTML = "";
+                if (list) list.innerHTML = "";
                 snap.forEach((d) => {
                     const data = d.data();
+                    const id = d.id;
                     const card = document.createElement("div");
                     card.className =
-                        "bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition";
+                        "bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition card-mensaje";
+                    card.id = `msg-${id}`;
                     card.innerHTML = `
                     <div class="flex justify-between items-start mb-3">
                         <div>
@@ -175,25 +202,116 @@ import Layout from "../../layouts/Layout.astro";
                         </div>
                         <span class="text-xs text-gray-400">${data.fecha ? new Date(data.fecha.seconds * 1000).toLocaleDateString() : "Sin fecha"}</span>
                     </div>
-                    <p class="text-gray-700">${data.mensaje}</p>
+                    <div class="bg-slate-50 p-4 rounded-lg mb-4 italic text-gray-700 border-l-4 border-blue-500">
+                        "${data.mensaje}"
+                    </div>
+                    <div class="flex items-center justify-between gap-4">
+                        <button onclick="window.deleteMsg('${id}')" class="text-red-500 hover:text-red-700 text-sm font-bold transition">🗑️ Eliminar</button>
+                        <button onclick="window.toggleReply('${id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition shadow-sm">✉️ Responder</button>
+                    </div>
+
+                    <!-- REPLY FORM (HIDDEN) -->
+                    <div id="reply-container-${id}" class="mt-4 pt-4 border-t border-gray-100 hidden animate-fade-in">
+                        <textarea id="reply-text-${id}" class="w-full border p-3 rounded-lg text-sm h-32 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Escribe tu respuesta aquí..."></textarea>
+                        <div class="flex justify-end gap-2 mt-2">
+                            <button onclick="window.toggleReply('${id}')" class="text-gray-500 px-3 py-1 text-sm">Cancelar</button>
+                            <button onclick="window.sendReply('${id}', '${data.email}', '${data.nombre}')" id="btn-reply-${id}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition">Enviar Respuesta</button>
+                        </div>
+                    </div>
                 `;
-                    list.appendChild(card);
+                    if (list) list.appendChild(card);
                 });
-            } catch (error) {
+            } catch (error: any) {
                 console.error(
                     "❌ [ADMIN-MENSAJES] Error cargando mensajes:",
                     error,
                 );
-                // @ts-ignore
-                list.innerHTML = `<div class="text-center p-10 bg-red-50 rounded-xl"><h3 class="text-red-600">⚠️ Error</h3><p>${error.message || "Error desconocido"}</p><button onclick="location.reload()" class="bg-blue-600 text-white px-4 py-2 rounded mt-4">Reintentar</button></div>`;
+                // Re-obtener el elemento por seguridad en Astro
+                const listEl = document.getElementById("msg-list");
+                if (listEl)
+                    listEl.innerHTML = `<div class="text-center p-10 bg-red-50 rounded-xl"><h3 class="text-red-600">⚠️ Error de Permisos</h3><p>${error.message || "Error desconocido"}</p><p class="text-xs mt-2 text-gray-500">Asegúrate de tener rol de administrador.</p><button onclick="location.reload()" class="bg-blue-600 text-white px-4 py-2 rounded mt-4">Reintentar</button></div>`;
             }
         }
 
         // @ts-ignore
         window.deleteMsg = async (id) => {
             if (confirm("¿Eliminar este mensaje?")) {
-                await deleteDoc(doc(db, "mensajes_web", id));
-                loadMessages();
+                try {
+                    await deleteDoc(doc(db, "mensajes_web", id));
+                    loadMessages();
+                } catch (e) {
+                    alert("Error eliminando mensaje");
+                }
+            }
+        };
+
+        // @ts-ignore
+        window.toggleReply = (id) => {
+            const container = document.getElementById(`reply-container-${id}`);
+            container?.classList.toggle("hidden");
+        };
+
+        // @ts-ignore
+        window.sendReply = async (id, email, nombre) => {
+            // @ts-ignore
+            const msg = document.getElementById(`reply-text-${id}`).value;
+            const btn = document.getElementById(`btn-reply-${id}`);
+
+            if (msg.length < 10) return alert("La respuesta es muy corta.");
+
+            if (btn) {
+                btn.innerText = "Enviando...";
+                // @ts-ignore
+                btn.disabled = true;
+            }
+
+            try {
+                const response = await fetch("/api/send-email", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        to: email,
+                        subject: `Red de Oficios: Respuesta a tu consulta`,
+                        html: `
+                            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 15px; padding: 30px;">
+                                <h1 style="color: #ea580c;">Hola ${nombre} 👋</h1>
+                                <p style="font-size: 16px; color: #333; line-height: 1.6;">
+                                    Recibimos tu consulta y aquí tienes nuestra respuesta:
+                                </p>
+                                <div style="background: #f9fafb; padding: 20px; border-radius: 10px; font-style: italic; color: #444; border-left: 4px solid #ea580c; margin: 20px 0;">
+                                    "${msg}"
+                                </div>
+                                <p style="font-size: 14px; color: #666;">
+                                    Si tienes más dudas, no dudes en contactarnos nuevamente.
+                                </p>
+                                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                                <p style="font-size: 12px; color: #aaa; text-align: center;">
+                                    © 2026 DeOficios.com.ar
+                                </p>
+                            </div>
+                        `,
+                    }),
+                });
+
+                const res = await response.json();
+                if (res.success) {
+                    alert("✅ Respuesta enviada con éxito");
+                    // Opcionalmente marcar como respondido en la DB o simplemente cerrar
+                    window.toggleReply(id);
+                } else {
+                    alert(
+                        "❌ Error: " +
+                            (res.error?.message || "No se pudo enviar"),
+                    );
+                }
+            } catch (e) {
+                alert("Ocurrió un error inesperado.");
+            } finally {
+                if (btn) {
+                    btn.innerText = "Enviar Respuesta";
+                    // @ts-ignore
+                    btn.disabled = false;
+                }
             }
         };
     }); // End of astro:page-load

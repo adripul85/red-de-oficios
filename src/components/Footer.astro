@@ -42,13 +42,18 @@ const year = new Date().getFullYear();
     </div>
 
     <div class="footer-col">
-      <h4>Soporte</h4>
-      <ul>
-        <li><a href="/faq">Preguntas Frecuentes</a></li>
-        <li><a href="/terminos">Términos y Condiciones</a></li>
-        <li><a href="/privacidad">Política de Privacidad</a></li>
-        <li><a href="/contacto">Contacto</a></li>
-      </ul>
+      <h4>Newsletter</h4>
+      <p class="mb-4">Recibí consejos y novedades en tu email.</p>
+      <form id="newsletter-form" class="newsletter-form">
+        <input
+          type="email"
+          id="newsletter-email"
+          placeholder="tu@email.com"
+          required
+        />
+        <button type="submit">Suscribirme</button>
+      </form>
+      <div id="newsletter-status" class="text-xs mt-2 hidden"></div>
     </div>
   </div>
 
@@ -136,4 +141,80 @@ const year = new Date().getFullYear();
     font-size: 0.9rem;
     color: #6b7280;
   }
+
+  /* Newsletter Styles */
+  .newsletter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .newsletter-form input {
+    background: #374151;
+    border: 1px solid #4b5563;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    outline: none;
+    font-size: 0.9rem;
+  }
+  .newsletter-form button {
+    background: #ea580c;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .newsletter-form button:hover {
+    background: #f97316;
+  }
 </style>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    const form = document.getElementById("newsletter-form");
+    const emailInput = document.getElementById("newsletter-email");
+    const status = document.getElementById("newsletter-status");
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      // @ts-ignore
+      const email = emailInput?.value;
+      if (!email) return;
+
+      const btn = form.querySelector("button");
+      if (btn) btn.disabled = true;
+
+      try {
+        const res = await fetch("/api/newsletter", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+
+        if (status) {
+          status.classList.remove("hidden");
+          if (data.success) {
+            status.textContent = "✅ ¡Gracias por suscribirte!";
+            status.className = "text-xs mt-2 text-green-400";
+            // @ts-ignore
+            form.reset();
+          } else {
+            status.textContent = "❌ " + (data.error || "Ocurrió un error");
+            status.className = "text-xs mt-2 text-red-400";
+          }
+        }
+      } catch (err) {
+        if (status) {
+          status.textContent = "❌ Error de conexión";
+          status.className = "text-xs mt-2 text-red-400";
+        }
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    });
+  });
+</script>

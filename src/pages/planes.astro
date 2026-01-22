@@ -25,7 +25,9 @@ import Layout from "../layouts/Layout.astro";
       </span>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+    <div
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start"
+    >
       <!-- PLAN SEMILLA (FREE) -->
       <div
         class="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300"
@@ -110,6 +112,55 @@ import Layout from "../layouts/Layout.astro";
           data-id="impulso-mensual"
         >
           Elegir Mensual
+        </a>
+      </div>
+
+      <!-- PLAN PROFESIONAL (90 DÍAS) -->
+      <div
+        class="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 relative"
+      >
+        <div class="text-center mb-6 border-b border-gray-100 pb-6">
+          <h3 class="text-xl font-bold text-gray-800 mb-2">⭐ Profesional</h3>
+          <div
+            class="text-4xl font-extrabold text-gray-900 flex justify-center items-start"
+          >
+            <span class="text-xl mt-1 mr-1">$</span>90.000
+            <span class="text-base font-normal text-gray-500 self-end mb-1 ml-1"
+              >/90 días</span
+            >
+          </div>
+          <p class="text-sm text-gray-500 mt-2">
+            Funciones Premium, menor plazo
+          </p>
+        </div>
+        <ul class="space-y-3 mb-8 text-sm text-gray-700">
+          <li class="flex items-start">
+            <span class="mr-2">✅</span> Perfil Premium
+          </li>
+          <li class="flex items-start">
+            <span class="mr-2">✅</span> Hasta 12 fotos
+          </li>
+          <li class="flex items-start">
+            <span class="mr-2">✅</span> Prioridad en Mapa
+          </li>
+          <li class="flex items-start">
+            <span class="mr-2">✅</span> Sello "Verificado Oro"
+          </li>
+          <li class="flex items-start">
+            <span class="mr-2">✅</span> Redes Sociales
+          </li>
+          <li class="flex items-start">
+            <span class="mr-2">✅</span> Panel Pro & Equipo
+          </li>
+        </ul>
+        <a
+          href="#"
+          class="btn-pay block w-full py-3 rounded-xl font-bold text-center border-2 border-orange-500 text-orange-600 hover:bg-orange-50 transition-colors shadow-sm"
+          data-title="Plan Profesional (90 días)"
+          data-price="90000"
+          data-id="profesional-90d"
+        >
+          Elegir Plan
         </a>
       </div>
 
@@ -213,6 +264,9 @@ import Layout from "../layouts/Layout.astro";
               <th class="px-6 py-4 text-center font-bold text-blue-700"
                 >Impulso</th
               >
+              <th class="px-6 py-4 text-center font-bold text-orange-600"
+                >Profesional</th
+              >
               <th class="px-6 py-4 text-center font-bold text-orange-700"
                 >Experto</th
               >
@@ -226,6 +280,9 @@ import Layout from "../layouts/Layout.astro";
                 >$30.000/mes</td
               >
               <td class="px-6 py-4 text-center font-bold text-orange-600"
+                >$90.000/3m</td
+              >
+              <td class="px-6 py-4 text-center font-bold text-orange-700"
                 >$150.000/6m</td
               >
             </tr>
@@ -234,10 +291,12 @@ import Layout from "../layouts/Layout.astro";
               <td class="px-6 py-4 text-center text-gray-400">0</td>
               <td class="px-6 py-4 text-center">Hasta 6</td>
               <td class="px-6 py-4 text-center font-bold">Hasta 12</td>
+              <td class="px-6 py-4 text-center font-bold">Hasta 12</td>
             </tr>
             <tr>
               <td class="px-6 py-4 font-medium">📞 Clicks de contacto</td>
               <td class="px-6 py-4 text-center">20/mes</td>
+              <td class="px-6 py-4 text-center font-bold">Ilimitado</td>
               <td class="px-6 py-4 text-center font-bold">Ilimitado</td>
               <td class="px-6 py-4 text-center font-bold">Ilimitado</td>
             </tr>
@@ -245,6 +304,7 @@ import Layout from "../layouts/Layout.astro";
               <td class="px-6 py-4 font-medium">🗺️ Mapa</td>
               <td class="px-6 py-4 text-center text-gray-400">No aparece</td>
               <td class="px-6 py-4 text-center">✅ Aparece</td>
+              <td class="px-6 py-4 text-center font-bold">🚀 Prioridad</td>
               <td class="px-6 py-4 text-center font-bold"
                 >🚀 Prioridad (pin grande)</td
               >
@@ -253,6 +313,7 @@ import Layout from "../layouts/Layout.astro";
               <td class="px-6 py-4 font-medium">📱 Redes Sociales</td>
               <td class="px-6 py-4 text-center text-gray-400">No</td>
               <td class="px-6 py-4 text-center text-gray-400">No</td>
+              <td class="px-6 py-4 text-center">✅ Sí</td>
               <td class="px-6 py-4 text-center">✅ IG/FB/TikTok</td>
             </tr>
             <tr class="bg-gray-50">
@@ -260,11 +321,15 @@ import Layout from "../layouts/Layout.astro";
               <td class="px-6 py-4 text-center">Perfil básico</td>
               <td class="px-6 py-4 text-center">Sello Estándar</td>
               <td class="px-6 py-4 text-center font-bold">🏆 Verificado Oro</td>
+              <td class="px-6 py-4 text-center font-bold">🏆 Verificado Oro</td>
             </tr>
             <tr>
               <td class="px-6 py-4 font-medium">💼 Panel Pro</td>
               <td class="px-6 py-4 text-center text-gray-400">No</td>
               <td class="px-6 py-4 text-center text-gray-400">No</td>
+              <td class="px-6 py-4 text-center font-bold text-orange-600"
+                >✅ Incluido</td
+              >
               <td class="px-6 py-4 text-center font-bold text-orange-600"
                 >✅ Incluido</td
               >
@@ -276,11 +341,15 @@ import Layout from "../layouts/Layout.astro";
               <td class="px-6 py-4 text-center font-bold text-orange-600"
                 >✅ Incluido</td
               >
+              <td class="px-6 py-4 text-center font-bold text-orange-600"
+                >✅ Incluido</td
+              >
             </tr>
             <tr class="bg-gray-50">
               <td class="px-6 py-4 font-medium">⭐ Destacado</td>
               <td class="px-6 py-4 text-center text-gray-400">No</td>
               <td class="px-6 py-4 text-center text-gray-400">No</td>
+              <td class="px-6 py-4 text-center font-bold">✅ Inicio</td>
               <td class="px-6 py-4 text-center font-bold">✅ Inicio</td>
             </tr>
           </tbody>

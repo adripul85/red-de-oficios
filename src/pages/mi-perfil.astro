@@ -1158,16 +1158,19 @@ import Layout from "../layouts/Layout.astro";
     import { CATEGORIES } from "../data/categories";
 
     // --- 1. HELPERS Y RENDER FUNCTIONS (HOISTING FIX) ---
-    const setVal = (id, v) => {
-        const el = document.getElementById(id);
-        if (el) el.value = v || "";
+    const setVal = (id: string, v: string | number) => {
+        const el = document.getElementById(id) as
+            | HTMLInputElement
+            | HTMLSelectElement
+            | HTMLTextAreaElement;
+        if (el) el.value = String(v || "");
     };
-    const setText = (id, t) => {
+    const setText = (id: string, t: string) => {
         const el = document.getElementById(id);
         if (el) el.innerText = t || "";
     };
-    const setSrc = (id, s) => {
-        const el = document.getElementById(id);
+    const setSrc = (id: string, s: string) => {
+        const el = document.getElementById(id) as HTMLImageElement;
         if (el) el.src = s || "";
     };
 
@@ -1494,22 +1497,22 @@ import Layout from "../layouts/Layout.astro";
 
     // --- 3. ESTADO GLOBAL ---
     /** @type {string | null} */
-    let currentUserUid = null;
+    let currentUserUid: string | null = null;
     /** @type {string} */
-    let userPlan = "semilla";
+    let userPlan: string = "semilla";
     /** @type {any[]} */
-    let userServices = [];
+    let userServices: any[] = [];
     /** @type {string[]} */
-    let selectedRubros = [];
+    let selectedRubros: string[] = [];
     /** @type {string[]} */
-    let selectedZonas = [];
+    let selectedZonas: string[] = [];
     /** @type {string[]} */
-    let userTags = [];
+    let userTags: string[] = [];
     /** @type {any} */
-    let userData = {};
-    let docDniUrl = null;
-    let docAntUrl = null;
-    let isVerified = false;
+    let userData: any = {};
+    let docDniUrl: string | null = null;
+    let docAntUrl: string | null = null;
+    let isVerified: boolean = false;
 
     // --- 4. DURACIONES DE PLANES ---
     /**
@@ -2009,6 +2012,11 @@ import Layout from "../layouts/Layout.astro";
             }
 
             setVal("instagram", data.redes?.instagram);
+            setVal("facebook", data.redes?.facebook);
+            setVal("tiktok", data.redes?.tiktok);
+            setVal("youtube", data.redes?.youtube);
+            setVal("twitch", data.redes?.twitch);
+            setVal("kick", data.redes?.kick);
             setVal("website", data.redes?.web);
             setVal("slug_custom", data.slug); // Cargar slug
             // @ts-ignore
@@ -2220,6 +2228,16 @@ import Layout from "../layouts/Layout.astro";
                 redes: {
                     // @ts-ignore
                     instagram: document.getElementById("instagram").value,
+                    // @ts-ignore
+                    facebook: document.getElementById("facebook").value,
+                    // @ts-ignore
+                    tiktok: document.getElementById("tiktok").value,
+                    // @ts-ignore
+                    youtube: document.getElementById("youtube").value,
+                    // @ts-ignore
+                    twitch: document.getElementById("twitch").value,
+                    // @ts-ignore
+                    kick: document.getElementById("kick").value,
                     // @ts-ignore
                     web: document.getElementById("website").value,
                 },
