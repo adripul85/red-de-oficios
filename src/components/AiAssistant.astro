@@ -196,6 +196,8 @@
 </style>
 
 <script>
+    import { ALL_TRADES, CATEGORIES } from "../data/categories";
+
     const btnToggle = document.getElementById("btn-ai-toggle");
     const btnClose = document.getElementById("btn-close-chat");
     const chatWindow = document.getElementById("ai-chat-window");
@@ -243,7 +245,57 @@
 
     // State Management
     let chatState = "idle"; // idle, waiting_problem, waiting_zone, done
-    let context = { problem: "", zone: "" };
+    let context = { problem: "", zone: "", rubro: "" };
+
+    // Simple keyword mapping
+    function detectRubro(text) {
+        const t = text.toLowerCase();
+        // Priority checks
+        if (
+            t.includes("luz") ||
+            t.includes("enchufe") ||
+            t.includes("cable") ||
+            t.includes("eléctrico")
+        )
+            return "Electricista";
+        if (
+            t.includes("agua") ||
+            t.includes("caño") ||
+            t.includes("gotera") ||
+            t.includes("inodoro")
+        )
+            return "Plomero";
+        if (t.includes("gas") || t.includes("estufa") || t.includes("pérdida"))
+            return "Gasista";
+        if (
+            t.includes("aire") ||
+            t.includes("acondicionado") ||
+            t.includes("climatizador")
+        )
+            return "Aire Acondicionado";
+        if (t.includes("llave") || t.includes("puerta") || t.includes("traba"))
+            return "Cerrajero";
+        if (
+            t.includes("pintar") ||
+            t.includes("pared") ||
+            t.includes("humedad")
+        )
+            return "Pintor";
+        if (t.includes("jardín") || t.includes("pasto") || t.includes("poda"))
+            return "Jardinero";
+        if (
+            t.includes("construir") ||
+            t.includes("ladrillo") ||
+            t.includes("cemento")
+        )
+            return "Albañil";
+
+        // Fallback: Check against all trade names
+        for (const trade of ALL_TRADES) {
+            if (t.includes(trade.toLowerCase())) return trade;
+        }
+        return "";
+    }
 
     // Mock Response Logic
     form?.addEventListener("submit", (e) => {
@@ -257,7 +309,7 @@
 
         // Disable input to prevent race conditions
         input.disabled = true;
-        input.placeholder = "Escribiendo...";
+        input.placeholder = "Procesando...";
 
         // 2. Mock AI Thinking & Response
         showTypingIndicator();
@@ -265,100 +317,88 @@
         setTimeout(() => {
             removeTypingIndicator();
             handleAiResponse(text);
-        }, 1500);
+        }, 1200);
     });
 
-    function handleAiResponse(text: string) {
-        const lowerText = text.toLowerCase();
-
+    function handleAiResponse(text) {
         if (chatState === "idle" || chatState === "waiting_problem") {
-            // Basic Keyword Detection
-            context.problem = text;
+            const detectedValue = detectRubro(text);
 
-            if (
-                lowerText.includes("agua") ||
-                lowerText.includes("gotera") ||
-                lowerText.includes("caño")
-            ) {
-                addAiMessage("Parece ser un problema de **plomería**. 🔧");
-            } else if (
-                lowerText.includes("luz") ||
-                lowerText.includes("enchufe") ||
-                lowerText.includes("cortocircuito")
-            ) {
-                addAiMessage("Entiendo, es un tema **eléctrico**. ⚡");
-            } else if (
-                lowerText.includes("gas") ||
-                lowerText.includes("estufa")
-            ) {
-                addAiMessage("Podría ser algo de **gas**. Es delicado. 🔥");
+            if (detectedValue) {
+                context.rubro = detectedValue;
+                addAiMessage(`Entiendo, necesitás un **${detectedValue}**. 🛠️`);
             } else {
                 addAiMessage(
-                    "Entiendo. Vamos a buscar al experto ideal para esto.",
+                    "Bien. Buscaré al profesional más adecuado para eso.",
                 );
             }
 
-            // Ask for Zone
+            context.problem = text;
+
             setTimeout(() => {
                 showTypingIndicator();
                 setTimeout(() => {
                     removeTypingIndicator();
                     addAiMessage(
-                        "Para buscar cercanía: **¿En qué barrio o zona estás?** 📍",
+                        "Para mostrarte los más cercanos: **¿En qué barrio o ciudad estás?** 📍",
                     );
                     chatState = "waiting_zone";
-
-                    // Re-enable input
                     input.disabled = false;
                     input.placeholder = "Ej: Palermo, Centro...";
                     input.focus();
-                }, 1000);
-            }, 800);
+                }, 800);
+            }, 600);
         } else if (chatState === "waiting_zone") {
             context.zone = text;
             addAiMessage(`Perfecto, buscando en **${text}**... 🔍`);
 
-            // Simulate Search
             setTimeout(() => {
                 showTypingIndicator();
                 setTimeout(() => {
                     removeTypingIndicator();
-                    // Final "Concierge" message
-                    addAiMessage(
-                        "Mmm... mis algoritmos dicen que es un trabajo específico. 🤔",
-                    );
 
-                    setTimeout(() => {
-                        addAiMessage(
-                            "¿Querés que **yo personalmente** te busque a alguien de confianza y te avise por WhatsApp?",
-                        );
+                    const rubroQuery = context.rubro
+                        ? encodeURIComponent(context.rubro)
+                        : "";
+                    const zonaQuery = encodeURIComponent(context.zone);
 
-                        // Add Quick Action Buttons (Mock)
-                        const div = document.createElement("div");
-                        div.className =
-                            "flex gap-2 justify-start mt-2 animate-fade-in pl-11";
-                        div.innerHTML = `
-                            <a href="https://wa.me/?text=Hola%20DeOficios,%20busco%20alguien%20para:%20${encodeURIComponent(context.problem)}%20en%20${encodeURIComponent(context.zone)}" target="_blank" class="bg-green-500 hover:bg-green-600 text-white text-xs px-4 py-2 rounded-full font-bold transition flex items-center gap-1">
-                                <span class="text-white">📱</span> Sí, avisame
-                            </a>
-                         `;
-                        messagesContainer?.appendChild(div);
-                        scrollToBottom();
+                    addAiMessage("¡Listo! Tengo estas opciones para vos:");
 
-                        chatState = "done";
-                    }, 1500);
-                }, 1500);
-            }, 1000);
+                    // Action Buttons
+                    const actionsDiv = document.createElement("div");
+                    actionsDiv.className =
+                        "flex flex-col gap-2 mt-2 animate-fade-in pl-11";
+
+                    let searchUrl = `/resultados?ubicacion=${zonaQuery}`;
+                    if (rubroQuery) searchUrl += `&rubro=${rubroQuery}`;
+
+                    let budgetUrl = `/solicitar?ubicacion=${zonaQuery}`;
+                    if (rubroQuery) budgetUrl += `&rubro=${rubroQuery}`;
+
+                    actionsDiv.innerHTML = `
+                        <a href="${searchUrl}" class="bg-slate-900 hover:bg-slate-800 text-white text-sm px-4 py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 shadow-md">
+                            <span>🔍</span> Ver Profesionales
+                        </a>
+                        <a href="${budgetUrl}" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm px-4 py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 shadow-sm">
+                            <span>📝</span> Pedir Presupuesto
+                        </a>
+                    `;
+                    messagesContainer?.appendChild(actionsDiv);
+                    scrollToBottom();
+
+                    chatState = "done";
+                    input.placeholder = "Búsqueda finalizada";
+                }, 1000);
+            }, 800);
         } else if (chatState === "done") {
-            // Keep disabled or offer reset?
-            input.placeholder = "Chat finalizado";
             addAiMessage(
-                "¡Dale! Hacé click en el botón de arriba y seguimos por WhatsApp. Es más rápido. 😉",
+                "Si necesitás mas ayuda, podés usar los botones de arriba o iniciar una nueva búsqueda recargando la página. 😉",
             );
+            // Optional: reset button logic could go here
         }
     }
 
-    function addUserMessage(text: string) {
+    function addUserMessage(text) {
         const div = document.createElement("div");
         div.className = "flex gap-3 justify-end animate-fade-in";
         div.innerHTML = `
@@ -370,7 +410,7 @@
         scrollToBottom();
     }
 
-    function addAiMessage(text: string) {
+    function addAiMessage(text) {
         const div = document.createElement("div");
         div.className = "flex gap-3 animate-fade-in";
         div.innerHTML = `

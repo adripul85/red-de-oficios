@@ -1053,34 +1053,65 @@ import Layout from "../layouts/Layout.astro";
                             id="tab-galeria"
                             class="tab-content hidden relative"
                         >
+                            <!-- Premium Overlay -->
                             <div
-                                class="premium-overlay hidden absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center"
+                                class="premium-overlay hidden absolute inset-0 bg-white/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-center p-8"
                             >
-                                <div class="text-4xl mb-2">📸</div>
-                                <h3 class="font-bold text-gray-800">
-                                    Galería de Fotos
+                                <span
+                                    class="material-symbols-outlined text-6xl text-orange-500 mb-4"
+                                    >lock_clock</span
+                                >
+                                <h3
+                                    class="font-black text-2xl text-gray-900 mb-2"
+                                >
+                                    Galería Premium
                                 </h3>
-                                <p class="text-sm text-gray-500 mb-4">
-                                    Muestra tus trabajos con un plan superior.
+                                <p class="text-gray-600 mb-6 max-w-sm">
+                                    Desbloquea la capacidad de mostrar tus
+                                    mejores trabajos y atraer clientes de alto
+                                    valor.
                                 </p>
                                 <a
                                     href="/planes"
-                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700"
-                                    >Actualizar</a
+                                    class="bg-gradient-to-r from-orange-600 to-red-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-orange-500/30 transition-all transform hover:scale-105"
                                 >
+                                    Ver Planes
+                                </a>
                             </div>
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="font-bold text-gray-700">
-                                    Portfolio <span
-                                        id="gallery-limit-text"
-                                        class="text-xs text-gray-400 font-normal ml-2"
-                                    ></span>
-                                </h3>
+
+                            <!-- Header actions -->
+                            <div
+                                class="flex flex-col md:flex-row justify-between items-end gap-4 mb-8 border-b border-gray-100 pb-6"
+                            >
+                                <div>
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <span
+                                            class="material-symbols-outlined text-primary text-3xl"
+                                            >photo_library</span
+                                        >
+                                        <h2
+                                            class="text-3xl font-black text-gray-900"
+                                        >
+                                            Galería de Trabajos
+                                        </h2>
+                                    </div>
+                                    <p class="text-gray-500 font-medium">
+                                        Gestiona tu portafolio profesional from. <span
+                                            id="gallery-limit-text"
+                                            class="text-xs font-bold bg-gray-100 px-2 py-1 rounded-full text-gray-600 ml-2"
+                                        ></span>
+                                    </p>
+                                </div>
+
                                 <label
                                     for="input-portfolio"
-                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold cursor-pointer hover:bg-blue-700 shadow-sm flex items-center gap-2"
-                                    >➕ Subir</label
+                                    class="flex cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full h-12 px-6 bg-primary text-white text-base font-bold shadow-lg hover:shadow-primary/30 transition-all transform hover:-translate-y-0.5 active:scale-95"
                                 >
+                                    <span class="material-symbols-outlined"
+                                        >add_circle</span
+                                    >
+                                    <span>Subir Nuevo Trabajo</span>
+                                </label>
                                 <input
                                     type="file"
                                     id="input-portfolio"
@@ -1088,10 +1119,60 @@ import Layout from "../layouts/Layout.astro";
                                     accept="image/*"
                                 />
                             </div>
+
+                            <!-- Filters (Visual only for now) -->
+                            <div class="flex items-center gap-3 flex-wrap mb-8">
+                                <span
+                                    class="text-sm font-bold text-gray-800 mr-2"
+                                    >Filtrar por:</span
+                                >
+                                <button
+                                    type="button"
+                                    class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-primary px-5 text-white text-xs font-bold transition-all shadow-md"
+                                    >Todos</button
+                                >
+                                <button
+                                    type="button"
+                                    class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-white border border-gray-200 px-5 text-gray-600 text-xs font-bold hover:bg-gray-50 transition-all"
+                                    >Recientes</button
+                                >
+                                <button
+                                    type="button"
+                                    class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-white border border-gray-200 px-5 text-gray-600 text-xs font-bold hover:bg-gray-50 transition-all"
+                                    >Antiguos</button
+                                >
+                            </div>
+
+                            <!-- Gallery Grid -->
                             <div
                                 id="gallery-grid"
-                                class="grid grid-cols-2 md:grid-cols-4 gap-3"
+                                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
                             >
+                                <!-- Cards will be injected here via JS -->
+                            </div>
+
+                            <!-- Empty State -->
+                            <div
+                                id="gallery-empty"
+                                class="hidden flex flex-col items-center justify-center py-20 text-center bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200"
+                            >
+                                <div
+                                    class="bg-white p-4 rounded-full shadow-sm mb-4"
+                                >
+                                    <span
+                                        class="material-symbols-outlined text-4xl text-gray-300"
+                                        >add_photo_alternate</span
+                                    >
+                                </div>
+                                <h4
+                                    class="text-lg font-bold text-gray-700 mb-1"
+                                >
+                                    Tu galería está vacía
+                                </h4>
+                                <p class="text-gray-500 text-sm max-w-xs">
+                                    Sube fotos de tus trabajos para aumentar la
+                                    confianza de tus clientes.
+                                </p>
                             </div>
                         </div>
 
@@ -1314,8 +1395,22 @@ import Layout from "../layouts/Layout.astro";
             limitText.style.color = currentCount >= maxPhotos ? "red" : "";
         }
 
-        images.forEach((img) => {
-            grid.innerHTML += `<div class="relative group aspect-square rounded overflow-hidden border"><img src="${img}" class="w-full h-full object-cover"><button type="button" class="absolute top-1 right-1 bg-red-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition shadow-md delete-img-btn" data-url="${img}">🗑️</button></div>`;
+        images.forEach((img, index) => {
+            grid.innerHTML += `
+                <div class="project-card flex flex-col group relative">
+                    <div class="relative w-full aspect-[4/3] overflow-hidden rounded-2xl bg-gray-100 border border-gray-100">
+                        <div class="w-full h-full bg-center bg-no-repeat bg-cover transition-transform duration-500 group-hover:scale-110" style="background-image: url('${img}');"></div>
+                        
+                        <!-- Overlay Actions -->
+                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 p-4">
+                            <button type="button" class="delete-img-btn bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg transform transition hover:scale-105 flex items-center gap-2" data-url="${img}">
+                                <span>🗑️</span> Eliminar
+                            </button>
+                            <span class="text-white/80 text-xs font-medium">Foto #${index + 1}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
         });
         grid.querySelectorAll(".delete-img-btn").forEach((btn) => {
             btn.addEventListener("click", async (e) => {
