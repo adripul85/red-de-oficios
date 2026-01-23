@@ -225,6 +225,12 @@ service cloud.firestore {
       allow read: if isStaff();
     }
 
+    // --- 9. NEWSLETTER ---
+    match /newsletter/{subId} {
+      allow create: if true;
+      allow read, delete: if isStaff();
+    }
+
     // --- ESTA LÍNEA DEBE ESTAR AL FINAL (Bloqueo por defecto) ---
     match /{document=**} { 
       allow read, write: if false; 

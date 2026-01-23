@@ -1489,6 +1489,7 @@ import Layout from "../layouts/Layout.astro";
 
     function updateClickCounter(clicks) {
         const counter = document.getElementById("click-counter");
+        if (!counter) return; // Fix for null error
         if (userPlan !== "semilla") {
             counter.classList.add("hidden");
             return;
@@ -1507,6 +1508,24 @@ import Layout from "../layouts/Layout.astro";
             benefits: [
                 { icon: "✅", text: "Perfil Básico", active: true },
                 { icon: "🔒", text: "Sin Fotos", active: false },
+            ],
+        },
+        profesional: {
+            label: "⭐ Profesional",
+            class: "text-teal-600",
+            benefits: [
+                { icon: "✅", text: "6 Fotos", active: true },
+                { icon: "🗺️", text: "Mapa Visible", active: true },
+                { icon: "🛡️", text: "Verificado", active: true },
+            ],
+        },
+        profesional: {
+            label: "⭐ Profesional",
+            class: "text-teal-600",
+            benefits: [
+                { icon: "✅", text: "6 Fotos", active: true },
+                { icon: "🗺️", text: "Mapa Visible", active: true },
+                { icon: "🛡️", text: "Verificado", active: true },
             ],
         },
         mensual: {

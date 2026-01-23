@@ -1,0 +1,300 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Newsletter - Admin">
+    <div class="min-h-screen bg-slate-50 py-8 px-4 font-sans">
+        <div class="max-w-4xl mx-auto">
+            <!-- HEADER -->
+            <header
+                class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 mb-8 flex items-center justify-between"
+            >
+                <div class="flex items-center gap-4">
+                    <a
+                        href="/admin"
+                        class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
+                    >
+                        ⬅
+                    </a>
+                    <div>
+                        <h1
+                            class="text-2xl font-black text-slate-800 tracking-tight"
+                        >
+                            Newsletter
+                        </h1>
+                        <p class="text-slate-500 text-sm font-medium">
+                            Gestión de suscriptores
+                        </p>
+                    </div>
+                </div>
+                <div
+                    class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl"
+                >
+                    📧
+                </div>
+            </header>
+
+            <!-- SEND MASS EMAIL CARD -->
+            <section
+                class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-8 relative overflow-hidden"
+            >
+                <div class="relative z-10">
+                    <h2
+                        class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"
+                    >
+                        <span
+                            class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center text-sm"
+                            >🚀</span
+                        >
+                        Enviar Email Masivo
+                    </h2>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label
+                                class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"
+                                >Asunto</label
+                            >
+                            <input
+                                type="text"
+                                id="mass-subject"
+                                placeholder="Ej: ¡Novedades de Enero!"
+                                class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                            />
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"
+                                >Mensaje (HTML)</label
+                            >
+                            <textarea
+                                id="mass-body"
+                                class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-slate-600 h-40 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-mono text-sm"
+                                placeholder="<p>Hola a todos...</p>"></textarea>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-2">
+                            <p
+                                id="send-status"
+                                class="text-xs font-bold text-slate-400 hidden animate-pulse"
+                            >
+                                Procesando...
+                            </p>
+                            <button
+                                id="btn-send-mass"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-bold transition shadow-lg hover:shadow-indigo-500/30 flex items-center gap-2 transform active:scale-95"
+                            >
+                                <span>Enviar Campaña</span>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                    class="w-5 h-5"
+                                >
+                                    <path
+                                        d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z"
+                                    ></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Decorative Blob -->
+                <div
+                    class="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-orange-50 rounded-full blur-3xl opacity-50 pointer-events-none"
+                >
+                </div>
+            </section>
+
+            <!-- SUBSCRIBERS TABLE -->
+            <div
+                class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden"
+            >
+                <div
+                    class="p-6 border-b border-slate-100 flex items-center justify-between"
+                >
+                    <h3 class="font-bold text-slate-800">
+                        Lista de Suscriptores
+                    </h3>
+                    <span
+                        class="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs font-bold"
+                        id="sub-count">0</span
+                    >
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead
+                            class="bg-slate-50 text-slate-500 font-bold uppercase text-xs"
+                        >
+                            <tr>
+                                <th class="p-5">Email</th>
+                                <th class="p-5">Fecha</th>
+                                <th class="p-5">Estado</th>
+                                <th class="p-5 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody
+                            id="subscribers-list"
+                            class="divide-y divide-slate-50"
+                        >
+                            <tr>
+                                <td
+                                    colspan="4"
+                                    class="p-10 text-center text-slate-400 font-medium"
+                                    >Cargando suscriptores...</td
+                                >
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { db, auth } from "../../firebase/client";
+    import {
+        collection,
+        getDocs,
+        query,
+        orderBy,
+        deleteDoc,
+        doc,
+        where,
+    } from "firebase/firestore";
+    import { onAuthStateChanged } from "firebase/auth";
+
+    let subscribers = [];
+
+    document.addEventListener("astro:page-load", () => {
+        const list = document.getElementById("subscribers-list");
+        const btnSend = document.getElementById("btn-send-mass");
+        const statusText = document.getElementById("send-status");
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = "/admin/login";
+                return;
+            }
+            // Check admin role here if needed, consistent with other pages
+            loadSubscribers();
+        });
+
+        async function loadSubscribers() {
+            try {
+                // Temporarily removing orderBy to avoid Index/Permission issues
+                const q = query(collection(db, "newsletter"));
+                const snap = await getDocs(q);
+
+                if (snap.empty) {
+                    list.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">No hay suscriptores aún.</td></tr>`;
+                    return;
+                }
+
+                subscribers = [];
+                list.innerHTML = "";
+                const countBadge = document.getElementById("sub-count");
+                if (countBadge) countBadge.innerText = snap.size.toString();
+
+                snap.forEach((d) => {
+                    const data = d.data();
+                    subscribers.push({ id: d.id, ...data });
+
+                    const tr = document.createElement("tr");
+                    tr.className = "border-b hover:bg-slate-50 transition";
+                    tr.innerHTML = `
+                        <td class="p-4 font-medium text-gray-900">${data.email}</td>
+                        <td class="p-4 text-gray-500">${data.fecha ? new Date(data.fecha.seconds * 1000).toLocaleDateString() : "-"}</td>
+                        <td class="p-4">
+                            ${data.activo ? '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Activo</span>' : '<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">Inactivo</span>'}
+                        </td>
+                        <td class="p-4 text-right">
+                            <button class="delete-sub text-red-500 hover:text-red-700 font-bold text-xs bg-red-50 px-3 py-1.5 rounded transition" data-id="${d.id}">Eliminar</button>
+                        </td>
+                    `;
+                    list.appendChild(tr);
+                });
+
+                // Attach events
+                document.querySelectorAll(".delete-sub").forEach((btn) => {
+                    btn.addEventListener("click", (e) =>
+                        deleteSubscriber(e.target.dataset.id),
+                    );
+                });
+            } catch (e) {
+                console.error(e);
+                list.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-red-500">Error cargando datos.</td></tr>`;
+            }
+        }
+
+        async function deleteSubscriber(id) {
+            if (!confirm("¿Seguro que querés eliminar a este suscriptor?"))
+                return;
+            try {
+                await deleteDoc(doc(db, "newsletter", id));
+                loadSubscribers();
+            } catch (e) {
+                alert("Error al eliminar");
+            }
+        }
+
+        // MASS EMAIL LOGIC
+        btnSend?.addEventListener("click", async () => {
+            const subject = document.getElementById("mass-subject").value;
+            const body = document.getElementById("mass-body").value;
+
+            if (!subject || !body) return alert("Completá asunto y mensaje.");
+            if (subscribers.length === 0) return alert("No hay suscriptores.");
+
+            if (
+                !confirm(
+                    `¿Estás seguro de enviar este email a ${subscribers.length} personas?`,
+                )
+            )
+                return;
+
+            btnSend.disabled = true;
+            btnSend.innerText = "Enviando...";
+            statusText.classList.remove("hidden");
+            statusText.innerText = "Enviando mensajes... por favor esperá.";
+
+            let sentCount = 0;
+            let errorCount = 0;
+
+            for (const sub of subscribers) {
+                try {
+                    await fetch("/api/send-email", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            to: sub.email,
+                            subject: subject,
+                            html: `
+                                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                                    ${body}
+                                    <hr style="margin-top: 40px; border: 0; border-top: 1px solid #eee;">
+                                    <p style="text-align: center; font-size: 11px; color: #999;">
+                                        Recibiste esto por estar suscrito al Newsletter de DeOficios.com.ar
+                                    </p>
+                                </div>
+                            `,
+                        }),
+                    });
+                    sentCount++;
+                } catch (e) {
+                    errorCount++;
+                }
+                statusText.innerText = `Enviando... (${sentCount}/${subscribers.length})`;
+            }
+
+            alert(
+                `Proceso finalizado.\nEnviados: ${sentCount}\nErrores: ${errorCount}`,
+            );
+            btnSend.disabled = false;
+            btnSend.innerText = "🚀 Enviar a Todos los Suscriptores";
+            statusText.innerText = "Envío completado.";
+        });
+    });
+</script>

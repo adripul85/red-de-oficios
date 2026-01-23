@@ -3,473 +3,573 @@ import Layout from "../../layouts/Layout.astro";
 ---
 
 <Layout title="Panel de Administración - Staff">
-    <div class="admin-container">
-        <header class="admin-header">
-            <div class="header-left">
-                <h1>Centro de Comando 👮‍♂️</h1>
-                <p>
-                    Hola, <span id="staff-name" class="font-bold">...</span>
-                    <span id="staff-role" class="role-badge">...</span>
-                </p>
-            </div>
-            <button id="btn-logout-admin" class="btn-logout"
-                >Cerrar Sesión</button
+    <div class="min-h-screen bg-slate-50 py-8 px-4 font-sans">
+        <div class="max-w-6xl mx-auto">
+            <!-- HEADER -->
+            <header
+                class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden"
             >
-        </header>
+                <div class="relative z-10 flex items-center gap-4">
+                    <div
+                        class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-2xl"
+                    >
+                        👮‍♂️
+                    </div>
+                    <div>
+                        <h1
+                            class="text-2xl font-black text-slate-800 tracking-tight"
+                        >
+                            Centro de Comando
+                        </h1>
+                        <p class="text-slate-500 text-sm font-medium">
+                            Hola, <span id="staff-name" class="text-slate-800"
+                                >...</span
+                            >
+                            <span
+                                id="staff-role"
+                                class="ml-2 bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider"
+                                >...</span
+                            >
+                        </p>
+                    </div>
+                </div>
 
-        <div class="dashboard-grid">
-            <div class="card-stat">
-                <div class="stat-icon">👥</div>
-                <div>
-                    <h3>Usuarios</h3>
-                    <p class="stat-number" id="count-users">...</p>
+                <div class="relative z-10">
+                    <button
+                        id="btn-logout-admin"
+                        class="group flex items-center gap-2 px-5 py-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-all font-bold text-sm"
+                    >
+                        <span>Cerrar Sesión</span>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="2"
+                            stroke="currentColor"
+                            class="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+                            ></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Decorative Background Blob -->
+                <div
+                    class="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-slate-50 rounded-full blur-3xl opacity-50 pointer-events-none"
+                >
+                </div>
+            </header>
+
+            <!-- STATS GRID -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <!-- Users Stat -->
+                <div
+                    class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5 hover:shadow-md transition-shadow"
+                >
+                    <div
+                        class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl shadow-sm"
+                    >
+                        👥
+                    </div>
+                    <div>
+                        <p
+                            class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1"
+                        >
+                            Total Usuarios
+                        </p>
+                        <p
+                            class="text-3xl font-black text-slate-800"
+                            id="count-users"
+                        >
+                            ...
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Reports Stat -->
+                <div
+                    class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5 hover:shadow-md transition-shadow"
+                >
+                    <div
+                        class="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-2xl shadow-sm"
+                    >
+                        ⚠️
+                    </div>
+                    <div>
+                        <p
+                            class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1"
+                        >
+                            Reportes
+                        </p>
+                        <p
+                            class="text-3xl font-black text-slate-800"
+                            id="count-reports"
+                        >
+                            0
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Finance Stat (Hidden by default) -->
+                <div
+                    id="finance-card"
+                    class="bg-emerald-600 p-6 rounded-2xl shadow-sm border border-emerald-100 flex items-center gap-5 hidden relative overflow-hidden"
+                >
+                    <div
+                        class="relative z-10 w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl shadow-inner"
+                    >
+                        💰
+                    </div>
+                    <div class="relative z-10">
+                        <p
+                            class="text-xs font-bold text-emerald-600/70 uppercase tracking-wider mb-1"
+                        >
+                            Facturación
+                        </p>
+                        <p
+                            class="text-3xl font-black text-emerald-700"
+                            id="revenue"
+                        >
+                            $ 0
+                        </p>
+                    </div>
+                    <div
+                        class="absolute right-0 bottom-0 w-24 h-24 bg-emerald-200/20 rounded-full blur-xl"
+                    >
+                    </div>
                 </div>
             </div>
 
-            <div class="card-stat">
-                <div class="stat-icon">⚠️</div>
-                <div>
-                    <h3>Reportes</h3>
-                    <p class="stat-number warning" id="count-reports">0</p>
-                </div>
-            </div>
-
-            <div id="finance-card" class="card-stat finance hidden">
-                <div class="stat-icon">💰</div>
-                <div>
-                    <h3>Facturación</h3>
-                    <p class="stat-number text-green" id="revenue">$ 0</p>
-                </div>
-            </div>
-        </div>
-
-        <h2 class="section-title">Acciones Rápidas</h2>
-
-        <div class="buttons-grid">
-            <a href="/admin/usuarios" class="admin-btn">
-                <span class="btn-icon">🔍</span>
-                <span class="btn-label">Buscar Usuarios</span>
-            </a>
-
-            <a href="/admin/mensajes" class="admin-btn">
-                <span class="btn-icon">💬</span>
-                <span class="btn-label">Mensajes</span>
-            </a>
-
-            <a href="/admin/denuncias" class="admin-btn">
-                <span class="btn-icon">🚨</span>
-                <span class="btn-label">Denuncias</span>
-            </a>
-
-            <a href="/admin/pagos" class="admin-btn">
-                <span class="btn-icon">💳</span>
-                <span class="btn-label">Pagos</span>
-            </a>
-
-            <a
-                href="/admin/finanzas"
-                class="admin-btn restricted hidden"
-                id="admin-finanzas"
+            <!-- QUICK ACTIONS -->
+            <h2
+                class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2"
             >
-                <span class="btn-icon">💰</span>
-                <span class="btn-label">Finanzas</span>
-            </a>
+                <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span>
+                Acciones Rápidas
+            </h2>
 
-            <a href="/admin/blog" class="admin-btn">
-                <span class="btn-icon">✍️</span>
-                <span class="btn-label">Blog</span>
-            </a>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- NEWSLETTER -->
+                <a
+                    href="/admin/newsletter"
+                    class="bg-gradient-to-br from-indigo-600 to-violet-600 text-white p-6 rounded-3xl shadow-lg hover:shadow-indigo-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48"
+                >
+                    <div class="relative z-10">
+                        <div
+                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white"
+                        >
+                            📧
+                        </div>
+                        <h3 class="font-black text-2xl tracking-tight mb-1">
+                            Newsletter
+                        </h3>
+                        <p
+                            class="text-indigo-100 text-sm font-medium leading-relaxed opacity-90"
+                        >
+                            Gestionar suscriptores, campañas de email y
+                            estadísticas.
+                        </p>
+                    </div>
+                    <div
+                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"
+                    >
+                    </div>
+                </a>
 
-            <a href="/foro" class="admin-btn">
-                <span class="btn-icon">🏘️</span>
-                <span class="btn-label">Foro</span>
-            </a>
+                <!-- USUARIOS -->
+                <a
+                    href="/admin/usuarios"
+                    class="bg-gradient-to-br from-blue-500 to-cyan-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-blue-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48"
+                >
+                    <div class="relative z-10">
+                        <div
+                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white"
+                        >
+                            👥
+                        </div>
+                        <h3 class="font-black text-2xl tracking-tight mb-1">
+                            Usuarios
+                        </h3>
+                        <p
+                            class="text-blue-100 text-sm font-medium leading-relaxed opacity-90"
+                        >
+                            Ver perfiles, editar información y controlar
+                            accesos.
+                        </p>
+                    </div>
+                    <div
+                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"
+                    >
+                    </div>
+                </a>
 
-            <a href="/admin/validaciones" class="admin-btn">
-                <span class="btn-icon">✅</span>
-                <span class="btn-label">Validaciones</span>
-            </a>
+                <!-- MENSAJES -->
+                <a
+                    href="/admin/mensajes"
+                    class="bg-gradient-to-br from-emerald-500 to-teal-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-emerald-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48"
+                >
+                    <div class="relative z-10">
+                        <div
+                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white"
+                        >
+                            💬
+                        </div>
+                        <h3 class="font-black text-2xl tracking-tight mb-1">
+                            Mensajes
+                        </h3>
+                        <p
+                            class="text-emerald-100 text-sm font-medium leading-relaxed opacity-90"
+                        >
+                            Buzón de entrada, soporte técnico y contacto
+                            directo.
+                        </p>
+                    </div>
+                    <div
+                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"
+                    >
+                    </div>
+                </a>
 
-            <a
-                href="/admin/configuracion"
-                id="admin-settings"
-                class="admin-btn restricted hidden"
-            >
-                <span class="btn-icon">⚙️</span>
-                <span class="btn-label">Configuración</span>
-            </a>
+                <!-- DENUNCIAS -->
+                <a
+                    href="/admin/denuncias"
+                    class="bg-gradient-to-br from-orange-500 to-red-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-orange-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48"
+                >
+                    <div class="relative z-10">
+                        <div
+                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white"
+                        >
+                            🚨
+                        </div>
+                        <h3 class="font-black text-2xl tracking-tight mb-1">
+                            Denuncias
+                        </h3>
+                        <p
+                            class="text-orange-100 text-sm font-medium leading-relaxed opacity-90"
+                        >
+                            Moderación de contenido, reportes de usuarios y
+                            bloqueos.
+                        </p>
+                    </div>
+                    <div
+                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"
+                    >
+                    </div>
+                </a>
+
+                <!-- PAGOS -->
+                <a
+                    href="/admin/pagos"
+                    class="bg-gradient-to-br from-pink-500 to-rose-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-pink-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48"
+                >
+                    <div class="relative z-10">
+                        <div
+                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white"
+                        >
+                            💳
+                        </div>
+                        <h3 class="font-black text-2xl tracking-tight mb-1">
+                            Pagos
+                        </h3>
+                        <p
+                            class="text-pink-100 text-sm font-medium leading-relaxed opacity-90"
+                        >
+                            Historial de transacciones, planes y suscripciones.
+                        </p>
+                    </div>
+                    <div
+                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"
+                    >
+                    </div>
+                </a>
+
+                <!-- BLOG -->
+                <a
+                    href="/admin/blog"
+                    class="bg-gradient-to-br from-amber-400 to-orange-400 text-white p-6 rounded-3xl shadow-lg hover:shadow-amber-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48"
+                >
+                    <div class="relative z-10">
+                        <div
+                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white"
+                        >
+                            ✍️
+                        </div>
+                        <h3 class="font-black text-2xl tracking-tight mb-1">
+                            Blog
+                        </h3>
+                        <p
+                            class="text-amber-100 text-sm font-medium leading-relaxed opacity-90"
+                        >
+                            Crear y editar artículos, noticias y novedades.
+                        </p>
+                    </div>
+                    <div
+                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"
+                    >
+                    </div>
+                </a>
+
+                <!-- FORO -->
+                <a
+                    href="/foro"
+                    class="bg-gradient-to-br from-slate-600 to-slate-800 text-white p-6 rounded-3xl shadow-lg hover:shadow-slate-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48 opacity-90 hover:opacity-100"
+                >
+                    <div class="relative z-10">
+                        <div
+                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white"
+                        >
+                            🏘️
+                        </div>
+                        <h3 class="font-black text-2xl tracking-tight mb-1">
+                            Foro
+                        </h3>
+                        <p
+                            class="text-slate-200 text-sm font-medium leading-relaxed opacity-90"
+                        >
+                            Ir a la comunidad, moderar temas y conversaciones.
+                        </p>
+                    </div>
+                    <div
+                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"
+                    >
+                    </div>
+                </a>
+
+                <!-- VALIDACIONES -->
+                <a
+                    href="/admin/validaciones"
+                    class="bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-violet-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48"
+                >
+                    <div class="relative z-10">
+                        <div
+                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white"
+                        >
+                            ✅
+                        </div>
+                        <h3 class="font-black text-2xl tracking-tight mb-1">
+                            Validaciones
+                        </h3>
+                        <p
+                            class="text-violet-100 text-sm font-medium leading-relaxed opacity-90"
+                        >
+                            Revisar y aprobar documentos de nuevos
+                            profesionales.
+                        </p>
+
+                        <!-- Dynamic Badge will be injected here via JS -->
+                    </div>
+                    <div
+                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"
+                    >
+                    </div>
+                </a>
+
+                <!-- CONFIGURACIÓN (Restricted) -->
+                <a
+                    href="/admin/configuracion"
+                    id="admin-settings"
+                    class="bg-white border-2 border-dashed border-slate-300 text-slate-400 p-6 rounded-3xl hover:border-slate-400 hover:bg-slate-50 hover:text-slate-500 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48 hidden"
+                >
+                    <div class="relative z-10">
+                        <div
+                            class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-slate-200 transition-colors"
+                        >
+                            ⚙️
+                        </div>
+                        <h3 class="font-black text-2xl tracking-tight mb-1">
+                            Configuración
+                        </h3>
+                        <p
+                            class="text-sm font-medium leading-relaxed opacity-80"
+                        >
+                            Ajustes globales del sistema (Solo Admin).
+                        </p>
+                    </div>
+                </a>
+            </div>
         </div>
     </div>
-</Layout>
 
-<script>
-    import { auth, db } from "../../firebase/client";
-    import { onAuthStateChanged, signOut } from "firebase/auth";
-    import {
-        doc,
-        getDoc,
-        collection,
-        getCountFromServer,
-        query,
-        where,
-        onSnapshot,
-    } from "firebase/firestore";
+    <script>
+        import { auth, db } from "../../firebase/client";
+        import { onAuthStateChanged, signOut } from "firebase/auth";
+        import {
+            doc,
+            getDoc,
+            collection,
+            getCountFromServer,
+            query,
+            where,
+            onSnapshot,
+        } from "firebase/firestore";
 
-    document.addEventListener("astro:page-load", () => {
-        console.log("🚀 [ADMIN] Página cargada/navegada");
+        document.addEventListener("astro:page-load", () => {
+            console.log("🚀 [ADMIN] Página cargada/navegada");
 
-        let unsubscribe: (() => void) | null = null;
+            let unsubscribe: (() => void) | null = null;
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                try {
-                    const docRef = doc(db, "profesionales", user.uid);
-                    const snap = await getDoc(docRef);
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    try {
+                        const docRef = doc(db, "profesionales", user.uid);
+                        const snap = await getDoc(docRef);
 
-                    if (!snap.exists()) {
-                        window.location.href = "/";
-                        return;
-                    }
-
-                    const data = snap.data();
-                    const rolRaw = data.rol || data.role || "profesional";
-                    const rolLimpio = String(rolRaw).toLowerCase().trim();
-
-                    if (
-                        rolLimpio !== "admin" &&
-                        rolLimpio !== "moderador" &&
-                        rolLimpio !== "moderator"
-                    ) {
-                        alert("⛔ ACCESO DENEGADO");
-                        window.location.href = "/mi-perfil";
-                        return;
-                    }
-
-                    const staffName = document.getElementById("staff-name");
-                    const staffRole = document.getElementById("staff-role");
-                    const financeCard = document.getElementById("finance-card");
-                    const adminSettings =
-                        document.getElementById("admin-settings");
-                    const countUsers = document.getElementById("count-users");
-
-                    if (staffName)
-                        staffName.textContent = data.nombre || user.email;
-                    if (staffRole)
-                        staffRole.textContent = rolLimpio.toUpperCase();
-
-                    if (rolLimpio === "admin") {
-                        if (financeCard) financeCard.classList.remove("hidden");
-                        if (adminSettings) {
-                            adminSettings.classList.remove("hidden");
-                            adminSettings.style.display = "flex";
+                        if (!snap.exists()) {
+                            window.location.href = "/";
+                            return;
                         }
 
-                        // Mostrar botón de Finanzas para admin
-                        const adminFinanzas =
-                            document.getElementById("admin-finanzas");
-                        if (adminFinanzas) {
-                            adminFinanzas.classList.remove("hidden");
-                            adminFinanzas.style.display = "flex";
-                        }
-                    } else {
-                        if (staffRole) {
-                            staffRole.style.background = "#dbeafe";
-                            staffRole.style.color = "#1e40af";
-                        }
-                    }
+                        const data = snap.data();
+                        const rolRaw = data.rol || data.role || "profesional";
+                        const rolLimpio = String(rolRaw).toLowerCase().trim();
 
-                    // Stats
-                    const coll = collection(db, "profesionales");
-                    const snapshotCount = await getCountFromServer(coll);
-                    if (countUsers)
-                        countUsers.textContent = snapshotCount
-                            .data()
-                            .count.toString();
+                        if (
+                            rolLimpio !== "admin" &&
+                            rolLimpio !== "moderador" &&
+                            rolLimpio !== "moderator"
+                        ) {
+                            alert("⛔ ACCESO DENEGADO");
+                            window.location.href = "/mi-perfil";
+                            return;
+                        }
 
-                    // 🔔 Badge for Validations (Real-time)
-                    const validationsBtn = document.querySelector(
-                        'a[href="/admin/validaciones"]',
-                    );
-                    if (validationsBtn) {
-                        const qValidations = query(
-                            collection(db, "profesionales"),
-                            where("validacion_estado", "==", "pendiente"),
-                        );
-                        unsubscribe = onSnapshot(qValidations, (snapshot) => {
-                            const count = snapshot.size;
-                            // @ts-ignore
-                            let badge =
-                                validationsBtn.querySelector(".badge-notify");
-                            if (count > 0) {
-                                if (!badge) {
-                                    badge = document.createElement("span");
-                                    badge.className = "badge-notify";
-                                    validationsBtn.appendChild(badge);
-                                }
-                                // @ts-ignore
-                                badge.innerText =
-                                    count > 9 ? "+9" : count.toString();
-                                // @ts-ignore
-                                badge.style.display = "flex";
-                                // @ts-ignore
-                                badge.style.display = "none";
+                        const staffName = document.getElementById("staff-name");
+                        const staffRole = document.getElementById("staff-role");
+                        const financeCard =
+                            document.getElementById("finance-card");
+                        const adminSettings =
+                            document.getElementById("admin-settings");
+                        const countUsers =
+                            document.getElementById("count-users");
+
+                        if (staffName)
+                            staffName.textContent = data.nombre || user.email;
+                        if (staffRole)
+                            staffRole.textContent = rolLimpio.toUpperCase();
+
+                        if (rolLimpio === "admin") {
+                            if (financeCard)
+                                financeCard.classList.remove("hidden");
+                            if (adminSettings) {
+                                adminSettings.classList.remove("hidden");
+                                adminSettings.style.display = "flex";
                             }
-                        });
+                        } else {
+                            if (staffRole) {
+                                staffRole.style.background = "#dbeafe";
+                                staffRole.style.color = "#1e40af";
+                            }
+                        }
+
+                        // Stats
+                        const coll = collection(db, "profesionales");
+                        const snapshotCount = await getCountFromServer(coll);
+                        if (countUsers)
+                            countUsers.textContent = snapshotCount
+                                .data()
+                                .count.toString();
+
+                        // 🔔 Badge for Validations (Real-time)
+                        const validationsBtn = document.querySelector(
+                            'a[href="/admin/validaciones"]',
+                        );
+                        if (validationsBtn) {
+                            const qValidations = query(
+                                collection(db, "profesionales"),
+                                where("validacion_estado", "==", "pendiente"),
+                            );
+                            unsubscribe = onSnapshot(
+                                qValidations,
+                                (snapshot) => {
+                                    const count = snapshot.size;
+                                    // @ts-ignore
+                                    let badge =
+                                        validationsBtn.querySelector(
+                                            ".badge-notify",
+                                        );
+                                    if (count > 0) {
+                                        if (!badge) {
+                                            badge =
+                                                document.createElement("span");
+                                            badge.className = "badge-notify";
+                                            validationsBtn.appendChild(badge);
+                                        }
+                                        // @ts-ignore
+                                        badge.innerText =
+                                            count > 9 ? "+9" : count.toString();
+                                        // @ts-ignore
+                                        badge.style.display = "flex";
+                                        // @ts-ignore
+                                        badge.style.display = "none";
+                                    }
+                                },
+                            );
+                        }
+                    } catch (e) {
+                        console.error("Error admin", e);
                     }
-                } catch (e) {
-                    console.error("Error admin", e);
+                } else {
+                    window.location.href = "/ingresar";
                 }
-            } else {
-                window.location.href = "/ingresar";
-            }
-        });
-
-        // Cleanup on page transition
-        document.addEventListener(
-            "astro:before-preparation",
-            () => {
-                if (unsubscribe) unsubscribe();
-            },
-            { once: true },
-        );
-
-        document
-            .getElementById("btn-logout-admin")
-            ?.addEventListener("click", async () => {
-                await signOut(auth);
-                window.location.href = "/";
             });
-    }); // End of astro:page-load
-</script>
 
-<style>
-    .admin-container {
-        max-width: 1000px;
-        margin: 0 auto;
-        padding: 40px 20px;
-        font-family: "Segoe UI", system-ui, sans-serif;
-        background-color: #f8fafc; /* Fondo gris muy suave para toda la página */
-        min-height: 100vh;
-    }
+            // Cleanup on page transition
+            document.addEventListener(
+                "astro:before-preparation",
+                () => {
+                    if (unsubscribe) unsubscribe();
+                },
+                { once: true },
+            );
 
-    /* HEADER */
-    .admin-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        background: white;
-        padding: 20px 25px;
-        border-radius: 16px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-    .admin-header h1 {
-        margin: 0;
-        font-size: 1.5rem;
-        color: #1f2937;
-        font-weight: 800;
-    }
-    .role-badge {
-        background: #ffedd5;
-        color: #c2410c;
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: bold;
-        text-transform: uppercase;
-        vertical-align: middle;
-        margin-left: 5px;
-    }
-    .btn-logout {
-        background: #fee2e2;
-        color: #991b1b;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: 0.2s;
-    }
-    .btn-logout:hover {
-        background: #fecaca;
-    }
+            document
+                .getElementById("btn-logout-admin")
+                ?.addEventListener("click", async () => {
+                    await signOut(auth);
+                    window.location.href = "/";
+                });
+        }); // End of astro:page-load
+    </script>
 
-    /* STATS CARDS (Compactas) */
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-        margin-bottom: 40px;
-    }
-    .card-stat {
-        background: white;
-        padding: 15px 20px;
-        border-radius: 12px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-        border: 1px solid #e2e8f0;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-    .stat-icon {
-        font-size: 1.8rem;
-        background: #f1f5f9;
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-    }
-    .card-stat h3 {
-        margin: 0;
-        font-size: 0.85rem;
-        color: #64748b;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    .stat-number {
-        font-size: 1.5rem;
-        font-weight: 800;
-        margin: 0;
-        color: #0f172a;
-        line-height: 1.2;
-    }
-    .warning {
-        color: #d97706;
-    }
-    .text-green {
-        color: #16a34a;
-    }
-    .finance {
-        background: #f0fdf4;
-        border-color: #bbf7d0;
-    }
-    .finance .stat-icon {
-        background: #dcfce7;
-    }
-
-    /* BOTONES DE ACCIÓN (NUEVO DISEÑO) */
-    .section-title {
-        font-size: 1.2rem;
-        margin-bottom: 20px;
-        color: #334155;
-        font-weight: 700;
-        border-left: 4px solid #ea580c;
-        padding-left: 10px;
-    }
-
-    .buttons-grid {
-        display: grid;
-        /* Grid responsive: botones cuadrados */
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 20px;
-    }
-
-    .admin-btn {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background: white;
-        padding: 25px 15px;
-        border-radius: 16px;
-        text-decoration: none;
-        color: #334155;
-        border: 2px solid transparent;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        transition: all 0.2s ease;
-        height: 140px; /* Altura fija para uniformidad */
-        position: relative;
-    }
-
-    .badge-notify {
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        background: #ef4444;
-        color: white;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.75rem;
-        font-weight: bold;
-        border: 2px solid white;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        animation: pulse-ring 2s infinite;
-        z-index: 10;
-    }
-
-    @keyframes pulse-ring {
-        0% {
-            transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    <style>
+        /* Custom Pulse Ring for Badges */
+        .badge-notify {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: #ef4444;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            animation: pulse-ring 2s infinite;
+            z-index: 10;
         }
-        70% {
-            transform: scale(1);
-            box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
         }
-        100% {
-            transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-        }
-    }
-
-    .admin-btn:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        border-color: #ea580c;
-        color: #ea580c;
-    }
-
-    .btn-icon {
-        font-size: 2.5rem;
-        margin-bottom: 12px;
-        filter: grayscale(100%);
-        transition: 0.2s;
-    }
-
-    .admin-btn:hover .btn-icon {
-        filter: grayscale(0%);
-        transform: scale(1.1);
-    }
-
-    .btn-label {
-        font-weight: 700;
-        font-size: 0.95rem;
-        text-align: center;
-        line-height: 1.2;
-    }
-
-    .restricted {
-        background: #fff7ed;
-        border: 2px dashed #fdba74;
-    }
-    .restricted:hover {
-        background: #ffedd5;
-        border-style: solid;
-    }
-
-    .hidden {
-        display: none !important;
-    }
-
-    @media (max-width: 600px) {
-        .buttons-grid {
-            grid-template-columns: repeat(2, 1fr); /* 2 columnas en móvil */
-        }
-        .admin-btn {
-            padding: 15px;
-            height: 120px;
-        }
-        .btn-icon {
-            font-size: 2rem;
-        }
-    }
-</style>
+    </style>
+</Layout>
