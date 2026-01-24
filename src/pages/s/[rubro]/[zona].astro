@@ -27,7 +27,7 @@ const zonaDisplay =
     zona.charAt(0).toUpperCase() + zona.slice(1).replace(/-/g, " ");
 
 // 3. IDENTIFICAR ZONAS OBJETIVO (Manejo de Grupos como "Capital Federal")
-const searchZona = normalize(zona);
+const searchZona = normalize(zona).replace(/-/g, " ");
 let targetZones = [searchZona]; // Por defecto buscamos coincidencia directa
 
 // Buscar si el slug corresponde a un Grupo (ej: 'capital-federal' match con 'Capital Federal (CABA)')
@@ -65,7 +65,7 @@ try {
         const pRubroPrincipal = normalize(p.rubro_principal);
         const pRubros = (p.rubros || []).map((r) => normalize(r));
         const allProRubros = [pRubroPrincipal, ...pRubros];
-        const searchRubro = normalize(rubro);
+        const searchRubro = normalize(rubro).replace(/-/g, " ");
 
         const rubroMatch = allProRubros.some((r) => r.includes(searchRubro));
 

@@ -1,19 +1,32 @@
----
 const { currentPath } = Astro.props;
+import { 
+    LayoutDashboard, 
+    Target, 
+    FileText, 
+    Wallet, 
+    HardHat, 
+    Users, 
+    Shield,
+    LogOut,
+    User,
+    Download,
+    X,
+    Zap
+} from 'lucide-astro';
 
 const menuItems = [
-    { path: "/panel", icon: "📊", label: "Dashboard" },
+    { path: "/panel", icon: LayoutDashboard, label: "Dashboard" },
     {
         path: "/panel/oportunidades",
-        icon: "🎯",
+        icon: Target,
         label: "Oportunidades",
         badgeId: "badge-oportunidades-mobile",
     },
-    { path: "/panel/presupuestos", icon: "📝", label: "Presupuestos" },
-    { path: "/panel/finanzas", icon: "💰", label: "Finanzas" },
-    { path: "/panel/mi-equipo", icon: "👷", label: "Mi Equipo" },
-    { path: "/panel/clientes", icon: "👥", label: "Clientes" },
-    { path: "/panel/contactos", icon: "🛡️", label: "Mis Contactos" },
+    { path: "/panel/presupuestos", icon: FileText, label: "Presupuestos" },
+    { path: "/panel/finanzas", icon: Wallet, label: "Finanzas" },
+    { path: "/panel/mi-equipo", icon: HardHat, label: "Mi Equipo" },
+    { path: "/panel/clientes", icon: Users, label: "Clientes" },
+    { path: "/panel/contactos", icon: Shield, label: "Mis Contactos" },
 ];
 
 const isActive = (path) => {
@@ -23,6 +36,32 @@ const isActive = (path) => {
 };
 ---
 
+<style>
+    .toggle-checkbox:checked {
+        right: 0;
+        border-color: #22c55e;
+    }
+    .toggle-checkbox {
+        right: 50%;
+        transition: all 0.3s;
+        top: 0;
+        bottom: 0;
+    }
+    .toggle-checkbox:checked + .toggle-label {
+        background-color: #22c55e;
+    }
+    .toggle-checkbox {
+        position: absolute;
+        top: 0;
+        left: 0;
+        transition: all 0.3s;
+    }
+    .toggle-checkbox:checked {
+        left: 100%;
+        transform: translateX(-100%);
+    }
+</style>
+
 <aside
     id="mobile-sidebar"
     class="md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-700 flex flex-col transform -translate-x-full transition-transform duration-300"
@@ -30,14 +69,15 @@ const isActive = (path) => {
     <div
         class="h-16 flex items-center justify-between px-6 border-b border-slate-700"
     >
-        <a href="/" class="text-xl font-bold text-white">
+        <a href="/" class="text-xl font-bold text-white flex items-center gap-2">
+            <Zap class="w-6 h-6 text-orange-500" />
             DeOficios<span class="text-orange-500">Pro</span>
         </a>
         <button
             id="close-sidebar"
-            class="text-2xl text-gray-400 hover:text-white"
+            class="text-gray-400 hover:text-white"
         >
-            ✕
+            <X class="w-8 h-8" />
         </button>
     </div>
 
@@ -54,7 +94,7 @@ const isActive = (path) => {
                                 : "text-gray-400 hover:bg-slate-800 hover:text-white",
                         ]}
                     >
-                        <span class="text-xl">{item.icon}</span>
+                        <item.icon class="w-5 h-5" />
                         <span
                             class={
                                 isActive(item.path)
@@ -77,18 +117,49 @@ const isActive = (path) => {
     </div>
 
     <div class="p-4 border-t border-slate-700">
+        <!-- SWITCH ONLINE MOBILE -->
+        <div class="px-3 mb-3">
+            <label
+                class="flex items-center justify-between p-2 bg-slate-800 rounded-lg cursor-pointer group hover:bg-slate-700 transition"
+            >
+                <div class="flex items-center gap-2">
+                    <span id="status-icon-mobile" class="text-gray-500 text-xs text-center w-5"
+                        >⚫</span
+                    >
+                    <span
+                        id="status-text-mobile"
+                        class="text-white text-xs font-bold">Offline</span
+                    >
+                </div>
+                <div
+                    class="relative inline-block w-10 h-5 align-middle select-none transition duration-200 ease-in"
+                >
+                    <input
+                        type="checkbox"
+                        name="toggle"
+                        id="online-toggle-mobile"
+                        class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600"
+                    />
+                    <label
+                        for="online-toggle-mobile"
+                        class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-600 cursor-pointer"
+                    ></label>
+                </div>
+            </label>
+        </div>
+
         <a
             href="/mi-perfil"
             class="flex items-center gap-3 px-3 py-2 w-full text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors mb-1"
         >
-            <span>👤</span>
+            <User class="w-5 h-5" />
             <span class="font-medium text-sm">Mi Perfil</span>
         </a>
         <button
             id="btn-logout-mobile"
             class="flex items-center gap-3 px-3 py-2 w-full text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors text-left"
         >
-            <span>🚪</span>
+            <LogOut class="w-5 h-5" />
             <span class="font-medium text-sm">Cerrar Sesión</span>
         </button>
     </div>
@@ -96,10 +167,9 @@ const isActive = (path) => {
         id="btn-install-pwa-mobile"
         class="hidden flex items-center gap-3 px-3 py-2 w-full text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors mt-2"
     >
-        <span>📲</span>
+        <Download class="w-5 h-5" />
         <span class="font-medium text-sm">Instalar App</span>
     </button>
-</aside>
 
 <!-- Mobile Sidebar Overlay -->
 <div
@@ -163,6 +233,90 @@ const isActive = (path) => {
                     console.error("Error al cerrar sesión:", error);
                 }
             };
+        }
+
+        // ONLINE SWITCH LOGIC (MOBILE)
+        const onlineToggleMobile = document.getElementById(
+            "online-toggle-mobile",
+        );
+        const statusTextMobile = document.getElementById("status-text-mobile");
+        const statusIconMobile = document.getElementById("status-icon-mobile");
+
+        // Helper to update UI
+        function updateStatusUIMobile(isOnline) {
+            if (!statusTextMobile || !statusIconMobile) return;
+            if (isOnline) {
+                statusTextMobile.textContent = "EN LÍNEA";
+                statusTextMobile.classList.remove("text-gray-400");
+                statusTextMobile.classList.add("text-green-400");
+                statusIconMobile.textContent = "🟢";
+            } else {
+                statusTextMobile.textContent = "OFFLINE";
+                statusTextMobile.classList.remove("text-green-400");
+                statusTextMobile.classList.add("text-gray-400");
+                statusIconMobile.textContent = "⚫";
+            }
+        }
+
+        // Import needed functions if not present in this scope (assuming auth imported above)
+        // Accessing db from global scope or import if needed. Since this script is `type=module` implicit in Astro <script>,
+        // we need imports. Adding imports at top of script block if missing.
+        // Wait, I can't easily add imports at the top with this replace.
+        // I will assume db is NOT imported here and fix imports in a separate step or try to use existing imports.
+        // MobileSidebar script already imports auth. I need to add db, doc, updateDoc, getDoc.
+
+        // Logic inside setupMobileSidebar
+        if (onlineToggleMobile) {
+            // Re-using onAuthStateChanged from top scope
+            import("firebase/firestore").then(({ doc, updateDoc, getDoc }) => {
+                import("../../firebase/client").then(({ db }) => {
+                    onAuthStateChanged(auth, async (user) => {
+                        if (user) {
+                            try {
+                                const userRef = doc(
+                                    db,
+                                    "profesionales",
+                                    user.uid,
+                                );
+                                const docSnap = await getDoc(userRef);
+                                if (docSnap.exists()) {
+                                    const data = docSnap.data();
+                                    const isOnline = data.online === true;
+
+                                    onlineToggleMobile.checked = isOnline;
+                                    updateStatusUIMobile(isOnline);
+
+                                    onlineToggleMobile.addEventListener(
+                                        "change",
+                                        async (e) => {
+                                            const newValue = e.target.checked;
+                                            updateStatusUIMobile(newValue);
+                                            try {
+                                                await updateDoc(userRef, {
+                                                    online: newValue,
+                                                });
+                                            } catch (err) {
+                                                console.error(
+                                                    "Error mobile switch:",
+                                                    err,
+                                                );
+                                                onlineToggleMobile.checked =
+                                                    !newValue;
+                                                updateStatusUIMobile(!newValue);
+                                            }
+                                        },
+                                    );
+                                }
+                            } catch (e) {
+                                console.error(
+                                    "Error fetching mobile status:",
+                                    e,
+                                );
+                            }
+                        }
+                    });
+                });
+            });
         }
     }
 

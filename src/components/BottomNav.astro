@@ -1,91 +1,70 @@
 ---
-const { currentPath = "" } = Astro.props;
-
-interface MenuItem {
-    label: string;
-    icon: string;
-    path: string;
-    primary?: boolean;
-    adminOnly?: boolean;
-    authRequired?: boolean;
-}
-
-const menuItems: MenuItem[] = [
-    { label: "Inicio", icon: "🏠", path: "/" },
-    { label: "Buscar", icon: "🔍", path: "/resultados" },
-    { label: "Publicar", icon: "➕", path: "/solicitar", primary: true },
-    { label: "Mapa", icon: "🗺️", path: "/mapa" },
-    { label: "Perfil", icon: "👤", path: "/app/perfil" },
-];
+import { House, Search, Plus, Map, User } from "lucide-astro";
 ---
 
-<nav class="bottom-nav-mobile md:hidden">
-    <div class="bottom-nav-container">
-        {
-            menuItems.map((item) => (
-                <a
-                    href={item.path}
-                    class:list={[
-                        "nav-item",
-                        {
-                            active:
-                                currentPath === item.path ||
-                                (item.path !== "/" &&
-                                    currentPath.startsWith(item.path)),
-                        },
-                        { "primary-action": item.primary },
-                        { "auth-item": item.authRequired || item.adminOnly },
-                    ]}
-                    data-admin={item.adminOnly}
-                >
-                    <span
-                        class="icon"
-                        id={item.label === "Perfil" ? "profile-icon" : ""}
-                    >
-                        {item.icon}
-                    </span>
-                    <span
-                        class="label"
-                        id={item.label === "Perfil" ? "profile-label" : ""}
-                    >
-                        {item.label}
-                    </span>
-                </a>
-            ))
-        }
+<nav id="mobile-nav-bar" class="mobile-bottom-nav md:hidden" style="position: fixed; bottom: 20px; left: 10px; right: 10px; z-index: 50; background: white !important; border: 1px solid rgba(0,0,0,0.1); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: block !important;">
+    <div class="nav-container" style="display: grid !important; grid-template-columns: repeat(5, 1fr) !important; width: 100% !important; height: 100% !important; align-items: center !important; justify-items: center !important;">
+        <a href="/" class="nav-item flat-item" id="nav-home">
+            <House class="icon" />
+            <span class="label">Inicio</span>
+        </a>
+
+        <a href="/resultados" class="nav-item flat-item" id="nav-search">
+            <Search class="icon" />
+            <span class="label">Buscar</span>
+        </a>
+
+        <div class="nav-item fab-container">
+            <a href="/solicitar" class="floating-fab">
+                <Plus class="fab-icon" />
+            </a>
+        </div>
+
+        <a href="/mapa" class="nav-item flat-item" id="nav-map">
+            <Map class="icon" />
+            <span class="label">Mapa</span>
+        </a>
+
+        <a href="/ingresar" class="nav-item flat-item" id="nav-profile">
+            <User class="icon" />
+            <span class="label">Perfil</span>
+        </a>
     </div>
 </nav>
 
 <style>
-    .bottom-nav-mobile {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 70px; /* Standard height */
-        /* Glassmorphism: More transparent, more blur, saturation boost */
-        background: rgba(255, 255, 255, 0.65);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-
-        /* Subtle glass border top */
-        border-top: 1px solid rgba(255, 255, 255, 0.6);
-
-        z-index: 1000;
+    .mobile-bottom-nav {
+        position: fixed !important;
+        bottom: 20px !important;
+        left: 10px !important;
+        right: 10px !important;
+        height: 70px !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 20px !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+        z-index: 999999 !important;
+        display: block !important; /* Block because child is grid */
+        overflow: visible;
         padding-bottom: env(safe-area-inset-bottom);
-
-        /* Softer, deeper shadow */
-        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.08);
     }
 
-    .bottom-nav-container {
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        height: 100%;
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 0 10px;
+    @media (min-width: 768px) {
+        .mobile-bottom-nav {
+            display: none !important;
+        }
+    }
+
+    .nav-container {
+        display: grid !important;
+        grid-template-columns: repeat(5, 1fr) !important;
+        width: 100% !important;
+        height: 100% !important;
+        align-items: center !important;
+        justify-items: center !important;
+        position: relative;
     }
 
     .nav-item {
@@ -93,68 +72,57 @@ const menuItems: MenuItem[] = [
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        text-decoration: none;
         color: #64748b;
+        text-decoration: none;
         flex: 1;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-    }
-
-    .nav-item .icon {
-        font-size: 1.5rem;
-        margin-bottom: 2px;
-        transition: transform 0.2s;
-    }
-
-    .nav-item .label {
-        font-size: 0.65rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.02em;
+        height: 100%;
+        gap: 2px;
+        transition: all 0.2s ease;
     }
 
     .nav-item.active {
         color: #ea580c;
     }
 
-    .nav-item.active .icon {
-        transform: translateY(-2px);
+    .icon {
+        width: 22px;
+        height: 22px;
     }
 
-    /* Primary Center Button (App Style) */
-    .nav-item.primary-action {
-        background: #ea580c;
+    .label {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .fab-container {
+        position: relative;
+        overflow: visible;
+    }
+
+    .floating-fab {
+        width: 52px;
+        height: 52px;
+        background: linear-gradient(135deg, #ea580c, #c2410c);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         color: white;
-        height: 50px;
-        width: 50px;
-        min-width: 50px;
-        border-radius: 18px;
-        margin-bottom: 15px;
-        box-shadow: 0 8px 15px rgba(234, 88, 12, 0.3);
-        flex: none;
+        box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
+        margin-top: -45px;
+        border: 4px solid white;
+        transition: transform 0.2s ease;
     }
 
-    .nav-item.primary-action .icon {
-        margin-bottom: 0;
-        font-size: 1.4rem;
-    }
-
-    .nav-item.primary-action .label {
-        display: none;
-    }
-
-    .nav-item.primary-action:active {
+    .floating-fab:active {
         transform: scale(0.9);
     }
 
-    /* Auth handling (handled via client script in future or simple CSS) */
-    .auth-item {
-        /* Initially visible, could be hidden/shown via JS toggle */
-    }
-
-    /* Haptic effect simulator */
-    .nav-item:active {
-        opacity: 0.7;
+    .fab-icon {
+        width: 28px;
+        height: 28px;
     }
 </style>
 
@@ -163,165 +131,46 @@ const menuItems: MenuItem[] = [
     import { onAuthStateChanged } from "firebase/auth";
     import { doc, getDoc } from "firebase/firestore";
 
-    // --- Core Logic ---
-    function updateAvatar(src: string) {
-        const profileIcon = document.getElementById("profile-icon");
-        if (profileIcon) {
-            profileIcon.innerHTML = `<img src="${src}" alt="Perfil" style="width:24px;height:24px;border-radius:50%;object-fit:cover;">`;
-        }
-    }
-
-    function applyLinks(role: string) {
-        // We use querySelectorAll and iterate to ensure we catch elements even if they have slightly different classes or attributes in different contexts
-        const centerButtons = document.querySelectorAll(
-            ".nav-item.primary-action",
-        );
-        const profileButtons = document.querySelectorAll(
-            '.nav-item[href="/app/perfil"], .nav-item[href="/mi-perfil"], .nav-item[href="/mi-cuenta"]',
-        );
-
-        console.log("📍 [NAV] Applying Role:", role);
-
-        centerButtons.forEach((btn) => {
-            if (role === "client")
-                (btn as HTMLAnchorElement).href = "/solicitar";
-            else if (role === "pro-free")
-                (btn as HTMLAnchorElement).href = "/mi-perfil";
-            else if (role === "pro-paid")
-                (btn as HTMLAnchorElement).href = "/panel";
-        });
-
-        profileButtons.forEach((btn) => {
-            if (role === "client")
-                (btn as HTMLAnchorElement).href = "/mi-cuenta";
-            // Both pro types go to /mi-perfil
-            else if (role.startsWith("pro"))
-                (btn as HTMLAnchorElement).href = "/mi-perfil";
-        });
-    }
-
-    // --- Init Function (Runs on every navigation) ---
     function initBottomNav() {
-        console.log("🚀 [NAV] initBottomNav executing...");
+        // Active State Logic
+        const path = window.location.pathname;
+        document
+            .querySelectorAll(".flat-item")
+            .forEach((el) => el.classList.remove("active"));
 
-        // 1. Immediate Cache Apply
-        const lastKnownRole = localStorage.getItem("lastKnownRole");
-        const lastKnownAvatar = localStorage.getItem("lastKnownAvatar");
+        if (path === "/")
+            document.getElementById("nav-home")?.classList.add("active");
+        else if (path.startsWith("/resultados"))
+            document.getElementById("nav-search")?.classList.add("active");
+        else if (path.startsWith("/mapa"))
+            document.getElementById("nav-map")?.classList.add("active");
+        else if (
+            path.startsWith("/mi-") ||
+            path.startsWith("/panel") ||
+            path === "/ingresar"
+        )
+            document.getElementById("nav-profile")?.classList.add("active");
 
-        if (lastKnownRole) applyLinks(lastKnownRole);
-        if (lastKnownAvatar) updateAvatar(lastKnownAvatar);
-
-        // 2. Auth Listener (Updates Cache & UI if changed)
-        // We unsubscribe previous listener if any (simplification: firebase handles duplicates generally well,
-        // but for Astro we usually just let it run. To avoid memory leaks in single-page feel, strictly we should track unsubs,
-        // but for this critical UI, re-attaching is safer to ensure it catches state).
-
+        // Auth Profile Link Logic
         onAuthStateChanged(auth, async (user) => {
+            const link = document.getElementById("nav-profile");
+            if (!link) return;
+
             if (user) {
-                // Determine Role & Update Cache
                 try {
-                    // Check Cache match first to avoid unnecessary DB calls if possible?
-                    // No, always verify on auth change to ensure Plan validity.
-
-                    // Parallel Check
-                    const proRef = doc(db, "profesionales", user.uid);
-                    const proSnap = await getDoc(proRef);
-
-                    let role = "unknown";
-                    let avatar = null;
-
-                    if (proSnap.exists()) {
-                        const data = proSnap.data();
-                        const plan = (data.plan || "gratuito").toLowerCase();
-
-                        // 🔥 LOGIC FIX: Explicit Plan Check
-                        // USER RULE: Only "experto" or "profesional" get Panel access.
-                        // "impulso" (mensual) -> Free-tier behavior (Mi Perfil)
-                        const isPaid =
-                            plan.includes("experto") ||
-                            plan.includes("profesional");
-
-                        const debugPlan = plan; // For console logging if needed
-
-                        role = isPaid ? "pro-paid" : "pro-free";
-                        avatar = data.foto;
-
-                        console.log(
-                            `🔍 [NAV-CHECK] Plan: "${debugPlan}" -> IsPaid? ${isPaid} -> Role: ${role}`,
-                        );
-                    } else {
-                        const clientRef = doc(db, "clientes", user.uid);
-                        const clientSnap = await getDoc(clientRef);
-                        if (clientSnap.exists()) {
-                            role = "client";
-                            avatar = clientSnap.data().foto;
-                        }
-                    }
-
-                    if (role !== "unknown") {
-                        const currentRole =
-                            localStorage.getItem("lastKnownRole");
-                        if (currentRole !== role) {
-                            console.log(
-                                "🔄 [NAV] Role changed/updates, applying...",
-                            );
-                            localStorage.setItem("lastKnownRole", role);
-                            applyLinks(role);
-                        } else {
-                            // Even if role is same, re-apply in case DOM was reset
-                            applyLinks(role);
-                        }
-                    }
-
-                    if (avatar) {
-                        localStorage.setItem("lastKnownAvatar", avatar);
-                        updateAvatar(avatar);
-                    }
-                } catch (e) {
-                    console.error("Error fetching role:", e);
-                }
+                    // Determine if pro or client
+                    const role = localStorage.getItem("userType_" + user.uid);
+                    if (role === "profesional")
+                        (link as HTMLAnchorElement).href = "/mi-perfil";
+                    else (link as HTMLAnchorElement).href = "/mi-cuenta";
+                } catch (e) {}
             } else {
-                // Logged Out
-                localStorage.removeItem("lastKnownRole");
-                const profileIcon = document.getElementById("profile-icon");
-                if (profileIcon) profileIcon.innerText = "👤";
-                // Reset links to defaults
-                const centerButtons = document.querySelectorAll(
-                    ".nav-item.primary-action",
-                );
-                const profileButtons = document.querySelectorAll(
-                    '.nav-item[href="/app/perfil"], .nav-item[href="/mi-perfil"], .nav-item[href="/mi-cuenta"]',
-                );
-
-                centerButtons.forEach(
-                    (btn) => ((btn as HTMLAnchorElement).href = "/solicitar"),
-                ); // or /ingresar
-                profileButtons.forEach(
-                    (btn) => ((btn as HTMLAnchorElement).href = "/app/perfil"),
-                );
+                (link as HTMLAnchorElement).href = "/ingresar";
             }
         });
     }
 
-    // --- Lifecycle Hooks for Astro Views Actions ---
-    // Run immediately (script tag execution)
+    // Init
     initBottomNav();
-
-    // Run on view transition navigation
-    document.addEventListener("astro:page-load", () => {
-        // Prevent double execution if script re-runs?
-        // Actually, initBottomNav is safe to call multiple times as it re-applies UI.
-        // But we might want to avoid attaching multiple onAuthStateChanged listeners if not careful.
-        // For 'astro:page-load', it runs *after* the new body is swapped.
-
-        // Simpler check: we just re-apply cached state immediately on page-load to ensure new DOM elements get updated.
-        // The Auth listener from the previous "run" might still be active if it's a SPA navigation.
-        // However, usually scripts in components re-run.
-
-        const lastKnownRole = localStorage.getItem("lastKnownRole");
-        if (lastKnownRole) applyLinks(lastKnownRole);
-
-        const lastKnownAvatar = localStorage.getItem("lastKnownAvatar");
-        if (lastKnownAvatar) updateAvatar(lastKnownAvatar);
-    });
+    document.addEventListener("astro:page-load", initBottomNav);
 </script>

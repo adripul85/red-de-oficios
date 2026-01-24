@@ -286,6 +286,48 @@ import { LOCATIONS } from "../data/locations";
     document.addEventListener("astro:page-load", () => {
         console.log("🚀 [SOLICITAR] Página cargada/navegada");
 
+        // CHECK URGENCY PARAM
+        const urlParams = new URLSearchParams(window.location.search);
+        const isUrgent = urlParams.get("urgencia") === "true";
+
+        if (isUrgent) {
+            console.log("🚨 MODO URGENCIA ACTIVADO");
+            // 1. Marcar Checkbox
+            const checkUrgente = document.getElementById(
+                "urgente",
+            ) as HTMLInputElement;
+            if (checkUrgente) checkUrgente.checked = true;
+
+            // 2. Cambiar Estilos (Visual Panic Mode)
+            const headerTitle = document.querySelector("h1");
+            if (headerTitle) {
+                headerTitle.innerHTML = "🚨 SOLICITUD DE EMERGENCIA";
+                headerTitle.className =
+                    "text-3xl font-black text-red-600 mb-2 uppercase tracking-tight";
+            }
+
+            const headerDesc = document.querySelector(".text-center p");
+            if (headerDesc) {
+                headerDesc.innerHTML =
+                    "Tu solicitud será enviada con <strong>ALTA PRIORIDAD</strong> a profesionales en línea.";
+                headerDesc.classList.add(
+                    "text-red-700",
+                    "font-medium",
+                    "bg-red-50",
+                    "p-2",
+                    "rounded-lg",
+                    "inline-block",
+                );
+            }
+
+            const btnEnviar = document.getElementById("btn-enviar");
+            if (btnEnviar) {
+                btnEnviar.className =
+                    "w-full bg-red-600 hover:bg-red-700 text-white font-black py-5 rounded-xl shadow-lg transform transition hover:scale-[1.02] uppercase tracking-widest text-xl border-b-4 border-red-800 animate-pulse";
+                btnEnviar.innerText = "🚨 PEDIR AYUDA AHORA";
+            }
+        }
+
         let currentUser: any = null;
         let userDisplayName = "";
 

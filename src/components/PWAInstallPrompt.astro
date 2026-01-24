@@ -1,0 +1,166 @@
+---
+import { Download } from "lucide-astro";
+---
+
+<div id="pwa-install-banner" class="pwa-banner hidden">
+    <div class="pwa-content container">
+        <div class="pwa-info">
+            <div class="pwa-icon">
+                <span class="text-2xl">👷</span>
+            </div>
+            <div class="pwa-text">
+                <p class="font-bold text-slate-800 text-sm leading-tight">
+                    Instalá DeOficios App
+                </p>
+                <p class="text-xs text-slate-500">Más rápida y sin conexión.</p>
+            </div>
+        </div>
+        <div class="pwa-actions">
+            <button
+                id="pwa-dismiss"
+                class="text-slate-400 hover:text-slate-600 p-2"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    ><line x1="18" y1="6" x2="6" y2="18"></line><line
+                        x1="6"
+                        y1="6"
+                        x2="18"
+                        y2="18"></line></svg
+                >
+            </button>
+            <button
+                id="pwa-install-btn"
+                class="bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:bg-slate-800 transition transform hover:scale-105"
+            >
+                <Download class="w-3 h-3" />
+                Instalar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let deferredPrompt;
+    const banner = document.getElementById("pwa-install-banner");
+    const installBtn = document.getElementById("pwa-install-btn");
+    const dismissBtn = document.getElementById("pwa-dismiss");
+
+    // Check cooldown
+    const dismissedTime = localStorage.getItem("pwa_dismissed_v1");
+    const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
+
+    const isCooldown =
+        dismissedTime && Date.now() - parseInt(dismissedTime) < ONE_WEEK;
+
+    // 1. Listen for install prompt
+    window.addEventListener("beforeinstallprompt", (e) => {
+        // Prevent default browser banner
+        e.preventDefault();
+        deferredPrompt = e;
+
+        // Show our banner if no cooldown
+        if (!isCooldown) {
+            setTimeout(() => {
+                banner?.classList.remove("hidden");
+                banner?.classList.add("visible");
+            }, 2000); // Wait a bit after load
+        }
+    });
+
+    // 2. Handle Install Click
+    installBtn?.addEventListener("click", async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response: ${outcome}`);
+
+            if (outcome === "accepted") {
+                banner?.classList.add("hidden");
+            }
+            deferredPrompt = null;
+        }
+    });
+
+    // 3. Handle Dismiss
+    dismissBtn?.addEventListener("click", () => {
+        banner?.classList.add("hidden");
+        localStorage.setItem("pwa_dismissed_v1", Date.now().toString());
+    });
+
+    // 4. Handle Appcheck (Already installed?)
+    window.addEventListener("appinstalled", () => {
+        banner?.classList.add("hidden");
+        console.log("PWA Installed");
+    });
+</script>
+
+<style>
+    .pwa-banner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 9999; /* Top of everything */
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid #f1f5f9;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transform: translateY(-100%);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .pwa-banner.visible {
+        transform: translateY(0);
+    }
+
+    .pwa-banner.hidden {
+        display: none; /* Fallback */
+    }
+
+    .pwa-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .pwa-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .pwa-icon {
+        width: 40px;
+        height: 40px;
+        background: #f8fafc;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e2e8f0;
+    }
+
+    .pwa-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* PWA is mostly relevant on Mobile, but desktop allows it too. 
+     We can hide perfectly on desktop if we want, but "Smart Header" 
+     sounds like mobile specific. Let's start with all, maybe restrictive on mobile?
+     Actually desktop Chrome supports PWAs too. Let's keep it generally responsive.
+  */
+</style>

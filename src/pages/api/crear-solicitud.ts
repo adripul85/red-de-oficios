@@ -36,10 +36,17 @@ export async function POST({ request }: { request: Request }) {
         let candidatos: string[] = [];
 
         try {
-            const qPros = prosRef
+            let qPros = prosRef
                 .where("plan", "in", ["profesional", "experto"])
-                .where("rubros", "array-contains", rubro)
-                .limit(20); // Tomamos una muestra para filtrar
+                .where("rubros", "array-contains", rubro);
+
+            // 🔥 FILTRO URGENCIA: Solo pros ONLINE
+            if (urgente) {
+                console.log("🔥 [API] Filtrando solo profesionales ONLINE para urgencia");
+                qPros = qPros.where("online", "==", true);
+            }
+
+            qPros = qPros.limit(20);
 
             const snapPros = await qPros.get();
             // Filtrar por zona manualmente
@@ -50,23 +57,27 @@ export async function POST({ request }: { request: Request }) {
                 })
                 .map(d => d.id);
 
-            console.log(`🎯 [API] Coincidencias encontradas por arrays: ${candidatos.length}`);
+            console.log(`🎯 [API] Coincidencias encontradas por arrays ${urgente ? '(ONLINE)' : ''}: ${candidatos.length}`);
         } catch (e: any) {
-            console.warn("⚠️ Query por rubros falló:", e.message);
+            console.warn("⚠️ Query por rubros falló (Posible falta de índice):", e.message);
         }
 
         // Fallback para campos legacy si no hubo resultados
         if (candidatos.length === 0) {
             console.log("⚠️ [API] No se hallaron coincidencias en arrays, intentando fallback legacy...");
             try {
-                const snapLegacy = await prosRef
+                let qLegacy = prosRef
                     .where("rubro_principal", "==", rubro)
                     .where("zona", "==", zona)
-                    .where("plan", "in", ["profesional", "experto"])
-                    .limit(10)
-                    .get();
+                    .where("plan", "in", ["profesional", "experto"]);
+
+                if (urgente) {
+                    qLegacy = qLegacy.where("online", "==", true);
+                }
+
+                const snapLegacy = await qLegacy.limit(10).get();
                 candidatos = snapLegacy.docs.map((d) => d.id);
-                console.log(`🎯 [API] Coincidencias encontradas por legacy: ${candidatos.length}`);
+                console.log(`🎯 [API] Coincidencias encontradas por legacy ${urgente ? '(ONLINE)' : ''}: ${candidatos.length}`);
             } catch (e: any) {
                 console.error("❌ Error en fallback legacy:", e.message);
             }

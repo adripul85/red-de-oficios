@@ -64,14 +64,43 @@ import Layout from "../../layouts/Layout.astro";
                         </div>
 
                         <div>
-                            <label
-                                class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"
-                                >Mensaje (HTML)</label
+                            <div class="flex justify-between items-center mb-2">
+                                <label
+                                    class="block text-xs font-bold text-slate-400 uppercase tracking-wider"
+                                    >Mensaje (Markdown) <span
+                                        class="text-[10px] text-slate-300 ml-1"
+                                        >Soporta **negrita**, - listas,
+                                        [links](url)</span
+                                    ></label
+                                >
+                                <button
+                                    id="btn-toggle-preview"
+                                    class="text-xs text-indigo-600 font-bold hover:underline"
+                                    >Ver Previsualización</button
+                                >
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 h-80"
                             >
-                            <textarea
-                                id="mass-body"
-                                class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-slate-600 h-40 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-mono text-sm"
-                                placeholder="<p>Hola a todos...</p>"></textarea>
+                                <textarea
+                                    id="mass-body"
+                                    class="w-full h-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-mono text-sm resize-none"
+                                    placeholder="Hola a todos,
+
+Esta es una **actualización importante**..."
+                                ></textarea>
+
+                                <div
+                                    id="preview-area"
+                                    class="h-full bg-white border border-slate-200 rounded-xl p-4 overflow-y-auto prose prose-sm max-w-none prose-indigo hidden md:block"
+                                >
+                                    <p
+                                        class="text-slate-400 italic text-center mt-10"
+                                    >
+                                        Escribe para ver la vista previa...
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="flex items-center justify-between pt-2">
@@ -165,6 +194,7 @@ import Layout from "../../layouts/Layout.astro";
         where,
     } from "firebase/firestore";
     import { onAuthStateChanged } from "firebase/auth";
+    import { marked } from "marked";
 
     let subscribers = [];
 
@@ -173,12 +203,23 @@ import Layout from "../../layouts/Layout.astro";
         const btnSend = document.getElementById("btn-send-mass");
         const statusText = document.getElementById("send-status");
 
+        // MARKDOWN PREVIEW LOGIC
+        const textArea = document.getElementById("mass-body");
+        const previewArea = document.getElementById("preview-area");
+
+        if (textArea && previewArea) {
+            textArea.addEventListener("input", (e) => {
+                const md = e.target.value;
+                const html = marked.parse(md);
+                previewArea.innerHTML = html;
+            });
+        }
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = "/admin/login";
                 return;
             }
-            // Check admin role here if needed, consistent with other pages
             loadSubscribers();
         });
 
@@ -243,9 +284,9 @@ import Layout from "../../layouts/Layout.astro";
         // MASS EMAIL LOGIC
         btnSend?.addEventListener("click", async () => {
             const subject = document.getElementById("mass-subject").value;
-            const body = document.getElementById("mass-body").value;
+            const bodyMD = document.getElementById("mass-body").value;
 
-            if (!subject || !body) return alert("Completá asunto y mensaje.");
+            if (!subject || !bodyMD) return alert("Completá asunto y mensaje.");
             if (subscribers.length === 0) return alert("No hay suscriptores.");
 
             if (
@@ -260,6 +301,9 @@ import Layout from "../../layouts/Layout.astro";
             statusText.classList.remove("hidden");
             statusText.innerText = "Enviando mensajes... por favor esperá.";
 
+            // Convert Markdown to HTML
+            const bodyHTML = marked.parse(bodyMD);
+
             let sentCount = 0;
             let errorCount = 0;
 
@@ -272,8 +316,8 @@ import Layout from "../../layouts/Layout.astro";
                             to: sub.email,
                             subject: subject,
                             html: `
-                                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                                    ${body}
+                                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #333;">
+                                    ${bodyHTML}
                                     <hr style="margin-top: 40px; border: 0; border-top: 1px solid #eee;">
                                     <p style="text-align: center; font-size: 11px; color: #999;">
                                         Recibiste esto por estar suscrito al Newsletter de DeOficios.com.ar

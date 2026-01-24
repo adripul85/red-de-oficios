@@ -1,11 +1,15 @@
 ---
 const year = new Date().getFullYear();
+import { Hammer, Heart } from "lucide-astro";
 ---
 
 <footer class="site-footer">
   <div class="footer-content">
     <div class="footer-col">
-      <h3>🛠️ DeOficios<span class="dot">.com.ar</span></h3>
+      <h3>
+        <Hammer class="w-6 h-6 inline-block text-orange-600 mb-1" />
+        DeOficios<span class="dot">.com.ar</span>
+      </h3>
       <p>
         Conectando vecinos con profesionales de confianza de forma rápida y
         segura.
@@ -20,6 +24,7 @@ const year = new Date().getFullYear();
         <li><a href="/blog">Blog de Consejos</a></li>
         <li><a href="/resultados">Buscar Profesional</a></li>
         <li><a href="/planes">Planes para Profesionales</a></li>
+        <li><a href="/mejores">🏆 Top Mejores Profesionales</a></li>
         <li><a href="/ingresar">Ingresar / Registrarse</a></li>
         <li>
           <a href="/lista-negra" class="text-red-400 hover:text-red-300"
@@ -59,7 +64,9 @@ const year = new Date().getFullYear();
 
   <div class="footer-bottom">
     <p>
-      &copy; {year} DeOficios. Hecho con ❤️ en Buenos Aires.
+      &copy; {year} DeOficios. Hecho con <Heart
+        class="w-4 h-4 inline-block text-red-500 fill-red-500"
+      /> en Buenos Aires.
     </p>
     <br />Todos los derechos reservados.
     <br />
@@ -73,6 +80,8 @@ const year = new Date().getFullYear();
     color: #d1d5db;
     padding: 60px 20px 20px;
     margin-top: auto;
+    position: relative;
+    z-index: 20;
   }
 
   .footer-content {

@@ -1,19 +1,32 @@
----
 const { currentPath } = Astro.props;
+import { 
+    LayoutDashboard, 
+    Target, 
+    FileText, 
+    Wallet, 
+    HardHat, 
+    Users, 
+    Shield,
+    LogOut,
+    User,
+    Download,
+    Power,
+    Zap
+} from 'lucide-astro';
 
 const menuItems = [
-    { path: "/panel", icon: "📊", label: "Dashboard" },
+    { path: "/panel", icon: LayoutDashboard, label: "Dashboard" },
     {
         path: "/panel/oportunidades",
-        icon: "🎯",
+        icon: Target,
         label: "Oportunidades",
         badgeId: "badge-oportunidades",
     },
-    { path: "/panel/presupuestos", icon: "📝", label: "Presupuestos" },
-    { path: "/panel/finanzas", icon: "💰", label: "Finanzas" },
-    { path: "/panel/mi-equipo", icon: "👷", label: "Mi Equipo" },
-    { path: "/panel/clientes", icon: "👥", label: "Clientes" },
-    { path: "/panel/contactos", icon: "🛡️", label: "Mis Contactos" },
+    { path: "/panel/presupuestos", icon: FileText, label: "Presupuestos" },
+    { path: "/panel/finanzas", icon: Wallet, label: "Finanzas" },
+    { path: "/panel/mi-equipo", icon: HardHat, label: "Mi Equipo" },
+    { path: "/panel/clientes", icon: Users, label: "Clientes" },
+    { path: "/panel/contactos", icon: Shield, label: "Mis Contactos" },
 ];
 
 const isActive = (path) => {
@@ -23,11 +36,40 @@ const isActive = (path) => {
 };
 ---
 
+<style>
+    .toggle-checkbox:checked {
+        right: 0;
+        border-color: #22c55e;
+    }
+    .toggle-checkbox {
+        right: 50%; /* Inicialmente a la izquierda (con border width considerado en lógica visual custom) */
+        transition: all 0.3s;
+        /* Custom reset */
+        top: 0;
+        bottom: 0;
+    }
+    .toggle-checkbox:checked + .toggle-label {
+        background-color: #22c55e;
+    }
+    /* Fix para el posicionamiento correcto del toggle */
+    .toggle-checkbox {
+        position: absolute;
+        top: 0;
+        left: 0;
+        transition: all 0.3s;
+    }
+    .toggle-checkbox:checked {
+        left: 100%;
+        transform: translateX(-100%);
+    }
+</style>
+
 <aside
     class="hidden md:flex flex-col w-64 bg-black border-r border-slate-700 h-full"
 >
     <div class="h-16 flex items-center px-6 border-b border-slate-700">
-        <a href="/" class="text-xl font-bold text-white">
+        <a href="/" class="text-xl font-bold text-white flex items-center gap-2">
+            <Zap class="w-6 h-6 text-orange-500" />
             DeOficios<span class="text-orange-500">Pro</span>
         </a>
     </div>
@@ -45,7 +87,7 @@ const isActive = (path) => {
                                 : "text-gray-400 hover:bg-slate-800 hover:text-white",
                         ]}
                     >
-                        <span class="text-xl">{item.icon}</span>
+                        <item.icon class="w-5 h-5" />
                         <span
                             class={
                                 isActive(item.path)
@@ -101,11 +143,41 @@ const isActive = (path) => {
     </div>
 
     <div class="mt-auto pt-4 border-t border-slate-700 space-y-2">
+        <!-- SWITCH ONLINE -->
+        <div class="px-3">
+            <label
+                class="flex items-center justify-between p-2 bg-slate-800 rounded-lg cursor-pointer group hover:bg-slate-700 transition"
+            >
+                <div class="flex items-center gap-2">
+                    <span id="status-icon" class="text-gray-500 text-xs text-center w-5"
+                        >⚫</span
+                    >
+                    <span id="status-text" class="text-white text-xs font-bold"
+                        >Offline</span
+                    >
+                </div>
+                <div
+                    class="relative inline-block w-10 h-5 align-middle select-none transition duration-200 ease-in"
+                >
+                    <input
+                        type="checkbox"
+                        name="toggle"
+                        id="online-toggle"
+                        class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600"
+                    />
+                    <label
+                        for="online-toggle"
+                        class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-600 cursor-pointer"
+                    ></label>
+                </div>
+            </label>
+        </div>
+
         <a
             href="/mi-perfil"
             class="flex items-center gap-3 px-3 py-2 w-full text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
         >
-            <span>👤</span>
+            <User class="w-5 h-5" />
             <span class="font-medium text-sm">Mi Perfil</span>
         </a>
 
@@ -113,7 +185,7 @@ const isActive = (path) => {
             id="btn-logout"
             class="flex items-center gap-3 px-3 py-2 w-full text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors text-left"
         >
-            <span>🚪</span>
+            <LogOut class="w-5 h-5" />
             <span class="font-medium text-sm">Cerrar Sesión</span>
         </button>
     </div>
@@ -122,18 +194,90 @@ const isActive = (path) => {
         id="btn-install-pwa"
         class="hidden flex items-center gap-3 px-3 py-2 w-full text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors mt-2"
     >
-        <span>📲</span>
+        <Download class="w-5 h-5" />
         <span class="font-medium text-sm">Instalar App</span>
     </button>
 </aside>
 
 <script>
-    import { auth } from "../../firebase/client";
-    import { signOut } from "firebase/auth";
+    import { auth, db } from "../../firebase/client"; // Import DB
+    import { signOut, onAuthStateChanged } from "firebase/auth";
+    import { doc, updateDoc, getDoc } from "firebase/firestore";
 
     function setupSidebar() {
         const logoutBtn = document.getElementById("btn-logout");
         const installBtn = document.getElementById("btn-install-pwa");
+
+        // ONLINE SWITCH LOGIC
+        const onlineToggle = document.getElementById("online-toggle");
+        const statusText = document.getElementById("status-text");
+        const statusIcon = document.getElementById("status-icon");
+
+        if (onlineToggle) {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    try {
+                        const userRef = doc(db, "profesionales", user.uid);
+                        const docSnap = await getDoc(userRef);
+                        if (docSnap.exists()) {
+                            const data = docSnap.data();
+                            const isOnline = data.online === true;
+
+                            // Set initial state
+                            onlineToggle.checked = isOnline;
+                            updateStatusUI(isOnline);
+
+                            // Listen for changes
+                            onlineToggle.addEventListener(
+                                "change",
+                                async (e) => {
+                                    const newValue = e.target.checked;
+                                    updateStatusUI(newValue); // Optimistic UI
+                                    try {
+                                        await updateDoc(userRef, {
+                                            online: newValue,
+                                        });
+                                        console.log(
+                                            "✅ Estaso actualizado: ",
+                                            newValue,
+                                        );
+                                    } catch (err) {
+                                        console.error(
+                                            "Error actualizando estado:",
+                                            err,
+                                        );
+                                        // Revert if error
+                                        onlineToggle.checked = !newValue;
+                                        updateStatusUI(!newValue);
+                                        alert(
+                                            "No se pudo actualizar tu estado. Revisa tu conexión.",
+                                        );
+                                    }
+                                },
+                            );
+                        }
+                    } catch (e) {
+                        console.error("Error fetching user status:", e);
+                    }
+                }
+            });
+        }
+
+        function updateStatusUI(isOnline) {
+            if (!statusText || !statusIcon) return;
+            if (isOnline) {
+                statusText.textContent = "EN LÍNEA";
+                statusText.classList.remove("text-gray-400");
+                statusText.classList.add("text-green-400");
+                statusIcon.textContent = "🟢";
+            } else {
+                statusText.textContent = "OFFLINE";
+                statusText.classList.remove("text-green-400");
+                statusText.classList.add("text-gray-400");
+                statusIcon.textContent = "⚫";
+            }
+        }
+
         let deferredPrompt;
 
         // Logout

@@ -1,6 +1,7 @@
 ---
 // Recibir tendencias como prop desde index.astro
 const { trends } = Astro.props;
+import { Mic } from "lucide-astro";
 
 // --- TENDENCIAS ---
 let trendingTags = trends || [];
@@ -61,20 +62,25 @@ if (!trendingTags || trendingTags.length === 0) {
         class="bg-white border border-slate-200 rounded-full shadow-2xl p-2 flex items-center relative z-20 mb-6"
       >
         <!-- Input: Servicio -->
-        <div class="flex-1 w-full px-6 py-3">
-          <label
-            class="block text-xs font-bold text-slate-800 uppercase tracking-wide mb-1"
-          >
-            ¿Qué servicio necesitás?
-          </label>
-          <input
-            type="text"
-            name="q"
-            id="input-servicio"
-            placeholder="Ej: Souvenirs, Electricista, Plomero..."
-            class="w-full outline-none text-slate-700 placeholder-slate-400 bg-transparent text-lg"
-            autocomplete="off"
-          />
+        <div class="flex-1 w-full px-6 py-3 relative flex items-center">
+         <div class="w-full">
+            <label
+                class="block text-xs font-bold text-slate-800 uppercase tracking-wide mb-1"
+            >
+                ¿Qué servicio necesitás?
+            </label>
+            <input
+                type="text"
+                name="q"
+                id="input-servicio"
+                placeholder="Ej: Souvenirs, Electricista, Plomero..."
+                class="w-full outline-none text-slate-700 placeholder-slate-400 bg-transparent text-lg pr-10"
+                autocomplete="off"
+            />
+         </div>
+          <button type="button" id="btn-mic" class="hidden absolute right-4 bottom-4 text-slate-400 hover:text-orange-500 transition-colors p-2" aria-label="Búsqueda por voz">
+            <Mic class="w-5 h-5" />
+          </button>
         </div>
 
         <!-- Botón Buscar -->
@@ -89,25 +95,29 @@ if (!trendingTags || trendingTags.length === 0) {
 
       <!-- Toggle 24hs + Tendencias -->
       <div class="flex flex-col md:flex-row md:items-center gap-6">
-        <!-- Toggle 24hs moderno -->
-        <label class="flex items-center gap-3 cursor-pointer group">
+        <!-- Botón de Emergencia Real -->
+        <a
+          href="/solicitar?urgencia=true"
+          class="group flex items-center gap-3 bg-red-50 hover:bg-red-100 border border-red-200 px-4 py-2 rounded-full transition-all cursor-pointer shadow-sm hover:shadow-red-100"
+        >
           <div class="relative">
-            <input type="checkbox" id="check-24hs" class="sr-only peer" />
             <div
-              class="w-14 h-8 bg-slate-200 rounded-full peer-checked:bg-orange-500 transition-all duration-300 shadow-inner"
+              class="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-20"
             >
             </div>
-            <div
-              class="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6 shadow-md"
-            >
-            </div>
+            <span class="relative block text-2xl">🚨</span>
           </div>
-          <span
-            class="text-sm font-bold text-slate-700 group-hover:text-orange-600 transition flex items-center gap-1"
-          >
-            🚨 Urgencias 24hs
-          </span>
-        </label>
+          <div class="flex flex-col">
+            <span
+              class="text-red-700 font-bold leading-none text-sm group-hover:text-red-800"
+              >BOTÓN DE EMERGENCIAS</span
+            >
+            <span
+              class="text-[10px] text-red-500 font-semibold uppercase tracking-wider"
+              >Servicio 24hs</span
+            >
+          </div>
+        </a>
 
         <!-- Tendencias -->
         <div class="flex items-center gap-2 flex-wrap">
@@ -142,51 +152,65 @@ if (!trendingTags || trendingTags.length === 0) {
   </div>
 
   <script>
-    const form = document.getElementById("hero-search-form");
-    const inputServicio = document.getElementById("input-servicio");
-    const check24hs = document.getElementById("check-24hs");
+    function initHeroSearch() {
+      const form = document.getElementById("hero-search-form");
+      const inputServicio = document.getElementById("input-servicio");
+      const btnMic = document.getElementById("btn-mic");
 
-    if (form) {
-      form.addEventListener("submit", (e) => {
+      if (btnMic && inputServicio) {
         // @ts-ignore
-        const servicio = inputServicio?.value?.trim() || "";
+        const SpeechRecognition =
+          window.SpeechRecognition || window.webkitSpeechRecognition;
 
-        // VALIDACIÓN: Si está vacío, redirigir a /resultados
-        if (!servicio) {
-          e.preventDefault();
-          window.location.href = "/resultados";
-          return;
+        if (SpeechRecognition) {
+          btnMic.classList.remove("hidden");
+          // Clone to remove old listeners
+          const newBtn = btnMic.cloneNode(true);
+          btnMic.parentNode?.replaceChild(newBtn, btnMic);
+
+          const recognition = new SpeechRecognition();
+          recognition.continuous = false;
+          recognition.lang = "es-AR";
+          recognition.interimResults = false;
+          recognition.maxAlternatives = 1;
+
+          newBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            recognition.start();
+            (newBtn as HTMLElement).classList.add(
+              "text-orange-600",
+              "animate-pulse",
+            );
+          });
+
+          recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            // @ts-ignore
+            inputServicio.value = transcript;
+            setTimeout(() => form?.submit(), 400);
+          };
+
+          recognition.onspeechend = () => {
+            recognition.stop();
+            (newBtn as HTMLElement).classList.remove(
+              "text-orange-600",
+              "animate-pulse",
+            );
+          };
+
+          recognition.onerror = () => {
+            (newBtn as HTMLElement).classList.remove(
+              "text-orange-600",
+              "animate-pulse",
+            );
+          };
         }
-
-        // Agregar parámetro 24hs si está marcado
-        // @ts-ignore
-        if (check24hs?.checked) {
-          const hidden = document.createElement("input");
-          hidden.type = "hidden";
-          hidden.name = "urgencia";
-          hidden.value = "24hs";
-          // @ts-ignore
-          form.appendChild(hidden);
-        }
-
-        // Logging de búsqueda para tendencias
-        if (servicio.length > 2) {
-          const data = JSON.stringify({ term: servicio });
-
-          if (navigator.sendBeacon) {
-            const blob = new Blob([data], { type: "application/json" });
-            navigator.sendBeacon("/api/log-search", blob);
-          } else {
-            fetch("/api/log-search", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: data,
-              keepalive: true,
-            }).catch(() => {});
-          }
-        }
-      });
+      }
     }
+
+    // Init
+    initHeroSearch();
+    document.addEventListener("astro:page-load", initHeroSearch);
   </script>
 
   <style>

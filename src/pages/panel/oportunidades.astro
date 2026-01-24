@@ -242,6 +242,82 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
             </div>
         </div>
 
+        <!-- MODAL COTIZACIÓN -->
+        <div id="modal-cotizacion" class="modal-overlay">
+            <div class="modal-container text-left">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-slate-900">
+                        Enviar Presupuesto 💰
+                    </h3>
+                    <button
+                        onclick="cerrarModalCotizacion()"
+                        class="text-slate-400 hover:text-slate-600">✕</button
+                    >
+                </div>
+
+                <p class="text-sm text-slate-500 mb-4">
+                    Estás cotizando para <b id="cot-cliente-nombre">Cliente</b>.
+                </p>
+
+                <form
+                    id="form-cotizacion"
+                    onsubmit="event.preventDefault(); enviarCotizacion();"
+                >
+                    <div class="mb-4">
+                        <label
+                            class="block text-sm font-medium text-slate-700 mb-1"
+                            >Precio Estimado ($)</label
+                        >
+                        <input
+                            type="number"
+                            id="cot-precio"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
+                            placeholder="Ej: 15000"
+                            required
+                            min="1"
+                        />
+                    </div>
+
+                    <div class="mb-6">
+                        <label
+                            class="block text-sm font-medium text-slate-700 mb-1"
+                            >Mensaje / Detalle</label
+                        >
+                        <textarea
+                            id="cot-mensaje"
+                            rows="3"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
+                            placeholder="Hola, puedo realizar el trabajo. Incluye materiales..."
+                            required></textarea>
+                    </div>
+
+                    <p
+                        class="text-xs text-slate-400 mb-4 bg-yellow-50 p-2 rounded border border-yellow-100"
+                    >
+                        💡 Tu presupuesto se mostrará al cliente junto con otros
+                        para que pueda comparar.
+                    </p>
+
+                    <div class="flex gap-3">
+                        <button
+                            type="button"
+                            onclick="cerrarModalCotizacion()"
+                            class="flex-1 bg-white border border-slate-300 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            id="btn-enviar-cotizacion"
+                            class="flex-1 bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg active:scale-95 flex justify-center items-center gap-2"
+                        >
+                            <span>🚀</span> Enviar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <script>
             import { db, auth } from "../../firebase/client";
             import {
@@ -257,6 +333,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 getDoc,
                 deleteField,
                 addDoc,
+                increment,
             } from "firebase/firestore";
             import { onAuthStateChanged } from "firebase/auth";
 
@@ -652,6 +729,14 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                     ? `<span class="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded-full border border-purple-200">💎 Tu Trabajo</span>`
                                     : "";
 
+                                const yaCotice =
+                                    sol.presupuestadosPor?.includes(
+                                        currentUser.uid,
+                                    );
+                                const cotizadoBadge = yaCotice
+                                    ? `<span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded-full border border-indigo-200">💰 Cotizado</span>`
+                                    : "";
+
                                 return `
                         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 hover:shadow-md transition">
                             <!-- Info Principal -->
@@ -662,6 +747,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                         ${urgenteBadge}
                                         ${nuevoBadge}
                                         ${acceptedBadge}
+                                        ${cotizadoBadge}
                                         ${
                                             sol.presupuesto
                                                 ? `<span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">💰 Presupuesto: $${sol.presupuesto}</span>`
@@ -707,12 +793,33 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                 ${
                                     activeTab === "nuevas"
                                         ? `
+                                    ${
+                                        yaCotice
+                                            ? `
+                                    <button 
+                                        disabled
+                                        class="w-full bg-indigo-50 border border-indigo-100 text-indigo-400 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 cursor-not-allowed opacity-80"
+                                    >
+                                        <span>✅</span> Ya Cotizaste
+                                    </button>
+                                    `
+                                            : `
+                                    <button 
+                                        onclick="abrirModalCotizacion('${sol.id}', '${sol.clienteNombre}')"
+                                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm hover:shadow active:scale-95"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                                        Cotizar Ahora
+                                    </button>
+                                    `
+                                    }
+                                    
                                     <button 
                                         onclick="contactarCliente('${sol.id}', '${sol.clienteNombre}', '${sol.telefono || ""}')"
-                                        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm hover:shadow active:scale-95"
+                                        class="w-full bg-white border border-green-600 text-green-600 hover:bg-green-50 font-bold py-2 px-4 rounded-xl flex items-center justify-center gap-2 transition text-sm"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                                        Contactar Cliente
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                        Solo Contactar
                                     </button>
                                     
                                     <button 
@@ -1029,6 +1136,139 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 window.descartarSolicitud = descartarSolicitud;
                 window.eliminarOportunidad = eliminarOportunidad;
                 (window as any).liberarOportunidad = liberarOportunidad;
+                (window as any).abrirModalCotizacion =
+                    window.abrirModalCotizacion;
+                (window as any).cerrarModalCotizacion =
+                    window.cerrarModalCotizacion;
+                (window as any).enviarCotizacion = window.enviarCotizacion;
+                // --- LÓGICA DE COTIZACIÓN ---
+                let cotizacionActual = { id: null, clienteNombre: null };
+
+                window.abrirModalCotizacion = (id, nombre) => {
+                    cotizacionActual = { id, clienteNombre: nombre };
+
+                    const spanNombre =
+                        document.getElementById("cot-cliente-nombre");
+                    if (spanNombre) spanNombre.innerText = nombre;
+
+                    // Limpiar form
+                    (
+                        document.getElementById(
+                            "form-cotizacion",
+                        ) as HTMLFormElement
+                    )?.reset();
+
+                    document
+                        .getElementById("modal-cotizacion")
+                        ?.classList.add("active");
+                };
+
+                window.cerrarModalCotizacion = () => {
+                    document
+                        .getElementById("modal-cotizacion")
+                        ?.classList.remove("active");
+                    cotizacionActual = { id: null, clienteNombre: null };
+                };
+
+                window.enviarCotizacion = async () => {
+                    if (!currentUser || !cotizacionActual.id) return;
+
+                    const precioInput = document.getElementById(
+                        "cot-precio",
+                    ) as HTMLInputElement;
+                    const mensajeInput = document.getElementById(
+                        "cot-mensaje",
+                    ) as HTMLTextAreaElement;
+                    const btnEnviar = document.getElementById(
+                        "btn-enviar-cotizacion",
+                    ) as HTMLButtonElement;
+
+                    const precio = precioInput.value;
+                    const mensaje = mensajeInput.value;
+
+                    if (!precio || !mensaje) {
+                        alert("Por favor completa el precio y el mensaje.");
+                        return;
+                    }
+
+                    try {
+                        btnEnviar.disabled = true;
+                        btnEnviar.innerText = "Enviando...";
+
+                        // 1. Guardar propuesta en subcolección
+                        const propuestaData = {
+                            proId: currentUser.uid,
+                            proNombre: currentUser.displayName || "Profesional",
+                            proFoto: currentUser.photoURL || "",
+                            precio: Number(precio),
+                            mensaje: mensaje,
+                            fecha: new Date(),
+                            estado: "enviada", // enviada | aceptada | rechazada
+                        };
+
+                        // Referencia a la subcolección: solicitudes/{solicitudId}/propuestas
+                        await addDoc(
+                            collection(
+                                db,
+                                `solicitudes/${cotizacionActual.id}/propuestas`,
+                            ),
+                            propuestaData,
+                        );
+
+                        console.log("✅ Propuesta enviada exitosamente");
+
+                        // 2. Marcar solicitud como "Presupuestada" por este PRO (para feedback visual)
+                        // Podemos usar 'presupuestadosPor' arrayUnion en la solicitud padre
+                        await updateDoc(
+                            doc(db, "solicitudes", cotizacionActual.id),
+                            {
+                                presupuestadosPor: arrayUnion(currentUser.uid),
+                            },
+                        );
+
+                        // Actualizar UI Local
+                        todasSolicitudes = todasSolicitudes.map((s) => {
+                            if (s.id === cotizacionActual.id) {
+                                const prev = s.presupuestadosPor || []; // Ojo: hay que agregar este campo en la render logic para mostrar badge
+                                return {
+                                    ...s,
+                                    presupuestadosPor: [
+                                        ...prev,
+                                        currentUser.uid,
+                                    ],
+                                    // NO cambiamos status global a "aceptada" todavía, sigue en "nueva" para otros
+                                };
+                            }
+                            return s;
+                        });
+
+                        window.cerrarModalCotizacion();
+                        renderOportunidades(); // Re-render para mostrar badge "Presupuestando"
+                        showAlert(
+                            "¡Presupuesto Enviado!",
+                            "El cliente recibirá tu propuesta. Si le interesa, te contactará.",
+                            "🚀",
+                        );
+
+                        // Opcional: Abrir WhatsApp con aviso
+                        // const sol = todasSolicitudes.find(s => s.id === cotizacionActual.id);
+                        // if(sol && sol.telefono) {
+                        //    if(confirm("¿Querés avisarle por WhatsApp también?")) {
+                        //        const text = `Hola ${sol.clienteNombre}, te envié un presupuesto de $${precio} por DeOficios. Avísame si te sirve.`;
+                        //        window.open(`https://wa.me/549${sol.telefono.replace(/\D/g, "")}?text=${encodeURIComponent(text)}`, "_blank");
+                        //    }
+                        // }
+                    } catch (error) {
+                        console.error("Error enviando cotización:", error);
+                        alert(
+                            "Error al enviar el presupuesto. Intenta nuevamente.",
+                        );
+                    } finally {
+                        btnEnviar.disabled = false;
+                        btnEnviar.innerHTML = "<span>🚀</span> Enviar";
+                    }
+                };
+
                 window.restaurarSolicitud = async function (id: any) {
                     showAlert(
                         "Próximamente",

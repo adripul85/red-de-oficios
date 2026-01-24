@@ -1,126 +1,124 @@
 ---
 import { CATEGORIES } from "../../data/categories";
+import {
+  Droplets,
+  Zap,
+  Flame,
+  Key,
+  Wrench,
+  Snowflake,
+  Plug,
+  BrickWall,
+  PaintRoller,
+  Home,
+  Hammer,
+  Scissors,
+  Flower2,
+  Waves,
+  Sofa,
+  Shirt,
+  Footprints,
+  Clock,
+  Settings,
+  Cake,
+  Gift,
+  Music,
+  Truck,
+  Bug,
+  User,
+  Search,
+  Video,
+  Laptop,
+  Grid,
+} from "lucide-astro";
 
-// 1. Mapa de Iconos Actualizado
-const iconMap: Record<string, string> = {
+// 1. Mapa de Componentes Lucide
+const componentMap: Record<string, any> = {
   // Urgencias
-  Plomero: "💧",
-  Electricista: "⚡",
-  Gasista: "🔥",
-  Cerrajero: "🔑",
-  Destapaciones: "🚽",
-  "Técnico de Aire Acondicionado": "❄️",
-  "Técnico de Electrodomésticos": "🔌",
+  Plomero: Droplets,
+  Electricista: Zap,
+  Gasista: Flame,
+  Cerrajero: Key,
+  Destapaciones: Wrench,
+  "Técnico de Aire Acondicionado": Snowflake,
+  "Técnico de Electrodomésticos": Plug,
   // Construcción
-  Albañil: "🧱",
-  Pintor: "🎨",
-  Techista: "🏠",
-  "Colocador de Pisos/Ceramista": "🔲",
-  Durlockero: "🏗️",
-  Herrero: "⚒️",
-  Carpintero: "🪚",
-  Vidriero: "🪟",
+  Albañil: BrickWall,
+  Pintor: PaintRoller,
+  Techista: Home,
+  "Colocador de Pisos/Ceramista": Grid,
+  Durlockero: Hammer,
+  Herrero: Settings, // No exact anvil, using Settings/Cog or Hammer
+  Carpintero: Hammer,
+  Vidriero: Grid,
   // Mantenimiento
-  Jardinero: "🌿",
-  Piletero: "🏊",
-  Persianista: "🪟",
-  Tapicero: "🛋️",
-  "Sastre / Modista": "🧵",
-  Zapatero: "👞",
-  Relojero: "⌚",
-  Matricero: "🔩",
+  Jardinero: Flower2,
+  Piletero: Waves,
+  Persianista: Grid,
+  Tapicero: Sofa,
+  "Sastre / Modista": Shirt,
+  Zapatero: Footprints,
+  Relojero: Clock,
+  Matricero: Settings,
   // Eventos
-  "Pastelero/a": "🎂",
-  Souvenirs: "🎁",
-  "DJ / Sonido": "🎧",
-  Fletero: "🚚",
-  Fumigador: "🦟",
+  "Pastelero/a": Cake,
+  Souvenirs: Gift,
+  "DJ / Sonido": Music,
+  Fletero: Truck,
+  Fumigador: Bug,
   // Estética
-  "Peinador / Estilista": "💇‍♀️",
-  Barbero: "💈",
-  "Maquillador / Maquilladora": "💄",
-  "Manicura / Pedicura": "💅",
+  "Peinador / Estilista": Scissors,
+  Barbero: Scissors,
+  "Maquillador / Maquilladora": User,
+  "Manicura / Pedicura": User,
   // Seguridad
-  "Instalador de Cámaras de Seguridad": "📹",
-  "Técnico de PC / Celulares": "💻",
-  default: "🛠️",
+  "Instalador de Cámaras de Seguridad": Video,
+  "Técnico de PC / Celulares": Laptop,
+  default: Wrench,
 };
 
-// 2. Aplanar lista completa para el JS
+// 2. Aplanar lista completa
 const allRubros = CATEGORIES.flatMap((grupo) =>
   grupo.trades.map((trade) => ({
     name: trade.name,
     slug: trade.name,
-    icon: iconMap[trade.name] || iconMap["default"],
+    Icon: componentMap[trade.name] || componentMap["default"], // Capital Icon for component
   })),
 );
+
+// 3. Randomness en Servidor (Build Time o SSR)
+const shuffled = [...allRubros].sort(() => 0.5 - Math.random());
+const randomCategories = shuffled.slice(0, 12);
 ---
 
 <section class="quick-links-section">
   <div class="container">
     <h2 class="section-title">¿Qué estás buscando hoy?</h2>
 
-    <div class="categories-grid" id="random-container">
-      <span style="color:#9ca3af; font-size:0.9rem;"
-        >Cargando sugerencias...</span
-      >
-    </div>
+    <div class="categories-grid">
+      {
+        randomCategories.map((cat) => (
+          <a
+            href={`/resultados?q=${encodeURIComponent(cat.slug)}`}
+            class="category-card fade-in"
+          >
+            <div class="icon-wrapper text-orange-600 mb-2">
+              <cat.Icon class="w-8 h-8" />
+            </div>
+            <span class="name">{cat.name}</span>
+          </a>
+        ))
+      }
 
-    <div
-      id="rubros-data"
-      data-list={JSON.stringify(allRubros)}
-      style="display: none;"
-    >
+      <a href="/resultados" class="category-card view-all fade-in">
+        <div class="icon-wrapper text-orange-600 mb-2">
+          <Search class="w-8 h-8" />
+        </div>
+        <span class="name">Ver todos<br />los rubros</span>
+      </a>
     </div>
   </div>
 </section>
-
-<script>
-  document.addEventListener("astro:page-load", () => {
-    const container = document.getElementById("random-container");
-    const dataDiv = document.getElementById("rubros-data");
-    if (!container || !dataDiv) return;
-
-    const allRubros = JSON.parse(dataDiv.getAttribute("data-list") || "[]");
-
-    // Función para obtener aleatorios
-    /**
-     * @param {any[]} arr - The array to get a subarray from.
-     * @param {number} size - The desired size of the subarray.
-     * @returns {any[]} A new array containing random elements from the original array.
-     */
-    function getRandomSubarray(arr, size) {
-      const shuffled = [...arr].sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, size);
-    }
-
-    const randomCategories = getRandomSubarray(allRubros, 12); // Mostramos 12 aleatorios
-
-    const cardsHTML = randomCategories
-      .map(
-        (cat) => `
-      <a href="/resultados?q=${encodeURIComponent(cat.slug)}" class="category-card fade-in">
-        <span class="icon">${cat.icon}</span>
-        <span class="name">${cat.name || "Rubro"}</span>
-      </a>
-    `,
-      )
-      .join("");
-
-    const viewAllCard = `
-      <a href="/resultados" class="category-card view-all fade-in">
-        <span class="icon">🔍</span>
-        <span class="name">Ver todos<br>los rubros</span>
-      </a>
-    `;
-
-    container.innerHTML = cardsHTML + viewAllCard;
-  });
-
-  document.addEventListener("DOMContentLoaded", () => {
-    document.dispatchEvent(new Event("astro:page-load"));
-  });
-</script>
 
 <style>
   .quick-links-section {
@@ -142,10 +140,18 @@ const allRubros = CATEGORIES.flatMap((grupo) =>
   }
 
   .categories-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    display: flex;
+    overflow-x: auto;
     gap: 15px;
-    min-height: 200px;
+    padding: 10px 5px 20px 5px; /* Bottom padding for scrollbar hiding/spacing */
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+
+  /* Hide scrollbar */
+  .categories-grid::-webkit-scrollbar {
+    display: none;
   }
 
   /* ESTILOS GLOBALES PARA ELEMENTOS INYECTADOS */
@@ -161,6 +167,12 @@ const allRubros = CATEGORIES.flatMap((grupo) =>
     text-decoration: none;
     transition: all 0.2s ease;
     cursor: pointer;
+
+    /* Mobile Fixed Width */
+    min-width: 140px;
+    flex-shrink: 0; /* IMPRESCINDIBLE PARA QUE NO SE ACHIQUEN */
+    scroll-snap-align: start;
+
     height: 100%;
     min-height: 110px;
     animation: fadeIn 0.5s ease-in-out;
@@ -181,7 +193,7 @@ const allRubros = CATEGORIES.flatMap((grupo) =>
   :global(.category-card .name) {
     color: #4b5563;
     font-weight: 600;
-    font-size: 0.85rem; /* Ajustado para nombres largos */
+    font-size: 0.85rem;
     text-align: center;
     line-height: 1.2;
   }
@@ -209,14 +221,32 @@ const allRubros = CATEGORIES.flatMap((grupo) =>
     }
   }
 
-  @media (max-width: 600px) {
+  @media (min-width: 768px) {
     .categories-grid {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      overflow-x: visible;
+      padding-bottom: 0;
     }
+
+    :global(.category-card) {
+      min-width: auto; /* Reset fixed width for grid */
+    }
+  }
+
+  @media (max-width: 600px) {
+    /* MANTENER FLEX EN MÓVIL (NO GRID) */
+    .categories-grid {
+      display: flex; /* Asegurar flex */
+      gap: 10px;
+      /* overflow-x already set in default */
+    }
+
     :global(.category-card) {
       padding: 15px 5px;
       min-height: 90px;
+      min-width: 110px; /* Reduced slightly */
+      flex-shrink: 0;
     }
     :global(.category-card .icon) {
       font-size: 1.5rem;

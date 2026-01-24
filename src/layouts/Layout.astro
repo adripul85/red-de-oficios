@@ -4,6 +4,7 @@ import Footer from "../components/Footer.astro";
 import IAFloatingButton from "../components/IAFloatingButton.astro";
 import "../styles/global.css";
 import GlobalBanner from "../components/GlobalBanner.astro";
+import PWAInstallPrompt from "../components/PWAInstallPrompt.astro";
 import BottomNav from "../components/BottomNav.astro";
 import AiAssistant from "../components/AiAssistant.astro";
 import { ClientRouter } from "astro:transitions";
@@ -102,6 +103,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 	</head>
 	<body class="bg-white text-gray-900 transition-colors duration-300">
 		<GlobalBanner />
+		<PWAInstallPrompt />
 		<!-- PREMIUM SPLASH SCREEN (Apple Music Style) -->
 		<div id="custom-splash-screen">
 			<img

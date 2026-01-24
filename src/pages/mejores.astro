@@ -1,0 +1,670 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+// Esta página será renderizada en el cliente principalmente para filtrar por zona
+---
+
+<Layout title="Top Profesionales - DeOficios">
+    <!-- Hero Section -->
+    <div class="relative bg-slate-900 overflow-hidden py-16 sm:py-24">
+        <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gray-100/10"></div>
+        <div class="max-w-7xl mx-auto px-4 relative z-10 text-center">
+            <h1
+                class="text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 mb-6 drop-shadow-sm"
+            >
+                Salón de la Fama 🏆
+            </h1>
+            <p class="text-xl text-slate-300 max-w-2xl mx-auto mb-10">
+                Conoce a los profesionales mejor calificados de Argentina. <br
+                />
+                Experiencia, confianza y excelencia en cada trabajo.
+            </p>
+
+            <!-- Zona Filers -->
+            <div
+                class="flex flex-wrap justify-center gap-2 max-h-40 overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-slate-700"
+                id="zona-filters"
+            >
+                <button
+                    data-zona="Todas"
+                    class="filter-btn active px-4 py-1.5 rounded-full bg-white text-slate-900 font-bold border border-transparent shadow hover:bg-gray-100 transition text-sm"
+                    >🇦🇷 Todo el País</button
+                >
+                <button
+                    data-zona="CABA"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >CABA</button
+                >
+                <button
+                    data-zona="Buenos Aires"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Buenos Aires</button
+                >
+                <button
+                    data-zona="Catamarca"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Catamarca</button
+                >
+                <button
+                    data-zona="Chaco"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Chaco</button
+                >
+                <button
+                    data-zona="Chubut"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Chubut</button
+                >
+                <button
+                    data-zona="Córdoba"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Córdoba</button
+                >
+                <button
+                    data-zona="Corrientes"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Corrientes</button
+                >
+                <button
+                    data-zona="Entre Ríos"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Entre Ríos</button
+                >
+                <button
+                    data-zona="Formosa"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Formosa</button
+                >
+                <button
+                    data-zona="Jujuy"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Jujuy</button
+                >
+                <button
+                    data-zona="La Pampa"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >La Pampa</button
+                >
+                <button
+                    data-zona="La Rioja"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >La Rioja</button
+                >
+                <button
+                    data-zona="Mendoza"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Mendoza</button
+                >
+                <button
+                    data-zona="Misiones"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Misiones</button
+                >
+                <button
+                    data-zona="Neuquén"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Neuquén</button
+                >
+                <button
+                    data-zona="Río Negro"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Río Negro</button
+                >
+                <button
+                    data-zona="Salta"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Salta</button
+                >
+                <button
+                    data-zona="San Juan"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >San Juan</button
+                >
+                <button
+                    data-zona="San Luis"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >San Luis</button
+                >
+                <button
+                    data-zona="Santa Cruz"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Santa Cruz</button
+                >
+                <button
+                    data-zona="Santa Fe"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Santa Fe</button
+                >
+                <button
+                    data-zona="Santiago del Estero"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Santiago del Estero</button
+                >
+                <button
+                    data-zona="Tierra del Fuego"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Tierra del Fuego</button
+                >
+                <button
+                    data-zona="Tucumán"
+                    class="filter-btn px-4 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white transition text-sm"
+                    >Tucumán</button
+                >
+            </div>
+        </div>
+
+        <!-- Decoration -->
+        <div
+            class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-yellow-500/20 rounded-full blur-3xl"
+        >
+        </div>
+        <div
+            class="absolute bottom-0 left-0 -ml-20 -mb-20 w-72 h-72 bg-orange-500/20 rounded-full blur-3xl"
+        >
+        </div>
+    </div>
+
+    <!-- Ranking Content -->
+    <div class="bg-gray-50 min-h-screen py-12 px-4">
+        <div class="max-w-6xl mx-auto">
+            <div id="loading" class="text-center py-20">
+                <div
+                    class="animate-spin rounded-full h-16 w-16 border-b-4 border-yellow-500 mx-auto"
+                >
+                </div>
+                <p class="mt-4 text-slate-500 font-medium">
+                    Buscando a los mejores...
+                </p>
+            </div>
+
+            <!-- Grid -->
+            <div
+                id="ranking-grid"
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 hidden"
+            >
+                <!-- Cards injected here -->
+            </div>
+
+            <div id="empty-state" class="hidden text-center py-20">
+                <p class="text-2xl mb-2">🔭</p>
+                <h3 class="text-xl font-bold text-slate-700">
+                    Aún no hay destacados en esta zona
+                </h3>
+                <p class="text-slate-500">
+                    Sé el primero en calificar a un profesional aquí.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        import { db } from "../firebase/client";
+        import {
+            collection,
+            query,
+            where,
+            orderBy,
+            limit,
+            getDocs,
+        } from "firebase/firestore";
+
+        let allPros = [];
+        let currentZona = "Todas";
+
+        // DOM Elements
+        const grid = document.getElementById("ranking-grid");
+        const loading = document.getElementById("loading");
+        const empty = document.getElementById("empty-state");
+        const btns = document.querySelectorAll(".filter-btn");
+
+        // Init
+        document.addEventListener("astro:page-load", () => {
+            loadTopPros();
+        });
+
+        // Filter Logic
+        btns.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                // UI Toggle
+                btns.forEach((b) => {
+                    b.classList.remove(
+                        "active",
+                        "bg-white",
+                        "text-slate-900",
+                        "font-bold",
+                        "shadow",
+                    );
+                    b.classList.add(
+                        "bg-slate-800",
+                        "text-slate-300",
+                        "border-slate-700",
+                    );
+                });
+                btn.classList.add(
+                    "active",
+                    "bg-white",
+                    "text-slate-900",
+                    "font-bold",
+                    "shadow",
+                );
+                btn.classList.remove(
+                    "bg-slate-800",
+                    "text-slate-300",
+                    "border-slate-700",
+                );
+
+                currentZona = btn.dataset.zona || "Todas";
+                renderPros();
+            });
+        });
+
+        async function loadTopPros() {
+            try {
+                // Get top 50 pros ordered by average rating
+                // Note: This requires an index in Firestore (status ASC, promedio DESC)
+                // Filter by status='activo' and average > 0 to avoid empty ones
+
+                const q = query(
+                    collection(db, "profesionales"),
+                    where("promedio", ">", 0), // Basic filter to get ranked ones
+                    orderBy("promedio", "desc"),
+                    limit(50),
+                );
+
+                const snap = await getDocs(q);
+                allPros = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+                // Fallback client-side sort if needed (though query does it)
+                allPros.sort((a, b) => (b.promedio || 0) - (a.promedio || 0));
+
+                if (loading) loading.style.display = "none";
+                renderPros();
+            } catch (e) {
+                console.error("Error loading top pros:", e);
+                if (loading) {
+                    loading.innerHTML = `
+                    <div class="bg-red-50 p-4 rounded-xl text-red-600 inline-block">
+                        Error al cargar el ranking.
+                        <br><span class="text-xs opacity-75">${e.message}</span>
+                    </div>`;
+                }
+            }
+        }
+
+        function renderPros() {
+            if (!grid) return;
+
+            let filtered = allPros;
+
+            // Zona Filter
+            if (currentZona !== "Todas") {
+                // Mapa Manual de Localidades (Simplificado para Client Side)
+                const LOCATIONS_MAP = [
+                    {
+                        group: "CABA",
+                        keywords: [
+                            "caba",
+                            "capital federal",
+                            "ciudad autonoma",
+                            "capital",
+                        ],
+                        zones: [
+                            "agronomia",
+                            "almagro",
+                            "balvanera",
+                            "barracas",
+                            "belgrano",
+                            "boedo",
+                            "caballito",
+                            "chacarita",
+                            "coghlan",
+                            "colegiales",
+                            "constitucion",
+                            "flores",
+                            "floresta",
+                            "la boca",
+                            "la paternal",
+                            "liniers",
+                            "mataderos",
+                            "monte castro",
+                            "monserrat",
+                            "nueva pompeya",
+                            "nuñez",
+                            "palermo",
+                            "parque avellaneda",
+                            "parque chacabuco",
+                            "parque chas",
+                            "parque patricios",
+                            "puerto madero",
+                            "recoleta",
+                            "retiro",
+                            "saavedra",
+                            "san cristobal",
+                            "san nicolas",
+                            "san telmo",
+                            "velez sarsfield",
+                            "versalles",
+                            "villa crespo",
+                            "villa del parque",
+                            "villa devoto",
+                            "villa general mitre",
+                            "villa lugano",
+                            "villa luro",
+                            "villa ortuzar",
+                            "villa pueyrredon",
+                            "villa real",
+                            "villa riachuelo",
+                            "villa santa rita",
+                            "villa soldati",
+                            "villa urquiza",
+                        ],
+                    },
+                    {
+                        group: "Buenos Aires",
+                        keywords: [
+                            "buenos aires",
+                            "gba",
+                            "zona norte",
+                            "zona sur",
+                            "zona oeste",
+                            "la plata",
+                        ],
+                        zones: [
+                            "vicente lopez",
+                            "olivos",
+                            "san isidro",
+                            "tigre",
+                            "pilar",
+                            "escobar",
+                            "avellaneda",
+                            "lanus",
+                            "lomas de zamora",
+                            "quilmes",
+                            "berazategui",
+                            "moron",
+                            "merlo",
+                            "moreno",
+                            "la matanza",
+                            "san justo",
+                            "ramos mejia",
+                            "la plata",
+                            "mar del plata",
+                            "bahia blanca",
+                            "tandil",
+                            "lujan",
+                            "zarate",
+                            "campana",
+                        ],
+                    },
+                    // Provincias con sus capitales y ciudades principales
+                    {
+                        group: "Cordoba",
+                        zones: [
+                            "cordoba capital",
+                            "villa carlos paz",
+                            "rio cuarto",
+                            "villa maria",
+                            "alta gracia",
+                        ],
+                    },
+                    {
+                        group: "Santa Fe",
+                        zones: [
+                            "rosario",
+                            "santa fe capital",
+                            "rafaela",
+                            "venado tuerto",
+                            "san lorenzo",
+                        ],
+                    },
+                    {
+                        group: "Mendoza",
+                        zones: [
+                            "mendoza capital",
+                            "godoy cruz",
+                            "guaymallen",
+                            "san rafael",
+                            "lujan de cuyo",
+                        ],
+                    },
+                    {
+                        group: "Tucuman",
+                        zones: [
+                            "san miguel de tucuman",
+                            "yerba buena",
+                            "tafi viejo",
+                        ],
+                    },
+                    {
+                        group: "Salta",
+                        zones: ["salta capital", "orán", "tartagal"],
+                    },
+                    {
+                        group: "Entre Rios",
+                        zones: ["parana", "concordia", "gualeguaychu"],
+                    },
+                    {
+                        group: "Misiones",
+                        zones: ["posadas", "iguazu", "obera", "eldorado"],
+                    },
+                    {
+                        group: "Corrientes",
+                        zones: ["corrientes capital", "goya"],
+                    },
+                    { group: "Chaco", zones: ["resistencia", "saenz peña"] },
+                    { group: "Jujuy", zones: ["san salvador", "palpala"] },
+                    {
+                        group: "San Juan",
+                        zones: ["san juan capital", "rawson", "chimbas"],
+                    },
+                    {
+                        group: "Neuquen",
+                        zones: [
+                            "neuquen capital",
+                            "san martin de los andes",
+                            "plottier",
+                        ],
+                    },
+                    {
+                        group: "Rio Negro",
+                        zones: [
+                            "bariloche",
+                            "viedma",
+                            "cipolletti",
+                            "general roca",
+                        ],
+                    },
+                    {
+                        group: "Chubut",
+                        zones: [
+                            "comodoro rivadavia",
+                            "trelew",
+                            "puerto madryn",
+                            "esquel",
+                        ],
+                    },
+                    {
+                        group: "Santa Cruz",
+                        zones: ["rio gallegos", "el calafate", "caleta olivia"],
+                    },
+                    {
+                        group: "Tierra del Fuego",
+                        zones: ["ushuaia", "rio grande"],
+                    },
+                    {
+                        group: "San Luis",
+                        zones: ["san luis capital", "villa mercedes", "merlo"],
+                    },
+                    {
+                        group: "La Rioja",
+                        zones: ["la rioja capital", "chilecito"],
+                    },
+                    {
+                        group: "Catamarca",
+                        zones: ["catamarca capital", "san fernando"],
+                    },
+                    {
+                        group: "Santiago del Estero",
+                        zones: ["santiago del estero", "la banda"],
+                    },
+                    {
+                        group: "La Pampa",
+                        zones: ["santa rosa", "general pico"],
+                    },
+                    {
+                        group: "Formosa",
+                        zones: ["formosa capital", "clorinda"],
+                    },
+                ];
+
+                filtered = allPros.filter((p) => {
+                    const pZona = (p.zona || "")
+                        .toLowerCase()
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "");
+                    const fZona = currentZona
+                        .toLowerCase()
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "");
+
+                    // 1. Identificar Grupo Seleccionado
+                    const targetGroup = LOCATIONS_MAP.find(
+                        (g) =>
+                            g.group
+                                .toLowerCase()
+                                .normalize("NFD")
+                                .replace(/[\u0300-\u036f]/g, "") === fZona,
+                    );
+
+                    // 2. Matching Logic
+                    if (targetGroup) {
+                        const matchesZoneList = targetGroup.zones?.some((z) =>
+                            pZona.includes(z),
+                        );
+                        const matchesKeywords = targetGroup.keywords?.some(
+                            (k) => pZona.includes(k),
+                        );
+                        const matchesGroupName = pZona.includes(fZona);
+
+                        // CABA anti-collision (Don't match "Neuquen Capital")
+                        if (fZona === "caba") {
+                            if (
+                                pZona.includes("neuquen") ||
+                                pZona.includes("corrientes") ||
+                                pZona.includes("cordoba") ||
+                                pZona.includes("mendoza") ||
+                                pZona.includes("san juan") ||
+                                pZona.includes("santiago") ||
+                                pZona.includes("catamarca") ||
+                                pZona.includes("rio negro") ||
+                                pZona.includes("santa fe")
+                            )
+                                return false;
+                        }
+
+                        // Buenos Aires anti-collision (Don't match "CABA")
+                        if (fZona === "buenos aires") {
+                            if (
+                                pZona.includes("caba") ||
+                                pZona.includes("capital federal") ||
+                                pZona.includes("ciudad autonoma")
+                            )
+                                return false;
+                        }
+
+                        return (
+                            matchesZoneList ||
+                            matchesKeywords ||
+                            matchesGroupName
+                        );
+                    }
+
+                    // Fallback Partial Match
+                    return pZona.includes(fZona);
+                });
+            }
+
+            if (filtered.length === 0) {
+                grid.style.display = "none";
+                empty.classList.remove("hidden");
+                return;
+            }
+
+            empty.classList.add("hidden");
+            grid.style.display = "grid";
+            grid.classList.remove("hidden");
+
+            grid.innerHTML = filtered
+                .map((pro, index) => {
+                    const rank = index + 1;
+                    let medal = "";
+                    if (currentZona === "Todas") {
+                        // Global rank medals (relative to the filtered view though? No, global rank is hard in client side filter.
+                        // Let's us medal based on position in current list)
+                    }
+
+                    if (rank === 1) medal = "🥇";
+                    else if (rank === 2) medal = "🥈";
+                    else if (rank === 3) medal = "🥉";
+                    else
+                        medal = `<span class="font-mono text-slate-400">#${rank}</span>`;
+
+                    return `
+                <a href="/perfil?id=${pro.id}" class="group relative bg-white rounded-3xl p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 overflow-hidden">
+                    
+                    <!-- Rank Badge -->
+                    <div class="absolute top-4 right-4 text-2xl font-black bg-slate-50 w-12 h-12 flex items-center justify-center rounded-full border border-slate-100 z-10">
+                        ${medal}
+                    </div>
+
+                    <div class="flex items-center gap-4 mb-4 relative z-10">
+                        <img 
+                            src="${pro.foto || "https://ui-avatars.com/api/?name=" + pro.nombre}" 
+                            class="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-md group-hover:scale-105 transition-transform"
+                            alt="${pro.nombre}"
+                        >
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors">
+                                ${pro.nombre}
+                            </h3>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">
+                                ${pro.rubro_principal || "Profesional"}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 relative z-10">
+                        <!-- Stats -->
+                        <div class="flex items-center gap-2 bg-yellow-50 p-2 rounded-lg border border-yellow-100">
+                            <span class="text-xl">⭐</span>
+                            <div>
+                                <p class="text-sm font-bold text-yellow-800">
+                                    ${Number(pro.promedio || 0).toFixed(1)} Puntos
+                                </p>
+                                <p class="text-[10px] text-yellow-600">
+                                    Basado en ${pro.total_votos || 0} reseñas
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 text-sm text-slate-500">
+                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            ${pro.zona || "Argentina"}
+                        </div>
+                    </div>
+
+                    <!-- Button -->
+                    <div class="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between text-indigo-600 font-bold text-sm">
+                        <span>Ver Perfil</span>
+                        <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </div>
+
+                    <!-- Decorative Gradient -->
+                    <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+                </a>
+                `;
+                })
+                .join("");
+        }
+    </script>
+</Layout>

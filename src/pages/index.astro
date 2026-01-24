@@ -11,62 +11,79 @@ import {
   limit,
   orderBy,
 } from "firebase/firestore";
+import {
+  Search,
+  ShieldCheck,
+  MessageCircle,
+  Star,
+  MapPin,
+  Map as MapIcon,
+  Briefcase,
+} from "lucide-astro";
 
 // 1. TRAER SOLO LOS DESTACADOS (PREMIUM)
-// 1. TRAER SOLO LOS DESTACADOS (PREMIUM)
-const q = query(
+// 1. DEFINICIONES DE CONSULTAS (Queries)
+// Destacados (Premium)
+const qDestacados = query(
   collection(db, "profesionales"),
   where("plan", "in", ["experto", "semestral", "impulso", "mensual"]),
   limit(20),
 );
 
-const snapshot = await getDocs(q);
-let destacados = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+// Top Rated (Podio)
+const qTop = query(
+  collection(db, "profesionales"),
+  orderBy("promedio", "desc"),
+  orderBy("total_votos", "desc"),
+  limit(10),
+);
 
+// Trends (Búsquedas)
+const qTrends = query(
+  collection(db, "search_trends"),
+  orderBy("count", "desc"),
+  limit(4),
+);
+
+// 2. EJECUCIÓN PARALELA (Optimización clave)
+const [snapDest, snapTop, snapTrends] = await Promise.all([
+  getDocs(qDestacados),
+  getDocs(qTop).catch((e) => {
+    console.warn("Error TopRated", e);
+    return { docs: [] };
+  }), // Fail-safe
+  getDocs(qTrends).catch((e) => {
+    console.warn("Error Trends", e);
+    return { docs: [] };
+  }), // Fail-safe
+]);
+
+// 3. PROCESAMIENTO DE DATOS
+
+// --- Destacados ---
+let destacados = snapDest.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 // Ordenar manualmente: Experto > Impulso
 destacados.sort((a: any, b: any) => {
   const weightA = a.plan === "experto" || a.plan === "semestral" ? 2 : 1;
   const weightB = b.plan === "experto" || b.plan === "semestral" ? 2 : 1;
   return weightB - weightA;
 });
-
-// Tomar solo 4
 destacados = destacados.slice(0, 4);
 
-// 2. TRAER LOS MEJORES PUNTUADOS (EL PODIO)
-let topRated = [];
-try {
-  const qTop = query(
-    collection(db, "profesionales"),
-    orderBy("promedio", "desc"),
-    orderBy("total_votos", "desc"),
-    limit(10),
-  );
-  const snapTop = await getDocs(qTop);
-  topRated = snapTop.docs
-    .map((doc) => ({ id: doc.id, ...doc.data() }))
-    .filter((p) => p.promedio > 0)
-    .slice(0, 4);
-} catch (e) {
-  console.warn("Aviso Firebase índices");
-}
+// --- Top Rated ---
+let topRated = snapTop.docs
+  .map((doc) => ({ id: doc.id, ...doc.data() }))
+  .filter((p: any) => p.promedio > 0)
+  .slice(0, 4);
 
-// 3. --- NUEVO: TRAER TENDENCIAS DE BÚSQUEDA ---
-// Esto reemplaza las palabras estáticas por datos reales
-let trendingTags = [];
-try {
-  const qTrends = query(
-    collection(db, "search_trends"),
-    orderBy("count", "desc"), // Los más buscados primero
-    limit(4),
-  );
-  const snapTrends = await getDocs(qTrends);
-  trendingTags = snapTrends.docs.map((doc) => ({
-    term: doc.data().term_display || doc.id, // Usar el nombre bonito o el ID
-    link: doc.id, // El ID ya está en minusculas para la URL
-  }));
-} catch (error) {
-  // Fallback: Si no hay datos aún, mostramos estos por defecto
+// --- Trends ---
+let trendingTags = snapTrends.docs.map((doc) => ({
+  term: doc.data().term_display || doc.id,
+  link: doc.id,
+}));
+
+// Fallback Trends si falla o vacío
+if (trendingTags.length === 0) {
   trendingTags = [
     { term: "Gasista", link: "gasista" },
     { term: "Electricista", link: "electricista" },
@@ -79,52 +96,6 @@ try {
   <main>
     <HeroSearch trends={trendingTags} />
 
-    {
-      topRated.length > 0 && (
-        <section class="top-rated container section-pad">
-          <div class="section-header">
-            <h2>🏆 Los Favoritos del Barrio</h2>
-            <p>Profesionales con las mejores calificaciones.</p>
-          </div>
-
-          <div class="featured-grid">
-            {topRated.map((pro) => (
-              <a href={`/perfil?id=${pro.id}`} class="pro-card card-top">
-                <div class="pro-image">
-                  {pro.foto ? (
-                    <img
-                      src={pro.foto}
-                      alt={`Foto de ${pro.nombre}`}
-                      loading="lazy"
-                      decoding="async"
-                      width="300"
-                      height="200"
-                    />
-                  ) : (
-                    <div class="placeholder">
-                      {pro.nombre ? pro.nombre[0].toUpperCase() : "U"}
-                    </div>
-                  )}
-                  <span class="badge-top">
-                    TOP {Number(pro.promedio || 0).toFixed(1)}
-                  </span>
-                </div>
-                <div class="pro-info">
-                  <h3>{pro.nombre}</h3>
-                  <span class="category">{pro.categoria}</span>
-                  <p class="zona">📍 {pro.zona || "Zona no especificada"}</p>
-                  <div class="rating">
-                    {"★".repeat(Math.round(pro.promedio || 0))}{" "}
-                    <span class="num">({pro.total_votos || 0})</span>
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        </section>
-      )
-    }
-
     <CategoryQuickLinks />
 
     <section class="how-it-works section-pad">
@@ -136,22 +107,30 @@ try {
 
         <div class="steps-grid">
           <div class="step-card">
-            <div class="step-icon">🔍</div>
+            <div class="step-icon">
+              <Search class="w-10 h-10 text-orange-600" />
+            </div>
             <h3>1. Buscá</h3>
             <p>Escribí qué necesitás o navegá por el mapa interactivo.</p>
           </div>
           <div class="step-card">
-            <div class="step-icon">✅</div>
+            <div class="step-icon">
+              <ShieldCheck class="w-10 h-10 text-orange-600" />
+            </div>
             <h3>2. Compará</h3>
             <p>Mirá fotos, leé opiniones reales y chequeá identidad.</p>
           </div>
           <div class="step-card">
-            <div class="step-icon">📲</div>
+            <div class="step-icon">
+              <MessageCircle class="w-10 h-10 text-orange-600" />
+            </div>
             <h3>3. Contactá</h3>
             <p>Hablá directo por WhatsApp y coordiná el trabajo.</p>
           </div>
           <div class="step-card">
-            <div class="step-icon">⭐</div>
+            <div class="step-icon">
+              <Star class="w-10 h-10 text-orange-600" />
+            </div>
             <h3>4. Calificá</h3>
             <p>Valorá al trabajador. ¡Ayudá a los honestos a crecer!</p>
           </div>
@@ -160,13 +139,17 @@ try {
     </section>
 
     <section class="map-banner container section-pad">
-      <div class="map-content-wrapper">
-        <div class="map-text">
-          <h3>📍 Mapa Interactivo</h3>
+      <div class="map-content-wrapper relative overflow-hidden">
+        <div class="map-text relative z-10">
+          <h3>
+            <MapPin class="w-8 h-8 inline-block text-yellow-500 mr-2" /> Mapa Interactivo
+          </h3>
           <p>Fijate quién está trabajando cerca de tu casa ahora mismo.</p>
           <a href="/mapa" class="btn-map">Explorar Mapa en Vivo</a>
         </div>
-        <div class="map-visual">🗺️</div>
+        <MapIcon
+          class="absolute -right-10 -bottom-10 w-64 h-64 text-white/10 rotate-12 pointer-events-none"
+        />
       </div>
     </section>
 
@@ -216,7 +199,11 @@ try {
 
     <section class="cta-pro section-pad">
       <div class="container">
-        <h2>¿Sos Profesional? 🧰</h2>
+        <h2>
+          ¿Sos Profesional? <Briefcase
+            class="w-8 h-8 inline-block text-gray-400"
+          />
+        </h2>
         <p>Sumate a la red y conseguí clientes nuevos.</p>
 
         <div class="cta-buttons">
