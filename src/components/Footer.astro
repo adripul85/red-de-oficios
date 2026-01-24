@@ -11,36 +11,34 @@ import { Hammer, Heart } from "lucide-astro";
         DeOficios<span class="dot">.com.ar</span>
       </h3>
       <p>
-        Conectando vecinos con profesionales de confianza de forma rápida y
+        Conectando vecinos con profesionales de confianza de forma rpida y
         segura.
       </p>
     </div>
 
     <div class="footer-col">
-      <h4>Navegación</h4>
+      <h4>Navegacin</h4>
       <ul>
         <li><a href="/">Inicio</a></li>
         <li><a href="/nosotros">Nosotros</a></li>
         <li><a href="/blog">Blog de Consejos</a></li>
         <li><a href="/resultados">Buscar Profesional</a></li>
         <li><a href="/planes">Planes para Profesionales</a></li>
-        <li><a href="/mejores">🏆 Top Mejores Profesionales</a></li>
+        <li><a href="/mejores"> Top Mejores Profesionales</a></li>
         <li><a href="/ingresar">Ingresar / Registrarse</a></li>
         <li>
-          <a href="/lista-negra" class="text-red-400 hover:text-red-300"
-            >Lista Negra 🚫</a
-          >
+          <a href="/lista-negra" class="text-red-400 hover:text-red-300">Lista Negra </a>
         </li>
       </ul>
     </div>
 
     <div class="footer-col">
-      <h4>Más Buscados</h4>
+      <h4>Ms Buscados</h4>
       <ul>
         <li>
           <a href="/s/electricista/capital-federal">Electricistas en CABA</a>
         </li>
-        <li><a href="/s/plomero/cordoba">Plomeros en Córdoba</a></li>
+        <li><a href="/s/plomero/cordoba">Plomeros en Crdoba</a></li>
         <li><a href="/s/gasista/rosario">Gasistas en Rosario</a></li>
         <li><a href="/s/pintor/mendoza">Pintores en Mendoza</a></li>
       </ul>
@@ -48,7 +46,7 @@ import { Hammer, Heart } from "lucide-astro";
 
     <div class="footer-col">
       <h4>Newsletter</h4>
-      <p class="mb-4">Recibí consejos y novedades en tu email.</p>
+      <p class="mb-4">Recib consejos y novedades en tu email.</p>
       <form id="newsletter-form" class="newsletter-form">
         <input
           type="email"
@@ -70,7 +68,7 @@ import { Hammer, Heart } from "lucide-astro";
     </p>
     <br />Todos los derechos reservados.
     <br />
-    Marca Registrada. Prohibida su reproducción total o parcial.
+    Marca Registrada. Prohibida su reproduccin total o parcial.
   </div>
 </footer>
 
@@ -207,18 +205,18 @@ import { Hammer, Heart } from "lucide-astro";
         if (status) {
           status.classList.remove("hidden");
           if (data.success) {
-            status.textContent = "✅ ¡Gracias por suscribirte!";
+            status.textContent = " Gracias por suscribirte!";
             status.className = "text-xs mt-2 text-green-400";
             // @ts-ignore
             form.reset();
           } else {
-            status.textContent = "❌ " + (data.error || "Ocurrió un error");
+            status.textContent = " " + (data.error || "Ocurri un error");
             status.className = "text-xs mt-2 text-red-400";
           }
         }
       } catch (err) {
         if (status) {
-          status.textContent = "❌ Error de conexión";
+          status.textContent = " Error de conexin";
           status.className = "text-xs mt-2 text-red-400";
         }
       } finally {
@@ -227,3 +225,4 @@ import { Hammer, Heart } from "lucide-astro";
     });
   });
 </script>
+

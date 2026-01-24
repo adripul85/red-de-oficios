@@ -2,34 +2,27 @@
 import Layout from "../../layouts/Layout.astro";
 ---
 
-<Layout title="Panel de Administración - Staff">
+<Layout title="Panel de Administracin - Staff">
     <div class="min-h-screen bg-slate-50 py-8 px-4 font-sans">
         <div class="max-w-6xl mx-auto">
             <!-- HEADER -->
             <header
-                class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden"
-            >
+                class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden">
                 <div class="relative z-10 flex items-center gap-4">
                     <div
-                        class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-2xl"
-                    >
-                        👮‍♂️
+                        class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-2xl">
+                        
                     </div>
                     <div>
                         <h1
-                            class="text-2xl font-black text-slate-800 tracking-tight"
-                        >
+                            class="text-2xl font-black text-slate-800 tracking-tight">
                             Centro de Comando
                         </h1>
                         <p class="text-slate-500 text-sm font-medium">
-                            Hola, <span id="staff-name" class="text-slate-800"
-                                >...</span
-                            >
+                            Hola, <span id="staff-name" class="text-slate-800">...</span>
                             <span
                                 id="staff-role"
-                                class="ml-2 bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider"
-                                >...</span
-                            >
+                                class="ml-2 bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">...</span>
                         </p>
                     </div>
                 </div>
@@ -37,30 +30,26 @@ import Layout from "../../layouts/Layout.astro";
                 <div class="relative z-10">
                     <button
                         id="btn-logout-admin"
-                        class="group flex items-center gap-2 px-5 py-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-all font-bold text-sm"
-                    >
-                        <span>Cerrar Sesión</span>
+                        class="group flex items-center gap-2 px-5 py-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-all font-bold text-sm">
+                        <span>Cerrar Sesin</span>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke-width="2"
                             stroke="currentColor"
-                            class="w-4 h-4 group-hover:translate-x-1 transition-transform"
-                        >
+                            class="w-4 h-4 group-hover:translate-x-1 transition-transform">
                             <path
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
-                                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
-                            ></path>
+                                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"></path>
                         </svg>
                     </button>
                 </div>
 
                 <!-- Decorative Background Blob -->
                 <div
-                    class="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-slate-50 rounded-full blur-3xl opacity-50 pointer-events-none"
-                >
+                    class="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-slate-50 rounded-full blur-3xl opacity-50 pointer-events-none">
                 </div>
             </header>
 
@@ -68,23 +57,19 @@ import Layout from "../../layouts/Layout.astro";
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                 <!-- Users Stat -->
                 <div
-                    class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5 hover:shadow-md transition-shadow"
-                >
+                    class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5 hover:shadow-md transition-shadow">
                     <div
-                        class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl shadow-sm"
-                    >
-                        👥
+                        class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl shadow-sm">
+                        
                     </div>
                     <div>
                         <p
-                            class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1"
-                        >
+                            class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
                             Total Usuarios
                         </p>
                         <p
                             class="text-3xl font-black text-slate-800"
-                            id="count-users"
-                        >
+                            id="count-users">
                             ...
                         </p>
                     </div>
@@ -92,23 +77,19 @@ import Layout from "../../layouts/Layout.astro";
 
                 <!-- Reports Stat -->
                 <div
-                    class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5 hover:shadow-md transition-shadow"
-                >
+                    class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5 hover:shadow-md transition-shadow">
                     <div
-                        class="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-2xl shadow-sm"
-                    >
-                        ⚠️
+                        class="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-2xl shadow-sm">
+                        
                     </div>
                     <div>
                         <p
-                            class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1"
-                        >
+                            class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
                             Reportes
                         </p>
                         <p
                             class="text-3xl font-black text-slate-800"
-                            id="count-reports"
-                        >
+                            id="count-reports">
                             0
                         </p>
                     </div>
@@ -117,245 +98,208 @@ import Layout from "../../layouts/Layout.astro";
                 <!-- Finance Stat (Hidden by default) -->
                 <div
                     id="finance-card"
-                    class="bg-emerald-600 p-6 rounded-2xl shadow-sm border border-emerald-100 flex items-center gap-5 hidden relative overflow-hidden"
-                >
+                    class="bg-emerald-600 p-6 rounded-2xl shadow-sm border border-emerald-100 flex items-center gap-5 hidden relative overflow-hidden">
                     <div
-                        class="relative z-10 w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl shadow-inner"
-                    >
-                        💰
+                        class="relative z-10 w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
+                        
                     </div>
                     <div class="relative z-10">
                         <p
-                            class="text-xs font-bold text-emerald-600/70 uppercase tracking-wider mb-1"
-                        >
-                            Facturación
+                            class="text-xs font-bold text-emerald-600/70 uppercase tracking-wider mb-1">
+                            Facturacin
                         </p>
                         <p
                             class="text-3xl font-black text-emerald-700"
-                            id="revenue"
-                        >
+                            id="revenue">
                             $ 0
                         </p>
                     </div>
                     <div
-                        class="absolute right-0 bottom-0 w-24 h-24 bg-emerald-200/20 rounded-full blur-xl"
-                    >
+                        class="absolute right-0 bottom-0 w-24 h-24 bg-emerald-200/20 rounded-full blur-xl">
                     </div>
                 </div>
             </div>
 
             <!-- QUICK ACTIONS -->
             <h2
-                class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2"
-            >
+                class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
                 <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span>
-                Acciones Rápidas
+                Acciones Rpidas
             </h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- NEWSLETTER -->
                 <a
                     href="/admin/newsletter"
-                    class="bg-gradient-to-br from-indigo-600 to-violet-600 text-white p-6 rounded-3xl shadow-lg hover:shadow-indigo-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48"
-                >
+                    class="bg-gradient-to-br from-indigo-600 to-violet-600 text-white p-6 rounded-3xl shadow-lg hover:shadow-indigo-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48">
                     <div class="relative z-10">
                         <div
-                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white"
-                        >
-                            📧
+                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white">
+                            
                         </div>
                         <h3 class="font-black text-2xl tracking-tight mb-1">
                             Newsletter
                         </h3>
                         <p
-                            class="text-indigo-100 text-sm font-medium leading-relaxed opacity-90"
-                        >
-                            Gestionar suscriptores, campañas de email y
-                            estadísticas.
+                            class="text-indigo-100 text-sm font-medium leading-relaxed opacity-90">
+                            Gestionar suscriptores, campaas de email y
+                            estadsticas.
                         </p>
                     </div>
                     <div
-                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"
-                    >
+                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors">
                     </div>
                 </a>
 
                 <!-- USUARIOS -->
                 <a
                     href="/admin/usuarios"
-                    class="bg-gradient-to-br from-blue-500 to-cyan-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-blue-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48"
-                >
+                    class="bg-gradient-to-br from-blue-500 to-cyan-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-blue-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48">
                     <div class="relative z-10">
                         <div
-                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white"
-                        >
-                            👥
+                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white">
+                            
                         </div>
                         <h3 class="font-black text-2xl tracking-tight mb-1">
                             Usuarios
                         </h3>
                         <p
-                            class="text-blue-100 text-sm font-medium leading-relaxed opacity-90"
-                        >
-                            Ver perfiles, editar información y controlar
+                            class="text-blue-100 text-sm font-medium leading-relaxed opacity-90">
+                            Ver perfiles, editar informacin y controlar
                             accesos.
                         </p>
                     </div>
                     <div
-                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"
-                    >
+                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors">
                     </div>
                 </a>
 
                 <!-- MENSAJES -->
                 <a
                     href="/admin/mensajes"
-                    class="bg-gradient-to-br from-emerald-500 to-teal-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-emerald-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48"
-                >
+                    class="bg-gradient-to-br from-emerald-500 to-teal-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-emerald-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48">
                     <div class="relative z-10">
                         <div
-                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white"
-                        >
-                            💬
+                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white">
+                            
                         </div>
                         <h3 class="font-black text-2xl tracking-tight mb-1">
                             Mensajes
                         </h3>
                         <p
-                            class="text-emerald-100 text-sm font-medium leading-relaxed opacity-90"
-                        >
-                            Buzón de entrada, soporte técnico y contacto
+                            class="text-emerald-100 text-sm font-medium leading-relaxed opacity-90">
+                            Buzn de entrada, soporte tcnico y contacto
                             directo.
                         </p>
                     </div>
                     <div
-                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"
-                    >
+                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors">
                     </div>
                 </a>
 
                 <!-- DENUNCIAS -->
                 <a
                     href="/admin/denuncias"
-                    class="bg-gradient-to-br from-orange-500 to-red-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-orange-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48"
-                >
+                    class="bg-gradient-to-br from-orange-500 to-red-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-orange-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48">
                     <div class="relative z-10">
                         <div
-                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white"
-                        >
-                            🚨
+                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white">
+                            
                         </div>
                         <h3 class="font-black text-2xl tracking-tight mb-1">
                             Denuncias
                         </h3>
                         <p
-                            class="text-orange-100 text-sm font-medium leading-relaxed opacity-90"
-                        >
-                            Moderación de contenido, reportes de usuarios y
+                            class="text-orange-100 text-sm font-medium leading-relaxed opacity-90">
+                            Moderacin de contenido, reportes de usuarios y
                             bloqueos.
                         </p>
                     </div>
                     <div
-                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"
-                    >
+                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors">
                     </div>
                 </a>
 
                 <!-- PAGOS -->
                 <a
                     href="/admin/pagos"
-                    class="bg-gradient-to-br from-pink-500 to-rose-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-pink-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48"
-                >
+                    class="bg-gradient-to-br from-pink-500 to-rose-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-pink-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48">
                     <div class="relative z-10">
                         <div
-                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white"
-                        >
-                            💳
+                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white">
+                            
                         </div>
                         <h3 class="font-black text-2xl tracking-tight mb-1">
                             Pagos
                         </h3>
                         <p
-                            class="text-pink-100 text-sm font-medium leading-relaxed opacity-90"
-                        >
+                            class="text-pink-100 text-sm font-medium leading-relaxed opacity-90">
                             Historial de transacciones, planes y suscripciones.
                         </p>
                     </div>
                     <div
-                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"
-                    >
+                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors">
                     </div>
                 </a>
 
                 <!-- BLOG -->
                 <a
                     href="/admin/blog"
-                    class="bg-gradient-to-br from-amber-400 to-orange-400 text-white p-6 rounded-3xl shadow-lg hover:shadow-amber-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48"
-                >
+                    class="bg-gradient-to-br from-amber-400 to-orange-400 text-white p-6 rounded-3xl shadow-lg hover:shadow-amber-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48">
                     <div class="relative z-10">
                         <div
-                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white"
-                        >
-                            ✍️
+                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white">
+                            
                         </div>
                         <h3 class="font-black text-2xl tracking-tight mb-1">
                             Blog
                         </h3>
                         <p
-                            class="text-amber-100 text-sm font-medium leading-relaxed opacity-90"
-                        >
-                            Crear y editar artículos, noticias y novedades.
+                            class="text-amber-100 text-sm font-medium leading-relaxed opacity-90">
+                            Crear y editar artculos, noticias y novedades.
                         </p>
                     </div>
                     <div
-                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"
-                    >
+                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors">
                     </div>
                 </a>
 
                 <!-- FORO -->
                 <a
                     href="/foro"
-                    class="bg-gradient-to-br from-slate-600 to-slate-800 text-white p-6 rounded-3xl shadow-lg hover:shadow-slate-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48 opacity-90 hover:opacity-100"
-                >
+                    class="bg-gradient-to-br from-slate-600 to-slate-800 text-white p-6 rounded-3xl shadow-lg hover:shadow-slate-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48 opacity-90 hover:opacity-100">
                     <div class="relative z-10">
                         <div
-                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white"
-                        >
-                            🏘️
+                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white">
+                            
                         </div>
                         <h3 class="font-black text-2xl tracking-tight mb-1">
                             Foro
                         </h3>
                         <p
-                            class="text-slate-200 text-sm font-medium leading-relaxed opacity-90"
-                        >
+                            class="text-slate-200 text-sm font-medium leading-relaxed opacity-90">
                             Ir a la comunidad, moderar temas y conversaciones.
                         </p>
                     </div>
                     <div
-                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"
-                    >
+                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors">
                     </div>
                 </a>
 
                 <!-- VALIDACIONES -->
                 <a
                     href="/admin/validaciones"
-                    class="bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-violet-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48"
-                >
+                    class="bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-violet-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48">
                     <div class="relative z-10">
                         <div
-                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white"
-                        >
-                            ✅
+                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white">
+                            
                         </div>
                         <h3 class="font-black text-2xl tracking-tight mb-1">
                             Validaciones
                         </h3>
                         <p
-                            class="text-violet-100 text-sm font-medium leading-relaxed opacity-90"
-                        >
+                            class="text-violet-100 text-sm font-medium leading-relaxed opacity-90">
                             Revisar y aprobar documentos de nuevos
                             profesionales.
                         </p>
@@ -363,29 +307,25 @@ import Layout from "../../layouts/Layout.astro";
                         <!-- Dynamic Badge will be injected here via JS -->
                     </div>
                     <div
-                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"
-                    >
+                        class="absolute -bottom-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors">
                     </div>
                 </a>
 
-                <!-- CONFIGURACIÓN (Restricted) -->
+                <!-- CONFIGURACIN (Restricted) -->
                 <a
                     href="/admin/configuracion"
                     id="admin-settings"
-                    class="bg-white border-2 border-dashed border-slate-300 text-slate-400 p-6 rounded-3xl hover:border-slate-400 hover:bg-slate-50 hover:text-slate-500 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48 hidden"
-                >
+                    class="bg-white border-2 border-dashed border-slate-300 text-slate-400 p-6 rounded-3xl hover:border-slate-400 hover:bg-slate-50 hover:text-slate-500 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48 hidden">
                     <div class="relative z-10">
                         <div
-                            class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-slate-200 transition-colors"
-                        >
-                            ⚙️
+                            class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-slate-200 transition-colors">
+                            
                         </div>
                         <h3 class="font-black text-2xl tracking-tight mb-1">
-                            Configuración
+                            Configuracin
                         </h3>
                         <p
-                            class="text-sm font-medium leading-relaxed opacity-80"
-                        >
+                            class="text-sm font-medium leading-relaxed opacity-80">
                             Ajustes globales del sistema (Solo Admin).
                         </p>
                     </div>
@@ -408,7 +348,7 @@ import Layout from "../../layouts/Layout.astro";
         } from "firebase/firestore";
 
         document.addEventListener("astro:page-load", () => {
-            console.log("🚀 [ADMIN] Página cargada/navegada");
+            console.log(" [ADMIN] Pgina cargada/navegada");
 
             let unsubscribe: (() => void) | null = null;
 
@@ -432,7 +372,7 @@ import Layout from "../../layouts/Layout.astro";
                             rolLimpio !== "moderador" &&
                             rolLimpio !== "moderator"
                         ) {
-                            alert("⛔ ACCESO DENEGADO");
+                            alert(" ACCESO DENEGADO");
                             window.location.href = "/mi-perfil";
                             return;
                         }
@@ -473,7 +413,7 @@ import Layout from "../../layouts/Layout.astro";
                                 .data()
                                 .count.toString();
 
-                        // 🔔 Badge for Validations (Real-time)
+                        //  Badge for Validations (Real-time)
                         const validationsBtn = document.querySelector(
                             'a[href="/admin/validaciones"]',
                         );
@@ -573,3 +513,4 @@ import Layout from "../../layouts/Layout.astro";
         }
     </style>
 </Layout>
+

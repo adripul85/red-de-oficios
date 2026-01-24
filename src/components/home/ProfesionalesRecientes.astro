@@ -7,7 +7,7 @@ let recientes = [];
 let error = null;
 
 try {
-  // 1. Buscamos en la colección "profesionales"
+  // 1. Buscamos en la coleccin "profesionales"
   const q = query(collection(db, "profesionales"), limit(6));
   const querySnapshot = await getDocs(q);
   
@@ -24,24 +24,24 @@ try {
 ---
 
 <section class="recientes-section">
-  <h2>🆕 Recién llegados a DeOficios</h2>
+  <h2> Recin llegados a DeOficios</h2>
   
   <div class="grid-container">
     
     {/* CASO 1: HUBO UN ERROR */}
     {error && (
       <div class="error-box">
-        <h3>⚠️ Hubo un problema</h3>
+        <h3> Hubo un problema</h3>
         <p>{error}</p>
-        <small>Revisa que la colección en Firebase se llame "profesionales" (minúscula).</small>
+        <small>Revisa que la coleccin en Firebase se llame "profesionales" (minscula).</small>
       </div>
     )}
 
-    {/* CASO 2: NO HAY NADIE (Lista vacía) */}
+    {/* CASO 2: NO HAY NADIE (Lista vaca) */}
     {!error && recientes.length === 0 && (
       <div class="empty-box">
-        <p>📭 Aún no hay profesionales registrados.</p>
-        <p>¡Sé el primero! Ve a <a href="/ingresar">Ingresar</a> y crea tu cuenta.</p>
+        <p> An no hay profesionales registrados.</p>
+        <p>S el primero! Ve a <a href="/ingresar">Ingresar</a> y crea tu cuenta.</p>
       </div>
     )}
 
@@ -60,16 +60,16 @@ try {
             
             <div class="info">
               <h3>{pro.nombre || "Usuario Nuevo"}</h3>
-              <span class="badge">{pro.categoria || "Sin categoría"}</span>
+              <span class="badge">{pro.categoria || "Sin categora"}</span>
             </div>
           </div>
           
           <div class="card-body">
-            <p>📍 {pro.zona || "Sin zona definida"}</p>
+            <p> {pro.zona || "Sin zona definida"}</p>
             <p class="desc">
               {pro.descripcion 
                 ? pro.descripcion.substring(0, 60) + "..." 
-                : "¡Hola! Estoy listo para trabajar."}
+                : "Hola! Estoy listo para trabajar."}
             </p>
           </div>
         </div>
@@ -111,7 +111,7 @@ try {
   .card-body p { margin: 5px 0; color: #666; font-size: 0.9rem; }
   .desc { font-style: italic; color: #888; margin-top: 10px; line-height: 1.4; }
 
-  /* CAJAS DE ERROR / VACÍO */
+  /* CAJAS DE ERROR / VACO */
   .error-box { background: #fee2e2; color: #991b1b; padding: 20px; border-radius: 8px; grid-column: 1 / -1; text-align: center; }
   .empty-box { background: #f3f4f6; color: #6b7280; padding: 40px; border-radius: 8px; grid-column: 1 / -1; text-align: center; }
 /* Agrega esto */
@@ -119,3 +119,4 @@ try {
   .img-card { width: 100%; height: 100%; object-fit: cover; }
 
 </style>
+

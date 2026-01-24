@@ -17,8 +17,7 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
         <a
           href="/planes"
           id="btn-planes-desktop"
-          class="nav-link destacados hidden flex items-center gap-1"
-        >
+          class="nav-link destacados hidden flex items-center gap-1">
           <Briefcase class="w-4 h-4" /> Planes
         </a>
         <a href="/blog" class="nav-link flex items-center gap-1">
@@ -35,7 +34,7 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
         <div id="user-area" class="auth-buttons">
           <div class="spinner-small"></div>
         </div>
-        <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">
+        <button id="menu-toggle" class="menu-toggle" aria-label="Abrir men">
           <Menu class="w-8 h-8 text-gray-700" />
         </button>
       </div>
@@ -72,7 +71,7 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
     }
   });
 
-  // Función principal de renderizado con CACHÉ
+  // Funcin principal de renderizado con CACH
   async function updateHeaderUI() {
     const userArea = document.getElementById("user-area");
     const mobileAuth = document.getElementById("mobile-auth-area");
@@ -87,13 +86,13 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
       let userType = null;
 
       try {
-        // 🚀 OPTIMIZACIÓN 1: Verificar caché primero
+        //  OPTIMIZACIN 1: Verificar cach primero
         const cachedType = localStorage.getItem(`userType_${currentUser.uid}`);
 
         if (cachedType === "profesional" || cachedType === "cliente") {
-          console.log("⚡ [HEADER] Usando caché:", cachedType);
+          console.log(" [HEADER] Usando cach:", cachedType);
 
-          // Usar caché para query directa
+          // Usar cach para query directa
           const collection =
             cachedType === "profesional" ? "profesionales" : "clientes";
           const docRef = doc(db, collection, currentUser.uid);
@@ -114,14 +113,14 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
               avatarHTML = `<div class="avatar-placeholder" style="width:32px;height:32px;border-radius:50%;background:${bgColor};color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;">${data.nombre[0].toUpperCase()}</div>`;
             }
           } else {
-            // Caché inválido, limpiar
+            // Cach invlido, limpiar
             localStorage.removeItem(`userType_${currentUser.uid}`);
           }
         }
 
-        // 🚀 OPTIMIZACIÓN 2: Si no hay caché, queries EN PARALELO
+        //  OPTIMIZACIN 2: Si no hay cach, queries EN PARALELO
         if (!userType) {
-          console.log("⚡ [HEADER] Sin caché, buscando en paralelo...");
+          console.log(" [HEADER] Sin cach, buscando en paralelo...");
 
           const [profSnap, clientSnap] = await Promise.all([
             getDoc(doc(db, "profesionales", currentUser.uid)),
@@ -141,7 +140,7 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
               avatarHTML = `<div class="avatar-placeholder" style="width:32px;height:32px;border-radius:50%;background:#ea580c;color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;">${data.nombre[0].toUpperCase()}</div>`;
             }
 
-            // Mostrar botón Planes para profesionales (query sin caché)
+            // Mostrar botn Planes para profesionales (query sin cach)
             document
               .getElementById("btn-planes-desktop")
               ?.classList.remove("hidden");
@@ -149,10 +148,10 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
               .getElementById("btn-planes-mobile")
               ?.classList.remove("hidden");
 
-            // Guardar en caché
+            // Guardar en cach
             localStorage.setItem(`userType_${currentUser.uid}`, "profesional");
 
-            // Mostrar botón Planes para profesionales
+            // Mostrar botn Planes para profesionales
             document
               .getElementById("btn-planes-desktop")
               ?.classList.remove("hidden");
@@ -172,7 +171,7 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
               avatarHTML = `<div class="avatar-placeholder" style="width:32px;height:32px;border-radius:50%;background:#4f46e5;color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;">${data.nombre[0].toUpperCase()}</div>`;
             }
 
-            // Guardar en caché
+            // Guardar en cach
             localStorage.setItem(`userType_${currentUser.uid}`, "cliente");
           }
         }
@@ -189,7 +188,7 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
             <button class="flex items-center gap-2 text-gray-700 hover:text-orange-600 font-medium transition py-4 focus:outline-none">
                 ${avatarHTML}
                 <span>${nombre}</span>
-                <span class="text-xs">▼</span>
+                <span class="text-xs"></span>
             </button>
             
             <div class="absolute right-0 top-full pt-2 w-48 hidden group-hover:block z-50">
@@ -197,7 +196,7 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
                     <a href="${profileLink}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition flex items-center">${iconUser} Mi Perfil</a>
                     ${userType === "cliente" ? `<a href="/mi-cuenta" class="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition flex items-center">${iconHeart} Favoritos</a>` : ""}
                     <hr class="my-1 border-gray-100">
-                    <button id="btn-logout-header" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition flex items-center">${iconLogOut} Cerrar Sesión</button>
+                    <button id="btn-logout-header" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition flex items-center">${iconLogOut} Cerrar Sesin</button>
                 </div>
             </div>
         </div>
@@ -211,25 +210,25 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
              ${avatarHTML}
              <div>
                 <p class="font-bold text-gray-800">${nombre}</p>
-                <p class="text-xs text-green-600">Sesión activa</p>
+                <p class="text-xs text-green-600">Sesin activa</p>
              </div>
           </div>
           <a href="${profileLink}" class="block text-center w-full bg-gray-100 py-2 rounded-lg font-bold text-gray-700 flex items-center justify-center gap-2">${iconUser} Ir a mi Perfil</a>
-          <button id="btn-logout-mobile" class="block w-full text-center text-red-500 py-2 mt-2 flex items-center justify-center gap-2">${iconLogOut} Cerrar Sesión</button>
+          <button id="btn-logout-mobile" class="block w-full text-center text-red-500 py-2 mt-2 flex items-center justify-center gap-2">${iconLogOut} Cerrar Sesin</button>
       `;
 
-      // Event listeners para cerrar sesión
+      // Event listeners para cerrar sesin
       const btnLogoutHeader = document.getElementById("btn-logout-header");
       const btnLogoutMobile = document.getElementById("btn-logout-mobile");
 
       [btnLogoutHeader, btnLogoutMobile].forEach((btn) => {
         btn?.addEventListener("click", async () => {
-          // Limpiar caché al cerrar sesión
+          // Limpiar cach al cerrar sesin
           if (currentUser) {
             localStorage.removeItem(`userType_${currentUser.uid}`);
           }
           await signOut(auth);
-          window.location.href = "/"; // Redirigir a la página principal
+          window.location.href = "/"; // Redirigir a la pgina principal
         });
       });
     } else {
@@ -250,24 +249,24 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
     }
   }
 
-  // Listener de autenticación (SOLO UNA VEZ)
+  // Listener de autenticacin (SOLO UNA VEZ)
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;
     await updateHeaderUI();
   });
 
-  // Listener de navegación en Astro (re-render UI en cada navegación)
+  // Listener de navegacin en Astro (re-render UI en cada navegacin)
   document.addEventListener("astro:page-load", async () => {
-    // 1. Activar menú móvil INMEDIATAMENTE (no esperar a auth)
+    // 1. Activar men mvil INMEDIATAMENTE (no esperar a auth)
     const menuBtn = document.getElementById("menu-toggle");
     const mobileMenu = document.getElementById("mobile-menu");
 
-    // Remover listeners anteriores para evitar duplicados si astro:page-load dispara múltiple
+    // Remover listeners anteriores para evitar duplicados si astro:page-load dispara mltiple
     const newMenuBtn = menuBtn?.cloneNode(true);
     if (menuBtn && newMenuBtn && menuBtn.parentNode) {
       menuBtn.parentNode.replaceChild(newMenuBtn, menuBtn);
       (newMenuBtn as HTMLElement).addEventListener("click", () => {
-        console.log("🍔 Toggle menú");
+        console.log(" Toggle men");
         mobileMenu?.classList.toggle("hidden");
         (newMenuBtn as HTMLElement).classList.toggle("active");
         mobileMenu?.classList.toggle("active");
@@ -359,7 +358,7 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
     background-color: #e5e7eb;
   }
 
-  /* ESTO ARREGLA EL MENÚ */
+  /* ESTO ARREGLA EL MEN */
   .group:hover .group-hover\:block {
     display: block;
   }
@@ -494,3 +493,4 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
     }
   }
 </style>
+

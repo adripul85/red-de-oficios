@@ -8,7 +8,7 @@ import Header from "../components/Header.astro";
 
     <main class="editor-container">
         <div class="editor-header">
-            <h1>✍️ Editor de Contenidos SEO</h1>
+            <h1> Editor de Contenidos SEO</h1>
             <p>Redacta con Markdown y define tus palabras clave.</p>
         </div>
 
@@ -21,11 +21,11 @@ import Header from "../components/Header.astro";
             <section class="form-section">
                 <form id="blog-form">
                     <div class="form-group">
-                        <label>Título del Artículo (H1)</label>
+                        <label>Ttulo del Artculo (H1)</label>
                         <input
                             type="text"
                             id="titulo"
-                            placeholder="Ej: Cuánto cuesta un plomero en 2026"
+                            placeholder="Ej: Cunto cuesta un plomero en 2026"
                             required
                         />
                     </div>
@@ -43,15 +43,12 @@ import Header from "../components/Header.astro";
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Categoría</label>
+                            <label>Categora</label>
                             <select id="categoria">
-                                <option value="Consejos">💡 Consejos</option>
-                                <option value="Noticias">📰 Noticias</option>
-                                <option value="Precios"
-                                    >💰 Guía de Precios</option
-                                >
-                                <option value="Tutoriales">🛠️ Tutoriales</option
-                                >
+                                <option value="Consejos"> Consejos</option>
+                                <option value="Noticias"> Noticias</option>
+                                <option value="Precios"> Gua de Precios</option>
+                                <option value="Tutoriales"> Tutoriales</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -74,20 +71,16 @@ import Header from "../components/Header.astro";
                     </div>
 
                     <div class="form-group">
-                        <label>🔑 Keywords / Palabras Clave (SEO)</label>
-                        <small
-                            >Escribe y presiona ENTER. Ej: "plomero precios",
-                            "tarifario 2026".</small
-                        >
+                        <label> Keywords / Palabras Clave (SEO)</label>
+                        <small>Escribe y presiona ENTER. Ej: "plomero precios",
+                            "tarifario 2026".</small>
                         <div class="tags-input-wrapper">
                             <input
                                 type="text"
                                 id="keyword-input"
                                 placeholder="Agregar keyword..."
                             />
-                            <button type="button" id="btn-add-keyword"
-                                >➕</button
-                            >
+                            <button type="button" id="btn-add-keyword"></button>
                         </div>
                         <div id="keywords-list" class="tags-container"></div>
                     </div>
@@ -98,32 +91,27 @@ import Header from "../components/Header.astro";
                             id="resumen"
                             rows="2"
                             maxlength="160"
-                            placeholder="Lo que aparece en Google debajo del título..."
-                        ></textarea>
+                            placeholder="Lo que aparece en Google debajo del ttulo..."></textarea>
                     </div>
 
                     <div class="form-group">
                         <div class="label-row">
-                            <label>Contenido (Markdown Activo 📝)</label>
+                            <label>Contenido (Markdown Activo )</label>
                             <a
                                 href="https://www.markdownguide.org/cheat-sheet/"
                                 target="_blank"
-                                class="md-link">Ver guía Markdown</a
-                            >
+                                class="md-link">Ver gua Markdown</a>
                         </div>
                         <textarea
                             id="contenido"
                             rows="15"
-                            placeholder="# Usa numeral para títulos
+                            placeholder="# Usa numeral para ttulos
 **Usa asteriscos para negrita**
-- Usa guiones para listas"
-                        ></textarea>
+- Usa guiones para listas"></textarea>
                     </div>
 
                     <div class="action-bar">
-                        <button type="submit" class="btn-publish"
-                            >🚀 Publicar Artículo</button
-                        >
+                        <button type="submit" class="btn-publish"> Publicar Artculo</button>
                         <p id="status-msg" class="status"></p>
                     </div>
                 </form>
@@ -147,7 +135,7 @@ import Header from "../components/Header.astro";
                 </div>
 
                 <div class="posts-list-box">
-                    <h3>📚 Artículos Publicados</h3>
+                    <h3> Artculos Publicados</h3>
                     <div id="posts-list" class="posts-list">
                         <p class="text-muted">Cargando...</p>
                     </div>
@@ -176,7 +164,7 @@ import Header from "../components/Header.astro";
     import { marked } from "marked";
 
     document.addEventListener("astro:page-load", () => {
-        console.log("🚀 [BLOG-EDITOR] Página cargada/navegada");
+        console.log(" [BLOG-EDITOR] Pgina cargada/navegada");
 
         const loadingState = document.getElementById("loading-state");
         const editorContent = document.getElementById("editor-content");
@@ -270,8 +258,8 @@ import Header from "../components/Header.astro";
                     keywords = data.keywords || [];
                     renderKeywords();
 
-                    btnSubmit.textContent = "💾 Actualizar Artículo";
-                    statusMsg.innerText = "Modo Edición Activado";
+                    btnSubmit.textContent = " Actualizar Artculo";
+                    statusMsg.innerText = "Modo Edicin Activado";
                 } else {
                     statusMsg.innerText = "Post no encontrado.";
                 }
@@ -281,7 +269,7 @@ import Header from "../components/Header.astro";
             }
         }
 
-        // 2. SLUG AUTOMÁTICO (Solo si no estamos editando o si el usuario lo fuerza)
+        // 2. SLUG AUTOMTICO (Solo si no estamos editando o si el usuario lo fuerza)
         titleInput.addEventListener("input", (e) => {
             if (!isEditing) {
                 const val = e.target.value;
@@ -311,13 +299,13 @@ import Header from "../components/Header.astro";
             mdPreview.innerHTML = html;
         });
 
-        // 5. LÓGICA DE KEYWORDS (FIX COMA)
+        // 5. LGICA DE KEYWORDS (FIX COMA)
         function renderKeywords() {
             keywordsList.innerHTML = "";
             keywords.forEach((k, index) => {
                 const span = document.createElement("span");
                 span.className = "tag-pill";
-                span.innerHTML = `${k} <button type="button" onclick="window.removeKeyword(${index})">×</button>`;
+                span.innerHTML = `${k} <button type="button" onclick="window.removeKeyword(${index})"></button>`;
                 keywordsList.appendChild(span);
             });
         }
@@ -329,7 +317,7 @@ import Header from "../components/Header.astro";
                 .toLowerCase();
             if (val && !keywords.includes(val)) {
                 if (keywords.length >= 10) {
-                    alert("Máximo 10 keywords");
+                    alert("Mximo 10 keywords");
                     return;
                 }
                 keywords.push(val);
@@ -381,7 +369,7 @@ import Header from "../components/Header.astro";
                         ...postData,
                         ultima_actualizacion: new Date(),
                     });
-                    statusMsg.textContent = "✅ ¡Actualizado correctamente!";
+                    statusMsg.textContent = " Actualizado correctamente!";
                 } else {
                     // CREATE
                     await addDoc(collection(db, "blog"), {
@@ -389,7 +377,7 @@ import Header from "../components/Header.astro";
                         fecha: new Date(),
                         vistas: 0,
                     });
-                    statusMsg.textContent = "✅ ¡Publicado!";
+                    statusMsg.textContent = " Publicado!";
                     form.reset();
                     keywords = [];
                     renderKeywords();
@@ -402,13 +390,13 @@ import Header from "../components/Header.astro";
                 cargarPosts();
             } catch (error) {
                 console.error(error);
-                statusMsg.textContent = "❌ Error: " + error.message;
+                statusMsg.textContent = " Error: " + error.message;
                 statusMsg.style.color = "red";
             } finally {
                 btn.disabled = false;
                 btn.textContent = isEditing
-                    ? "💾 Actualizar Artículo"
-                    : "🚀 Publicar Artículo";
+                    ? " Actualizar Artculo"
+                    : " Publicar Artculo";
             }
         });
 
@@ -424,7 +412,7 @@ import Header from "../components/Header.astro";
                 const snapshot = await getDocs(q);
 
                 if (snapshot.empty) {
-                    postsList.innerHTML = `<div style="text-align: center; padding: 20px; background: #f1f5f9; border-radius: 8px;"><p>📭 Sin artículos.</p></div>`;
+                    postsList.innerHTML = `<div style="text-align: center; padding: 20px; background: #f1f5f9; border-radius: 8px;"><p> Sin artculos.</p></div>`;
                     return;
                 }
 
@@ -439,11 +427,11 @@ import Header from "../components/Header.astro";
                     <img src="${p.imagen || "https://via.placeholder.com/60"}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px; flex-shrink: 0; border: 1px solid #e2e8f0;" onerror="this.src='https://via.placeholder.com/60?text=Error'" />
                     <div class="mini-post-info">
                         <strong title="${p.titulo}">${p.titulo}</strong>
-                        <small>${fecha} • ${p.categoria}</small>
+                        <small>${fecha}  ${p.categoria}</small>
                         <br/>
-                        <a href="/blog-editor?slug=${p.slug}" style="font-size: 0.8rem; color: #ea580c;">✏️ Editar</a>
+                        <a href="/blog-editor?slug=${p.slug}" style="font-size: 0.8rem; color: #ea580c;"> Editar</a>
                     </div>
-                    <button class="btn-delete-post" onclick="window.borrarPost('${docSnap.id}')">🗑️</button>
+                    <button class="btn-delete-post" onclick="window.borrarPost('${docSnap.id}')"></button>
                 </div>
             `;
                 });
@@ -454,7 +442,7 @@ import Header from "../components/Header.astro";
         }
 
         window.borrarPost = async (id) => {
-            if (!confirm("¿Borrar artículo?")) return;
+            if (!confirm("Borrar artculo?")) return;
             try {
                 await deleteDoc(doc(db, "blog", id));
                 cargarPosts();
@@ -604,7 +592,7 @@ import Header from "../components/Header.astro";
         border-radius: 8px;
     }
 
-    /* PROSE PREVIEW (Simula el artículo real) */
+    /* PROSE PREVIEW (Simula el artculo real) */
     .prose-preview {
         font-family: "Georgia", serif;
         line-height: 1.6;
@@ -683,3 +671,4 @@ import Header from "../components/Header.astro";
         }
     }
 </style>
+

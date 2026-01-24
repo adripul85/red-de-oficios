@@ -4,18 +4,18 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 ---
 
-<Layout title="Contáctanos - DeOficios">
+<Layout title="Contctanos - DeOficios">
   
 
   <main class="contact-container">
     <div class="content-wrapper">
       
       <div class="contact-info">
-        <h1>Hablemos 💬</h1>
-        <p>¿Tienes dudas sobre cómo funciona la plataforma? ¿Eres profesional y necesitas ayuda con tu plan?</p>
+        <h1>Hablemos </h1>
+        <p>Tienes dudas sobre cmo funciona la plataforma? Eres profesional y necesitas ayuda con tu plan?</p>
         
         <div class="info-item">
-          <span class="icon">📧</span>
+          <span class="icon"></span>
           <div>
             <strong>Email</strong>
             <p>soporte@deoficios.com.ar</p>
@@ -23,7 +23,7 @@ import Footer from '../components/Footer.astro';
         </div>
 
         <div class="info-item">
-          <span class="icon">📍</span>
+          <span class="icon"></span>
           <div>
             <strong>Oficinas</strong>
             <p>Buenos Aires, Argentina</p>
@@ -33,18 +33,18 @@ import Footer from '../components/Footer.astro';
         <div class="faq-box">
           <h3>Preguntas Frecuentes</h3>
           <details>
-            <summary>¿Es gratis registrarse?</summary>
-            <p>Sí, el plan básico es 100% gratuito.</p>
+            <summary>Es gratis registrarse?</summary>
+            <p>S, el plan bsico es 100% gratuito.</p>
           </details>
           <details>
-            <summary>¿Cómo pago el Premium?</summary>
-            <p>Aceptamos tarjetas y efectivo vía MercadoPago.</p>
+            <summary>Cmo pago el Premium?</summary>
+            <p>Aceptamos tarjetas y efectivo va MercadoPago.</p>
           </details>
         </div>
       </div>
 
       <div class="form-box">
-        <h2>Envíanos un mensaje</h2>
+        <h2>Envanos un mensaje</h2>
         <form id="contact-form">
             <div class="input-group">
                 <label>Nombre Completo</label>
@@ -60,18 +60,18 @@ import Footer from '../components/Footer.astro';
                 <label>Asunto</label>
                 <select id="asunto">
                     <option>Consulta General</option>
-                    <option>Soporte Técnico</option>
-                    <option>Facturación / Pagos</option>
+                    <option>Soporte Tcnico</option>
+                    <option>Facturacin / Pagos</option>
                     <option>Reportar un problema</option>
                 </select>
             </div>
 
             <div class="input-group">
                 <label>Mensaje</label>
-                <textarea id="mensaje" rows="5" placeholder="¿En qué podemos ayudarte?" required></textarea>
+                <textarea id="mensaje" rows="5" placeholder="En qu podemos ayudarte?" required></textarea>
             </div>
 
-            <button type="submit" class="btn-send">Enviar Mensaje 🚀</button>
+            <button type="submit" class="btn-send">Enviar Mensaje </button>
             <p id="status-msg" class="status-msg"></p>
         </form>
       </div>
@@ -100,7 +100,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
         const asunto = document.getElementById('asunto').value;
         const mensaje = document.getElementById('mensaje').value;
 
-        // Guardar en la colección que lee el Admin
+        // Guardar en la coleccin que lee el Admin
         await addDoc(collection(db, "mensajes_web"), {
             nombre,
             email,
@@ -110,7 +110,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
             leido: false
         });
 
-        status.textContent = "¡Mensaje enviado! Te responderemos pronto. ✅";
+        status.textContent = "Mensaje enviado! Te responderemos pronto. ";
         status.style.color = "green";
         form.reset();
 
@@ -120,7 +120,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
         status.style.color = "red";
     } finally {
         btn.disabled = false;
-        btn.textContent = "Enviar Mensaje 🚀";
+        btn.textContent = "Enviar Mensaje ";
     }
   });
 </script>
@@ -201,3 +201,4 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
     .form-box { padding: 25px; }
   }
 </style>
+

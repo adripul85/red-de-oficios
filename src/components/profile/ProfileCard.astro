@@ -7,14 +7,14 @@ import VerifiedIcon from '../ui/VerifiedIcon.astro';
   <div class="flex flex-col md:flex-row items-center gap-6 mb-8 text-center md:text-left">
     
     <div id="p-icono" class="text-6xl w-28 h-28 flex items-center justify-center rounded-full bg-gradient-to-br from-primary to-orange-400 text-white shadow-lg border-4 border-white shrink-0">
-      🛠️
+      
       <button id="btn-fav" class="absolute top-4 right-4 text-3xl transition-transform hover:scale-110 focus:outline-none z-10" title="Guardar en mi agenda">
-    <span id="icon-fav" class="text-gray-300">🤍</span> </button>
+    <span id="icon-fav" class="text-gray-300"></span> </button>
     </div>
     
     <div class="flex-1">
       <span id="p-categoria" class="inline-block bg-orange-100 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2 border border-orange-200">
-        Categoría
+        Categora
       </span>
 
       <div class="flex items-center justify-center md:justify-start gap-2 flex-wrap mb-1">
@@ -27,11 +27,11 @@ import VerifiedIcon from '../ui/VerifiedIcon.astro';
       </div>
 
       <p class="text-gray-500 text-lg flex items-center justify-center md:justify-start gap-1">
-        📍 <span id="p-zona">Zona</span>
+         <span id="p-zona">Zona</span>
       </p>
       
       <p id="p-precio" class="hidden mt-3 inline-block bg-green-100 text-green-700 font-bold px-3 py-2 rounded-lg border border-green-200 shadow-sm">
-        💰 Consultar
+         Consultar
       </p>
     </div>
   </div>
@@ -40,35 +40,36 @@ import VerifiedIcon from '../ui/VerifiedIcon.astro';
 
   <div class="space-y-6">
     <div>
-      <h2 class="text-xl font-bold text-secondary mb-3">Sobre mí</h2>
+      <h2 class="text-xl font-bold text-secondary mb-3">Sobre m</h2>
       <p id="p-descripcion" class="text-gray-600 leading-relaxed text-base whitespace-pre-line">
-        Cargando descripción...
+        Cargando descripcin...
       </p>
     </div>
 
     <div class="text-right text-sm text-gray-400 italic">
-      📅 Miembro desde: <span id="p-fecha">-</span>
+       Miembro desde: <span id="p-fecha">-</span>
     </div>
   </div>
 
   <div class="mt-10 bg-gray-50 p-6 rounded-xl border border-gray-100 text-center">
-    <p class="text-lg font-semibold text-secondary mb-6">¿Te interesa este servicio?</p>
+    <p class="text-lg font-semibold text-secondary mb-6">Te interesa este servicio?</p>
     
     <button id="btn-recomendar" class="group relative inline-flex items-center justify-center gap-2 bg-white text-yellow-600 border-2 border-yellow-400 px-6 py-2 rounded-full font-bold hover:bg-yellow-50 transition-all mb-6 shadow-sm hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
-      <span class="text-xl">👏</span> 
+      <span class="text-xl"></span> 
       <span id="txt-recomendar">Recomendar</span>
       <span id="contador-votos" class="bg-yellow-100 text-yellow-700 text-xs px-2 py-1 rounded-md ml-1">0</span>
     </button>
     
     <div class="flex flex-col gap-3 w-full max-w-sm mx-auto">
       <a href="#" id="btn-whatsapp" target="_blank" class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded-full font-bold shadow-lg shadow-green-200 transition-transform hover:-translate-y-1">
-        Enviar mensaje por WhatsApp 💬
+        Enviar mensaje por WhatsApp 
       </a>
       
       <button id="btn-share" type="button" class="flex items-center justify-center gap-2 bg-white text-primary border-2 border-primary py-2 px-6 rounded-full font-bold hover:bg-orange-50 transition-colors">
-        Compartir Perfil 🔗
+        Compartir Perfil 
       </button>
     </div>
   </div>
 
 </div>
+

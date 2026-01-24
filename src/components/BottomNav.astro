@@ -2,8 +2,8 @@
 import { House, Search, Plus, Map, User } from "lucide-astro";
 ---
 
-<nav id="mobile-nav-bar" class="mobile-bottom-nav md:hidden" style="position: fixed; bottom: 20px; left: 10px; right: 10px; z-index: 50; background: white !important; border: 1px solid rgba(0,0,0,0.1); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: block !important;">
-    <div class="nav-container" style="display: grid !important; grid-template-columns: repeat(5, 1fr) !important; width: 100% !important; height: 100% !important; align-items: center !important; justify-items: center !important;">
+<nav id="mobile-nav-bar" class="mobile-bottom-nav md:hidden">
+    <div class="nav-container">
         <a href="/" class="nav-item flat-item" id="nav-home">
             <House class="icon" />
             <span class="label">Inicio</span>
@@ -174,3 +174,4 @@ import { House, Search, Plus, Map, User } from "lucide-astro";
     initBottomNav();
     document.addEventListener("astro:page-load", initBottomNav);
 </script>
+

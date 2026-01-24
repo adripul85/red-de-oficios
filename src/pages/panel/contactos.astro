@@ -28,8 +28,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 <div class="md:hidden p-4 pb-0">
                     <button
                         id="open-sidebar"
-                        class="p-2 bg-white rounded-lg shadow-sm border border-slate-100 text-slate-600"
-                    >
+                        class="p-2 bg-white rounded-lg shadow-sm border border-slate-100 text-slate-600">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="24"
@@ -39,8 +38,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             stroke="currentColor"
                             stroke-width="2"
                             stroke-linecap="round"
-                            stroke-linejoin="round"
-                            ><line x1="3" y1="12" x2="21" y2="12"></line><line
+                            stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line
                                 x1="3"
                                 y1="6"
                                 x2="21"
@@ -48,15 +46,14 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                 x1="3"
                                 y1="18"
                                 x2="21"
-                                y2="18"></line></svg
-                        >
+                                y2="18"></line></svg>
                     </button>
                 </div>
 
                 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div class="mb-8">
                         <h1 class="text-2xl font-bold text-slate-900">
-                            Códigos de Seguridad
+                            Cdigos de Seguridad
                         </h1>
                         <p class="text-slate-500 mt-1">
                             Tus visitas programadas
@@ -65,22 +62,20 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     <!-- INFO CARD -->
                     <div
-                        class="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl p-6 text-white shadow-xl shadow-indigo-200 mb-8"
-                    >
+                        class="bg-gradient-to-r from-indigo-600 to-violet-600 rounded-2xl p-6 text-white shadow-xl shadow-indigo-200 mb-8">
                         <div class="flex items-start gap-4">
                             <div class="p-3 bg-white/20 rounded-xl">
-                                <span class="text-2xl">🛡️</span>
+                                <span class="text-2xl"></span>
                             </div>
                             <div>
                                 <h3 class="font-bold text-lg mb-1">
                                     Seguridad Primero
                                 </h3>
                                 <p
-                                    class="text-indigo-100 text-sm leading-relaxed"
-                                >
+                                    class="text-indigo-100 text-sm leading-relaxed">
                                     Cuando un cliente te contacta por WhatsApp,
-                                    el sistema le genera un código de 6 dígitos.
-                                    Pedile ese código cuando llegues al lugar
+                                    el sistema le genera un cdigo de 6 dgitos.
+                                    Pedile ese cdigo cuando llegues al lugar
                                     para confirmar que la visita fue coordinada
                                     por DeOficios.
                                 </p>
@@ -91,15 +86,12 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                 <h3 class="font-bold text-lg text-slate-800 mb-4 px-1">
                     Contactos Recientes <span
-                        class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
-                        >EN VIVO</span
-                    >
+                        class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">EN VIVO</span>
                 </h3>
 
                 <div id="contactos-list" class="space-y-4 min-h-[200px]">
                     <div
-                        class="animate-pulse flex space-x-4 p-4 bg-white rounded-xl"
-                    >
+                        class="animate-pulse flex space-x-4 p-4 bg-white rounded-xl">
                         <div class="rounded-full bg-slate-200 h-10 w-10"></div>
                         <div class="flex-1 space-y-4 py-1">
                             <div class="h-4 bg-slate-200 rounded w-3/4"></div>
@@ -146,9 +138,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 if (snapshot.empty) {
                     listContainer.innerHTML = `
                             <div class="p-12 text-center text-slate-400">
-                                <p class="text-4xl mb-4">💬</p>
-                                <p class="font-medium text-slate-600">Aún no tienes contactos registrados</p>
-                                <p class="text-sm">Cuando alguien te contacte por WhatsApp aparecerá acá.</p>
+                                <p class="text-4xl mb-4"></p>
+                                <p class="font-medium text-slate-600">An no tienes contactos registrados</p>
+                                <p class="text-sm">Cuando alguien te contacte por WhatsApp aparecer ac.</p>
                             </div>
                         `;
                     return;
@@ -168,17 +160,17 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         <div class="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors">
                             <div class="flex items-center gap-4">
                                 <div class="w-12 h-12 bg-white border-2 border-slate-100 shadow-sm rounded-full flex items-center justify-center text-xl">
-                                    👤
+                                    
                                 </div>
                                 <div>
                                     <h4 class="font-bold text-slate-800">${data.clienteNombre}</h4>
-                                    <p class="text-xs text-slate-500">${dateStr} • ${timeStr}</p>
+                                    <p class="text-xs text-slate-500">${dateStr}  ${timeStr}</p>
                                 </div>
                             </div>
                             
                             <div class="flex items-center gap-6">
                                 <div class="text-right hidden md:block">
-                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Código de Seguridad</p>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Cdigo de Seguridad</p>
                                     <div class="flex items-center gap-2 justify-end">
                                         <p class="text-2xl font-black text-orange-600 tracking-widest token-pill">${data.token}</p>
                                         <button onclick="window.deleteContact('${doc.id}')" class="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Eliminar contacto">
@@ -187,7 +179,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                     </div>
                                 </div>
                                 <div class="md:hidden flex items-center justify-between border-t pt-4 border-slate-100 w-full">
-                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Código</p>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Cdigo</p>
                                     <p class="text-xl font-black text-orange-600 tracking-widest token-pill">${data.token}</p>
                                 </div>
                             </div>
@@ -197,12 +189,12 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     .join("");
             },
             (error) => {
-                console.error("❌ [CONTACTOS] Error en listener:", error);
+                console.error(" [CONTACTOS] Error en listener:", error);
                 const listContainer = document.getElementById("contactos-list");
                 if (listContainer) {
                     listContainer.innerHTML = `
                             <div class="p-12 text-center text-red-400">
-                                <p class="text-4xl mb-4">⚠️</p>
+                                <p class="text-4xl mb-4"></p>
                                 <p class="font-medium text-slate-600">Error al cargar contactos</p>
                             </div>
                         `;
@@ -211,9 +203,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         );
     });
 
-    // Función Global de Borrado
+    // Funcin Global de Borrado
     window.deleteContact = async (id) => {
-        if (!confirm("¿Seguro que quieres eliminar este contacto?")) return;
+        if (!confirm("Seguro que quieres eliminar este contacto?")) return;
 
         try {
             const { deleteDoc, doc, getFirestore } =
@@ -235,3 +227,4 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         }
     };
 </script>
+

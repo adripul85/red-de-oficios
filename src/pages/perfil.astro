@@ -31,7 +31,7 @@ if (profesional.slug && profesional.web_propia) {
     return Astro.redirect(`/${profesional.slug}`);
 }
 
-// --- LÓGICA DE VISUALIZACIÓN ---
+// --- LGICA DE VISUALIZACIN ---
 const esExperto =
     profesional.plan === "experto" || profesional.plan === "semestral";
 const mostrarComoLanding = esExperto && profesional.web_propia;
@@ -47,29 +47,29 @@ const seoDescription =
     profesional.seo_profesion ||
     `Contacta a ${profesional.nombre}, ${profesional.rubro_principal} en ${ubicacion}. Ver perfil, fotos y opiniones.`;
 const serviceIcons = {
-    "Aire Acondicionado": "❄️",
-    Electricidad: "⚡",
-    Electricista: "⚡",
-    Gasista: "🔥",
-    Plomero: "🚰",
-    Plomería: "🚰",
-    Pintor: "🎨",
-    Albañil: "🧱",
-    Construcción: "🏗️",
-    Flete: "🚚",
-    Mudanza: "📦",
-    Jardinería: "🌿",
-    Limpieza: "🧹",
-    Carpintero: "🪚",
-    Herrero: "⚔️",
-    Mecánico: "🔧",
-    Cerrajero: "🔑",
-    Techista: "🏠",
-    Durlock: "🏗️",
+    "Aire Acondicionado": "",
+    Electricidad: "",
+    Electricista: "",
+    Gasista: "",
+    Plomero: "",
+    Plomera: "",
+    Pintor: "",
+    Albail: "",
+    Construccin: "",
+    Flete: "",
+    Mudanza: "",
+    Jardinera: "",
+    Limpieza: "",
+    Carpintero: "",
+    Herrero: "",
+    Mecnico: "",
+    Cerrajero: "",
+    Techista: "",
+    Durlock: "",
 };
 
 const getServiceIcon = (serviceName) => {
-    if (!serviceName || typeof serviceName !== "string") return "🛠️";
+    if (!serviceName || typeof serviceName !== "string") return "";
     // Buscar coincidencia parcial
     const lowerName = serviceName.toLowerCase();
     for (const key in serviceIcons) {
@@ -77,7 +77,7 @@ const getServiceIcon = (serviceName) => {
             return serviceIcons[key];
         }
     }
-    return "🛠️"; // Icono por defecto
+    return ""; // Icono por defecto
 };
 
 const mappedServices = (profesional.servicios_lista || [])
@@ -110,11 +110,11 @@ if (hasGoodRating) xp += 300;
 
 // Levels
 const levels = [
-    { name: "Novato 🌱", threshold: 0 },
-    { name: "Aprendiz 🔨", threshold: 500 },
-    { name: "Profesional 👷", threshold: 1500 },
-    { name: "Experto 🦁", threshold: 5000 },
-    { name: "Maestro 👑", threshold: 50000 },
+    { name: "Novato ", threshold: 0 },
+    { name: "Aprendiz ", threshold: 500 },
+    { name: "Profesional ", threshold: 1500 },
+    { name: "Experto ", threshold: 5000 },
+    { name: "Maestro ", threshold: 50000 },
 ];
 
 let currentLevel = levels[0];
@@ -131,8 +131,7 @@ for (let i = 0; i < levels.length; i++) {
     image={profesional.foto}
     hideHeader={mostrarComoLanding}
     hideFooter={mostrarComoLanding}
-    hideIA={mostrarComoLanding}
->
+    hideIA={mostrarComoLanding}>
     <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script is:inline>
@@ -199,7 +198,7 @@ for (let i = 0; i < levels.length; i++) {
                 </div>
             </div>
         ) : (
-            /* MODO DIRECTORIO (NUEVO DISEÑO) */
+            /* MODO DIRECTORIO (NUEVO DISEO) */
             <div id="profile-directory" data-id={idProfesional} data-profesional-json={JSON.stringify(profesional)} class="bg-background-light font-sans min-h-screen text-neutral-black">
                <div class="max-w-5xl mx-auto px-6 md:px-12 lg:px-24 pt-8">
                      <a href="/resultados" class="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-primary transition-colors">
@@ -214,7 +213,7 @@ for (let i = 0; i < levels.length; i++) {
                              <div class="relative group">
                                 <img src={profesional.foto || ("https://ui-avatars.com/api/?name=" + profesional.nombre + "&background=random")} class="w-28 h-40 md:w-36 md:h-52 rounded-full border-4 border-white shadow-lg object-cover" />
                                 {profesional.verificado && (
-                                    <div class="absolute bottom-2 right-2 bg-green-500 size-4 rounded-full border-2 border-white shadow-sm" title="En línea"></div>
+                                    <div class="absolute bottom-2 right-2 bg-green-500 size-4 rounded-full border-2 border-white shadow-sm" title="En lnea"></div>
                                 )}
                              </div>
                              <div class="flex-1">
@@ -232,7 +231,7 @@ for (let i = 0; i < levels.length; i++) {
                                     )}
                                     {profesional.matricula?.es_matriculado && (
                                         <span class="bg-primary/10 text-primary text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest border border-primary/20 whitespace-nowrap">
-                                            Matrícula: {profesional.matricula.numero || "Verificada"}
+                                            Matrcula: {profesional.matricula.numero || "Verificada"}
                                         </span>
                                     )}
                                      <span class="bg-black text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm border border-transparent whitespace-nowrap" title={"Nivel calculado: " + xp + " XP"}>
@@ -242,7 +241,7 @@ for (let i = 0; i < levels.length; i++) {
                                 <p class="text-neutral-gray-dark font-medium flex items-center justify-center md:justify-start gap-1.5 text-sm">
                                     <span class="material-symbols-outlined text-primary text-base">location_on</span>
                                     <span class="capitalize">{ubicacion}</span>
-                                     • 
+                                      
                                     {profesional.verificado && (
                                         <span class="text-primary font-bold">Identidad Verificada</span>
                                     )}
@@ -254,7 +253,7 @@ for (let i = 0; i < levels.length; i++) {
                                      <div class="flex items-center gap-1.5">
                                         <span class="material-symbols-outlined text-primary fill-1 text-lg">star</span>
                                         <span class="font-bold text-neutral-black text-base">{promedio.toFixed(1)}</span>
-                                        <span class="text-neutral-gray text-xs font-medium">({votos} reseñas)</span>
+                                        <span class="text-neutral-gray text-xs font-medium">({votos} reseas)</span>
                                      </div>
                                      <div class="flex items-center gap-2 text-neutral-gray text-xs font-medium">
                                         <span class="material-symbols-outlined text-lg">work</span>
@@ -267,7 +266,7 @@ for (let i = 0; i < levels.length; i++) {
 
                     <!-- NAV TABS -->
                     <nav class="flex border-b border-neutral-gray-light mb-10 overflow-x-auto">
-                        <a class="flex-shrink-0 border-b-4 border-primary px-8 py-5 text-sm font-extrabold text-neutral-black tracking-widest uppercase" href="#sobre-mi">Sobre mí</a>
+                        <a class="flex-shrink-0 border-b-4 border-primary px-8 py-5 text-sm font-extrabold text-neutral-black tracking-widest uppercase" href="#sobre-mi">Sobre m</a>
                         <a class="flex-shrink-0 border-b-4 border-transparent px-8 py-5 text-sm font-bold text-neutral-gray hover:text-primary transition-colors tracking-widest uppercase" href="#portfolio">Trabajos</a>
                         <a class="flex-shrink-0 border-b-4 border-transparent px-8 py-5 text-sm font-bold text-neutral-gray hover:text-primary transition-colors tracking-widest uppercase" href="#reviews-section">Opiniones</a>
                     </nav>
@@ -280,7 +279,7 @@ for (let i = 0; i < levels.length; i++) {
                             <section id="sobre-mi" class="bg-white rounded-xl p-10 shadow-subtle border border-neutral-gray-light">
                                 <h2 class="text-lg font-black text-neutral-black mb-6 tracking-tight">Experiencia y Trayectoria</h2>
                                 <div class="space-y-4 text-neutral-gray-dark leading-relaxed text-sm whitespace-pre-line">
-                                    {profesional.descripcion || "Este profesional no ha detallado su experiencia aún."}
+                                    {profesional.descripcion || "Este profesional no ha detallado su experiencia an."}
                                 </div>
 
                                 <div class="mt-10">
@@ -335,7 +334,7 @@ for (let i = 0; i < levels.length; i++) {
                              <!-- Contact Card -->
                             <div class="sticky-card bg-white rounded-2xl p-8 shadow-elevated border border-neutral-gray-light z-40">
                                 <div class="mb-8">
-                                    <h3 class="text-2xl font-black text-neutral-black mb-2">Contratación</h3>
+                                    <h3 class="text-2xl font-black text-neutral-black mb-2">Contratacin</h3>
                                     <div class="flex items-center gap-2 text-sm text-green-600 font-bold uppercase tracking-widest">
                                         <span class="size-2.5 bg-green-500 rounded-full animate-pulse shadow-sm"></span>
                                         Disponible
@@ -348,15 +347,14 @@ for (let i = 0; i < levels.length; i++) {
                                             data-whatsapp={profesional.telefono}
                                             data-pro-id={idProfesional}
                                             data-pro-name={profesional.nombre}
-                                            class="w-full flex items-center justify-center gap-3 bg-[#25D366] text-white rounded-xl py-4.5 font-black shadow-lg hover:opacity-95 transition-all text-base h-16"
-                                        >
-                                            <span class="text-2xl">💬</span> WhatsApp
+                                            class="w-full flex items-center justify-center gap-3 bg-[#25D366] text-white rounded-xl py-4.5 font-black shadow-lg hover:opacity-95 transition-all text-base h-16">
+                                            <span class="text-2xl"></span> WhatsApp
                                         </button>
                                      )}
                                      
                                      {profesional.servicios_lista?.length > 0 && (
                                         <button onclick="window.openBudgetModal()" class="w-full flex items-center justify-center gap-3 bg-neutral-black text-black rounded-xl py-4.5 font-black shadow-lg hover:bg-primary transition-all text-base h-16">
-                                            <span class="text-2xl">📄</span> Ver Tarifario
+                                            <span class="text-2xl"></span> Ver Tarifario
                                         </button>
                                      )}
                                 </div>
@@ -376,15 +374,15 @@ for (let i = 0; i < levels.length; i++) {
                                     <div class="flex justify-between items-center text-sm">
                                         <span class="text-neutral-gray font-bold uppercase tracking-wider text-[11px]">Factura</span>
                                         <span class="font-black text-neutral-black">
-                                            {profesional.emite_factura ? "Sí (A/B/C)" : "No especificado"}
+                                            {profesional.emite_factura ? "S (A/B/C)" : "No especificado"}
                                         </span>
                                     </div>
 
                                     {profesional.garantia?.ofrece && (
                                         <div class="flex justify-between items-center text-sm">
-                                            <span class="text-neutral-gray font-bold uppercase tracking-wider text-[11px]">Garantía</span>
+                                            <span class="text-neutral-gray font-bold uppercase tracking-wider text-[11px]">Garanta</span>
                                             <span class="font-black text-green-600">
-                                                {profesional.garantia.tiempo ? `${profesional.garantia.tiempo} días` : "Sí"}
+                                                {profesional.garantia.tiempo ? `${profesional.garantia.tiempo} das` : "S"}
                                             </span>
                                         </div>
                                     )}
@@ -417,7 +415,7 @@ for (let i = 0; i < levels.length; i++) {
                                     )}
                                     <div class="pt-4">
                                          <a href="/reportar" class="text-red-400 text-xs font-bold hover:text-red-500 flex items-center gap-1 justify-center">
-                                            <span>🚩</span> Reportar este perfil
+                                            <span></span> Reportar este perfil
                                         </a>
                                     </div>
                                 </div>
@@ -432,7 +430,7 @@ for (let i = 0; i < levels.length; i++) {
                             <div class="bg-primary/[0.03] rounded-2xl p-8 border border-primary/20">
                                 <h4 class="font-black text-primary mb-3 flex items-center gap-2 uppercase text-xs tracking-[0.15em]">
                                     <span class="material-symbols-outlined text-xl">shield</span>
-                                    Garantía Oficios
+                                    Garanta Oficios
                                 </h4>
                                 <p class="text-sm text-neutral-gray-dark leading-relaxed font-semibold">
                                     Los trabajos realizados cuentan con el respaldo de nuestra comunidad. Verifica siempre la identidad del profesional.
@@ -464,7 +462,7 @@ for (let i = 0; i < levels.length; i++) {
             btnContact.addEventListener("click", async (e) => {
                 e.preventDefault();
                 
-                // Intentar obtener idProfesional desde el atributo data si no está disponible directamente
+                // Intentar obtener idProfesional desde el atributo data si no est disponible directamente
                 const proId = btnContact.getAttribute("data-pro-id");
                 const proName = btnContact.getAttribute("data-pro-name");
                 const whatsapp = btnContact.getAttribute("data-whatsapp");
@@ -474,25 +472,25 @@ for (let i = 0; i < levels.length; i++) {
                     return;
                 }
 
-                // Generar token de 4 dígitos
+                // Generar token de 4 dgitos
                 const safetyToken = Math.floor(1000 + Math.random() * 9000).toString();
 
                 if (typeof Swal === 'undefined') {
-                    // Fallback si SweetAlert no cargó
-                    window.open(`https://wa.me/549${whatsapp}?text=Hola ${proName}, te contacto desde DeOficios. Mi código es ${safetyToken}`, "_blank");
+                    // Fallback si SweetAlert no carg
+                    window.open(`https://wa.me/549${whatsapp}?text=Hola ${proName}, te contacto desde DeOficios. Mi cdigo es ${safetyToken}`, "_blank");
                     return;
                 }
 
                 Swal.fire({
-                    title: "🛡️ Código de Seguridad",
+                    title: " Cdigo de Seguridad",
                     html: `
-                        <p class="mb-4 text-gray-600">Tu código de verificación para <strong>${proName}</strong> es:</p>
+                        <p class="mb-4 text-gray-600">Tu codigo de verificacion para <strong>${proName}</strong> es:</p>
                         <div class="text-4xl font-black tracking-widest text-orange-600 bg-orange-50 py-4 rounded-xl border-2 border-orange-200 mb-4 shadow-inner">
                             ${safetyToken}
                         </div>
-                        <p class="text-xs text-gray-500 uppercase font-black tracking-tight">Mostrale este código al profesional al llegar</p>
+                        <p class="text-xs text-gray-500 uppercase font-black tracking-tight">Mostrale este codigo al profesional al llegar</p>
                     `,
-                    confirmButtonText: "Ir a WhatsApp 💬",
+                    confirmButtonText: "Ir a WhatsApp ",
                     confirmButtonColor: "#16a34a",
                     showCancelButton: true,
                     cancelButtonText: "Cancelar",
@@ -503,7 +501,7 @@ for (let i = 0; i < levels.length; i++) {
                 }).then(async (result) => {
                     if (result.isConfirmed) {
                         try {
-                            // Import dinámico para no cargar firebase si no es necesario al inicio
+                            // Import dinmico para no cargar firebase si no es necesario al inicio
                             const { addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
                             const { db, auth } = await import("/src/firebase/client.js");
                             
@@ -521,20 +519,20 @@ for (let i = 0; i < levels.length; i++) {
                             });
 
                             // Abrir WhatsApp
-                            const waUrl = `https://wa.me/549${whatsapp}?text=${encodeURIComponent(`Hola ${proName}, te contacto desde DeOficios. Mi código de seguridad es ${safetyToken}`)}`;
+                            const waUrl = `https://wa.me/549${whatsapp}?text=${encodeURIComponent(`Hola ${proName}, te contacto desde DeOficios. Mi cdigo de seguridad es ${safetyToken}`)}`;
                             window.open(waUrl, "_blank");
 
-                            // Feedback prompt después de unos segundos
+                            // Feedback prompt despus de unos segundos
                             setTimeout(() => {
                                 Swal.fire({
-                                    title: "¿Pudiste contactarlo? 🤔",
+                                    title: "Pudiste contactarlo? ",
                                     text: "Tu feedback nos ayuda a mejorar.",
                                     icon: "question",
                                     showDenyButton: true,
                                     showCancelButton: true,
-                                    confirmButtonText: "✅ Sí",
-                                    denyButtonText: "❌ No contestó",
-                                    cancelButtonText: "🚩 Reportar",
+                                    confirmButtonText: " S",
+                                    denyButtonText: " No contest",
+                                    cancelButtonText: " Reportar",
                                     confirmButtonColor: "#16a34a",
                                     denyButtonColor: "#ef4444",
                                 }).then(async (res) => {
@@ -564,28 +562,25 @@ for (let i = 0; i < levels.length; i++) {
             });
         });
     </script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        /* Fix map */
+        #mini-map {
+            height: 200px;
+            width: 100%;
+            background: #f0f0f0;
+            z-index: 1;
+            min-height: 200px; /* Force height */
+        }
+        .leaflet-container {
+            font-family: inherit;
+        }
+
+        /* Ensure modal overlay is above everything */
+        #budget-modal {
+            z-index: 9999;
+        }
+    </style>
 </Layout>
 
-<link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
-
-<style>
-    /* Fix map */
-    #mini-map {
-        height: 200px;
-        width: 100%;
-        background: #f0f0f0;
-        z-index: 1;
-        min-height: 200px; /* Force height */
-    }
-    .leaflet-container {
-        font-family: inherit;
-    }
-
-    /* Ensure modal overlay is above everything */
-    #budget-modal {
-        z-index: 9999;
-    }
-</style>

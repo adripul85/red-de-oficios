@@ -10,67 +10,67 @@ export interface CategoryGroup {
 
 export const CATEGORIES: CategoryGroup[] = [
     {
-        group: "🚨 Urgencias e Instalaciones Críticas",
+        group: "Urgencias e Instalaciones Criticas",
         trades: [
-            { name: "Plomero", subtrades: ["Cañerías", "Tanques", "Bombas de agua", "Filtraciones"] },
-            { name: "Electricista", subtrades: ["Tableros", "Cortocircuitos", "Cableados", "Iluminación"] },
+            { name: "Plomero", subtrades: ["Canerias", "Tanques", "Bombas de agua", "Filtraciones"] },
+            { name: "Electricista", subtrades: ["Tableros", "Cortocircuitos", "Cableados", "Iluminacion"] },
             { name: "Gasista", subtrades: ["Instalaciones aprobadas", "Estufas", "Termotanques", "Cocinas"] },
-            { name: "Cerrajero", subtrades: ["Urgencias 24hs", "Cambio de combinación", "Apertura de autos/casas"] },
-            { name: "Destapaciones", subtrades: ["Cloacas", "Pluviales", "Cámaras sépticas"] },
-            { name: "Técnico de Aire Acondicionado", subtrades: ["Instalación", "Carga de gas", "Limpieza", "Service"] },
-            { name: "Técnico de Electrodomésticos", subtrades: ["Lavarropas", "Heladeras", "Microondas"] }
+            { name: "Cerrajero", subtrades: ["Urgencias 24hs", "Cambio de combinacion", "Apertura de autos/casas"] },
+            { name: "Destapaciones", subtrades: ["Cloacas", "Pluviales", "Camaras septicas"] },
+            { name: "Tecnico de Aire Acondicionado", subtrades: ["Instalacion", "Carga de gas", "Limpieza", "Service"] },
+            { name: "Tecnico de Electrodomesticos", subtrades: ["Lavarropas", "Heladeras", "Microondas"] }
         ]
     },
     {
-        group: "🧱 Construcción, Reformas e Infraestructura",
+        group: "Construccion, Reformas e Infraestructura",
         trades: [
-            { name: "Albañil", subtrades: ["Cimientos", "Paredes", "Revoques", "Losas"] },
+            { name: "Albanil", subtrades: ["Cimientos", "Paredes", "Revoques", "Losas"] },
             { name: "Techista", subtrades: ["Filtraciones", "Membranas", "Techos de teja o chapa"] },
             { name: "Pintor", subtrades: ["Interiores", "Exteriores", "Altura", "Durlock"] },
             { name: "Durlockero", subtrades: ["Tabiques", "Cielorrasos", "Muebles de placa de yeso"] },
-            { name: "Colocador de Pisos/Ceramista", subtrades: ["Porcelanato", "Flotantes", "Pulido de parqué"] },
-            { name: "Herrero", subtrades: ["Rejas", "Portones", "Estructuras metálicas", "Soldadura"] },
-            { name: "Carpintero", subtrades: ["Muebles a medida", "Aberturas", "Restauración de maderas"] },
-            { name: "Vidriero", subtrades: ["Reparación de vidrios", "Mamparas de baño", "Espejos"] }
+            { name: "Colocador de Pisos/Ceramista", subtrades: ["Porcelanato", "Flotantes", "Pulido de parque"] },
+            { name: "Herrero", subtrades: ["Rejas", "Portones", "Estructuras metalicas", "Soldadura"] },
+            { name: "Carpintero", subtrades: ["Muebles a medida", "Aberturas", "Restauracion de maderas"] },
+            { name: "Vidriero", subtrades: ["Reparacion de vidrios", "Mamparas de bano", "Espejos"] }
         ]
     },
     {
-        group: "🎨 Mantenimiento, Estética y Oficios Clásicos",
+        group: "Mantenimiento, Estetica y Oficios Clasicos",
         trades: [
-            { name: "Jardinero", subtrades: ["Corte de césped", "Poda de altura", "Paisajismo"] },
+            { name: "Jardinero", subtrades: ["Corte de cesped", "Poda de altura", "Paisajismo"] },
             { name: "Piletero", subtrades: ["Mantenimiento de piscinas", "Pintura", "Bombas"] },
-            { name: "Persianista", subtrades: ["Reparación de persianas de PVC", "Madera", "Aluminio"] },
-            { name: "Tapicero", subtrades: ["Restauración de sillones", "Sillas", "Sommiers", "Autos"] },
-            { name: "Sastre / Modista", subtrades: ["Arreglos de ropa", "Confección", "Cierres", "Dobladillos"] },
-            { name: "Zapatero", subtrades: ["Reparación de calzado", "Cambio de suelas"] },
-            { name: "Relojero", subtrades: ["Reparación de relojes de pulsera", "Pared"] },
-            { name: "Matricero", subtrades: ["Moldes", "Piezas técnicas"] }
+            { name: "Persianista", subtrades: ["Reparacion de persianas de PVC", "Madera", "Aluminio"] },
+            { name: "Tapicero", subtrades: ["Restauracion de sillones", "Sillas", "Sommiers", "Autos"] },
+            { name: "Sastre / Modista", subtrades: ["Arreglos de ropa", "Confeccion", "Cierres", "Dobladillos"] },
+            { name: "Zapatero", subtrades: ["Reparacion de calzado", "Cambio de suelas"] },
+            { name: "Relojero", subtrades: ["Reparacion de relojes de pulsera", "Pared"] },
+            { name: "Matricero", subtrades: ["Moldes", "Piezas tecnicas"] }
         ]
     },
     {
-        group: "🥳 Eventos, Gastronomía y Logística",
+        group: "Eventos, Gastronomia y Logistica",
         trades: [
             { name: "Pastelero/a", subtrades: ["Tortas personalizadas", "Mesas dulces", "Eventos"] },
-            { name: "Souvenirs", subtrades: ["Personalizados", "Eventos", "Regalos corporativos", "Artesanías"] },
-            { name: "DJ / Sonido", subtrades: ["Musicalización de fiestas", "Iluminación"] },
+            { name: "Souvenirs", subtrades: ["Personalizados", "Eventos", "Regalos corporativos", "Artesanias"] },
+            { name: "DJ / Sonido", subtrades: ["Musicalizacion de fiestas", "Iluminacion"] },
             { name: "Fletero", subtrades: ["Mudanzas", "Traslados cortos", "Repartos"] },
-            { name: "Fumigador", subtrades: ["Control de plagas", "Desinfección"] }
+            { name: "Fumigador", subtrades: ["Control de plagas", "Desinfeccion"] }
         ]
     },
     {
-        group: "💇 Estética y Cuidado Personal",
+        group: "Estetica y Cuidado Personal",
         trades: [
             { name: "Peinador / Estilista", subtrades: ["Cortes", "Peinados para eventos"] },
             { name: "Barbero", subtrades: ["Corte de barba", "Cabello masculino"] },
-            { name: "Maquillador / Maquilladora", subtrades: ["Social", "Novias", "Artístico"] },
-            { name: "Manicura / Pedicura", subtrades: ["Cuidado de uñas", "Manos"] }
+            { name: "Maquillador / Maquilladora", subtrades: ["Social", "Novias", "Artistico"] },
+            { name: "Manicura / Pedicura", subtrades: ["Cuidado de unas", "Manos"] }
         ]
     },
     {
-        group: "🔐 Seguridad y Tecnología",
+        group: "Seguridad y Tecnologia",
         trades: [
-            { name: "Instalador de Cámaras de Seguridad", subtrades: ["Alarmas", "CCTV", "Domótica"] },
-            { name: "Técnico de PC / Celulares", subtrades: ["Reparación de software", "Hardware"] }
+            { name: "Instalador de Camaras de Seguridad", subtrades: ["Alarmas", "CCTV", "Domotica"] },
+            { name: "Tecnico de PC / Celulares", subtrades: ["Reparacion de software", "Hardware"] }
         ]
     }
 ];

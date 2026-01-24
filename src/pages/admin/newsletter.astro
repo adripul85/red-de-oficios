@@ -7,58 +7,48 @@ import Layout from "../../layouts/Layout.astro";
         <div class="max-w-4xl mx-auto">
             <!-- HEADER -->
             <header
-                class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 mb-8 flex items-center justify-between"
-            >
+                class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 mb-8 flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <a
                         href="/admin"
-                        class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
-                    >
-                        ⬅
+                        class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors">
+                        
                     </a>
                     <div>
                         <h1
-                            class="text-2xl font-black text-slate-800 tracking-tight"
-                        >
+                            class="text-2xl font-black text-slate-800 tracking-tight">
                             Newsletter
                         </h1>
                         <p class="text-slate-500 text-sm font-medium">
-                            Gestión de suscriptores
+                            Gestin de suscriptores
                         </p>
                     </div>
                 </div>
                 <div
-                    class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl"
-                >
-                    📧
+                    class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl">
+                    
                 </div>
             </header>
 
             <!-- SEND MASS EMAIL CARD -->
             <section
-                class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-8 relative overflow-hidden"
-            >
+                class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-8 relative overflow-hidden">
                 <div class="relative z-10">
                     <h2
-                        class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"
-                    >
+                        class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                         <span
-                            class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center text-sm"
-                            >🚀</span
-                        >
+                            class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center text-sm"></span>
                         Enviar Email Masivo
                     </h2>
 
                     <div class="space-y-4">
                         <div>
                             <label
-                                class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"
-                                >Asunto</label
-                            >
+                                class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Asunto</label>
                             <input
                                 type="text"
                                 id="mass-subject"
-                                placeholder="Ej: ¡Novedades de Enero!"
+                                placeholder="Ej: Novedades de Enero!"
                                 class="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                             />
                         </div>
@@ -66,37 +56,27 @@ import Layout from "../../layouts/Layout.astro";
                         <div>
                             <div class="flex justify-between items-center mb-2">
                                 <label
-                                    class="block text-xs font-bold text-slate-400 uppercase tracking-wider"
-                                    >Mensaje (Markdown) <span
-                                        class="text-[10px] text-slate-300 ml-1"
-                                        >Soporta **negrita**, - listas,
-                                        [links](url)</span
-                                    ></label
-                                >
+                                    class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Mensaje (Markdown) <span
+                                        class="text-[10px] text-slate-300 ml-1">Soporta **negrita**, - listas,
+                                        [links](url)</span></label>
                                 <button
                                     id="btn-toggle-preview"
-                                    class="text-xs text-indigo-600 font-bold hover:underline"
-                                    >Ver Previsualización</button
-                                >
+                                    class="text-xs text-indigo-600 font-bold hover:underline">Ver Previsualizacin</button>
                             </div>
                             <div
-                                class="grid grid-cols-1 md:grid-cols-2 gap-4 h-80"
-                            >
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 h-80">
                                 <textarea
                                     id="mass-body"
                                     class="w-full h-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-mono text-sm resize-none"
                                     placeholder="Hola a todos,
 
-Esta es una **actualización importante**..."
-                                ></textarea>
+Esta es una **actualizacin importante**..."></textarea>
 
                                 <div
                                     id="preview-area"
-                                    class="h-full bg-white border border-slate-200 rounded-xl p-4 overflow-y-auto prose prose-sm max-w-none prose-indigo hidden md:block"
-                                >
+                                    class="h-full bg-white border border-slate-200 rounded-xl p-4 overflow-y-auto prose prose-sm max-w-none prose-indigo hidden md:block">
                                     <p
-                                        class="text-slate-400 italic text-center mt-10"
-                                    >
+                                        class="text-slate-400 italic text-center mt-10">
                                         Escribe para ver la vista previa...
                                     </p>
                                 </div>
@@ -106,24 +86,20 @@ Esta es una **actualización importante**..."
                         <div class="flex items-center justify-between pt-2">
                             <p
                                 id="send-status"
-                                class="text-xs font-bold text-slate-400 hidden animate-pulse"
-                            >
+                                class="text-xs font-bold text-slate-400 hidden animate-pulse">
                                 Procesando...
                             </p>
                             <button
                                 id="btn-send-mass"
-                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-bold transition shadow-lg hover:shadow-indigo-500/30 flex items-center gap-2 transform active:scale-95"
-                            >
-                                <span>Enviar Campaña</span>
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-bold transition shadow-lg hover:shadow-indigo-500/30 flex items-center gap-2 transform active:scale-95">
+                                <span>Enviar Campaa</span>
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 20 20"
                                     fill="currentColor"
-                                    class="w-5 h-5"
-                                >
+                                    class="w-5 h-5">
                                     <path
-                                        d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z"
-                                    ></path>
+                                        d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z"></path>
                                 </svg>
                             </button>
                         </div>
@@ -131,31 +107,26 @@ Esta es una **actualización importante**..."
                 </div>
                 <!-- Decorative Blob -->
                 <div
-                    class="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-orange-50 rounded-full blur-3xl opacity-50 pointer-events-none"
-                >
+                    class="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-orange-50 rounded-full blur-3xl opacity-50 pointer-events-none">
                 </div>
             </section>
 
             <!-- SUBSCRIBERS TABLE -->
             <div
-                class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden"
-            >
+                class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
                 <div
-                    class="p-6 border-b border-slate-100 flex items-center justify-between"
-                >
+                    class="p-6 border-b border-slate-100 flex items-center justify-between">
                     <h3 class="font-bold text-slate-800">
                         Lista de Suscriptores
                     </h3>
                     <span
                         class="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs font-bold"
-                        id="sub-count">0</span
-                    >
+                        id="sub-count">0</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead
-                            class="bg-slate-50 text-slate-500 font-bold uppercase text-xs"
-                        >
+                            class="bg-slate-50 text-slate-500 font-bold uppercase text-xs">
                             <tr>
                                 <th class="p-5">Email</th>
                                 <th class="p-5">Fecha</th>
@@ -165,14 +136,11 @@ Esta es una **actualización importante**..."
                         </thead>
                         <tbody
                             id="subscribers-list"
-                            class="divide-y divide-slate-50"
-                        >
+                            class="divide-y divide-slate-50">
                             <tr>
                                 <td
                                     colspan="4"
-                                    class="p-10 text-center text-slate-400 font-medium"
-                                    >Cargando suscriptores...</td
-                                >
+                                    class="p-10 text-center text-slate-400 font-medium">Cargando suscriptores...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -230,7 +198,7 @@ Esta es una **actualización importante**..."
                 const snap = await getDocs(q);
 
                 if (snap.empty) {
-                    list.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">No hay suscriptores aún.</td></tr>`;
+                    list.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">No hay suscriptores an.</td></tr>`;
                     return;
                 }
 
@@ -271,7 +239,7 @@ Esta es una **actualización importante**..."
         }
 
         async function deleteSubscriber(id) {
-            if (!confirm("¿Seguro que querés eliminar a este suscriptor?"))
+            if (!confirm("Seguro que quers eliminar a este suscriptor?"))
                 return;
             try {
                 await deleteDoc(doc(db, "newsletter", id));
@@ -286,12 +254,12 @@ Esta es una **actualización importante**..."
             const subject = document.getElementById("mass-subject").value;
             const bodyMD = document.getElementById("mass-body").value;
 
-            if (!subject || !bodyMD) return alert("Completá asunto y mensaje.");
+            if (!subject || !bodyMD) return alert("Complet asunto y mensaje.");
             if (subscribers.length === 0) return alert("No hay suscriptores.");
 
             if (
                 !confirm(
-                    `¿Estás seguro de enviar este email a ${subscribers.length} personas?`,
+                    `Ests seguro de enviar este email a ${subscribers.length} personas?`,
                 )
             )
                 return;
@@ -299,7 +267,7 @@ Esta es una **actualización importante**..."
             btnSend.disabled = true;
             btnSend.innerText = "Enviando...";
             statusText.classList.remove("hidden");
-            statusText.innerText = "Enviando mensajes... por favor esperá.";
+            statusText.innerText = "Enviando mensajes... por favor esper.";
 
             // Convert Markdown to HTML
             const bodyHTML = marked.parse(bodyMD);
@@ -337,8 +305,9 @@ Esta es una **actualización importante**..."
                 `Proceso finalizado.\nEnviados: ${sentCount}\nErrores: ${errorCount}`,
             );
             btnSend.disabled = false;
-            btnSend.innerText = "🚀 Enviar a Todos los Suscriptores";
-            statusText.innerText = "Envío completado.";
+            btnSend.innerText = " Enviar a Todos los Suscriptores";
+            statusText.innerText = "Envo completado.";
         });
     });
 </script>
+

@@ -2,23 +2,23 @@
 import Layout from "../../layouts/Layout.astro";
 ---
 
-<Layout title="Configuración Global - Admin">
+<Layout title="Configuracin Global - Admin">
     <div class="admin-container">
         <header class="header-config">
-            <a href="/admin" class="btn-back">⬅ Volver</a>
-            <h1>Configuración del Sistema ⚙️</h1>
+            <a href="/admin" class="btn-back"> Volver</a>
+            <h1>Configuracin del Sistema </h1>
         </header>
 
         <div class="config-grid">
             <div class="config-card">
-                <h3>🎁 Gestión de Giftcard</h3>
+                <h3> Gestin de Giftcard</h3>
                 <p class="text-sm text-muted mb-4">
-                    Configura el código promocional para regalar planes premium.
+                    Configura el cdigo promocional para regalar planes premium.
                 </p>
 
                 <form id="form-giftcard">
                     <div class="form-group">
-                        <label>Código Promocional</label>
+                        <label>Cdigo Promocional</label>
                         <input
                             type="text"
                             id="giftcard-code"
@@ -29,7 +29,7 @@ import Layout from "../../layouts/Layout.astro";
                     </div>
 
                     <div class="form-group">
-                        <label>Duración (días)</label>
+                        <label>Duracin (das)</label>
                         <input
                             type="number"
                             id="giftcard-duration"
@@ -42,24 +42,18 @@ import Layout from "../../layouts/Layout.astro";
                     <div class="form-group">
                         <label>Plan Otorgado</label>
                         <select id="giftcard-plan" required>
-                            <option value="mensual"
-                                >Plan Impulso (Mensual)</option
-                            >
-                            <option value="profesional"
-                                >Plan Profesional (90 días)</option
-                            >
-                            <option value="experto"
-                                >Plan Experto (Semestral)</option
-                            >
+                            <option value="mensual">Plan Impulso (Mensual)</option>
+                            <option value="profesional">Plan Profesional (90 das)</option>
+                            <option value="experto">Plan Experto (Semestral)</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label>Límite de Usos (opcional)</label>
+                        <label>Lmite de Usos (opcional)</label>
                         <input
                             type="number"
                             id="giftcard-max-uses"
-                            placeholder="1000 (dejar vacío = ilimitado)"
+                            placeholder="1000 (dejar vaco = ilimitado)"
                             min="1"
                         />
                     </div>
@@ -71,7 +65,7 @@ import Layout from "../../layouts/Layout.astro";
                                 id="giftcard-active"
                                 class="w-5 h-5"
                             />
-                            <span>Código Activo</span>
+                            <span>Cdigo Activo</span>
                         </label>
                     </div>
 
@@ -89,15 +83,14 @@ import Layout from "../../layouts/Layout.astro";
                     <button
                         type="submit"
                         class="btn-action"
-                        style="background: #9333ea;"
-                    >
-                        ✨ Guardar Configuración
+                        style="background: #9333ea;">
+                         Guardar Configuracin
                     </button>
                 </form>
             </div>
 
             <div class="config-card">
-                <h3>💰 Precios de Planes</h3>
+                <h3> Precios de Planes</h3>
                 <form id="form-precios">
                     <div class="form-group">
                         <label>Plan Impulso (Mensual) ($)</label>
@@ -109,7 +102,7 @@ import Layout from "../../layouts/Layout.astro";
                         />
                     </div>
                     <div class="form-group">
-                        <label>Plan Profesional (90 días) ($)</label>
+                        <label>Plan Profesional (90 das) ($)</label>
                         <input
                             type="number"
                             id="price-professional"
@@ -126,16 +119,14 @@ import Layout from "../../layouts/Layout.astro";
                             required
                         />
                     </div>
-                    <button type="submit" class="btn-action"
-                        >Guardar Precios</button
-                    >
+                    <button type="submit" class="btn-action">Guardar Precios</button>
                 </form>
             </div>
 
             <div class="config-card">
-                <h3>📢 Aviso Global (Banner)</h3>
+                <h3> Aviso Global (Banner)</h3>
                 <p class="text-sm text-muted mb-4">
-                    Configura un mensaje que aparecerá en la parte superior de
+                    Configura un mensaje que aparecer en la parte superior de
                     todo el sitio.
                 </p>
                 <form id="form-aviso">
@@ -143,7 +134,7 @@ import Layout from "../../layouts/Layout.astro";
                         <label>Mensaje del Banner</label>
                         <textarea
                             id="aviso-message"
-                            placeholder="Ej: ¡Nuevo sistema de puntos activo!"
+                            placeholder="Ej: Nuevo sistema de puntos activo!"
                             class="w-full p-3 border rounded-lg h-24 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
                             required></textarea>
                     </div>
@@ -160,9 +151,8 @@ import Layout from "../../layouts/Layout.astro";
                     <button
                         type="submit"
                         class="btn-action"
-                        style="background: #f97316;"
-                    >
-                        📢 Actualizar Banner
+                        style="background: #f97316;">
+                         Actualizar Banner
                     </button>
                 </form>
             </div>
@@ -176,20 +166,20 @@ import Layout from "../../layouts/Layout.astro";
     import { onAuthStateChanged } from "firebase/auth";
 
     document.addEventListener("astro:page-load", () => {
-        console.log("🚀 [ADMIN-CONFIG] Página cargada/navegada");
+        console.log(" [ADMIN-CONFIG] Pgina cargada/navegada");
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
-                console.warn("🚫 [ADMIN-CONFIG] No hay usuario autenticado");
+                console.warn(" [ADMIN-CONFIG] No hay usuario autenticado");
                 window.location.href = "/admin/login";
             } else {
-                console.log("👤 [ADMIN-CONFIG] Usuario autenticado:", user.uid);
+                console.log(" [ADMIN-CONFIG] Usuario autenticado:", user.uid);
                 loadConfig();
             }
         });
 
         async function loadConfig() {
-            console.log("📥 [ADMIN-CONFIG] Iniciando loadConfig...");
+            console.log(" [ADMIN-CONFIG] Iniciando loadConfig...");
             const user = auth.currentUser;
             if (user) {
                 try {
@@ -198,19 +188,19 @@ import Layout from "../../layouts/Layout.astro";
                     );
                     const data = snap.data();
                     console.log(
-                        "📄 [ADMIN-CONFIG] Perfil data completo:",
+                        " [ADMIN-CONFIG] Perfil data completo:",
                         data,
                     );
                     if (data) {
-                        console.log("🔑 [ADMIN-CONFIG] Rol field:", data.rol);
-                        console.log("🔑 [ADMIN-CONFIG] Role field:", data.role);
+                        console.log(" [ADMIN-CONFIG] Rol field:", data.rol);
+                        console.log(" [ADMIN-CONFIG] Role field:", data.role);
                     }
                 } catch (e: any) {
-                    console.error("📄 [ADMIN-CONFIG] Error leyendo perfil:", e);
+                    console.error(" [ADMIN-CONFIG] Error leyendo perfil:", e);
                 }
             }
             try {
-                // Cargar configuración del giftcard
+                // Cargar configuracin del giftcard
                 const giftcardRef = doc(db, "configuracion", "giftcard");
                 const giftcardSnap = await getDoc(giftcardRef);
 
@@ -284,9 +274,9 @@ import Layout from "../../layouts/Layout.astro";
                         data.activo || false;
                 }
             } catch (e: any) {
-                console.error("❌ [ADMIN-CONFIG] Error en loadConfig:", e);
-                console.error("❌ [ADMIN-CONFIG] Código:", e.code);
-                console.error("❌ [ADMIN-CONFIG] Mensaje:", e.message);
+                console.error(" [ADMIN-CONFIG] Error en loadConfig:", e);
+                console.error(" [ADMIN-CONFIG] Cdigo:", e.code);
+                console.error(" [ADMIN-CONFIG] Mensaje:", e.message);
             }
         }
 
@@ -326,9 +316,9 @@ import Layout from "../../layouts/Layout.astro";
                 ).checked;
 
                 if (code.length < 3)
-                    return alert("Código muy corto (mínimo 3 caracteres)");
+                    return alert("Cdigo muy corto (mnimo 3 caracteres)");
                 if (duration < 1)
-                    return alert("Duración debe ser al menos 1 día");
+                    return alert("Duracin debe ser al menos 1 da");
 
                 try {
                     const giftcardData: any = {
@@ -361,17 +351,17 @@ import Layout from "../../layouts/Layout.astro";
                     );
 
                     alert(
-                        `✅ Giftcard actualizado:\n\nCódigo: ${code}\nDuración: ${duration} días\nPlan: ${plan}\nActivo: ${active ? "Sí" : "No"}`,
+                        ` Giftcard actualizado:\n\nCdigo: ${code}\nDuracin: ${duration} das\nPlan: ${plan}\nActivo: ${active ? "S" : "No"}`,
                     );
                     loadConfig(); // Recargar para mostrar datos actualizados
                 } catch (e: any) {
                     console.error(
-                        "❌ [ADMIN-CONFIG] Error guardando giftcard:",
+                        " [ADMIN-CONFIG] Error guardando giftcard:",
                         e,
                     );
-                    console.error("❌ [ADMIN-CONFIG] Código error:", e.code);
+                    console.error(" [ADMIN-CONFIG] Cdigo error:", e.code);
                     console.error(
-                        "❌ [ADMIN-CONFIG] Mensaje error:",
+                        " [ADMIN-CONFIG] Mensaje error:",
                         e.message,
                     );
                     alert(
@@ -407,7 +397,7 @@ import Layout from "../../layouts/Layout.astro";
                         },
                         { merge: true },
                     );
-                    alert("✅ Precios actualizados");
+                    alert(" Precios actualizados");
                 } catch (e) {
                     alert("Error guardando precios");
                 }
@@ -432,7 +422,7 @@ import Layout from "../../layouts/Layout.astro";
                         },
                         { merge: true },
                     );
-                    alert("✅ Banner actualizado correctamente");
+                    alert(" Banner actualizado correctamente");
                 } catch (e) {
                     console.error(e);
                     alert("Error guardando el banner");
@@ -600,3 +590,4 @@ import Layout from "../../layouts/Layout.astro";
         height: 1.25rem;
     }
 </style>
+

@@ -1,24 +1,24 @@
 ---
-// Array con las categorías principales (Mismos nombres que en el registro)
+// Array con las categoras principales (Mismos nombres que en el registro)
 const categorias = [
-  { nombre: "Urgencias", icono: "🚨", color: "#fee2e2", borde: "#ef4444" },
-  { nombre: "Obra", icono: "🏗️", color: "#f3f4f6", borde: "#6b7280" },
-  { nombre: "Plomería", icono: "💧", color: "#dbeafe", borde: "#3b82f6" },
-  { nombre: "Electricidad", icono: "⚡", color: "#fef3c7", borde: "#f59e0b" },
-  { nombre: "Pintor", icono: "🎨", color: "#fce7f3", borde: "#ec4899" },
-  { nombre: "Carpintero", icono: "🪚", color: "#ffedd5", borde: "#f97316" },
-  { nombre: "Aire Acond.", icono: "❄️", color: "#e0f2fe", borde: "#0ea5e9" },
-  { nombre: "Fletes", icono: "🚚", color: "#ecfccb", borde: "#84cc16" },
-  { nombre: "Jardinero", icono: "🌿", color: "#dcfce7", borde: "#22c55e" },
-  { nombre: "Estética", icono: "💅", color: "#f3e8ff", borde: "#a855f7" },
-  { nombre: "Techista", icono: "🏠", color: "#ffedd5", borde: "#ea580c" },
-  { nombre: "Ver Todos", icono: "🔎", color: "#ffffff", borde: "#000000" },
+  { nombre: "Urgencias", icono: "", color: "#fee2e2", borde: "#ef4444" },
+  { nombre: "Obra", icono: "", color: "#f3f4f6", borde: "#6b7280" },
+  { nombre: "Plomera", icono: "", color: "#dbeafe", borde: "#3b82f6" },
+  { nombre: "Electricidad", icono: "", color: "#fef3c7", borde: "#f59e0b" },
+  { nombre: "Pintor", icono: "", color: "#fce7f3", borde: "#ec4899" },
+  { nombre: "Carpintero", icono: "", color: "#ffedd5", borde: "#f97316" },
+  { nombre: "Aire Acond.", icono: "", color: "#e0f2fe", borde: "#0ea5e9" },
+  { nombre: "Fletes", icono: "", color: "#ecfccb", borde: "#84cc16" },
+  { nombre: "Jardinero", icono: "", color: "#dcfce7", borde: "#22c55e" },
+  { nombre: "Esttica", icono: "", color: "#f3e8ff", borde: "#a855f7" },
+  { nombre: "Techista", icono: "", color: "#ffedd5", borde: "#ea580c" },
+  { nombre: "Ver Todos", icono: "", color: "#ffffff", borde: "#000000" },
 ];
 ---
 
 <section class="categorias-section">
   <div class="header-cat">
-    <h2>¿Qué necesitas arreglar hoy? 🛠️</h2>
+    <h2>Qu necesitas arreglar hoy? </h2>
     <p>Busca profesionales calificados por rubro</p>
   </div>
 
@@ -27,12 +27,10 @@ const categorias = [
       categorias.map((cat) => (
         <a
           href={`/resultados?q=${cat.nombre === "Ver Todos" ? "" : cat.nombre}`}
-          class="cat-card"
-        >
+          class="cat-card">
           <div
             class="icon-circle"
-            style={`background-color: ${cat.color}; border-color: ${cat.borde}`}
-          >
+            style={`background-color: ${cat.color}; border-color: ${cat.borde}`}>
             {cat.icono}
           </div>
           <span>{cat.nombre}</span>
@@ -69,7 +67,7 @@ const categorias = [
     grid-template-columns: repeat(
       auto-fill,
       minmax(140px, 1fr)
-    ); /* Tarjetas de 140px mínimo */
+    ); /* Tarjetas de 140px mnimo */
     gap: 20px;
   }
 
@@ -94,7 +92,7 @@ const categorias = [
     border-color: #e5e7eb;
   }
 
-  /* CÍRCULO DEL ÍCONO */
+  /* CRCULO DEL CONO */
   .icon-circle {
     width: 60px;
     height: 60px;
@@ -103,7 +101,7 @@ const categorias = [
     align-items: center;
     justify-content: center;
     font-size: 2rem;
-    border: 2px solid transparent; /* Para usar el color del borde dinámico */
+    border: 2px solid transparent; /* Para usar el color del borde dinmico */
   }
 
   .cat-card span {
@@ -112,7 +110,7 @@ const categorias = [
     font-size: 0.95rem;
   }
 
-  /* MÓVIL */
+  /* MVIL */
   @media (max-width: 600px) {
     .grid-categorias {
       grid-template-columns: repeat(3, 1fr); /* 3 columnas en celular */
@@ -131,3 +129,4 @@ const categorias = [
     }
   }
 </style>
+

@@ -1,7 +1,6 @@
 ---
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import IAFloatingButton from "../components/IAFloatingButton.astro";
 import "../styles/global.css";
 import GlobalBanner from "../components/GlobalBanner.astro";
 import PWAInstallPrompt from "../components/PWAInstallPrompt.astro";
@@ -34,10 +33,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 <html lang="es">
 	<head>
 		<!-- Google tag (gtag.js) -->
-		<script
-			async
-			src="https://www.googletagmanager.com/gtag/js?id=G-LG6RPRWWDY"
-		></script>
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-LG6RPRWWDY"></script>
 		<script is:inline>
 			window.dataLayer = window.dataLayer || [];
 			function gtag() {
@@ -98,51 +94,24 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		<ClientRouter />
 
 		<!-- SweetAlert2 -->
-		<script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
-		></script>
+		<script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	</head>
+
 	<body class="bg-white text-gray-900 transition-colors duration-300">
 		<GlobalBanner />
 		<PWAInstallPrompt />
-		<!-- PREMIUM SPLASH SCREEN (Apple Music Style) -->
-		<div id="custom-splash-screen">
-			<img
-				src="/icon-512.png"
-				alt="Logo DeOficios"
-				width="876"
-				height="5000"
-			/>
-		</div>
 
 		{!hideHeader && <Header />}
-		<main class="pseudo-app-main">
+
+		<main class="min-h-[80vh] pt-16 md:pt-20">
 			<slot />
 		</main>
+
+		{!hideIA && <AiAssistant />}
+
 		{!hideFooter && <Footer />}
-		<AiAssistant />
-		<BottomNav currentPath={Astro.url.pathname} />
 
-		<!-- Splash Screen Script -->
-		<script is:inline>
-			// Hide splash screen on first load AND on every View Transition
-			function hideSplash() {
-				const splash = document.getElementById("custom-splash-screen");
-				if (splash && !splash.classList.contains("hidden")) {
-					splash.classList.add("hidden");
-					setTimeout(() => splash.remove(), 400);
-				}
-			}
-
-			// First load
-			document.addEventListener("DOMContentLoaded", () => {
-				setTimeout(() => hideSplash(), 300);
-			});
-
-			// View Transitions navigations
-			document.addEventListener("astro:page-load", () => {
-				hideSplash();
-			});
-		</script>
+		<BottomNav />
 
 		<script is:inline>
 			if ("serviceWorker" in navigator) {
@@ -151,12 +120,12 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 						.register("/sw.js")
 						.then((reg) =>
 							console.log(
-								"✅ Service Worker registrado:",
+								" Service Worker registrado:",
 								reg.scope,
 							),
 						)
 						.catch((err) =>
-							console.log("❌ Error registro SW:", err),
+							console.log(" Error registro SW:", err),
 						);
 				});
 			}
@@ -303,7 +272,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 	// Evitar click derecho
 	document.addEventListener("contextmenu", (event) => event.preventDefault());
 
-	// Evitar atajos de teclado para ver código (F12, Ctrl+U, etc)
+	// Evitar atajos de teclado para ver cdigo (F12, Ctrl+U, etc)
 	document.onkeydown = function (e: KeyboardEvent) {
 		if (e.keyCode == 123) {
 			return false;
@@ -322,3 +291,4 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		} // Ctrl+U
 	};
 </script>
+

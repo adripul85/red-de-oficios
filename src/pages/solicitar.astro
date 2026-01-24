@@ -7,19 +7,16 @@ import { LOCATIONS } from "../data/locations";
 <Layout title="Pedir Presupuesto - DeOficios">
     <div class="max-w-2xl mx-auto px-4 py-10">
         <div
-            class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 transition-colors"
-        >
+            class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 transition-colors">
             <div class="text-center mb-8">
                 <a
                     href="/mi-cuenta"
-                    class="inline-flex items-center text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-orange-600 mb-6 transition-colors"
-                >
+                    class="inline-flex items-center text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-orange-600 mb-6 transition-colors">
                     <svg
                         class="w-5 h-5 mr-1"
                         fill="none"
                         stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
+                        viewBox="0 0 24 24">
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
@@ -29,43 +26,33 @@ import { LOCATIONS } from "../data/locations";
                     Volver a Mi Cuenta
                 </a>
                 <h1
-                    class="text-3xl font-bold text-gray-900 dark:text-white mb-2"
-                >
-                    ¡Pedí presupuesto gratis! 🚀
+                    class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    Ped presupuesto gratis! 
                 </h1>
                 <p class="text-gray-500 dark:text-gray-400">
-                    Contanos qué necesitás y avisaremos a los <span
-                        class="text-orange-600 dark:text-orange-500 font-bold"
-                        >mejores profesionales</span
-                    > de tu zona.
+                    Contanos qu necesits y avisaremos a los <span
+                        class="text-orange-600 dark:text-orange-500 font-bold">mejores profesionales</span> de tu zona.
                 </p>
             </div>
 
             <form id="solicitud-form" class="space-y-5">
                 <div>
                     <label
-                        class="block font-bold text-gray-700 dark:text-gray-200 mb-1"
-                        >¿Qué servicio buscás?</label
-                    >
+                        class="block font-bold text-gray-700 dark:text-gray-200 mb-1">Qu servicio buscs?</label>
                     <select
                         id="rubro"
                         class="w-full p-3 border dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none transition-colors"
-                        required
-                    >
-                        <option value="" class="dark:bg-gray-800"
-                            >Selecciona una categoría...</option
-                        >
+                        required>
+                        <option value="" class="dark:bg-gray-800">Selecciona una categora...</option>
                         {
                             CATEGORIES.map((cat) => (
                                 <optgroup
                                     label={cat.group}
-                                    class="dark:bg-gray-800 font-bold"
-                                >
+                                    class="dark:bg-gray-800 font-bold">
                                     {cat.trades.map((t) => (
                                         <option
                                             value={t.name}
-                                            class="dark:bg-gray-800"
-                                        >
+                                            class="dark:bg-gray-800">
                                             {t.name}
                                         </option>
                                     ))}
@@ -77,28 +64,21 @@ import { LOCATIONS } from "../data/locations";
 
                 <div>
                     <label
-                        class="block font-bold text-gray-700 dark:text-gray-200 mb-1"
-                        >¿En qué barrio?</label
-                    >
+                        class="block font-bold text-gray-700 dark:text-gray-200 mb-1">En qu barrio?</label>
                     <select
                         id="zona"
                         class="w-full p-3 border dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500 outline-none transition-colors"
-                        required
-                    >
-                        <option value="" class="dark:bg-gray-800"
-                            >Selecciona tu zona...</option
-                        >
+                        required>
+                        <option value="" class="dark:bg-gray-800">Selecciona tu zona...</option>
                         {
                             LOCATIONS.map((l) => (
                                 <optgroup
                                     label={l.group}
-                                    class="dark:bg-gray-800 font-bold"
-                                >
+                                    class="dark:bg-gray-800 font-bold">
                                     {l.zones.map((z) => (
                                         <option
                                             value={z}
-                                            class="dark:bg-gray-800"
-                                        >
+                                            class="dark:bg-gray-800">
                                             {z}
                                         </option>
                                     ))}
@@ -110,13 +90,10 @@ import { LOCATIONS } from "../data/locations";
 
                 <div>
                     <label
-                        class="block font-bold text-gray-700 dark:text-gray-200 mb-1"
-                        >Tu WhatsApp (para que te contacten)</label
-                    >
+                        class="block font-bold text-gray-700 dark:text-gray-200 mb-1">Tu WhatsApp (para que te contacten)</label>
                     <div class="flex">
                         <span
-                            class="inline-flex items-center px-4 rounded-l-lg border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 font-bold text-sm"
-                        >
+                            class="inline-flex items-center px-4 rounded-l-lg border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 font-bold text-sm">
                             +54 9
                         </span>
                         <input
@@ -132,9 +109,7 @@ import { LOCATIONS } from "../data/locations";
 
                 <div>
                     <label
-                        class="block font-bold text-gray-700 dark:text-gray-200 mb-1"
-                        >Detalles del trabajo</label
-                    >
+                        class="block font-bold text-gray-700 dark:text-gray-200 mb-1">Detalles del trabajo</label>
                     <textarea
                         id="detalle"
                         rows="4"
@@ -146,17 +121,13 @@ import { LOCATIONS } from "../data/locations";
                 <!-- Campo de presupuesto opcional -->
                 <div>
                     <label
-                        class="block font-bold text-gray-700 dark:text-gray-200 mb-1"
-                    >
+                        class="block font-bold text-gray-700 dark:text-gray-200 mb-1">
                         Mi presupuesto estimado es de... <span
-                            class="text-gray-400 font-normal text-sm dark:text-gray-500"
-                            >(opcional)</span
-                        >
+                            class="text-gray-400 font-normal text-sm dark:text-gray-500">(opcional)</span>
                     </label>
                     <div class="flex">
                         <span
-                            class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-600 text-gray-500 dark:text-gray-300"
-                        >
+                            class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-600 text-gray-500 dark:text-gray-300">
                             $
                         </span>
                         <input
@@ -169,8 +140,7 @@ import { LOCATIONS } from "../data/locations";
                 </div>
 
                 <div
-                    class="flex items-center gap-3 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-100 dark:border-orange-900/30"
-                >
+                    class="flex items-center gap-3 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-100 dark:border-orange-900/30">
                     <input
                         type="checkbox"
                         id="urgente"
@@ -178,42 +148,35 @@ import { LOCATIONS } from "../data/locations";
                     />
                     <label
                         for="urgente"
-                        class="font-bold text-orange-800 dark:text-orange-300 cursor-pointer"
-                        >¡Es una urgencia! (Servicio 24hs)</label
-                    >
+                        class="font-bold text-orange-800 dark:text-orange-300 cursor-pointer">Es una urgencia! (Servicio 24hs)</label>
                 </div>
 
                 <button
                     type="submit"
                     id="btn-enviar"
-                    class="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold py-4 rounded-xl shadow-lg transform transition hover:scale-[1.02]"
-                >
-                    Enviar Solicitud a Expertos 📨
+                    class="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold py-4 rounded-xl shadow-lg transform transition hover:scale-[1.02]">
+                    Enviar Solicitud a Expertos 
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Modal de Éxito -->
+    <!-- Modal de xito -->
     <div
         id="success-modal"
-        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-    >
+        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div
             class="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-md mx-4 shadow-2xl transform transition-all scale-95 opacity-0 border dark:border-gray-700"
-            id="modal-content"
-        >
+            id="modal-content">
             <!-- Checkmark animado -->
             <div class="flex justify-center mb-6">
                 <div
-                    class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center"
-                >
+                    class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
                     <svg
                         class="w-12 h-12 text-green-600 dark:text-green-500"
                         fill="none"
                         stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
+                        viewBox="0 0 24 24">
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
@@ -223,38 +186,31 @@ import { LOCATIONS } from "../data/locations";
                 </div>
             </div>
 
-            <!-- Título -->
+            <!-- Ttulo -->
             <h2
-                class="text-2xl font-bold text-gray-900 dark:text-white text-center mb-3"
-            >
-                ¡Solicitud Enviada! 🎉
+                class="text-2xl font-bold text-gray-900 dark:text-white text-center mb-3">
+                Solicitud Enviada! 
             </h2>
 
             <!-- Mensaje -->
             <p
                 class="text-gray-600 dark:text-gray-400 text-center mb-6"
-                id="modal-message"
-            >
+                id="modal-message">
                 Hemos notificado a los mejores profesionales de tu zona.
             </p>
 
             <!-- Contador de profesionales -->
             <div
-                class="bg-orange-50 dark:bg-orange-900/20 rounded-2xl p-4 mb-6 border border-orange-100 dark:border-orange-900/30"
-            >
+                class="bg-orange-50 dark:bg-orange-900/20 rounded-2xl p-4 mb-6 border border-orange-100 dark:border-orange-900/30">
                 <div class="flex items-center justify-center gap-3">
                     <svg
                         class="w-6 h-6 text-orange-600 dark:text-orange-500"
                         fill="currentColor"
-                        viewBox="0 0 20 20"
-                    >
+                        viewBox="0 0 20 20">
                         <path
-                            d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"
-                        ></path>
+                            d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
                     </svg>
-                    <span class="font-bold text-gray-900 dark:text-white"
-                        ><span id="pros-count">0</span> profesionales notificados</span
-                    >
+                    <span class="font-bold text-gray-900 dark:text-white"><span id="pros-count">0</span> profesionales notificados</span>
                 </div>
             </div>
 
@@ -262,14 +218,12 @@ import { LOCATIONS } from "../data/locations";
             <div class="flex gap-3">
                 <button
                     id="btn-close-modal"
-                    class="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold rounded-xl transition-all"
-                >
+                    class="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-semibold rounded-xl transition-all">
                     Cerrar
                 </button>
                 <a
                     href="/mi-cuenta"
-                    class="flex-1 py-3 px-4 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold rounded-xl transition-all text-center"
-                >
+                    class="flex-1 py-3 px-4 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold rounded-xl transition-all text-center">
                     Ver Mi Cuenta
                 </a>
             </div>
@@ -284,14 +238,14 @@ import { LOCATIONS } from "../data/locations";
 
     // Wrap everything in astro:page-load for View Transitions compatibility
     document.addEventListener("astro:page-load", () => {
-        console.log("🚀 [SOLICITAR] Página cargada/navegada");
+        console.log(" [SOLICITAR] Pgina cargada/navegada");
 
         // CHECK URGENCY PARAM
         const urlParams = new URLSearchParams(window.location.search);
         const isUrgent = urlParams.get("urgencia") === "true";
 
         if (isUrgent) {
-            console.log("🚨 MODO URGENCIA ACTIVADO");
+            console.log(" MODO URGENCIA ACTIVADO");
             // 1. Marcar Checkbox
             const checkUrgente = document.getElementById(
                 "urgente",
@@ -301,7 +255,7 @@ import { LOCATIONS } from "../data/locations";
             // 2. Cambiar Estilos (Visual Panic Mode)
             const headerTitle = document.querySelector("h1");
             if (headerTitle) {
-                headerTitle.innerHTML = "🚨 SOLICITUD DE EMERGENCIA";
+                headerTitle.innerHTML = " SOLICITUD DE EMERGENCIA";
                 headerTitle.className =
                     "text-3xl font-black text-red-600 mb-2 uppercase tracking-tight";
             }
@@ -309,7 +263,7 @@ import { LOCATIONS } from "../data/locations";
             const headerDesc = document.querySelector(".text-center p");
             if (headerDesc) {
                 headerDesc.innerHTML =
-                    "Tu solicitud será enviada con <strong>ALTA PRIORIDAD</strong> a profesionales en línea.";
+                    "Tu solicitud ser enviada con <strong>ALTA PRIORIDAD</strong> a profesionales en lnea.";
                 headerDesc.classList.add(
                     "text-red-700",
                     "font-medium",
@@ -324,7 +278,7 @@ import { LOCATIONS } from "../data/locations";
             if (btnEnviar) {
                 btnEnviar.className =
                     "w-full bg-red-600 hover:bg-red-700 text-white font-black py-5 rounded-xl shadow-lg transform transition hover:scale-[1.02] uppercase tracking-widest text-xl border-b-4 border-red-800 animate-pulse";
-                btnEnviar.innerText = "🚨 PEDIR AYUDA AHORA";
+                btnEnviar.innerText = " PEDIR AYUDA AHORA";
             }
         }
 
@@ -351,7 +305,7 @@ import { LOCATIONS } from "../data/locations";
                     userDisplayName = user.displayName || "Usuario";
                 }
             } else {
-                // Redirigir si no está logueado
+                // Redirigir si no est logueado
                 window.location.href = "/ingresar-cliente?redirect=/solicitar";
             }
         });
@@ -363,7 +317,7 @@ import { LOCATIONS } from "../data/locations";
             e.preventDefault();
             if (!currentUser)
                 return alert(
-                    "Por favor, inicia sesión como cliente para pedir presupuestos.",
+                    "Por favor, inicia sesin como cliente para pedir presupuestos.",
                 );
 
             if (!userDisplayName && currentUser) {
@@ -387,7 +341,7 @@ import { LOCATIONS } from "../data/locations";
                 document.getElementById("presupuesto") as HTMLInputElement
             ).value;
 
-            // Limpiar teléfono para guardarlo limpio (solo números)
+            // Limpiar telfono para guardarlo limpio (solo nmeros)
             const telefono = telefonoInput.replace(/[^0-9]/g, "");
 
             const detalle = (
@@ -420,11 +374,11 @@ import { LOCATIONS } from "../data/locations";
                 const data = await response.json();
 
                 if (!response.ok) {
-                    console.error("❌ [API ERROR DATA]:", data);
+                    console.error(" [API ERROR DATA]:", data);
                     throw new Error(data.error || "Error al crear solicitud");
                 }
 
-                // MOSTRAR MODAL DE ÉXITO
+                // MOSTRAR MODAL DE XITO
                 const modal = document.getElementById("success-modal");
                 const modalContent = document.getElementById("modal-content");
                 const prosCountEl = document.getElementById("pros-count");
@@ -433,7 +387,7 @@ import { LOCATIONS } from "../data/locations";
                     prosCountEl.innerText = data.candidatosCount || 0;
                 if (modal) modal.classList.remove("hidden");
 
-                // Animación de entrada
+                // Animacin de entrada
                 setTimeout(() => {
                     if (modalContent) {
                         modalContent.classList.remove("scale-95", "opacity-0");
@@ -451,16 +405,17 @@ import { LOCATIONS } from "../data/locations";
 
                 if (btn) {
                     btn.disabled = false;
-                    btn.innerText = "Solicitud Enviada ✅";
+                    btn.innerText = "Solicitud Enviada ";
                 }
             } catch (error: any) {
                 console.error(error);
                 alert(error.message || "Hubo un error. Intenta nuevamente.");
                 if (btn) {
                     btn.disabled = false;
-                    btn.innerText = "Enviar Solicitud a Expertos 📨";
+                    btn.innerText = "Enviar Solicitud a Expertos ";
                 }
             }
         });
     }); // End of astro:page-load
 </script>
+

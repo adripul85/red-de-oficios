@@ -4,10 +4,9 @@
 
 <div
     id="global-announcement-banner"
-    class="hidden bg-orange-600 text-white py-2 px-4 text-center text-sm font-bold relative z-[100] shadow-md animate-slide-down"
->
+    class="hidden bg-orange-600 text-white py-2 px-4 text-center text-sm font-bold relative z-[100] shadow-md animate-slide-down">
     <div class="container mx-auto flex items-center justify-center gap-2">
-        <span id="banner-emoji">📢</span>
+        <span id="banner-emoji"></span>
         <p id="banner-text">Cargando aviso...</p>
     </div>
 </div>
@@ -29,7 +28,7 @@
                 if (data.activo) {
                     if (bannerText) bannerText.textContent = data.mensaje || "";
                     if (bannerEmoji)
-                        bannerEmoji.textContent = data.emoji || "📢";
+                        bannerEmoji.textContent = data.emoji || "";
 
                     // Dynamic coloring if available
                     if (data.color) {
@@ -53,7 +52,7 @@
             }
         },
         (error) => {
-            console.error("❌ [GlobalBanner] Error en listener:", error);
+            console.error(" [GlobalBanner] Error en listener:", error);
             banner?.classList.add("hidden");
             document.body.style.paddingTop = "0px";
         },
@@ -73,3 +72,4 @@
         animation: slide-down 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 </style>
+

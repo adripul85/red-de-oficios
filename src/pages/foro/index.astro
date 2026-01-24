@@ -5,17 +5,17 @@ import Layout from "../../layouts/Layout.astro";
 import { db } from "../../firebase/client";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 
-// Categorías
+// Categoras
 const categories = [
-    { id: "general", name: "General", icon: "📢", active: true },
-    { id: "electricidad", name: "Electricidad", icon: "⚡" },
-    { id: "plomeria", name: "Fontanería", icon: "🔧" },
-    { id: "albanileria", name: "Albañilería", icon: "🧱" },
-    { id: "jardineria", name: "Jardinería", icon: "🌿" },
-    { id: "aire-acondicionado", name: "Aire Acondicionado", icon: "❄️" },
-    { id: "herramientas", name: "Herramientas", icon: "🧰" },
-    { id: "negocios", name: "Presupuestos", icon: "💰" },
-    { id: "offtopic", name: "Off-Topic", icon: "☕" },
+    { id: "general", name: "General", icon: "", active: true },
+    { id: "electricidad", name: "Electricidad", icon: "" },
+    { id: "plomeria", name: "Fontanera", icon: "" },
+    { id: "albanileria", name: "Albailera", icon: "" },
+    { id: "jardineria", name: "Jardinera", icon: "" },
+    { id: "aire-acondicionado", name: "Aire Acondicionado", icon: "" },
+    { id: "herramientas", name: "Herramientas", icon: "" },
+    { id: "negocios", name: "Presupuestos", icon: "" },
+    { id: "offtopic", name: "Off-Topic", icon: "" },
 ];
 
 let threads = [];
@@ -41,12 +41,12 @@ try {
 
         return {
             id: doc.id,
-            authorId: data.authorId, // 🔥 IMPORTANTE: Necesario para validar propiedad
+            authorId: data.authorId, //  IMPORTANTE: Necesario para validar propiedad
             author: data.authorName || "Usuario",
             avatar:
                 data.authorPhoto ||
                 `https://ui-avatars.com/api/?name=${encodeURIComponent(data.authorName || "U")}&background=FF5A5F&color=fff`,
-            title: data.title || "Sin título",
+            title: data.title || "Sin ttulo",
             excerpt: data.content ? data.content.substring(0, 100) + "..." : "",
             group: getCategoryName(data.category),
             date: getRelativeTime(createdAt),
@@ -82,7 +82,7 @@ try {
             avatar: u.avatar || `https://ui-avatars.com/api/?name=${u.name}`,
         }));
 } catch (e) {
-    console.error("❌ Error cargando foro:", e);
+    console.error(" Error cargando foro:", e);
     errorMessage = e.message;
 }
 
@@ -100,7 +100,7 @@ function getRelativeTime(date) {
     const hours = Math.floor(min / 60);
     if (hours < 24) return `Hace ${hours} h`;
     const days = Math.floor(hours / 24);
-    if (days < 7) return `Hace ${days} días`;
+    if (days < 7) return `Hace ${days} das`;
     return date.toLocaleDateString();
 }
 ---
@@ -110,15 +110,13 @@ function getRelativeTime(date) {
         href="https://fonts.googleapis.com/css2?family=Gravitas+One&family=Montserrat:wght@400;500;600;700&display=swap"
         rel="stylesheet"
     />
-    <script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
-    ></script>
+    <script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <div class="bg-[#F8F9FA] min-h-screen font-sans">
         <section class="bg-white border-b border-gray-200 pt-12 pb-12 px-4">
             <div class="max-w-6xl mx-auto text-center">
                 <h1
-                    class="text-4xl md:text-6xl font-gravitas text-slate-800 mb-4 leading-tight"
-                >
+                    class="text-4xl md:text-6xl font-gravitas text-slate-800 mb-4 leading-tight">
                     La Comunidad de Oficios
                 </h1>
                 <p class="text-slate-500 mb-8 text-lg max-w-2xl mx-auto">
@@ -130,12 +128,11 @@ function getRelativeTime(date) {
                     <input
                         type="text"
                         id="search-input"
-                        placeholder="¿Qué estás buscando hoy?"
+                        placeholder="Qu ests buscando hoy?"
                         class="w-full pl-6 pr-32 py-4 rounded-2xl border-2 border-gray-200 focus:outline-none focus:border-[#FF5A5F] transition-all shadow-sm"
                     />
                     <button
-                        class="absolute right-2 top-2 bottom-2 bg-[#FF5A5F] text-white px-6 rounded-xl font-bold hover:bg-[#ff4146] transition"
-                    >
+                        class="absolute right-2 top-2 bottom-2 bg-[#FF5A5F] text-white px-6 rounded-xl font-bold hover:bg-[#ff4146] transition">
                         Buscar
                     </button>
                 </div>
@@ -143,66 +140,54 @@ function getRelativeTime(date) {
                 <!-- Mobile Category Toggle -->
                 <button
                     id="mobile-cat-btn"
-                    class="lg:hidden mt-6 bg-white text-slate-700 font-bold py-3 px-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-2 mx-auto hover:bg-slate-50 transition"
-                >
+                    class="lg:hidden mt-6 bg-white text-slate-700 font-bold py-3 px-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-2 mx-auto hover:bg-slate-50 transition">
                     <svg
                         class="w-5 h-5"
                         fill="none"
                         stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
+                        viewBox="0 0 24 24">
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
                             stroke-width="2"
                             d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
-                    Ver Categorías y Top Usuarios
+                    Ver Categoras y Top Usuarios
                 </button>
 
                 <div
-                    class="mt-8 flex justify-center gap-8 text-sm text-slate-500"
-                >
+                    class="mt-8 flex justify-center gap-8 text-sm text-slate-500">
                     <div>
-                        <span class="font-bold text-[#FF5A5F]"
-                            >{totalThreads}</span
-                        > debates activos
+                        <span class="font-bold text-[#FF5A5F]">{totalThreads}</span> debates activos
                     </div>
                     <div>
-                        <span class="font-bold text-[#FF5A5F]"
-                            >{topUsers.length * 5}+</span
-                        > colaboradores
+                        <span class="font-bold text-[#FF5A5F]">{topUsers.length * 5}+</span> colaboradores
                     </div>
                 </div>
             </div>
         </section>
 
         <div
-            class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-12 gap-8"
-        >
+            class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-12 gap-8">
             <aside class="hidden lg:block lg:col-span-3 space-y-6">
                 <a
                     href="/foro/crear-debate"
-                    class="block w-full bg-[#FF5A5F] hover:bg-[#ff4146] text-white font-bold py-4 px-5 rounded-xl shadow-lg text-center transition-transform hover:-translate-y-1"
-                >
-                    ✍️ Iniciar nuevo debate
+                    class="block w-full bg-[#FF5A5F] hover:bg-[#ff4146] text-white font-bold py-4 px-5 rounded-xl shadow-lg text-center transition-transform hover:-translate-y-1">
+                     Iniciar nuevo debate
                 </a>
 
                 <div
-                    class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden"
-                >
+                    class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                     <div
-                        class="p-4 bg-slate-50 border-b border-slate-100 font-bold text-slate-800"
-                    >
-                        Categorías
+                        class="p-4 bg-slate-50 border-b border-slate-100 font-bold text-slate-800">
+                        Categoras
                     </div>
                     <nav class="flex flex-col">
                         {
                             categories.map((cat) => (
                                 <a
                                     href={`/foro?cat=${cat.id}`}
-                                    class="flex items-center gap-3 px-5 py-3 hover:bg-rose-50 text-slate-600 hover:text-[#FF5A5F] transition-colors border-l-4 border-transparent hover:border-[#FF5A5F]"
-                                >
+                                    class="flex items-center gap-3 px-5 py-3 hover:bg-rose-50 text-slate-600 hover:text-[#FF5A5F] transition-colors border-l-4 border-transparent hover:border-[#FF5A5F]">
                                     <span>{cat.icon}</span> {cat.name}
                                 </a>
                             ))
@@ -211,10 +196,9 @@ function getRelativeTime(date) {
                 </div>
 
                 <div
-                    class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5"
-                >
+                    class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
                     <h3 class="font-bold text-slate-800 mb-4">
-                        🏆 Top Colaboradores
+                         Top Colaboradores
                     </h3>
                     <div class="space-y-4">
                         {
@@ -247,7 +231,7 @@ function getRelativeTime(date) {
                     errorMessage && (
                         <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r shadow-sm">
                             <p class="text-sm text-red-700 font-bold">
-                                Error de conexión
+                                Error de conexin
                             </p>
                             <p class="text-xs text-red-600">{errorMessage}</p>
                         </div>
@@ -258,44 +242,39 @@ function getRelativeTime(date) {
                     {
                         threads.length === 0 && !errorMessage ? (
                             <div class="text-center py-12 bg-white rounded-2xl border-2 border-dashed border-gray-200">
-                                <div class="text-4xl mb-3">📭</div>
+                                <div class="text-4xl mb-3"></div>
                                 <h3 class="text-lg font-bold text-slate-700">
-                                    Aún no hay debates
+                                    An no hay debates
                                 </h3>
                                 <a
                                     href="/foro/crear-debate"
-                                    class="text-[#FF5A5F] font-bold hover:underline"
-                                >
-                                    Crear debate ahora →
+                                    class="text-[#FF5A5F] font-bold hover:underline">
+                                    Crear debate ahora 
                                 </a>
                             </div>
                         ) : (
                             threads.map((thread) => (
                                 <article class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group relative">
-                                    {/* 🔥 BOTONES DE EDICIÓN/ELIMINACIÓN (Ocultos por defecto) */}
+                                    {/*  BOTONES DE EDICIN/ELIMINACIN (Ocultos por defecto) */}
                                     <div
                                         class="owner-controls hidden absolute top-4 right-4 z-20 flex gap-2"
                                         data-author-id={thread.authorId}
-                                        data-thread-id={thread.id}
-                                    >
+                                        data-thread-id={thread.id}>
                                         <button
                                             class="btn-edit bg-gray-100 hover:bg-blue-100 text-blue-600 p-2 rounded-lg text-xs font-bold shadow-sm transition"
-                                            title="Editar"
-                                        >
-                                            ✏️
+                                            title="Editar">
+                                            
                                         </button>
                                         <button
                                             class="btn-delete bg-gray-100 hover:bg-red-100 text-red-600 p-2 rounded-lg text-xs font-bold shadow-sm transition"
-                                            title="Eliminar"
-                                        >
-                                            🗑️
+                                            title="Eliminar">
+                                            
                                         </button>
                                     </div>
 
                                     <a
                                         href={`/foro/${thread.id}`}
-                                        class="block relative z-10"
-                                    >
+                                        class="block relative z-10">
                                         <div class="flex gap-4">
                                             <img
                                                 src={thread.avatar}
@@ -307,7 +286,7 @@ function getRelativeTime(date) {
                                                         {thread.group}
                                                     </span>
                                                     <span class="text-xs text-slate-400">
-                                                        • {thread.date}
+                                                         {thread.date}
                                                     </span>
                                                 </div>
                                                 <h2 class="text-xl font-bold text-slate-800 mb-2 group-hover:text-[#FF5A5F] transition-colors truncate pr-16">
@@ -318,11 +297,11 @@ function getRelativeTime(date) {
                                                 </p>
                                                 <div class="flex items-center gap-4 text-xs text-slate-400 font-medium">
                                                     <span class="flex items-center gap-1">
-                                                        💬 {thread.replies}{" "}
+                                                         {thread.replies}{" "}
                                                         respuestas
                                                     </span>
                                                     <span class="flex items-center gap-1">
-                                                        👤 por {thread.author}
+                                                         por {thread.author}
                                                     </span>
                                                 </div>
                                             </div>
@@ -338,42 +317,36 @@ function getRelativeTime(date) {
 
         <a
             href="/foro/crear-debate"
-            class="lg:hidden fixed bottom-48 right-6 w-14 h-14 bg-[#FF5A5F] text-white rounded-full shadow-xl flex items-center justify-center z-50 text-2xl hover:scale-110 transition"
-        >
-            ✍️
+            class="lg:hidden fixed bottom-48 right-6 w-14 h-14 bg-[#FF5A5F] text-white rounded-full shadow-xl flex items-center justify-center z-50 text-2xl hover:scale-110 transition">
+            
         </a>
     </div>
     <!-- Mobile Sidebar Overlay -->
     <div
         id="mobile-sidebar"
-        class="fixed inset-0 z-[60] lg:hidden opacity-0 pointer-events-none transition-opacity duration-300"
-    >
+        class="fixed inset-0 z-[60] lg:hidden opacity-0 pointer-events-none transition-opacity duration-300">
         <!-- Backdrop -->
         <div
             id="sidebar-backdrop"
-            class="absolute inset-0 bg-black/50 transition-opacity"
-        >
+            class="absolute inset-0 bg-black/50 transition-opacity">
         </div>
 
         <!-- Sidebar Content -->
         <div
             class="absolute top-0 left-0 w-[280px] h-full bg-white shadow-2xl transform -translate-x-full transition-transform duration-300 p-6 overflow-y-auto"
-            id="sidebar-content"
-        >
+            id="sidebar-content">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="font-gravitas font-bold text-xl text-slate-800">
                     Comunidad
                 </h3>
                 <button
                     id="close-sidebar"
-                    class="text-slate-400 hover:text-slate-700"
-                >
+                    class="text-slate-400 hover:text-slate-700">
                     <svg
                         class="w-6 h-6"
                         fill="none"
                         stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
+                        viewBox="0 0 24 24">
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
@@ -385,24 +358,21 @@ function getRelativeTime(date) {
 
             <a
                 href="/foro/crear-debate"
-                class="block w-full bg-[#FF5A5F] text-white font-bold py-3 px-4 rounded-xl text-center mb-6"
-            >
-                ✍️ Nuevo Debate
+                class="block w-full bg-[#FF5A5F] text-white font-bold py-3 px-4 rounded-xl text-center mb-6">
+                 Nuevo Debate
             </a>
 
             <div class="mb-8">
                 <h4
-                    class="font-bold text-slate-400 text-xs uppercase tracking-wide mb-3"
-                >
-                    Categorías
+                    class="font-bold text-slate-400 text-xs uppercase tracking-wide mb-3">
+                    Categoras
                 </h4>
                 <nav class="space-y-1">
                     {
                         categories.map((cat) => (
                             <a
                                 href={`/foro?cat=${cat.id}`}
-                                class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-[#FF5A5F] transition-colors"
-                            >
+                                class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-[#FF5A5F] transition-colors">
                                 <span>{cat.icon}</span> {cat.name}
                             </a>
                         ))
@@ -412,8 +382,7 @@ function getRelativeTime(date) {
 
             <div>
                 <h4
-                    class="font-bold text-slate-400 text-xs uppercase tracking-wide mb-3"
-                >
+                    class="font-bold text-slate-400 text-xs uppercase tracking-wide mb-3">
                     Top Colaboradores
                 </h4>
                 <div class="space-y-4">
@@ -459,7 +428,7 @@ function getRelativeTime(date) {
     import { doc, deleteDoc } from "firebase/firestore";
 
     document.addEventListener("astro:page-load", () => {
-        console.log("🚀 [FORO] Página cargada/navegada");
+        console.log(" [FORO] Pgina cargada/navegada");
 
         // Detectar usuario y mostrar botones
         onAuthStateChanged(auth, (user) => {
@@ -476,7 +445,7 @@ function getRelativeTime(date) {
             }
         });
 
-        // Lógica de Eliminación
+        // Lgica de Eliminacin
         document.querySelectorAll(".btn-delete").forEach((btn) => {
             btn.addEventListener("click", async (e) => {
                 // Evitar que el click navegue al post
@@ -490,13 +459,13 @@ function getRelativeTime(date) {
 
                 // @ts-ignore
                 const result = await Swal.fire({
-                    title: "¿Eliminar debate?",
-                    text: "No podrás revertir esto.",
+                    title: "Eliminar debate?",
+                    text: "No podrs revertir esto.",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#d33",
                     cancelButtonColor: "#3085d6",
-                    confirmButtonText: "Sí, borrar",
+                    confirmButtonText: "S, borrar",
                     cancelButtonText: "Cancelar",
                 });
 
@@ -523,7 +492,7 @@ function getRelativeTime(date) {
             });
         });
 
-        // Lógica de Edición
+        // Lgica de Edicin
         document.querySelectorAll(".btn-edit").forEach((btn) => {
             btn.addEventListener("click", (e) => {
                 e.preventDefault();
@@ -533,7 +502,7 @@ function getRelativeTime(date) {
                 // @ts-ignore
                 const threadId = parent.dataset.threadId;
 
-                // 🚀 REDIRECCIÓN REAL A LA PÁGINA DE EDICIÓN
+                //  REDIRECCIN REAL A LA PGINA DE EDICIN
                 window.location.href = `/foro/editar/${threadId}`;
                 window.location.href = `/foro/editar/${threadId}`;
             });
@@ -562,3 +531,4 @@ function getRelativeTime(date) {
         backdrop?.addEventListener("click", () => toggleSidebar(false));
     }); // End of astro:page-load
 </script>
+

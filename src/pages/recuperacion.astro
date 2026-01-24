@@ -4,27 +4,27 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 ---
 
-<Layout title="Recuperar Contraseña - DeOficios">
+<Layout title="Recuperar Contrasea - DeOficios">
   <Header />
 
   <main class="login-container">
     <div class="login-box">
-      <div class="icon-lock">🔐</div>
+      <div class="icon-lock"></div>
       <h1>Recuperar Acceso</h1>
-      <p>Ingresa tu email y te enviaremos un enlace para crear una nueva contraseña.</p>
+      <p>Ingresa tu email y te enviaremos un enlace para crear una nueva contrasea.</p>
 
       <form id="recover-form">
         <div class="input-group">
-          <label>Tu Correo Electrónico</label>
+          <label>Tu Correo Electrnico</label>
           <input type="email" id="email" placeholder="ejemplo@email.com" required />
         </div>
 
-        <button type="submit" class="btn-login">Enviar Enlace de Recuperación 📩</button>
+        <button type="submit" class="btn-login">Enviar Enlace de Recuperacin </button>
         <p id="feedback" class="feedback-msg"></p>
       </form>
 
       <div class="links">
-        <a href="/ingresar">Volver a Iniciar Sesión</a>
+        <a href="/ingresar">Volver a Iniciar Sesin</a>
       </div>
     </div>
   </main>
@@ -44,7 +44,7 @@ import Footer from '../components/Footer.astro';
     e.preventDefault();
     const email = document.getElementById('email').value;
     
-    // Desactivar botón para evitar doble clic
+    // Desactivar botn para evitar doble clic
     btn.disabled = true;
     btn.textContent = "Enviando...";
     feedback.textContent = "";
@@ -53,8 +53,8 @@ import Footer from '../components/Footer.astro';
     try {
       await sendPasswordResetEmail(auth, email);
       
-      // ÉXITO
-      feedback.textContent = "¡Listo! ✅ Revisa tu bandeja de entrada (y Spam).";
+      // XITO
+      feedback.textContent = "Listo!  Revisa tu bandeja de entrada (y Spam).";
       feedback.classList.add('success');
       form.reset();
 
@@ -64,15 +64,15 @@ import Footer from '../components/Footer.astro';
       feedback.classList.add('error');
       
       if (error.code === 'auth/user-not-found') {
-        feedback.textContent = "❌ Este correo no está registrado.";
+        feedback.textContent = " Este correo no est registrado.";
       } else if (error.code === 'auth/invalid-email') {
-        feedback.textContent = "❌ El correo no es válido.";
+        feedback.textContent = " El correo no es vlido.";
       } else {
-        feedback.textContent = "❌ Ocurrió un error. Intenta más tarde.";
+        feedback.textContent = " Ocurri un error. Intenta ms tarde.";
       }
     } finally {
       btn.disabled = false;
-      btn.textContent = "Enviar Enlace de Recuperación 📩";
+      btn.textContent = "Enviar Enlace de Recuperacin ";
     }
   });
 </script>
@@ -131,3 +131,4 @@ import Footer from '../components/Footer.astro';
   .links a { color: #2563eb; text-decoration: none; font-size: 0.9rem; }
   .links a:hover { text-decoration: underline; }
 </style>
+

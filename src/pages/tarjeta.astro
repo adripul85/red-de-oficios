@@ -34,16 +34,16 @@ const location =
     "Argentina";
 const rating = (profesional.promedio || 0).toFixed(1);
 const reviewsCount = profesional.total_votos || 0;
-const experience = profesional.experiencia || "Varios años";
+const experience = profesional.experiencia || "Varios aos";
 // Stats defaults
 const jobsCount = "100+"; // Placeholder or real data if available
 const responseTime = "< 2hs"; // Placeholder
 const warranty = profesional.garantia?.ofrece
     ? profesional.garantia.tiempo
-        ? `${profesional.garantia.tiempo} días`
+        ? `${profesional.garantia.tiempo} das`
         : "Escrita"
     : "Consultar";
-const whatsappUrl = `https://wa.me/549${profesional.telefono}?text=Hola, vi tu tarjeta digital y quería hacerte una consulta.`;
+const whatsappUrl = `https://wa.me/549${profesional.telefono}?text=Hola, vi tu tarjeta digital y quera hacerte una consulta.`;
 const profileUrl = `${Astro.url.origin}/perfil?id=${id}`;
 const phone = profesional.telefono || "";
 
@@ -58,8 +58,7 @@ const numRating = parseFloat(rating);
         <meta content="width=device-width, initial-scale=1.0" name="viewport" />
         <title>Tarjeta Digital | {name}</title>
         <script
-            src="https://cdn.tailwindcss.com?plugins=forms,container-queries"
-        ></script>
+            src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
         <link
             href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap"
             rel="stylesheet"
@@ -111,11 +110,9 @@ const numRating = parseFloat(rating);
         </style>
     </head>
     <body
-        class="bg-cream dark:bg-background-dark min-h-screen flex flex-col font-display text-charcoal"
-    >
+        class="bg-cream dark:bg-background-dark min-h-screen flex flex-col font-display text-charcoal">
         <header
-            class="w-full border-b border-primary/10 dark:border-white/10 bg-cream/80 backdrop-blur-md dark:bg-background-dark/80 px-6 lg:px-40 py-3 flex items-center justify-between sticky top-0 z-50"
-        >
+            class="w-full border-b border-primary/10 dark:border-white/10 bg-cream/80 backdrop-blur-md dark:bg-background-dark/80 px-6 lg:px-40 py-3 flex items-center justify-between sticky top-0 z-50">
             <div class="flex items-center gap-3">
                 <div class="text-primary">
                     <svg
@@ -123,8 +120,7 @@ const numRating = parseFloat(rating);
                         height="32"
                         viewBox="0 0 48 48"
                         width="32"
-                        xmlns="http://www.w3.org/2000/svg"
-                    >
+                        xmlns="http://www.w3.org/2000/svg">
                         <path
                             d="M13.8261 30.5736C16.7203 29.8826 20.2244 29.4783 24 29.4783C27.7756 29.4783 31.2797 29.8826 34.1739 30.5736C36.9144 31.2278 39.9967 32.7669 41.3563 33.8352L24.8486 7.36089C24.4571 6.73303 23.5429 6.73303 23.1514 7.36089L6.64374 33.8352C8.00331 32.7669 11.0856 31.2278 13.8261 30.5736Z"
                             fill="currentColor"></path>
@@ -136,24 +132,20 @@ const numRating = parseFloat(rating);
                     </svg>
                 </div>
                 <h1
-                    class="text-xl font-extrabold tracking-tight text-charcoal dark:text-white"
-                >
+                    class="text-xl font-extrabold tracking-tight text-charcoal dark:text-white">
                     Oficios Argentina
                 </h1>
             </div>
             <nav class="hidden md:flex items-center gap-8">
                 <a
                     class="text-sm font-semibold text-charcoal/80 dark:text-cream/80 hover:text-primary transition-colors"
-                    href="/">Explorar</a
-                >
+                    href="/">Explorar</a>
                 <a
                     class="text-sm font-semibold text-charcoal/80 dark:text-cream/80 hover:text-primary transition-colors"
-                    href="/?s=profesionales">Profesionales</a
-                >
+                    href="/?s=profesionales">Profesionales</a>
                 <a
                     href="/mi-perfil"
-                    class="bg-primary text-cream text-sm font-bold px-5 py-2 rounded-lg hover:brightness-110 transition-all"
-                >
+                    class="bg-primary text-cream text-sm font-bold px-5 py-2 rounded-lg hover:brightness-110 transition-all">
                     Mi Perfil
                 </a>
             </nav>
@@ -163,97 +155,69 @@ const numRating = parseFloat(rating);
             <div class="flex flex-col items-center gap-8 w-full max-w-4xl">
                 <a
                     class="flex items-center gap-2 text-primary font-bold self-start ml-2 md:ml-0 hover:opacity-80"
-                    href={`/perfil?id=${id}`}
-                >
+                    href={`/perfil?id=${id}`}>
                     <span class="material-symbols-outlined">arrow_back</span>
                     Volver al Perfil Completo
                 </a>
                 <div
-                    class="w-full bg-cream dark:bg-background-dark rounded-2xl overflow-hidden shadow-[0_32px_64px_-12px_rgba(44,36,32,0.15)] flex flex-col md:flex-row min-h-[500px] border border-primary/5"
-                >
+                    class="w-full bg-cream dark:bg-background-dark rounded-2xl overflow-hidden shadow-[0_32px_64px_-12px_rgba(44,36,32,0.15)] flex flex-col md:flex-row min-h-[500px] border border-primary/5">
                     <div
-                        class="w-full md:w-[45%] bg-primary p-10 flex flex-col items-center justify-center text-center text-cream relative overflow-hidden"
-                    >
+                        class="w-full md:w-[45%] bg-primary p-10 flex flex-col items-center justify-center text-center text-cream relative overflow-hidden">
                         <div
-                            class="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#FDF5E6_1px,transparent_1px)] [background-size:20px_20px]"
-                        >
+                            class="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#FDF5E6_1px,transparent_1px)] [background-size:20px_20px]">
                         </div>
                         <div class="relative mb-6 z-10">
                             <div
-                                class="w-44 h-44 rounded-full border-4 border-cream/20 p-1.5 shadow-2xl"
-                            >
+                                class="w-44 h-44 rounded-full border-4 border-cream/20 p-1.5 shadow-2xl">
                                 <div
                                     class="w-full h-full rounded-full bg-cover bg-center ring-4 ring-primary bg-white"
-                                    style={`background-image: url('${avatar}');`}
-                                >
+                                    style={`background-image: url('${avatar}');`}>
                                 </div>
                             </div>
                             <div
-                                class="absolute bottom-3 right-3 bg-cream text-primary rounded-full p-2 shadow-xl flex items-center justify-center"
-                            >
+                                class="absolute bottom-3 right-3 bg-cream text-primary rounded-full p-2 shadow-xl flex items-center justify-center">
                                 <span
-                                    class="material-symbols-outlined fill-icon !text-xl"
-                                    >verified</span
-                                >
+                                    class="material-symbols-outlined fill-icon !text-xl">verified</span>
                             </div>
                         </div>
                         <h2 class="text-3xl font-black mb-1 z-10 capitalize">
                             {name}
                         </h2>
                         <p
-                            class="text-cream/90 text-lg font-medium mb-8 z-10 capitalize"
-                        >
+                            class="text-cream/90 text-lg font-medium mb-8 z-10 capitalize">
                             {role}
                         </p>
                         <div
-                            class="flex flex-col gap-3 w-full max-w-[220px] z-10"
-                        >
+                            class="flex flex-col gap-3 w-full max-w-[220px] z-10">
                             <div
-                                class="flex items-center justify-center gap-2 bg-cream/10 py-2.5 px-4 rounded-xl backdrop-blur-md border border-cream/10"
-                            >
-                                <span class="material-symbols-outlined text-sm"
-                                    >location_on</span
-                                >
-                                <span class="text-sm font-semibold"
-                                    >{location}</span
-                                >
+                                class="flex items-center justify-center gap-2 bg-cream/10 py-2.5 px-4 rounded-xl backdrop-blur-md border border-cream/10">
+                                <span class="material-symbols-outlined text-sm">location_on</span>
+                                <span class="text-sm font-semibold">{location}</span>
                             </div>
                             <div
-                                class="flex items-center justify-center gap-2 bg-cream/10 py-2.5 px-4 rounded-xl backdrop-blur-md border border-cream/10"
-                            >
-                                <span class="material-symbols-outlined text-sm"
-                                    >schedule</span
-                                >
-                                <span class="text-sm font-semibold"
-                                    >Exp: {experience}</span
-                                >
+                                class="flex items-center justify-center gap-2 bg-cream/10 py-2.5 px-4 rounded-xl backdrop-blur-md border border-cream/10">
+                                <span class="material-symbols-outlined text-sm">schedule</span>
+                                <span class="text-sm font-semibold">Exp: {experience}</span>
                             </div>
                         </div>
                         <div
-                            class="absolute bottom-10 left-0 right-0 opacity-20 pointer-events-none"
-                        >
+                            class="absolute bottom-10 left-0 right-0 opacity-20 pointer-events-none">
                             <span
-                                class="text-[10px] tracking-[0.5em] font-black uppercase"
-                                >Oficios Argentina</span
-                            >
+                                class="text-[10px] tracking-[0.5em] font-black uppercase">Oficios Argentina</span>
                         </div>
                     </div>
                     <div
-                        class="w-full md:w-[55%] p-10 flex flex-col justify-between dark:text-cream bg-white/30 dark:bg-transparent"
-                    >
+                        class="w-full md:w-[55%] p-10 flex flex-col justify-between dark:text-cream bg-white/30 dark:bg-transparent">
                         <div>
                             <div class="flex justify-between items-start mb-10">
                                 <div>
                                     <h3
-                                        class="text-[10px] font-bold uppercase tracking-[0.2em] text-accent-muted mb-2"
-                                    >
-                                        Reputación
+                                        class="text-[10px] font-bold uppercase tracking-[0.2em] text-accent-muted mb-2">
+                                        Reputacin
                                     </h3>
                                     <div class="flex items-center gap-4">
                                         <span
-                                            class="text-5xl font-black text-charcoal dark:text-cream"
-                                            >{rating}</span
-                                        >
+                                            class="text-5xl font-black text-charcoal dark:text-cream">{rating}</span>
                                         <div class="flex flex-col">
                                             <div class="flex text-primary">
                                                 {
@@ -268,8 +232,7 @@ const numRating = parseFloat(rating);
                                                             numRating < i + 1;
                                                         return (
                                                             <span
-                                                                class={`material-symbols-outlined !text-xl ${isFull ? "fill-icon" : ""}`}
-                                                            >
+                                                                class={`material-symbols-outlined !text-xl ${isFull ? "fill-icon" : ""}`}>
                                                                 {isHalf
                                                                     ? "star_half"
                                                                     : "star"}
@@ -279,44 +242,35 @@ const numRating = parseFloat(rating);
                                                 }
                                             </div>
                                             <p
-                                                class="text-[9px] text-accent-muted font-black tracking-wider uppercase mt-1"
-                                            >
-                                                {reviewsCount} reseñas verificadas
+                                                class="text-[9px] text-accent-muted font-black tracking-wider uppercase mt-1">
+                                                {reviewsCount} reseas verificadas
                                             </p>
                                         </div>
                                     </div>
                                 </div>
                                 <button
                                     class="p-3 rounded-full border border-charcoal/10 hover:bg-primary/5 dark:hover:bg-white/5 transition-all"
-                                    onclick={`navigator.share({title: '${name} - Tarjeta Digital', text: 'Conocé mi perfil en Oficios Argentina', url: '${profileUrl}'})`}
-                                >
+                                    onclick={`navigator.share({title: '${name} - Tarjeta Digital', text: 'Conoc mi perfil en Oficios Argentina', url: '${profileUrl}'})`}>
                                     <span
-                                        class="material-symbols-outlined text-charcoal dark:text-cream"
-                                        >share</span
-                                    >
+                                        class="material-symbols-outlined text-charcoal dark:text-cream">share</span>
                                 </button>
                             </div>
                             <div
-                                class="flex flex-col items-center justify-center bg-cream/50 dark:bg-white/5 rounded-2xl p-8 mb-10 border border-charcoal/5 dark:border-white/5 shadow-inner"
-                            >
+                                class="flex flex-col items-center justify-center bg-cream/50 dark:bg-white/5 rounded-2xl p-8 mb-10 border border-charcoal/5 dark:border-white/5 shadow-inner">
                                 <div
-                                    class="bg-white p-4 rounded-2xl shadow-sm mb-5"
-                                >
+                                    class="bg-white p-4 rounded-2xl shadow-sm mb-5">
                                     <div
                                         class="w-36 h-36 bg-cover bg-center"
-                                        style={`background-image: url('https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(profileUrl)}');`}
-                                    >
+                                        style={`background-image: url('https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(profileUrl)}');`}>
                                     </div>
                                 </div>
                                 <p
-                                    class="text-sm font-bold text-charcoal dark:text-cream mb-1"
-                                >
-                                    Escaneá para ver mis trabajos
+                                    class="text-sm font-bold text-charcoal dark:text-cream mb-1">
+                                    Escane para ver mis trabajos
                                 </p>
                                 <p
-                                    class="text-xs text-accent-muted font-medium"
-                                >
-                                    Acceso instantáneo desde el celular
+                                    class="text-xs text-accent-muted font-medium">
+                                    Acceso instantneo desde el celular
                                 </p>
                             </div>
                         </div>
@@ -324,22 +278,16 @@ const numRating = parseFloat(rating);
                             <a
                                 href={whatsappUrl}
                                 target="_blank"
-                                class="flex items-center justify-center gap-2 bg-[#25D366] text-white py-4 rounded-xl font-bold hover:brightness-105 active:scale-[0.98] transition-all shadow-lg shadow-green-500/20"
-                            >
-                                <span class="material-symbols-outlined !text-xl"
-                                    >chat</span
-                                >
+                                class="flex items-center justify-center gap-2 bg-[#25D366] text-white py-4 rounded-xl font-bold hover:brightness-105 active:scale-[0.98] transition-all shadow-lg shadow-green-500/20">
+                                <span class="material-symbols-outlined !text-xl">chat</span>
                                 WhatsApp
                             </a>
                             <a
                                 href={phone
                                     ? `tel:${phone}`
                                     : "javascript:void(0)"}
-                                class="flex items-center justify-center gap-2 bg-primary text-cream py-4 rounded-xl font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/20"
-                            >
-                                <span class="material-symbols-outlined !text-xl"
-                                    >call</span
-                                >
+                                class="flex items-center justify-center gap-2 bg-primary text-cream py-4 rounded-xl font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/20">
+                                <span class="material-symbols-outlined !text-xl">call</span>
                                 Llamar
                             </a>
                         </div>
@@ -347,67 +295,52 @@ const numRating = parseFloat(rating);
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
                     <div
-                        class="bg-white dark:bg-background-dark/50 p-6 rounded-2xl border border-primary/10 shadow-sm flex items-center gap-4"
-                    >
+                        class="bg-white dark:bg-background-dark/50 p-6 rounded-2xl border border-primary/10 shadow-sm flex items-center gap-4">
                         <div class="bg-primary/10 p-4 rounded-xl text-primary">
                             <span
-                                class="material-symbols-outlined fill-icon !text-3xl"
-                                >check_circle</span
-                            >
+                                class="material-symbols-outlined fill-icon !text-3xl">check_circle</span>
                         </div>
                         <div>
                             <p
-                                class="text-[10px] font-black text-accent-muted uppercase tracking-widest"
-                            >
+                                class="text-[10px] font-black text-accent-muted uppercase tracking-widest">
                                 Trabajos
                             </p>
                             <p
-                                class="text-2xl font-black text-charcoal dark:text-cream"
-                            >
+                                class="text-2xl font-black text-charcoal dark:text-cream">
                                 450+
                             </p>
                         </div>
                     </div>
                     <div
-                        class="bg-white dark:bg-background-dark/50 p-6 rounded-2xl border border-primary/10 shadow-sm flex items-center gap-4"
-                    >
+                        class="bg-white dark:bg-background-dark/50 p-6 rounded-2xl border border-primary/10 shadow-sm flex items-center gap-4">
                         <div class="bg-primary/10 p-4 rounded-xl text-primary">
                             <span
-                                class="material-symbols-outlined fill-icon !text-3xl"
-                                >bolt</span
-                            >
+                                class="material-symbols-outlined fill-icon !text-3xl">bolt</span>
                         </div>
                         <div>
                             <p
-                                class="text-[10px] font-black text-accent-muted uppercase tracking-widest"
-                            >
+                                class="text-[10px] font-black text-accent-muted uppercase tracking-widest">
                                 Respuesta
                             </p>
                             <p
-                                class="text-2xl font-black text-charcoal dark:text-cream"
-                            >
+                                class="text-2xl font-black text-charcoal dark:text-cream">
                                 &lt; 2hs
                             </p>
                         </div>
                     </div>
                     <div
-                        class="bg-white dark:bg-background-dark/50 p-6 rounded-2xl border border-primary/10 shadow-sm flex items-center gap-4"
-                    >
+                        class="bg-white dark:bg-background-dark/50 p-6 rounded-2xl border border-primary/10 shadow-sm flex items-center gap-4">
                         <div class="bg-primary/10 p-4 rounded-xl text-primary">
                             <span
-                                class="material-symbols-outlined fill-icon !text-3xl"
-                                >workspace_premium</span
-                            >
+                                class="material-symbols-outlined fill-icon !text-3xl">workspace_premium</span>
                         </div>
                         <div>
                             <p
-                                class="text-[10px] font-black text-accent-muted uppercase tracking-widest"
-                            >
-                                Garantía
+                                class="text-[10px] font-black text-accent-muted uppercase tracking-widest">
+                                Garanta
                             </p>
                             <p
-                                class="text-2xl font-black text-charcoal dark:text-cream"
-                            >
+                                class="text-2xl font-black text-charcoal dark:text-cream">
                                 {warranty}
                             </p>
                         </div>
@@ -416,11 +349,9 @@ const numRating = parseFloat(rating);
             </div>
         </main>
         <footer
-            class="w-full py-12 px-6 bg-cream/50 dark:bg-background-dark/50 border-t border-primary/10 mt-auto"
-        >
+            class="w-full py-12 px-6 bg-cream/50 dark:bg-background-dark/50 border-t border-primary/10 mt-auto">
             <div
-                class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8"
-            >
+                class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
                 <div class="flex items-center gap-3 opacity-80">
                     <div class="text-primary grayscale brightness-75">
                         <svg
@@ -428,8 +359,7 @@ const numRating = parseFloat(rating);
                             height="24"
                             viewBox="0 0 48 48"
                             width="24"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
+                            xmlns="http://www.w3.org/2000/svg">
                             <path
                                 d="M13.8261 30.5736C16.7203 29.8826 20.2244 29.4783 24 29.4783C27.7756 29.4783 31.2797 29.8826 34.1739 30.5736C36.9144 31.2278 39.9967 32.7669 41.3563 33.8352L24.8486 7.36089C24.4571 6.73303 23.5429 6.73303 23.1514 7.36089L6.64374 33.8352C8.00331 32.7669 11.0856 31.2278 13.8261 30.5736Z"
                                 fill="currentColor"></path>
@@ -441,16 +371,16 @@ const numRating = parseFloat(rating);
                         </svg>
                     </div>
                     <p
-                        class="text-xs font-bold text-charcoal dark:text-cream uppercase tracking-tighter"
-                    >
+                        class="text-xs font-bold text-charcoal dark:text-cream uppercase tracking-tighter">
                         Oficios Argentina
                     </p>
                 </div>
                 <p class="text-xs text-accent-muted font-medium">
-                    © 2026 Red de Profesionales de Confianza. Todos los derechos
+                     2026 Red de Profesionales de Confianza. Todos los derechos
                     reservados.
                 </p>
             </div>
         </footer>
     </body>
 </html>
+

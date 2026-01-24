@@ -2,14 +2,14 @@
 import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout title="Canjear Código - DeOficios">
+<Layout title="Canjear Cdigo - DeOficios">
     <div class="redeem-wrapper">
         <div class="redeem-card">
             <div class="card-header">
-                <div class="icon-box">🎁</div>
+                <div class="icon-box"></div>
                 <h1>Canjear Beneficio</h1>
                 <p>
-                    Activa tu código promocional y desbloquea funciones
+                    Activa tu cdigo promocional y desbloquea funciones
                     exclusivas.
                 </p>
             </div>
@@ -17,7 +17,7 @@ import Layout from "../layouts/Layout.astro";
             <div class="card-body">
                 <form id="redeem-form" class="form-content">
                     <div class="input-group">
-                        <label for="codigo">INGRESA TU CÓDIGO</label>
+                        <label for="codigo">INGRESA TU CDIGO</label>
                         <input
                             type="text"
                             id="codigo"
@@ -28,7 +28,7 @@ import Layout from "../layouts/Layout.astro";
                     </div>
 
                     <button type="submit" id="btn-redeem" class="btn-redeem">
-                        <span class="btn-text">✨ Activar Plan Experto</span>
+                        <span class="btn-text"> Activar Plan Experto</span>
                         <span class="loader hidden"></span>
                     </button>
                 </form>
@@ -39,19 +39,14 @@ import Layout from "../layouts/Layout.astro";
                     <a
                         href="/mi-perfil"
                         id="btn-success-action"
-                        class="btn-secondary hidden"
-                    >
-                        Ir a mi Perfil ➡
+                        class="btn-secondary hidden">
+                        Ir a mi Perfil 
                     </a>
                 </div>
             </div>
 
             <div class="card-footer">
-                <small
-                    >¿No tienes un código? <a href="/planes"
-                        >Ver planes disponibles</a
-                    ></small
-                >
+                <small>No tienes un cdigo? <a href="/planes">Ver planes disponibles</a></small>
             </div>
         </div>
     </div>
@@ -78,14 +73,14 @@ import Layout from "../layouts/Layout.astro";
 
         let userUid = null;
 
-        // Verificar sesión
+        // Verificar sesin
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 userUid = user.uid;
             } else {
                 showMessage(
                     "error",
-                    "Debes iniciar sesión para canjear un código.",
+                    "Debes iniciar sesin para canjear un cdigo.",
                 );
                 if (btn) btn.disabled = true;
             }
@@ -122,7 +117,7 @@ import Layout from "../layouts/Layout.astro";
                     showMessage("error", data.error);
                 }
             } catch (error) {
-                showMessage("error", "Error de conexión. Intenta nuevamente.");
+                showMessage("error", "Error de conexin. Intenta nuevamente.");
             } finally {
                 setLoading(false);
             }
@@ -148,12 +143,12 @@ import Layout from "../layouts/Layout.astro";
             msgText.textContent = text;
 
             if (type === "success") {
-                msgIcon.textContent = "🎉";
+                msgIcon.textContent = "";
                 btnSuccess.classList.remove("hidden");
             } else {
-                msgIcon.textContent = "⚠️";
+                msgIcon.textContent = "";
                 btnSuccess.classList.add("hidden");
-                // Animación de temblor en el input
+                // Animacin de temblor en el input
                 codigoInput.classList.add("shake");
                 setTimeout(() => codigoInput.classList.remove("shake"), 500);
             }
@@ -164,8 +159,8 @@ import Layout from "../layouts/Layout.astro";
         }
 
         function launchConfetti() {
-            // Si tienes canvas-confetti instalado úsalo, sino es un placeholder visual
-            console.log("¡Felicidades!");
+            // Si tienes canvas-confetti instalado salo, sino es un placeholder visual
+            console.log("Felicidades!");
         }
     });
 </script>
@@ -408,3 +403,4 @@ import Layout from "../layouts/Layout.astro";
         }
     }
 </style>
+

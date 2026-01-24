@@ -6,13 +6,13 @@ let topPros = [];
 let error = null;
 
 try {
-  // CONSULTA DE ÉLITE 💎
+  // CONSULTA DE LITE 
   // 1. Que tengan votos (total_votos > 0)
   // 2. Ordenados por promedio descendente (5.0 primero)
   // 3. Solo los 4 mejores
   
   // NOTA: Para que 'orderBy' funcione con 'where' en campos distintos, 
-  // a veces Firebase pide crear un índice en la consola. 
+  // a veces Firebase pide crear un ndice en la consola. 
   // Si te da error, simplificamos la query solo con orderBy.
   
   const q = query(
@@ -36,7 +36,7 @@ try {
 {topPros.length > 0 && (
   <section class="top-rated-section">
     <div class="header-top">
-      <h2>🏆 Los Favoritos del Barrio</h2>
+      <h2> Los Favoritos del Barrio</h2>
       <p>Profesionales con 5 estrellas elegidos por los vecinos.</p>
     </div>
 
@@ -44,7 +44,7 @@ try {
       {topPros.map((pro) => (
         <a href={`/perfil?id=${pro.id}`} class="card-top">
           
-          <div class="medal">🥇 Top</div>
+          <div class="medal"> Top</div>
 
           <div class="card-avatar">
              {pro.foto ? (
@@ -61,7 +61,7 @@ try {
             <span class="category">{pro.categoria}</span>
             
             <div class="rating-box">
-              <span class="stars">{'⭐'.repeat(Math.round(pro.promedio))}</span>
+              <span class="stars">{''.repeat(Math.round(pro.promedio))}</span>
               <span class="score">{Number(pro.promedio).toFixed(1)}</span>
             </div>
             
@@ -81,7 +81,7 @@ try {
   }
 
   .header-top { text-align: center; margin-bottom: 40px; }
-  .header-top h2 { font-size: 2.2rem; color: #92400e; margin-bottom: 10px; } /* Color ámbar oscuro */
+  .header-top h2 { font-size: 2.2rem; color: #92400e; margin-bottom: 10px; } /* Color mbar oscuro */
   .header-top p { color: #b45309; font-size: 1.1rem; }
 
   .grid-top {
@@ -141,3 +141,4 @@ try {
   .score { font-weight: 800; color: #1f2937; font-size: 1.2rem; }
   .opiniones-count { color: #6b7280; font-size: 0.9rem; }
 </style>
+

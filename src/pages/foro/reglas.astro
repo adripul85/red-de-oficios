@@ -21,7 +21,7 @@ try {
             id: snap.id,
             title: data.title || "Reglas de la Comunidad",
             content: data.content || "",
-            authorName: data.authorName || "Administración",
+            authorName: data.authorName || "Administracin",
             authorPhoto: data.authorPhoto || "https://ui-avatars.com/api/?name=Admin&background=FF5A5F&color=fff",
             createdAt: data.createdAt ? data.createdAt.toDate().toLocaleDateString() : "2024",
         };
@@ -50,8 +50,7 @@ try {
             <div class="max-w-4xl mx-auto">
                 <a
                     href="/foro"
-                    class="inline-flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors"
-                >
+                    class="inline-flex items-center gap-2 text-slate-300 hover:text-white mb-6 transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                     </svg>
@@ -60,7 +59,7 @@ try {
                 
                 <div class="flex items-center gap-4 mb-4">
                     <div class="w-16 h-16 bg-[#FF5A5F] rounded-2xl flex items-center justify-center text-3xl shadow-xl">
-                        📜
+                        
                     </div>
                     <div>
                         <h1 class="text-4xl md:text-5xl font-serif font-bold">
@@ -84,7 +83,7 @@ try {
 
             {error && (
                 <div class="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
-                    <div class="text-5xl mb-4">⚠️</div>
+                    <div class="text-5xl mb-4"></div>
                     <h3 class="text-xl font-bold text-red-800 mb-2">Error</h3>
                     <p class="text-red-600">{error}</p>
                 </div>
@@ -117,16 +116,15 @@ try {
                     <!-- Call to action -->
                     <div class="bg-blue-50 border-t border-blue-100 px-8 py-6">
                         <div class="flex items-start gap-4">
-                            <div class="text-3xl">ℹ️</div>
+                            <div class="text-3xl"></div>
                             <div class="flex-1">
-                                <h3 class="font-bold text-blue-900 mb-2">¿Listo para participar?</h3>
+                                <h3 class="font-bold text-blue-900 mb-2">Listo para participar?</h3>
                                 <p class="text-blue-700 text-sm mb-4">
-                                    Asegúrate de seguir estas reglas al publicar debates y responder a otros miembros.
+                                    Asegrate de seguir estas reglas al publicar debates y responder a otros miembros.
                                 </p>
                                 <a
                                     href="/foro/crear-debate"
-                                    class="inline-block bg-[#FF5A5F] hover:bg-[#ff4146] text-white font-bold px-6 py-3 rounded-xl transition-colors shadow-sm"
-                                >
+                                    class="inline-block bg-[#FF5A5F] hover:bg-[#ff4146] text-white font-bold px-6 py-3 rounded-xl transition-colors shadow-sm">
                                     Iniciar un debate
                                 </a>
                             </div>
@@ -135,29 +133,29 @@ try {
                 </article>
             )}
 
-            <!-- Sección de consejos -->
+            <!-- Seccin de consejos -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                    <div class="text-3xl mb-3">🤝</div>
+                    <div class="text-3xl mb-3"></div>
                     <h3 class="font-bold text-slate-800 mb-2">Respeto mutuo</h3>
                     <p class="text-sm text-slate-600">
-                        Trata a todos con cortesía, independientemente de su nivel de experiencia.
+                        Trata a todos con cortesa, independientemente de su nivel de experiencia.
                     </p>
                 </div>
 
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                    <div class="text-3xl mb-3">💡</div>
-                    <h3 class="font-bold text-slate-800 mb-2">Contenido útil</h3>
+                    <div class="text-3xl mb-3"></div>
+                    <h3 class="font-bold text-slate-800 mb-2">Contenido til</h3>
                     <p class="text-sm text-slate-600">
-                        Comparte información relevante y verifica tus fuentes antes de publicar.
+                        Comparte informacin relevante y verifica tus fuentes antes de publicar.
                     </p>
                 </div>
 
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                    <div class="text-3xl mb-3">⚠️</div>
+                    <div class="text-3xl mb-3"></div>
                     <h3 class="font-bold text-slate-800 mb-2">Reporta abusos</h3>
                     <p class="text-sm text-slate-600">
-                        Si ves contenido inapropiado, repórtalo al equipo de moderación.
+                        Si ves contenido inapropiado, reprtalo al equipo de moderacin.
                     </p>
                 </div>
             </div>
@@ -193,3 +191,4 @@ try {
         color: #ff4146;
     }
 </style>
+

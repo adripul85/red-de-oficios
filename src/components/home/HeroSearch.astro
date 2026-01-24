@@ -13,15 +13,14 @@ if (!trendingTags || trendingTags.length === 0) {
     { term: "Electricista", link: "electricista" },
     { term: "Pintor", link: "pintor" },
     { term: "Gasista", link: "gasista" },
-    { term: "Albañil", link: "albañil" },
+    { term: "Albail", link: "albail" },
   ];
 }
 ---
 
 <!-- Hero Search Premium -->
 <div
-  class="relative w-full min-h-[85vh] md:min-h-[90vh] bg-white flex flex-col md:flex-row overflow-hidden font-sans"
->
+  class="relative w-full min-h-[85vh] md:min-h-[90vh] bg-white flex flex-col md:flex-row overflow-hidden font-sans">
   <!-- Mobile: Imagen arriba con onda -->
   <div class="md:hidden relative h-[250px] w-full">
     <div class="w-full h-full bg-gradient-to-r from-orange-100 to-orange-50">
@@ -31,27 +30,23 @@ if (!trendingTags || trendingTags.length === 0) {
       <svg
         viewBox="0 0 1200 120"
         preserveAspectRatio="none"
-        class="w-full h-10"
-      >
-        <path d="M0,120 L0,30 Q600,120 1200,30 L1200,120 Z" fill="#ffffff"
-        ></path>
+        class="w-full h-10">
+        <path d="M0,120 L0,30 Q600,120 1200,30 L1200,120 Z" fill="#ffffff" />
       </svg>
     </div>
   </div>
 
   <!-- Contenido izquierdo -->
   <div
-    class="w-full md:w-1/2 flex flex-col justify-center items-center px-6 md:px-20 py-8 md:py-12 z-10 bg-white -mt-12 md:-mt-20"
-  >
+    class="w-full md:w-1/2 flex flex-col justify-center items-center px-6 md:px-20 py-8 md:py-12 z-10 bg-white -mt-12 md:-mt-20">
     <div class="w-full max-w-xl">
       <h1
-        class="text-4xl md:text-6xl font-extrabold text-slate-900 mb-4 leading-tight"
-      >
-        Encontrá al <span class="text-orange-600">experto</span>
-        <br /> que necesitás.
+        class="text-4xl md:text-6xl font-extrabold text-slate-900 mb-4 leading-tight">
+        Encontr al <span class="text-orange-600">experto</span>
+        <br /> que necesits.
       </h1>
       <p class="text-slate-500 text-lg mb-8">
-        Plomeros, electricistas y más de <strong>62.000 profesionales</strong> verificados.
+        Plomeros, electricistas y ms de <strong>62.000 profesionales</strong> verificados.
       </p>
 
       <!-- Buscador Premium simplificado - Solo Servicio -->
@@ -59,15 +54,13 @@ if (!trendingTags || trendingTags.length === 0) {
         id="hero-search-form"
         action="/resultados"
         method="GET"
-        class="bg-white border border-slate-200 rounded-full shadow-2xl p-2 flex items-center relative z-20 mb-6"
-      >
+        class="bg-white border border-slate-200 rounded-full shadow-2xl p-2 flex items-center relative z-20 mb-6">
         <!-- Input: Servicio -->
         <div class="flex-1 w-full px-6 py-3 relative flex items-center">
          <div class="w-full">
             <label
-                class="block text-xs font-bold text-slate-800 uppercase tracking-wide mb-1"
-            >
-                ¿Qué servicio necesitás?
+                class="block text-xs font-bold text-slate-800 uppercase tracking-wide mb-1">
+                Qu servicio necesits?
             </label>
             <input
                 type="text"
@@ -78,44 +71,37 @@ if (!trendingTags || trendingTags.length === 0) {
                 autocomplete="off"
             />
          </div>
-          <button type="button" id="btn-mic" class="hidden absolute right-4 bottom-4 text-slate-400 hover:text-orange-500 transition-colors p-2" aria-label="Búsqueda por voz">
+          <button type="button" id="btn-mic" class="hidden absolute right-4 bottom-4 text-slate-400 hover:text-orange-500 transition-colors p-2" aria-label="Busqueda por voz">
             <Mic class="w-5 h-5" />
           </button>
         </div>
 
-        <!-- Botón Buscar -->
+        <!-- Botn Buscar -->
         <button
           type="submit"
-          class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full p-4 md:p-3 transition-all active:scale-95 shadow-xl shadow-orange-200 flex items-center justify-center gap-2"
-        >
-          <span class="text-2xl">🔍</span>
+          class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full p-4 md:p-3 transition-all active:scale-95 shadow-xl shadow-orange-200 flex items-center justify-center gap-2">
+          <span class="text-2xl"></span>
           <span class="hidden md:inline font-bold text-lg">Buscar</span>
         </button>
       </form>
 
       <!-- Toggle 24hs + Tendencias -->
       <div class="flex flex-col md:flex-row md:items-center gap-6">
-        <!-- Botón de Emergencia Real -->
+        <!-- Botn de Emergencia Real -->
         <a
           href="/solicitar?urgencia=true"
-          class="group flex items-center gap-3 bg-red-50 hover:bg-red-100 border border-red-200 px-4 py-2 rounded-full transition-all cursor-pointer shadow-sm hover:shadow-red-100"
-        >
+          class="group flex items-center gap-3 bg-red-50 hover:bg-red-100 border border-red-200 px-4 py-2 rounded-full transition-all cursor-pointer shadow-sm hover:shadow-red-100">
           <div class="relative">
             <div
-              class="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-20"
-            >
+              class="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-20">
             </div>
-            <span class="relative block text-2xl">🚨</span>
+            <span class="relative block text-2xl"></span>
           </div>
           <div class="flex flex-col">
             <span
-              class="text-red-700 font-bold leading-none text-sm group-hover:text-red-800"
-              >BOTÓN DE EMERGENCIAS</span
-            >
+              class="text-red-700 font-bold leading-none text-sm group-hover:text-red-800">BOTN DE EMERGENCIAS</span>
             <span
-              class="text-[10px] text-red-500 font-semibold uppercase tracking-wider"
-              >Servicio 24hs</span
-            >
+              class="text-[10px] text-red-500 font-semibold uppercase tracking-wider">Servicio 24hs</span>
           </div>
         </a>
 
@@ -126,8 +112,7 @@ if (!trendingTags || trendingTags.length === 0) {
             trendingTags.map((tag) => (
               <a
                 href={`/resultados?q=${tag.link}`}
-                class="px-3 py-1 bg-slate-100 hover:bg-orange-100 text-slate-700 hover:text-orange-700 text-sm font-medium rounded-full transition-all shadow-sm hover:shadow-md"
-              >
+                class="px-3 py-1 bg-slate-100 hover:bg-orange-100 text-slate-700 hover:text-orange-700 text-sm font-medium rounded-full transition-all shadow-sm hover:shadow-md">
                 {tag.term}
               </a>
             ))
@@ -146,8 +131,7 @@ if (!trendingTags || trendingTags.length === 0) {
     />
     <!-- Degradado sutil desde blanco -->
     <div
-      class="absolute inset-0 bg-gradient-to-r from-white via-transparent to-transparent"
-    >
+      class="absolute inset-0 bg-gradient-to-r from-white via-transparent to-transparent">
     </div>
   </div>
 
@@ -228,3 +212,4 @@ if (!trendingTags || trendingTags.length === 0) {
     }
   </style>
 </div>
+

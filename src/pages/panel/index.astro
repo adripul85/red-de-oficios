@@ -9,8 +9,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         <!-- Google tag (gtag.js) -->
         <script
             async
-            src="https://www.googletagmanager.com/gtag/js?id=G-LG6RPRWWDY"
-        ></script>
+            src="https://www.googletagmanager.com/gtag/js?id=G-LG6RPRWWDY"></script>
         <script is:inline>
             window.dataLayer = window.dataLayer || [];
             function gtag() {
@@ -85,8 +84,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         <!-- Mobile Sidebar Overlay -->
         <div
             id="sidebar-overlay"
-            class="sidebar-overlay fixed inset-0 bg-black/50 z-40 md:hidden"
-        >
+            class="sidebar-overlay fixed inset-0 bg-black/50 z-40 md:hidden">
         </div>
 
         <div class="flex h-screen overflow-hidden">
@@ -96,14 +94,10 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
             <!-- MAIN CONTENT -->
             <main
-                class="flex-1 flex flex-col h-screen relative overflow-hidden"
-            >
+                class="flex-1 flex flex-col h-screen relative overflow-hidden">
                 <header
-                    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-30 relative"
-                >
-                    <button id="open-sidebar" class="md:hidden text-2xl mr-4"
-                        >☰</button
-                    >
+                    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-30 relative">
+                    <button id="open-sidebar" class="md:hidden text-2xl mr-4"></button>
 
                     <h2 class="text-lg font-bold text-slate-800">
                         Resumen General
@@ -112,31 +106,25 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     <div class="flex items-center gap-4">
                         <button
                             id="btn-notifications"
-                            class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 relative transition-colors"
-                        >
-                            🔔
+                            class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 relative transition-colors">
+                            
                             <span
                                 id="badge-bell"
-                                class="hidden absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"
-                            ></span>
+                                class="hidden absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
                         </button>
                         <div
-                            class="flex items-center gap-3 pl-4 border-l border-slate-200"
-                        >
+                            class="flex items-center gap-3 pl-4 border-l border-slate-200">
                             <div class="text-right hidden sm:block">
                                 <p
                                     class="text-sm font-bold text-slate-800"
-                                    id="user-name"
-                                >
+                                    id="user-name">
                                     <div
-                                        class="h-4 w-24 bg-slate-200 rounded animate-pulse inline-block"
-                                    >
+                                        class="h-4 w-24 bg-slate-200 rounded animate-pulse inline-block">
                                     </div>
                                 </p>
                                 <p
                                     class="text-xs text-slate-500"
-                                    id="user-plan-label"
-                                >
+                                    id="user-plan-label">
                                     Plan Profesional
                                 </p>
                             </div>
@@ -151,24 +139,19 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     <!-- Notification Dropdown -->
                     <div
                         id="notification-dropdown"
-                        class="hidden absolute top-16 right-6 w-80 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden"
-                    >
+                        class="hidden absolute top-16 right-6 w-80 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden">
                         <div
-                            class="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50"
-                        >
+                            class="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                             <h3 class="font-bold text-sm text-slate-800">
                                 Notificaciones
                             </h3>
                             <button
                                 id="mark-all-read"
-                                class="text-xs text-orange-600 hover:text-orange-700 font-medium"
-                                >Marcar leídas</button
-                            >
+                                class="text-xs text-orange-600 hover:text-orange-700 font-medium">Marcar ledas</button>
                         </div>
                         <div
                             id="notification-list"
-                            class="max-h-64 overflow-y-auto"
-                        >
+                            class="max-h-64 overflow-y-auto">
                             <!-- Dynamic Content -->
                             <div class="p-4 text-center text-slate-400 text-xs">
                                 No tienes notificaciones
@@ -177,74 +160,60 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         <div class="p-2 border-t border-slate-100 text-center">
                             <a
                                 href="/panel/oportunidades"
-                                class="text-xs text-indigo-600 font-medium hover:underline"
-                                >Ver todas las oportunidades</a
-                            >
+                                class="text-xs text-indigo-600 font-medium hover:underline">Ver todas las oportunidades</a>
                         </div>
                     </div>
                 </header>
 
                 <div class="flex-1 overflow-y-auto p-6 bg-slate-50">
                     <div
-                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-                    >
+                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                         <div
-                            class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100"
-                        >
+                            class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
                             <div class="flex justify-between items-start mb-4">
                                 <div class="p-2 bg-green-50 rounded-lg text-xl">
-                                    💰
+                                    
                                 </div>
-                                <span id="badge-ingresos-percent" class="hidden"
-                                ></span>
+                                <span id="badge-ingresos-percent" class="hidden"></span>
                             </div>
                             <p class="text-slate-500 text-sm font-medium">
                                 Ingresos este mes
                             </p>
                             <h3
                                 id="kpi-ingresos"
-                                class="text-2xl font-bold text-slate-800 flex items-center"
-                            >
+                                class="text-2xl font-bold text-slate-800 flex items-center">
                                 <div
-                                    class="h-8 w-24 bg-slate-100 rounded animate-pulse"
-                                >
+                                    class="h-8 w-24 bg-slate-100 rounded animate-pulse">
                                 </div>
                             </h3>
                         </div>
 
                         <div
-                            class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100"
-                        >
+                            class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
                             <div class="flex justify-between items-start mb-4">
                                 <div class="p-2 bg-blue-50 rounded-lg text-xl">
-                                    📄
+                                    
                                 </div>
-                                <span class="text-slate-400 text-xs font-medium"
-                                    >Activos</span
-                                >
+                                <span class="text-slate-400 text-xs font-medium">Activos</span>
                             </div>
                             <p class="text-slate-500 text-sm font-medium">
                                 Presupuestos
                             </p>
                             <h3
                                 id="kpi-presupuestos"
-                                class="text-2xl font-bold text-slate-800 flex items-center"
-                            >
+                                class="text-2xl font-bold text-slate-800 flex items-center">
                                 <div
-                                    class="h-8 w-16 bg-slate-100 rounded animate-pulse"
-                                >
+                                    class="h-8 w-16 bg-slate-100 rounded animate-pulse">
                                 </div>
                             </h3>
                         </div>
 
                         <div
-                            class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100"
-                        >
+                            class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
                             <div class="flex justify-between items-start mb-4">
                                 <div
-                                    class="p-2 bg-orange-50 rounded-lg text-xl"
-                                >
-                                    👁️
+                                    class="p-2 bg-orange-50 rounded-lg text-xl">
+                                    
                                 </div>
                                 <!-- Visitas Growth Badge Removed (No historical data) -->
                             </div>
@@ -253,21 +222,18 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             </p>
                             <h3
                                 id="kpi-visitas"
-                                class="text-2xl font-bold text-slate-800 flex items-center"
-                            >
+                                class="text-2xl font-bold text-slate-800 flex items-center">
                                 <div
-                                    class="h-8 w-16 bg-slate-100 rounded animate-pulse"
-                                >
+                                    class="h-8 w-16 bg-slate-100 rounded animate-pulse">
                                 </div>
                             </h3>
                         </div>
 
                         <div
-                            class="bg-gradient-to-br from-indigo-600 to-purple-700 p-5 rounded-2xl shadow-lg text-white"
-                        >
+                            class="bg-gradient-to-br from-indigo-600 to-purple-700 p-5 rounded-2xl shadow-lg text-white">
                             <div class="flex justify-between items-start mb-2">
                                 <div class="p-2 bg-white/20 rounded-lg text-xl">
-                                    🏆
+                                    
                                 </div>
                             </div>
                             <p class="text-indigo-100 text-sm font-medium">
@@ -275,11 +241,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             </p>
                             <h3
                                 id="total-points-card"
-                                class="text-2xl font-bold flex items-center"
-                            >
+                                class="text-2xl font-bold flex items-center">
                                 <div
-                                    class="h-8 w-20 bg-white/20 rounded animate-pulse"
-                                >
+                                    class="h-8 w-20 bg-white/20 rounded animate-pulse">
                                 </div>
                             </h3>
                         </div>
@@ -288,92 +252,70 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div class="lg:col-span-2 space-y-8">
                             <div
-                                class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
-                            >
+                                class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                                 <div
-                                    class="flex justify-between items-center mb-6"
-                                >
+                                    class="flex justify-between items-center mb-6">
                                     <h3
-                                        class="font-bold text-lg text-slate-800"
-                                    >
+                                        class="font-bold text-lg text-slate-800">
                                         Rendimiento Mensual
                                     </h3>
                                     <div class="flex items-center gap-2">
                                         <span
                                             id="chart-total"
-                                            class="text-sm font-bold text-green-600"
-                                        ></span>
+                                            class="text-sm font-bold text-green-600"></span>
                                         <select
                                             id="chart-period-select"
-                                            class="bg-slate-50 border border-slate-200 text-sm rounded-lg p-2 outline-none"
-                                        >
-                                            <option value="6"
-                                                >Últimos 6 meses</option
-                                            >
-                                            <option value="12">Este año</option>
+                                            class="bg-slate-50 border border-slate-200 text-sm rounded-lg p-2 outline-none">
+                                            <option value="6">ltimos 6 meses</option>
+                                            <option value="12">Este ao</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div
                                     id="performance-chart"
-                                    class="h-64 flex items-end justify-between gap-2 px-4 pb-2"
-                                >
+                                    class="h-64 flex items-end justify-between gap-2 px-4 pb-2">
                                     <!-- Skeleton Bars -->
                                     <div
-                                        class="w-full bg-slate-100 rounded-t h-1/4 animate-pulse"
-                                    >
+                                        class="w-full bg-slate-100 rounded-t h-1/4 animate-pulse">
                                     </div>
                                     <div
-                                        class="w-full bg-slate-100 rounded-t h-2/4 animate-pulse"
-                                    >
+                                        class="w-full bg-slate-100 rounded-t h-2/4 animate-pulse">
                                     </div>
                                     <div
-                                        class="w-full bg-slate-100 rounded-t h-1/3 animate-pulse"
-                                    >
+                                        class="w-full bg-slate-100 rounded-t h-1/3 animate-pulse">
                                     </div>
                                     <div
-                                        class="w-full bg-slate-100 rounded-t h-3/4 animate-pulse"
-                                    >
+                                        class="w-full bg-slate-100 rounded-t h-3/4 animate-pulse">
                                     </div>
                                     <div
-                                        class="w-full bg-slate-100 rounded-t h-1/2 animate-pulse"
-                                    >
+                                        class="w-full bg-slate-100 rounded-t h-1/2 animate-pulse">
                                     </div>
                                     <div
-                                        class="w-full bg-slate-100 rounded-t h-2/3 animate-pulse"
-                                    >
+                                        class="w-full bg-slate-100 rounded-t h-2/3 animate-pulse">
                                     </div>
                                 </div>
                                 <div
                                     id="chart-labels"
-                                    class="flex justify-between px-4 mt-2 text-xs text-slate-500"
-                                >
+                                    class="flex justify-between px-4 mt-2 text-xs text-slate-500">
                                     <!-- Month labels will be inserted here -->
                                 </div>
                             </div>
 
                             <div
-                                class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden"
-                            >
+                                class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                                 <div
-                                    class="p-6 border-b border-slate-100 flex justify-between items-center"
-                                >
+                                    class="p-6 border-b border-slate-100 flex justify-between items-center">
                                     <h3
-                                        class="font-bold text-lg text-slate-800"
-                                    >
-                                        Últimos Presupuestos
+                                        class="font-bold text-lg text-slate-800">
+                                        ltimos Presupuestos
                                     </h3>
                                     <button
-                                        class="text-orange-600 text-sm font-bold hover:underline"
-                                        >Ver todos</button
-                                    >
+                                        class="text-orange-600 text-sm font-bold hover:underline">Ver todos</button>
                                 </div>
                                 <table
-                                    class="w-full text-left text-sm text-slate-600"
-                                >
+                                    class="w-full text-left text-sm text-slate-600">
                                     <thead
-                                        class="bg-slate-50 text-slate-500 uppercase font-bold text-xs"
-                                    >
+                                        class="bg-slate-50 text-slate-500 uppercase font-bold text-xs">
                                         <tr>
                                             <th class="px-6 py-3">Cliente</th>
                                             <th class="px-6 py-3">Monto</th>
@@ -383,69 +325,53 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                     </thead>
                                     <tbody
                                         id="latest-budgets-tbody"
-                                        class="divide-y divide-slate-100"
-                                    >
+                                        class="divide-y divide-slate-100">
                                         <tr>
                                             <td colspan="4" class="p-0">
                                                 <div class="space-y-4 p-4">
                                                     <div
-                                                        class="flex items-center space-x-4 animate-pulse"
-                                                    >
+                                                        class="flex items-center space-x-4 animate-pulse">
                                                         <div
-                                                            class="h-4 w-24 bg-slate-100 rounded"
-                                                        >
+                                                            class="h-4 w-24 bg-slate-100 rounded">
                                                         </div>
                                                         <div
-                                                            class="h-4 w-16 bg-slate-100 rounded"
-                                                        >
+                                                            class="h-4 w-16 bg-slate-100 rounded">
                                                         </div>
                                                         <div
-                                                            class="h-6 w-20 bg-slate-100 rounded-full"
-                                                        >
+                                                            class="h-6 w-20 bg-slate-100 rounded-full">
                                                         </div>
                                                         <div
-                                                            class="h-4 w-20 bg-slate-100 rounded ml-auto"
-                                                        >
+                                                            class="h-4 w-20 bg-slate-100 rounded ml-auto">
                                                         </div>
                                                     </div>
                                                     <div
-                                                        class="flex items-center space-x-4 animate-pulse"
-                                                    >
+                                                        class="flex items-center space-x-4 animate-pulse">
                                                         <div
-                                                            class="h-4 w-32 bg-slate-100 rounded"
-                                                        >
+                                                            class="h-4 w-32 bg-slate-100 rounded">
                                                         </div>
                                                         <div
-                                                            class="h-4 w-12 bg-slate-100 rounded"
-                                                        >
+                                                            class="h-4 w-12 bg-slate-100 rounded">
                                                         </div>
                                                         <div
-                                                            class="h-6 w-20 bg-slate-100 rounded-full"
-                                                        >
+                                                            class="h-6 w-20 bg-slate-100 rounded-full">
                                                         </div>
                                                         <div
-                                                            class="h-4 w-20 bg-slate-100 rounded ml-auto"
-                                                        >
+                                                            class="h-4 w-20 bg-slate-100 rounded ml-auto">
                                                         </div>
                                                     </div>
                                                     <div
-                                                        class="flex items-center space-x-4 animate-pulse"
-                                                    >
+                                                        class="flex items-center space-x-4 animate-pulse">
                                                         <div
-                                                            class="h-4 w-20 bg-slate-100 rounded"
-                                                        >
+                                                            class="h-4 w-20 bg-slate-100 rounded">
                                                         </div>
                                                         <div
-                                                            class="h-4 w-20 bg-slate-100 rounded"
-                                                        >
+                                                            class="h-4 w-20 bg-slate-100 rounded">
                                                         </div>
                                                         <div
-                                                            class="h-6 w-20 bg-slate-100 rounded-full"
-                                                        >
+                                                            class="h-6 w-20 bg-slate-100 rounded-full">
                                                         </div>
                                                         <div
-                                                            class="h-4 w-20 bg-slate-100 rounded ml-auto"
-                                                        >
+                                                            class="h-4 w-20 bg-slate-100 rounded ml-auto">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -458,194 +384,155 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                         <div class="space-y-8">
                             <div
-                                class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
-                            >
+                                class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                                 <div
-                                    class="flex justify-between items-center mb-4"
-                                >
+                                    class="flex justify-between items-center mb-4">
                                     <h3
-                                        class="font-bold text-lg text-slate-800"
-                                    >
+                                        class="font-bold text-lg text-slate-800">
                                         Mi Equipo
                                     </h3>
                                 </div>
                                 <div id="team-members-list" class="space-y-3">
                                     <div
-                                        class="flex items-center gap-3 py-2 animate-pulse"
-                                    >
+                                        class="flex items-center gap-3 py-2 animate-pulse">
                                         <div
-                                            class="w-8 h-8 rounded-full bg-slate-100"
-                                        >
+                                            class="w-8 h-8 rounded-full bg-slate-100">
                                         </div>
                                         <div class="flex-1 space-y-2">
                                             <div
-                                                class="h-3 w-24 bg-slate-100 rounded"
-                                            >
+                                                class="h-3 w-24 bg-slate-100 rounded">
                                             </div>
                                             <div
-                                                class="h-2 w-16 bg-slate-100 rounded"
-                                            >
+                                                class="h-2 w-16 bg-slate-100 rounded">
                                             </div>
                                         </div>
                                     </div>
                                     <div
-                                        class="flex items-center gap-3 py-2 animate-pulse"
-                                    >
+                                        class="flex items-center gap-3 py-2 animate-pulse">
                                         <div
-                                            class="w-8 h-8 rounded-full bg-slate-100"
-                                        >
+                                            class="w-8 h-8 rounded-full bg-slate-100">
                                         </div>
                                         <div class="flex-1 space-y-2">
                                             <div
-                                                class="h-3 w-32 bg-slate-100 rounded"
-                                            >
+                                                class="h-3 w-32 bg-slate-100 rounded">
                                             </div>
                                             <div
-                                                class="h-2 w-12 bg-slate-100 rounded"
-                                            >
+                                                class="h-2 w-12 bg-slate-100 rounded">
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div
-                                    class="mt-4 pt-4 border-t border-slate-200"
-                                >
+                                    class="mt-4 pt-4 border-t border-slate-200">
                                     <div
-                                        class="flex justify-between items-center"
-                                    >
+                                        class="flex justify-between items-center">
                                         <p class="text-sm text-slate-600">
                                             Total Pendiente
                                         </p>
                                         <p
                                             id="team-total-pending"
-                                            class="font-bold text-orange-600"
-                                        >
+                                            class="font-bold text-orange-600">
                                             $0
                                         </p>
                                     </div>
                                 </div>
                                 <a
                                     href="/panel/mi-equipo"
-                                    class="block w-full mt-4 py-2 border border-dashed border-slate-300 rounded-xl text-slate-500 text-sm hover:border-orange-400 hover:text-orange-600 transition-colors text-center"
-                                >
+                                    class="block w-full mt-4 py-2 border border-dashed border-slate-300 rounded-xl text-slate-500 text-sm hover:border-orange-400 hover:text-orange-600 transition-colors text-center">
                                     Gestionar Equipo
                                 </a>
                             </div>
 
                             <div
-                                class="bg-indigo-900 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden"
-                            >
+                                class="bg-indigo-900 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
                                 <div
-                                    class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"
-                                >
+                                    class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl">
                                 </div>
 
                                 <h3
-                                    class="font-bold text-lg mb-4 relative z-10"
-                                >
-                                    Misiones Diarias 🎯
+                                    class="font-bold text-lg mb-4 relative z-10">
+                                    Misiones Diarias 
                                 </h3>
 
                                 <div
                                     id="misiones-list"
-                                    class="space-y-3 relative z-10"
-                                >
+                                    class="space-y-3 relative z-10">
                                     <!-- Rendered by JS -->
                                     <!-- Rendered by JS / Skeleton -->
                                     <div
-                                        class="flex items-center gap-3 animate-pulse opacity-70"
-                                    >
+                                        class="flex items-center gap-3 animate-pulse opacity-70">
                                         <div
-                                            class="w-5 h-5 rounded-full bg-indigo-500/30"
-                                        >
+                                            class="w-5 h-5 rounded-full bg-indigo-500/30">
                                         </div>
                                         <div
-                                            class="h-3 w-3/4 bg-indigo-500/30 rounded"
-                                        >
+                                            class="h-3 w-3/4 bg-indigo-500/30 rounded">
                                         </div>
                                     </div>
                                     <div
-                                        class="flex items-center gap-3 animate-pulse opacity-50"
-                                    >
+                                        class="flex items-center gap-3 animate-pulse opacity-50">
                                         <div
-                                            class="w-5 h-5 rounded-full bg-indigo-500/30"
-                                        >
+                                            class="w-5 h-5 rounded-full bg-indigo-500/30">
                                         </div>
                                         <div
-                                            class="h-3 w-1/2 bg-indigo-500/30 rounded"
-                                        >
+                                            class="h-3 w-1/2 bg-indigo-500/30 rounded">
                                         </div>
                                     </div>
                                     <div
-                                        class="flex items-center gap-3 animate-pulse opacity-30"
-                                    >
+                                        class="flex items-center gap-3 animate-pulse opacity-30">
                                         <div
-                                            class="w-5 h-5 rounded-full bg-indigo-500/30"
-                                        >
+                                            class="w-5 h-5 rounded-full bg-indigo-500/30">
                                         </div>
                                         <div
-                                            class="h-3 w-2/3 bg-indigo-500/30 rounded"
-                                        >
+                                            class="h-3 w-2/3 bg-indigo-500/30 rounded">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mt-6 pt-4 border-t border-white/10">
                                     <p class="text-xs text-indigo-300">
-                                        Próxima recompensa: <strong
-                                            >Insignia Experto</strong
-                                        >
+                                        Prxima recompensa: <strong>Insignia Experto</strong>
                                     </p>
                                 </div>
                             </div>
 
                             <div
-                                class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mt-8"
-                            >
+                                class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mt-8">
                                 <h3
-                                    class="font-bold text-lg text-slate-800 mb-4"
-                                >
-                                    Herramientas de Crecimiento 🚀
+                                    class="font-bold text-lg text-slate-800 mb-4">
+                                    Herramientas de Crecimiento 
                                 </h3>
                                 <div class="space-y-4">
                                     <div
-                                        class="p-4 bg-orange-50 rounded-xl border border-orange-100"
-                                    >
+                                        class="p-4 bg-orange-50 rounded-xl border border-orange-100">
                                         <p
-                                            class="text-sm font-bold text-orange-800 mb-1"
-                                        >
-                                            Pedir Opinión por WhatsApp
+                                            class="text-sm font-bold text-orange-800 mb-1">
+                                            Pedir Opinin por WhatsApp
                                         </p>
                                         <p class="text-xs text-orange-600 mb-3">
-                                            Enviá un link directo a tus clientes
+                                            Envi un link directo a tus clientes
                                             para que te califiquen con 5
                                             estrellas.
                                         </p>
                                         <button
                                             id="btn-whatsapp-review"
-                                            class="w-full py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors"
-                                        >
+                                            class="w-full py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 width="16"
                                                 height="16"
                                                 fill="currentColor"
-                                                viewBox="0 0 16 16"
-                                            >
+                                                viewBox="0 0 16 16">
                                                 <path
-                                                    d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"
-                                                ></path>
+                                                    d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"></path>
                                             </svg>
                                             Pedir por WhatsApp
                                         </button>
                                     </div>
 
                                     <div
-                                        class="p-4 bg-indigo-50 rounded-xl border border-indigo-100"
-                                    >
+                                        class="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
                                         <p
-                                            class="text-sm font-bold text-indigo-800 mb-1"
-                                        >
-                                            Mi Link Mágico
+                                            class="text-sm font-bold text-indigo-800 mb-1">
+                                            Mi Link Mgico
                                         </p>
                                         <div class="flex items-center gap-2">
                                             <input
@@ -657,31 +544,27 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                             />
                                             <button
                                                 id="btn-copy-magic-link"
-                                                class="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                                            >
-                                                📋
+                                                class="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                                                
                                             </button>
                                         </div>
                                     </div>
 
                                     <!-- Spotify Wrapped Style Card -->
                                     <div
-                                        class="p-4 bg-purple-50 rounded-xl border border-purple-100 flex items-center justify-between"
-                                    >
+                                        class="p-4 bg-purple-50 rounded-xl border border-purple-100 flex items-center justify-between">
                                         <div>
                                             <p
-                                                class="text-sm font-bold text-purple-800"
-                                            >
+                                                class="text-sm font-bold text-purple-800">
                                                 Tus Logros
                                             </p>
                                             <p class="text-xs text-purple-600">
-                                                Presumí tus números en redes.
+                                                Presum tus nmeros en redes.
                                             </p>
                                         </div>
                                         <button
                                             id="btn-share-stats"
-                                            class="px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700"
-                                        >
+                                            class="px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700">
                                             Compartir
                                         </button>
                                     </div>
@@ -713,12 +596,12 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
             onSnapshot,
         } from "firebase/firestore";
 
-        console.log("💡 [DASHBOARD] Script loaded, executing immediately...");
+        console.log(" [DASHBOARD] Script loaded, executing immediately...");
 
         // Execute immediately - don't wait for event
         // (function () {
         console.log(
-            "🚀 [DASHBOARD] v2.1 - Running dashboard initialization...",
+            " [DASHBOARD] v2.1 - Running dashboard initialization...",
         );
 
         const nameEl = document.getElementById("user-name");
@@ -728,7 +611,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
             "badge-oportunidades",
         );
 
-        console.log("📋 [DASHBOARD] DOM elements:", {
+        console.log(" [DASHBOARD] DOM elements:", {
             nameEl,
             avatarEl,
             logoutBtn,
@@ -737,17 +620,17 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
         onAuthStateChanged(auth, async (user) => {
             console.log(
-                "🔐 [DASHBOARD] onAuthStateChanged fired, user:",
+                " [DASHBOARD] onAuthStateChanged fired, user:",
                 user ? user.uid : "NO USER",
             );
 
             if (user) {
                 try {
                     console.log(
-                        "👤 [DASHBOARD] User authenticated, fetching data...",
+                        " [DASHBOARD] User authenticated, fetching data...",
                     );
                     // Initial DB Check
-                    console.log("🔍 [DASHBOARD] DB Debug:", {
+                    console.log(" [DASHBOARD] DB Debug:", {
                         type: typeof db,
                         isNull: db === null,
                         isUndefined: db === undefined,
@@ -757,24 +640,24 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     if (!db) {
                         console.error(
-                            "🔥 [DASHBOARD] CRITICAL: DB Object is missing/undefined",
+                            " [DASHBOARD] CRITICAL: DB Object is missing/undefined",
                             { db },
                         );
                         throw new Error("Firestore DB not initialized");
                     }
-                    // Verificar si es profesional (seguridad básica frontend)
+                    // Verificar si es profesional (seguridad bsica frontend)
                     const docRef = doc(db, "profesionales", user.uid);
                     // OPTIMIZATION: Use getDoc for cache first strategy
                     const docSnap = await getDoc(docRef);
 
                     console.log(
-                        "📄 [DASHBOARD] Document snapshot exists:",
+                        " [DASHBOARD] Document snapshot exists:",
                         docSnap.exists(),
                     );
 
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        console.log("✅ [DASHBOARD] User data loaded:", {
+                        console.log(" [DASHBOARD] User data loaded:", {
                             nombre: data.nombre,
                             plan: data.plan,
                         });
@@ -796,7 +679,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                         // GAMIFICACION (Immediate UI update)
                         console.log(
-                            "🎮 [DASHBOARD] Calling calculateGamification...",
+                            " [DASHBOARD] Calling calculateGamification...",
                         );
                         calculateGamification(user.uid, data);
 
@@ -805,12 +688,12 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                         // Cargar datos del dashboard (Parallel)
                         console.log(
-                            "📊 [DASHBOARD] Calling loadDashboardData...",
+                            " [DASHBOARD] Calling loadDashboardData...",
                         );
                         // Remove await to let it load in background while UI is responsive
                         loadDashboardData(user.uid, data).then(() => {
                             console.log(
-                                "✅ [DASHBOARD] loadDashboardData completed",
+                                " [DASHBOARD] loadDashboardData completed",
                             );
                         });
 
@@ -819,11 +702,11 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     } else {
                         // DB returned false for permissions or missing doc
                         console.error(
-                            "❌ [DASHBOARD] CRITICAL: Profile document not found for UID:",
+                            " [DASHBOARD] CRITICAL: Profile document not found for UID:",
                             user.uid,
                         );
                         alert(
-                            "Error crítico: No se encuentra tu perfil profesional en la base de datos. UID: " +
+                            "Error crtico: No se encuentra tu perfil profesional en la base de datos. UID: " +
                                 user.uid,
                         );
                         // Do NOT redirect automatically, let the user see the error.
@@ -842,7 +725,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     }
                 } catch (error) {
                     console.error("Error cargando perfil:", error);
-                    // Si hay error de permisos, intentar recargar después de un delay
+                    // Si hay error de permisos, intentar recargar despus de un delay
                     if (error.code === "permission-denied") {
                         console.log(
                             "Error de permisos detectado. Reintentando en 2 segundos...",
@@ -858,7 +741,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
             }
         });
 
-        // === FUNCIÓN PARA CARGAR DATOS DEL DASHBOARD ===
+        // === FUNCIN PARA CARGAR DATOS DEL DASHBOARD ===
         async function loadDashboardData(uid, userData) {
             // Removed dynamic imports (already at top)
 
@@ -933,7 +816,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                 await Promise.all(tasks);
 
-                // Event listener para cambio de período
+                // Event listener para cambio de perodo
                 const periodSelect = document.getElementById(
                     "chart-period-select",
                 );
@@ -946,7 +829,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
             }
         }
 
-        // === FUNCIÓN PARA CARGAR EL GRÁFICO DE RENDIMIENTO ===
+        // === FUNCIN PARA CARGAR EL GRFICO DE RENDIMIENTO ===
         async function loadPerformanceChart(uid, months) {
             // Removed dynamic imports
 
@@ -958,13 +841,13 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                 if (!chartContainer) return;
 
-                // Calcular fecha de inicio según los meses seleccionados
+                // Calcular fecha de inicio segn los meses seleccionados
                 const startDate = new Date();
                 startDate.setMonth(startDate.getMonth() - months + 1);
                 startDate.setDate(1);
                 startDate.setHours(0, 0, 0, 0);
 
-                // Obtener finanzas del período
+                // Obtener finanzas del perodo
                 const q = query(
                     collection(db, "profesionales", uid, "finanzas"),
                     where("fecha", ">=", startDate),
@@ -1011,15 +894,15 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     totalEarnings += data.monto || 0;
                 });
 
-                // Encontrar el máximo para escalar las barras
+                // Encontrar el mximo para escalar las barras
                 const values = Object.values(monthlyData);
-                const maxValue = Math.max(...values, 1); // Evitar división por 0
+                const maxValue = Math.max(...values, 1); // Evitar divisin por 0
 
                 // Encontrar el mes actual para resaltarlo
                 const currentMonth = new Date();
                 const currentKey = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}`;
 
-                // Generar barras del gráfico
+                // Generar barras del grfico
                 const sortedKeys = Object.keys(monthlyData).sort();
                 const barsHTML = sortedKeys
                     .map((key) => {
@@ -1027,7 +910,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         const heightPercent = Math.max(
                             (value / maxValue) * 100,
                             5,
-                        ); // Mínimo 5% para visualización
+                        ); // Mnimo 5% para visualizacin
                         const isCurrentMonth = key === currentKey;
                         const [year, month] = key.split("-");
                         const monthLabel = monthNames[parseInt(month) - 1];
@@ -1070,7 +953,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     totalEl.textContent = `$${totalEarnings.toLocaleString()} total`;
                 }
             } catch (error) {
-                console.error("Error cargando gráfico de rendimiento:", error);
+                console.error("Error cargando grfico de rendimiento:", error);
                 const chartContainer =
                     document.getElementById("performance-chart");
                 if (chartContainer) {
@@ -1080,7 +963,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
             }
         }
 
-        // === FUNCIÓN PARA CARGAR ÚLTIMOS PRESUPUESTOS ===
+        // === FUNCIN PARA CARGAR LTIMOS PRESUPUESTOS ===
         async function loadLatestBudgets(uid) {
             // Removed dynamic imports
 
@@ -1100,7 +983,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     tbody.innerHTML = `
                             <tr>
                                 <td colspan="4" class="text-center py-8 text-slate-500">
-                                    No tienes presupuestos aún. <a href="/panel/presupuestos" class="text-orange-600 font-bold hover:underline">Crear uno</a>
+                                    No tienes presupuestos an. <a href="/panel/presupuestos" class="text-orange-600 font-bold hover:underline">Crear uno</a>
                                 </td>
                             </tr>
                         `;
@@ -1145,7 +1028,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
             }
         }
 
-        // === FUNCIÓN PARA CARGAR WIDGET DE EQUIPO ===
+        // === FUNCIN PARA CARGAR WIDGET DE EQUIPO ===
         async function loadTeamWidget(uid) {
             // Removed dynamic imports
 
@@ -1192,7 +1075,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                         ${
                                             data.pendientePago > 0
                                                 ? `<p class="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-full border border-orange-100">$${data.pendientePago.toLocaleString()}</p>`
-                                                : `<p class="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-100">✓ Al día</p>`
+                                                : `<p class="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-100"> Al da</p>`
                                         }
                                     </div>
                                 </div>
@@ -1206,8 +1089,8 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     if (snapshot.empty) {
                         teamContainer.innerHTML = `
                                         <div class="text-center py-6">
-                                            <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-2 text-xl">👷</div>
-                                            <p class="text-slate-500 text-sm">Aún no tienes equipo</p>
+                                            <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-2 text-xl"></div>
+                                            <p class="text-slate-500 text-sm">An no tienes equipo</p>
                                         </div>
                                     `;
                     } else {
@@ -1310,7 +1193,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
             }
         }
 
-        // === FUNCIÓN DE NOTIFICACIONES ===
+        // === FUNCIN DE NOTIFICACIONES ===
         async function setupNotifications(uid) {
             // 1. Registrar Service Worker
             if ("serviceWorker" in navigator) {
@@ -1414,7 +1297,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     await batch.commit();
                     console.log(
-                        "[Panel] Todas las notificaciones marcadas como leídas",
+                        "[Panel] Todas las notificaciones marcadas como ledas",
                     );
                     dropdown?.classList.add("hidden");
                 } catch (e) {
@@ -1432,7 +1315,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         if (count > 0) {
                             badgeBell.classList.remove("hidden");
                             console.log(
-                                "🔔 [NOTIFICATIONS] Badge ON. Unread count:",
+                                " [NOTIFICATIONS] Badge ON. Unread count:",
                                 count,
                             );
                             snapshot.docs.forEach((d) =>
@@ -1445,7 +1328,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         } else {
                             badgeBell.classList.add("hidden");
                             console.log(
-                                "🔕 [NOTIFICATIONS] Badge OFF. Count is 0",
+                                " [NOTIFICATIONS] Badge OFF. Count is 0",
                             );
                         }
                     }
@@ -1471,7 +1354,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                     return `
                                     <div class="notif-item px-4 py-3 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer" data-id="${doc.id}" data-link="/panel/oportunidades">
                                         <div class="flex justify-between items-start mb-1">
-                                            <p class="text-xs font-bold text-slate-800">${data.titulo || "Nueva Notificación"}</p>
+                                            <p class="text-xs font-bold text-slate-800">${data.titulo || "Nueva Notificacin"}</p>
                                             <span class="text-[10px] text-slate-400">${time}</span>
                                         </div>
                                         <p class="text-xs text-slate-500 line-clamp-2">${data.mensaje || ""}</p>
@@ -1515,7 +1398,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             const notif = change.doc.data();
                             if (Notification.permission === "granted") {
                                 new Notification(
-                                    notif.titulo || "¡Nueva oportunidad!",
+                                    notif.titulo || "Nueva oportunidad!",
                                     {
                                         body:
                                             notif.mensaje ||
@@ -1532,7 +1415,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 },
                 (error) => {
                     console.error(
-                        "❌ [Panel] Error en listener de notificaciones:",
+                        " [Panel] Error en listener de notificaciones:",
                         error,
                     );
                 },
@@ -1644,7 +1527,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
         // === GAMIFICATION LOGIC ===
         async function calculateGamification(uid, userData) {
-            console.log("🎮 [GAMIFICATION] Calculating for XP...");
+            console.log(" [GAMIFICATION] Calculating for XP...");
             let xp = 0;
 
             // 1. Calculate Points
@@ -1666,7 +1549,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 },
                 {
                     id: "photos",
-                    text: "Sube 3 fotos a Galería",
+                    text: "Sube 3 fotos a Galera",
                     xp: 150,
                     done: (userData.portfolio?.length || 0) >= 3,
                 },
@@ -1682,15 +1565,15 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 if (m.done) xp += m.xp;
             });
 
-            console.log("🎮 [GAMIFICATION] Final XP:", xp);
+            console.log(" [GAMIFICATION] Final XP:", xp);
 
             // 2. Levels
             const levels = [
-                { name: "Novato 🌱", threshold: 0 },
-                { name: "Aprendiz 🔨", threshold: 500 },
-                { name: "Profesional 👷", threshold: 1500 },
-                { name: "Experto 🦁", threshold: 5000 },
-                { name: "Maestro 👑", threshold: 50000 },
+                { name: "Novato ", threshold: 0 },
+                { name: "Aprendiz ", threshold: 500 },
+                { name: "Profesional ", threshold: 1500 },
+                { name: "Experto ", threshold: 5000 },
+                { name: "Maestro ", threshold: 50000 },
             ];
 
             let currentLevel = levels[0];
@@ -1728,7 +1611,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
             if (lvlNext) {
                 if (nextLevel === currentLevel) {
-                    lvlNext.textContent = "¡Nivel máximo alcanzado!";
+                    lvlNext.textContent = "Nivel mximo alcanzado!";
                 } else {
                     lvlNext.textContent = `${nextLevel.threshold - xp} XP para el siguiente nivel`;
                 }
@@ -1744,7 +1627,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     (m) => `
                 <div class="flex items-center gap-3">
                      <div class="w-5 h-5 rounded-full border-2 ${m.done ? "border-green-400 bg-green-400" : "border-white/30"} flex items-center justify-center text-indigo-900 text-xs font-bold">
-                        ${m.done ? "✓" : ""}
+                        ${m.done ? "" : ""}
                      </div>
                      <p class="text-sm ${m.done ? "text-indigo-200 line-through" : "text-white"}">
                          ${m.text} (+${m.xp}xp)
@@ -1779,7 +1662,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
             // WhatsApp Review Button
             btnWhatsAppReview?.addEventListener("click", () => {
                 const message = encodeURIComponent(
-                    `¡Hola! Soy ${userData.nombre} 👋. ¿Cómo estuvo mi trabajo? \n\nMe ayudarías mucho dejándome una reseña de 5 estrellas acá: ${magicLink} \n\n¡Muchas gracias!`,
+                    `Hola! Soy ${userData.nombre} . Cmo estuvo mi trabajo? \n\nMe ayudaras mucho dejndome una resea de 5 estrellas ac: ${magicLink} \n\nMuchas gracias!`,
                 );
                 window.open(`https://wa.me/?text=${message}`, "_blank");
             });
@@ -1789,7 +1672,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 // @ts-ignore
                 magicLinkInput?.select();
                 navigator.clipboard.writeText(magicLink);
-                alert("¡Link copiado al portapapeles!");
+                alert("Link copiado al portapapeles!");
             });
 
             // Share Stats (Spotify Wrapped style - basic text for now)
@@ -1798,7 +1681,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 const levelName =
                     document.getElementById("level-name")?.textContent ||
                     "Profesional";
-                const statsText = `🔥 Mis logros de este mes en DeOficios:\n\n📈 Visitas: ${userData.vistas_perfil || 0}\n🏆 Puntos: ${totalPoints}\n⭐ Nivel: ${levelName}\n\n¡Seguimos creciendo! 🚀`;
+                const statsText = ` Mis logros de este mes en DeOficios:\n\n Visitas: ${userData.vistas_perfil || 0}\n Puntos: ${totalPoints}\n Nivel: ${levelName}\n\nSeguimos creciendo! `;
                 const shareUrl = `https://wa.me/?text=${encodeURIComponent(statsText)}`;
                 window.open(shareUrl, "_blank");
             });
@@ -1809,9 +1692,10 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
             window.addEventListener("load", () => {
                 navigator.serviceWorker
                     .register("/sw.js")
-                    .then((reg) => console.log("✅ SW registrado:", reg.scope))
-                    .catch((err) => console.log("❌ Error SW:", err));
+                    .then((reg) => console.log(" SW registrado:", reg.scope))
+                    .catch((err) => console.log(" Error SW:", err));
             });
         }
     </script>
 </html>
+

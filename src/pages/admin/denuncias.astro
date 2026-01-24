@@ -6,21 +6,21 @@ import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 
 const reportes = [];
 try {
-  // Asumimos que la colección se llama "denuncias"
+  // Asumimos que la coleccin se llama "denuncias"
   const q = query(collection(db, "denuncias"), orderBy("fecha", "desc"));
   const snap = await getDocs(q);
   snap.forEach(doc => reportes.push({ id: doc.id, ...doc.data() }));
-} catch (e) { console.log("Sin denuncias o falta colección"); }
+} catch (e) { console.log("Sin denuncias o falta coleccin"); }
 ---
 
 <Layout title="Denuncias - Admin">
   
   <main class="container">
-    <h1>🚨 Reportes y Denuncias</h1>
-    <a href="/admin" class="btn-back">⬅ Volver</a>
+    <h1> Reportes y Denuncias</h1>
+    <a href="/admin" class="btn-back"> Volver</a>
 
     {reportes.length === 0 ? (
-        <div class="empty-box">✅ Todo tranquilo. No hay denuncias pendientes.</div>
+        <div class="empty-box"> Todo tranquilo. No hay denuncias pendientes.</div>
     ) : (
         <div class="reports-grid">
             {reportes.map(r => (
@@ -32,7 +32,7 @@ try {
                     <div class="report-body">
                         <p><strong>Motivo:</strong> {r.motivo}</p>
                         <p><strong>Detalle:</strong> "{r.descripcion}"</p>
-                        <small>Reportado por: {r.denuncianteEmail || 'Anónimo'} el {new Date(r.fecha?.seconds * 1000).toLocaleDateString()}</small>
+                        <small>Reportado por: {r.denuncianteEmail || 'Annimo'} el {new Date(r.fecha?.seconds * 1000).toLocaleDateString()}</small>
                     </div>
                     <div class="report-actions">
                         <button onclick={`borrarDenuncia('${r.id}')`}>Archivar</button>
@@ -50,7 +50,7 @@ try {
     import { doc, deleteDoc } from 'firebase/firestore';
     
     window.borrarDenuncia = async (id) => {
-        if(confirm("¿Archivar esta denuncia?")) {
+        if(confirm("Archivar esta denuncia?")) {
             await deleteDoc(doc(db, "denuncias", id));
             window.location.reload();
         }
@@ -71,3 +71,4 @@ try {
     .report-actions { margin-top: 15px; text-align: right; }
     .report-actions button { background: #eee; border: none; padding: 5px 15px; cursor: pointer; border-radius: 4px; }
 </style>
+

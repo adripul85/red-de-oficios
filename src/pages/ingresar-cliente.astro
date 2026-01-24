@@ -4,30 +4,25 @@ import Layout from "../layouts/Layout.astro";
 
 <Layout title="Acceso Clientes - DeOficios">
     <div
-        class="min-h-screen flex font-sans bg-slate-50 transition-colors duration-300"
-    >
+        class="min-h-screen flex font-sans bg-slate-50 transition-colors duration-300">
         <!-- BANNER IZQUIERDO (Decorative - matching pro style) -->
         <div
             class="hidden lg:flex flex-1 relative bg-cover bg-center"
-            style="background-image: url('https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=1000&auto=format&fit=crop');"
-        >
+            style="background-image: url('https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=1000&auto=format&fit=crop');">
             <div
-                class="absolute inset-0 bg-indigo-900/40 z-10 backdrop-blur-[2px]"
-            >
+                class="absolute inset-0 bg-indigo-900/40 z-10 backdrop-blur-[2px]">
             </div>
             <div
-                class="relative z-20 max-w-md text-center text-white p-12 self-center mx-auto"
-            >
+                class="relative z-20 max-w-md text-center text-white p-12 self-center mx-auto">
                 <div
-                    class="w-20 h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-4xl mb-6 mx-auto shadow-xl border border-white/30"
-                >
-                    🛡️
+                    class="w-20 h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-4xl mb-6 mx-auto shadow-xl border border-white/30">
+                    
                 </div>
                 <h1 class="text-5xl font-bold mb-6 drop-shadow-lg">
-                    Área de Clientes
+                    rea de Clientes
                 </h1>
                 <p class="text-xl opacity-90 leading-relaxed font-medium">
-                    Accedé para valorar profesionales, gestionar tus pedidos y
+                    Acced para valorar profesionales, gestionar tus pedidos y
                     conectarte con seguridad.
                 </p>
             </div>
@@ -35,16 +30,14 @@ import Layout from "../layouts/Layout.astro";
 
         <!-- FORMULARIO DERECHO -->
         <div
-            class="flex-1 flex flex-col justify-center p-6 sm:p-12 lg:p-24 bg-white transition-colors duration-300"
-        >
+            class="flex-1 flex flex-col justify-center p-6 sm:p-12 lg:p-24 bg-white transition-colors duration-300">
             <div class="w-full max-w-md mx-auto">
                 <!-- HEADER -->
                 <div class="flex justify-between items-center mb-10">
                     <a
                         href="/"
-                        class="text-slate-500 hover:text-indigo-600 text-sm font-medium transition-colors"
-                    >
-                        ← Volver al inicio
+                        class="text-slate-500 hover:text-indigo-600 text-sm font-medium transition-colors">
+                         Volver al inicio
                     </a>
                     <img src="/favicon.svg" alt="Logo" class="w-10 h-10" />
                 </div>
@@ -54,15 +47,13 @@ import Layout from "../layouts/Layout.astro";
                     <button
                         class="flex-1 py-3 text-sm font-bold rounded-lg transition-all duration-200 tab-btn active"
                         data-tab="login"
-                        id="btn-tab-login"
-                    >
-                        Iniciar Sesión
+                        id="btn-tab-login">
+                        Iniciar Sesin
                     </button>
                     <button
                         class="flex-1 py-3 text-sm font-bold rounded-lg transition-all duration-200 text-slate-500 hover:text-slate-700 tab-btn"
                         data-tab="register"
-                        id="btn-tab-register"
-                    >
+                        id="btn-tab-register">
                         Registrarse
                     </button>
                 </div>
@@ -71,19 +62,17 @@ import Layout from "../layouts/Layout.astro";
                 <div id="tab-login" class="tab-content active">
                     <div class="text-center mb-8">
                         <h2 class="text-3xl font-bold text-slate-800 mb-2">
-                            Hola de nuevo 👋
+                            Hola de nuevo 
                         </h2>
                         <p class="text-slate-500">
-                            Ingresá tus datos para acceder a tu cuenta.
+                            Ingres tus datos para acceder a tu cuenta.
                         </p>
                     </div>
 
                     <form id="login-form" class="space-y-5">
                         <div class="space-y-2">
                             <label
-                                class="block text-sm font-bold text-slate-700"
-                                >Email</label
-                            >
+                                class="block text-sm font-bold text-slate-700">Email</label>
                             <input
                                 type="email"
                                 id="login-email"
@@ -94,35 +83,30 @@ import Layout from "../layouts/Layout.astro";
                         </div>
                         <div class="space-y-2">
                             <label
-                                class="block text-sm font-bold text-slate-700"
-                                >Contraseña</label
-                            >
+                                class="block text-sm font-bold text-slate-700">Contrasea</label>
                             <input
                                 type="password"
                                 id="login-password"
-                                placeholder="••••••••"
+                                placeholder=""
                                 required
                                 class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-slate-400"
                             />
                         </div>
                         <button
                             type="submit"
-                            class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition-all transform active:scale-[0.98]"
-                        >
+                            class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition-all transform active:scale-[0.98]">
                             Ingresar
                         </button>
                         <p
                             id="login-feedback"
-                            class="text-sm p-3 rounded-lg hidden text-center"
-                        >
+                            class="text-sm p-3 rounded-lg hidden text-center">
                         </p>
                         <div class="text-center">
                             <button
                                 type="button"
                                 id="btn-resend"
-                                class="text-sm text-indigo-600 underline hidden hover:text-indigo-800 font-medium"
-                            >
-                                Reenviar correo de verificación
+                                class="text-sm text-indigo-600 underline hidden hover:text-indigo-800 font-medium">
+                                Reenviar correo de verificacin
                             </button>
                         </div>
                     </form>
@@ -133,32 +117,28 @@ import Layout from "../layouts/Layout.astro";
                     <div id="reg-form-container">
                         <div class="text-center mb-8">
                             <h2 class="text-3xl font-bold text-slate-800 mb-2">
-                                Crear Cuenta 🚀
+                                Crear Cuenta 
                             </h2>
                             <p class="text-slate-500">
-                                Uníte a la comunidad de vecinos.
+                                Unte a la comunidad de vecinos.
                             </p>
                         </div>
 
                         <form id="register-form" class="space-y-5">
                             <div class="space-y-2">
                                 <label
-                                    class="block text-sm font-bold text-slate-700"
-                                    >Nombre completo</label
-                                >
+                                    class="block text-sm font-bold text-slate-700">Nombre completo</label>
                                 <input
                                     type="text"
                                     id="register-name"
-                                    placeholder="Juan Pérez"
+                                    placeholder="Juan Prez"
                                     required
                                     class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all placeholder-slate-400"
                                 />
                             </div>
                             <div class="space-y-2">
                                 <label
-                                    class="block text-sm font-bold text-slate-700"
-                                    >Email real</label
-                                >
+                                    class="block text-sm font-bold text-slate-700">Email real</label>
                                 <input
                                     type="email"
                                     id="register-email"
@@ -169,13 +149,11 @@ import Layout from "../layouts/Layout.astro";
                             </div>
                             <div class="space-y-2">
                                 <label
-                                    class="block text-sm font-bold text-slate-700"
-                                    >Contraseña</label
-                                >
+                                    class="block text-sm font-bold text-slate-700">Contrasea</label>
                                 <input
                                     type="password"
                                     id="register-password"
-                                    placeholder="Mínimo 6 caracteres"
+                                    placeholder="Mnimo 6 caracteres"
                                     required
                                     minlength="6"
                                     class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all placeholder-slate-400"
@@ -183,38 +161,32 @@ import Layout from "../layouts/Layout.astro";
                             </div>
                             <button
                                 type="submit"
-                                class="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg shadow-green-500/30 transition-all transform active:scale-[0.98]"
-                            >
+                                class="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg shadow-green-500/30 transition-all transform active:scale-[0.98]">
                                 Crear Cuenta
                             </button>
                             <p
                                 id="register-feedback"
-                                class="text-sm p-3 rounded-lg hidden text-center"
-                            >
+                                class="text-sm p-3 rounded-lg hidden text-center">
                             </p>
                         </form>
                     </div>
 
                     <div id="reg-success" class="hidden text-center py-6">
                         <div
-                            class="w-20 h-20 bg-green-100 rounded-2xl flex items-center justify-center text-4xl mb-6 mx-auto"
-                        >
-                            📩
+                            class="w-20 h-20 bg-green-100 rounded-2xl flex items-center justify-center text-4xl mb-6 mx-auto">
+                            
                         </div>
                         <h3 class="text-2xl font-bold text-slate-800">
-                            ¡Revisa tu correo!
+                            Revisa tu correo!
                         </h3>
                         <p class="text-slate-500 mt-2 mb-8 leading-relaxed">
-                            Te enviamos un enlace de confirmación. <br />
-                            <strong
-                                >Debes hacer clic en él para activar tu cuenta.</strong
-                            >
+                            Te enviamos un enlace de confirmacin. <br />
+                            <strong>Debes hacer clic en l para activar tu cuenta.</strong>
                         </p>
                         <button
                             onclick="window.location.reload()"
-                            class="w-full py-4 bg-slate-100 text-slate-700 font-bold rounded-xl border border-slate-200 hover:bg-slate-200 transition-all"
-                        >
-                            Ya lo confirmé, Iniciar Sesión
+                            class="w-full py-4 bg-slate-100 text-slate-700 font-bold rounded-xl border border-slate-200 hover:bg-slate-200 transition-all">
+                            Ya lo confirm, Iniciar Sesin
                         </button>
                     </div>
                 </div>
@@ -226,29 +198,25 @@ import Layout from "../layouts/Layout.astro";
                     </div>
                     <div class="relative flex justify-center text-sm">
                         <span
-                            class="px-4 bg-white text-slate-500 font-medium italic"
-                            >o rápido con</span
-                        >
+                            class="px-4 bg-white text-slate-500 font-medium italic">o rpido con</span>
                     </div>
                 </div>
 
                 <button
                     id="btn-google"
-                    class="w-full py-3.5 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl flex items-center justify-center gap-3 hover:bg-slate-50 transition-all shadow-sm active:scale-[0.98]"
-                >
+                    class="w-full py-3.5 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl flex items-center justify-center gap-3 hover:bg-slate-50 transition-all shadow-sm active:scale-[0.98]">
                     <img
                         src="https://www.svgrepo.com/show/475656/google-color.svg"
                         alt="G"
                         class="w-5 h-5"
-                    /> Google (Verificación automática)
+                    /> Google (Verificacin automtica)
                 </button>
 
                 <div class="mt-10 text-center">
                     <a
                         href="/ingresar"
-                        class="text-indigo-600 font-bold hover:underline transition-all"
-                    >
-                        ¿Sos profesional? Clic aquí
+                        class="text-indigo-600 font-bold hover:underline transition-all">
+                        Sos profesional? Clic aqu
                     </a>
                 </div>
             </div>
@@ -304,7 +272,7 @@ import Layout from "../layouts/Layout.astro";
         });
     });
 
-    // 1. INICIAR SESIÓN
+    // 1. INICIAR SESIN
     document
         .getElementById("login-form")
         ?.addEventListener("submit", async (e) => {
@@ -333,7 +301,7 @@ import Layout from "../layouts/Layout.astro";
 
                 if (!user.emailVerified) {
                     await signOut(auth);
-                    feedback.innerHTML = `⚠️ <strong>Email no verificado.</strong><br>Por favor revisá tu bandeja de entrada o spam.`;
+                    feedback.innerHTML = ` <strong>Email no verificado.</strong><br>Por favor revis tu bandeja de entrada o spam.`;
                     feedback.classList.remove("hidden");
                     feedback.classList.add("bg-red-50", "text-red-700");
 
@@ -361,17 +329,17 @@ import Layout from "../layouts/Layout.astro";
             } catch (error: any) {
                 console.error("Login error:", error);
 
-                let msg = "❌ Email o contraseña incorrectos";
+                let msg = " Email o contrasea incorrectos";
                 let showRegisterLink = false;
 
                 if (
                     error.code === "auth/user-not-found" ||
                     error.code === "auth/invalid-credential"
                 ) {
-                    msg = "⚠️ Usuario no encontrado. ¿Querés crear una cuenta?";
+                    msg = " Usuario no encontrado. Quers crear una cuenta?";
                     showRegisterLink = true;
                 } else if (error.code === "auth/wrong-password") {
-                    msg = "❌ Contraseña incorrecta.";
+                    msg = " Contrasea incorrecta.";
                 }
 
                 feedback.innerHTML = msg;
@@ -414,7 +382,7 @@ import Layout from "../layouts/Layout.astro";
             if (!feedback) return;
 
             if (password.length < 6)
-                return alert("La contraseña debe tener al menos 6 caracteres");
+                return alert("La contrasea debe tener al menos 6 caracteres");
 
             try {
                 const userCredential = await createUserWithEmailAndPassword(
@@ -444,9 +412,9 @@ import Layout from "../layouts/Layout.astro";
             } catch (error: any) {
                 console.error(error);
                 feedback.textContent =
-                    "❌ Error: " +
+                    " Error: " +
                     (error.code === "auth/email-already-in-use"
-                        ? "El email ya está registrado"
+                        ? "El email ya est registrado"
                         : error.message);
                 feedback.classList.remove("hidden");
                 feedback.classList.add("bg-red-50", "text-red-700");
@@ -512,3 +480,4 @@ import Layout from "../layouts/Layout.astro";
             0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 </style>
+

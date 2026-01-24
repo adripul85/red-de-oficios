@@ -40,10 +40,10 @@ const componentMap: Record<string, any> = {
   Gasista: Flame,
   Cerrajero: Key,
   Destapaciones: Wrench,
-  "Técnico de Aire Acondicionado": Snowflake,
-  "Técnico de Electrodomésticos": Plug,
-  // Construcción
-  Albañil: BrickWall,
+  "Tcnico de Aire Acondicionado": Snowflake,
+  "Tcnico de Electrodomsticos": Plug,
+  // Construccin
+  Albail: BrickWall,
   Pintor: PaintRoller,
   Techista: Home,
   "Colocador de Pisos/Ceramista": Grid,
@@ -66,14 +66,14 @@ const componentMap: Record<string, any> = {
   "DJ / Sonido": Music,
   Fletero: Truck,
   Fumigador: Bug,
-  // Estética
+  // Esttica
   "Peinador / Estilista": Scissors,
   Barbero: Scissors,
   "Maquillador / Maquilladora": User,
   "Manicura / Pedicura": User,
   // Seguridad
-  "Instalador de Cámaras de Seguridad": Video,
-  "Técnico de PC / Celulares": Laptop,
+  "Instalador de Cmaras de Seguridad": Video,
+  "Tcnico de PC / Celulares": Laptop,
   default: Wrench,
 };
 
@@ -93,15 +93,14 @@ const randomCategories = shuffled.slice(0, 12);
 
 <section class="quick-links-section">
   <div class="container">
-    <h2 class="section-title">¿Qué estás buscando hoy?</h2>
+    <h2 class="section-title">Qu ests buscando hoy?</h2>
 
     <div class="categories-grid">
       {
         randomCategories.map((cat) => (
           <a
             href={`/resultados?q=${encodeURIComponent(cat.slug)}`}
-            class="category-card fade-in"
-          >
+            class="category-card fade-in">
             <div class="icon-wrapper text-orange-600 mb-2">
               <cat.Icon class="w-8 h-8" />
             </div>
@@ -235,7 +234,7 @@ const randomCategories = shuffled.slice(0, 12);
   }
 
   @media (max-width: 600px) {
-    /* MANTENER FLEX EN MÓVIL (NO GRID) */
+    /* MANTENER FLEX EN MVIL (NO GRID) */
     .categories-grid {
       display: flex; /* Asegurar flex */
       gap: 10px;
@@ -257,3 +256,4 @@ const randomCategories = shuffled.slice(0, 12);
     }
   }
 </style>
+

@@ -16,21 +16,21 @@ try {
 }
 ---
 
-<Layout title="Gestión de Usuarios - Admin">
+<Layout title="Gestin de Usuarios - Admin">
     <main class="container">
         <div class="header-row">
             <div>
-                <h1>👥 Gestión de Profesionales</h1>
+                <h1> Gestin de Profesionales</h1>
                 <p>Total: {users.length} registrados</p>
             </div>
             <div class="actions-header">
                 <input
                     type="text"
                     id="searchUser"
-                    placeholder="🔍 Buscar por nombre o email..."
+                    placeholder=" Buscar por nombre o email..."
                     class="search-input"
                 />
-                <a href="/admin" class="btn-back">⬅ Panel</a>
+                <a href="/admin" class="btn-back"> Panel</a>
             </div>
         </div>
 
@@ -40,7 +40,7 @@ try {
                     <tr>
                         <th>Perfil</th>
                         <th>Datos</th>
-                        <th>Métricas</th>
+                        <th>Mtricas</th>
                         <th>Estado</th>
                         <th>Plan</th>
                         <th>Acciones</th>
@@ -58,7 +58,7 @@ try {
                                                 class="mini-avatar"
                                             />
                                         ) : (
-                                            <span class="no-pic">👤</span>
+                                            <span class="no-pic"></span>
                                         )}
                                         <div>
                                             <strong class="u-name">
@@ -78,15 +78,14 @@ try {
                                     <small>
                                         {u.categoria || "Sin rubro"}
                                         <br />
-                                        📍 {u.zona || "Sin zona"}
+                                         {u.zona || "Sin zona"}
                                     </small>
                                 </td>
                                 <td>
                                     <div
                                         class="stat-badge whatsapp-stat"
-                                        title="Clicks en WhatsApp"
-                                    >
-                                        <span class="icon">📲</span>
+                                        title="Clicks en WhatsApp">
+                                        <span class="icon"></span>
                                         <span class="count">
                                             {u.contactos_whatsapp || 0}
                                         </span>
@@ -95,11 +94,11 @@ try {
                                 <td id={`status-${u.id}`}>
                                     {u.verificado ? (
                                         <span class="badge verified">
-                                            Verificado ✅
+                                            Verificado 
                                         </span>
                                     ) : (
                                         <span class="badge pending">
-                                            Pendiente ⏳
+                                            Pendiente 
                                         </span>
                                     )}
                                 </td>
@@ -108,7 +107,7 @@ try {
                                     u.plan === "semestral" ||
                                     u.plan === "experto" ? (
                                         <span class="badge premium">
-                                            PREMIUM 💎
+                                            PREMIUM 
                                         </span>
                                     ) : (
                                         <span class="badge free">Gratis</span>
@@ -117,9 +116,8 @@ try {
                                 <td>
                                     <button
                                         class="btn-manage"
-                                        data-user={JSON.stringify(u)}
-                                    >
-                                        ⚙️ Gestionar
+                                        data-user={JSON.stringify(u)}>
+                                         Gestionar
                                     </button>
                                 </td>
                             </tr>
@@ -131,13 +129,13 @@ try {
 
         <dialog id="userModal" class="admin-modal">
             <div class="modal-content">
-                <span class="close-modal" id="btn-close-modal">×</span>
+                <span class="close-modal" id="btn-close-modal"></span>
                 <h2 id="m-nombre">Gestionar Usuario</h2>
                 <p id="m-id" class="text-muted">ID: ...</p>
 
                 <div class="modal-grid">
                     <div class="modal-col">
-                        <h3>🔐 Datos Sensibles</h3>
+                        <h3> Datos Sensibles</h3>
                         <div class="data-group">
                             <label>DNI:</label>
                             <span id="m-dni">-</span>
@@ -151,70 +149,57 @@ try {
                             <strong id="m-rol-display">-</strong>
                         </div>
                         <div class="data-group">
-                            <label>Certificado/Matrícula:</label>
+                            <label>Certificado/Matrcula:</label>
                             <a
                                 id="m-cert-link"
                                 href="#"
                                 target="_blank"
-                                class="btn-link hidden">Ver Documento 📄</a
-                            >
-                            <span id="m-no-cert">No subió archivo</span>
+                                class="btn-link hidden">Ver Documento </a>
+                            <span id="m-no-cert">No subi archivo</span>
                         </div>
 
                         <hr />
 
-                        <h3>✅ Estado de Verificación</h3>
+                        <h3> Estado de Verificacin</h3>
                         <div class="verify-box">
-                            <p>¿Certificado válido?</p>
-                            <button id="btn-verify" class="btn-action verify"
-                                >Dar el Tilde Azul ✅</button
-                            >
+                            <p>Certificado vlido?</p>
+                            <button id="btn-verify" class="btn-action verify">Dar el Tilde Azul </button>
                             <button
                                 id="btn-unverify"
-                                class="btn-action unverify"
-                                >Quitar Verificación ❌</button
-                            >
+                                class="btn-action unverify">Quitar Verificacin </button>
                         </div>
                     </div>
 
                     <div class="modal-col">
-                        <h3>👑 Roles del Sistema</h3>
+                        <h3> Roles del Sistema</h3>
                         <div class="data-group">
                             <label>Asignar Rol:</label>
                             <select id="m-rol-select">
-                                <option value="profesional"
-                                    >Usuario / Profesional</option
-                                >
+                                <option value="profesional">Usuario / Profesional</option>
                                 <option value="moderador">Moderador</option>
                                 <option value="admin">Administrador</option>
                             </select>
                             <button
                                 id="btn-save-rol"
                                 class="btn-save"
-                                style="background-color: #7c3aed; margin-top: 5px;"
-                                >💾 Actualizar Rol</button
-                            >
+                                style="background-color: #7c3aed; margin-top: 5px;"> Actualizar Rol</button>
                         </div>
 
                         <hr />
 
-                        <h3>💎 Membresía</h3>
+                        <h3> Membresa</h3>
                         <select id="m-plan-select">
-                            <option value="gratuito">Gratuito (Básico)</option>
+                            <option value="gratuito">Gratuito (Bsico)</option>
                             <option value="mensual">Premium Mensual</option>
                             <option value="semestral">Premium Semestral</option>
                             <option value="experto">Plan Experto</option>
                         </select>
-                        <button id="btn-save-plan" class="btn-save"
-                            >💾 Actualizar Plan</button
-                        >
+                        <button id="btn-save-plan" class="btn-save"> Actualizar Plan</button>
 
                         <hr />
 
-                        <h3>🚨 Zona de Peligro</h3>
-                        <button id="btn-delete-user" class="btn-delete-danger"
-                            >🗑️ ELIMINAR USUARIO</button
-                        >
+                        <h3> Zona de Peligro</h3>
+                        <button id="btn-delete-user" class="btn-delete-danger"> ELIMINAR USUARIO</button>
                     </div>
                 </div>
             </div>
@@ -228,7 +213,7 @@ try {
     import { onAuthStateChanged } from "firebase/auth";
 
     document.addEventListener("astro:page-load", () => {
-        console.log("🚀 [ADMIN-USUARIOS] Página cargada/navegada");
+        console.log(" [ADMIN-USUARIOS] Pgina cargada/navegada");
 
         // 1. SEGURIDAD
         onAuthStateChanged(auth, async (user) => {
@@ -256,7 +241,7 @@ try {
             });
         });
 
-        // 3. LÓGICA DEL MODAL
+        // 3. LGICA DEL MODAL
         const modal = document.getElementById("userModal") as HTMLDialogElement;
         const closeBtn = document.getElementById("btn-close-modal");
         let currentUserId = null;
@@ -267,7 +252,7 @@ try {
             if (e.target === modal) modal.close();
         });
 
-        // Abrir modal (Delegación de eventos para botones "Gestionar")
+        // Abrir modal (Delegacin de eventos para botones "Gestionar")
         document.querySelectorAll(".btn-manage").forEach((btn) => {
             btn.addEventListener("click", (e) => {
                 // @ts-ignore
@@ -279,7 +264,7 @@ try {
         function openModal(u) {
             currentUserId = u.id;
 
-            // Llenar datos básicos
+            // Llenar datos bsicos
             document.getElementById("m-nombre").textContent = u.nombre;
             document.getElementById("m-id").textContent = "ID: " + u.id;
             document.getElementById("m-dni").textContent =
@@ -321,22 +306,22 @@ try {
         document
             .getElementById("btn-verify")
             ?.addEventListener("click", async () => {
-                if (!confirm("¿Confirmas que el documento es válido?")) return;
+                if (!confirm("Confirmas que el documento es vlido?")) return;
                 await updateDoc(doc(db, "profesionales", currentUserId), {
                     verificado: true,
                 });
-                alert("¡Usuario Verificado! ✅");
+                alert("Usuario Verificado! ");
                 window.location.reload();
             });
 
-        // Quitar Verificación
+        // Quitar Verificacin
         document
             .getElementById("btn-unverify")
             ?.addEventListener("click", async () => {
                 await updateDoc(doc(db, "profesionales", currentUserId), {
                     verificado: false,
                 });
-                alert("Verificación revocada.");
+                alert("Verificacin revocada.");
                 window.location.reload();
             });
 
@@ -346,7 +331,7 @@ try {
             ?.addEventListener("click", async () => {
                 // @ts-ignore
                 const nuevoRol = document.getElementById("m-rol-select").value;
-                if (confirm(`¿Cambiar rol a ${nuevoRol.toUpperCase()}?`)) {
+                if (confirm(`Cambiar rol a ${nuevoRol.toUpperCase()}?`)) {
                     await updateDoc(doc(db, "profesionales", currentUserId), {
                         rol: nuevoRol,
                     });
@@ -375,7 +360,7 @@ try {
             ?.addEventListener("click", async () => {
                 if (
                     confirm(
-                        "⚠ PELIGRO: Esto borrará al usuario permanentemente.",
+                        " PELIGRO: Esto borrar al usuario permanentemente.",
                     )
                 ) {
                     await deleteDoc(doc(db, "profesionales", currentUserId));
@@ -645,3 +630,4 @@ try {
         }
     }
 </style>
+

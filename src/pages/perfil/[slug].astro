@@ -93,16 +93,13 @@ if (!profesional) return Astro.redirect("/404");
                                     Math.round(profesional.puntuacion || 0),
                                 )
                             }
-                            <span class="text-gray-300"
-                                >{
-                                    "★".repeat(
-                                        5 -
-                                            Math.round(
-                                                profesional.puntuacion || 0,
-                                            ),
+                            <span class="text-gray-300">
+                                {
+                                    "*".repeat(
+                                        5 - Math.round(profesional.puntuacion || 0)
                                     )
-                                }</span
-                            >
+                                }
+                            </span>
                         </div>
                         <span class="text-gray-500 text-xs font-bold">
                             ({profesional.total_valoraciones || 0})
@@ -592,11 +589,11 @@ if (!profesional) return Astro.redirect("/404");
             Swal.fire({
                 title: "🛡️ Código de Seguridad",
                 html: `
-                    <p class="mb-4">Tu código de verificación para <strong>${proName}</strong> es:</p>
+                    <p class="mb-4">Tu codigo de verificacion para <strong>${proName}</strong> es:</p>
                     <div class="text-4xl font-bold tracking-widest text-orange-600 bg-orange-50 py-4 rounded-xl border-2 border-orange-200 mb-4">
                         ${safetyToken}
                     </div>
-                    <p class="text-xs text-gray-500 uppercase font-bold tracking-tight">Mostrale este código al profesional al llegar</p>
+                    <p class="text-xs text-gray-500 uppercase font-bold tracking-tight">Mostrale este codigo al profesional al llegar</p>
                 `,
                 confirmButtonText: "Ir a WhatsApp 💬",
                 confirmButtonColor: "#16a34a",
