@@ -6,7 +6,7 @@
  */
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { onDocumentCreated, onDocumentWritten } from "firebase-functions/v2/firestore";
 import { initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import * as logger from "firebase-functions/logger";
@@ -88,6 +88,59 @@ export const onSolicitudCreated = onDocumentCreated(
             logger.info(`Embedding generado para solicitud ${snapshot.id}`);
         } catch (error) {
             logger.error(`Error procesando solicitud ${snapshot.id}:`, error);
+        }
+    }
+);
+
+/**
+ * Cloud Function: Generar embedding para profesionales cuando se actualiza su perfil
+ * Se asegura de que los profesionales tengan embeddings para búsqueda semántica
+ */
+export const onProfesionalWritten = onDocumentWritten(
+    "profesionales/{profesionalId}",
+    async (event) => {
+        if (!event.data) {
+            return;
+        }
+
+        const afterData = event.data.after.data();
+        const beforeData = event.data.before.data();
+
+        // Si el documento fue borrado, no hacemos nada
+        if (!afterData) {
+            return;
+        }
+
+        // Verificar si cambiaron campos relevantes (rubro, descripcion) o si es nuevo
+        const isNew = !beforeData;
+        const textChanged = isNew ||
+            afterData.rubro_principal !== beforeData?.rubro_principal ||
+            afterData.descripcion !== beforeData?.descripcion;
+
+        // Si no cambió el texto relevante, evitamos regenerar embedding (y el loop infinito)
+        if (!textChanged) {
+            return;
+        }
+
+        const profileText = `${afterData.rubro_principal || ""} ${afterData.descripcion || ""}`;
+
+        if (!profileText.trim()) {
+            return;
+        }
+
+        try {
+            logger.info(`Generando embedding para profesional ${event.params.profesionalId}`);
+            const embedding = await generateEmbedding(profileText);
+
+            // Usamos update para no sobrescribir otros campos si hubo cambios concurrentes
+            await event.data.after.ref.update({
+                embedding: embedding,
+                embeddingGeneratedAt: new Date(),
+            });
+
+            logger.info(`Embedding actualizado para profesional ${event.params.profesionalId}`);
+        } catch (error) {
+            logger.error(`Error generando embedding para profesional ${event.params.profesionalId}:`, error);
         }
     }
 );
@@ -183,44 +236,90 @@ export const findProfessionals = onCall(async (request) => {
         const descEmbedding = await generateEmbedding(description);
 
         // Obtener profesionales
-        let profQuery = db.collection("profesionales");
-
-        if (zona) {
-            profQuery = profQuery.where("zona", "==", zona) as any;
-        }
-
-        const snapshot = await profQuery.get();
-
-        const results: Array<{
+        let results: Array<{
             id: string;
             nombre: string;
             rubro: string;
             similarity: number;
         }> = [];
 
-        snapshot.forEach((doc) => {
-            const data = doc.data();
+        try {
+            // OPTIMIZACIÓN: Búsqueda Vectorial (Firestore Vector Search)
+            // Esto reduce drásticamente las lecturas al traer solo los K vecinos más cercanos
+            let vectorQuery: any = db.collection("profesionales");
 
-            // Generar texto del perfil del profesional
-            const profileText = `${data.rubro_principal || ""} ${data.descripcion || ""}`;
+            if (zona) {
+                vectorQuery = vectorQuery.where("zona", "==", zona);
+            }
 
-            // Por ahora, usamos matching simple por rubro
-            // TODO: Implementar embeddings para perfiles de profesionales
+            // Requiere índice de vector en 'embedding'
+            const vectorSnapshot = await vectorQuery.findNearest({
+                vectorField: "embedding",
+                queryVector: descEmbedding,
+                limit: limit,
+                distanceMeasure: "COSINE",
+            }).get();
 
-            results.push({
-                id: doc.id,
-                nombre: data.nombre || "Sin nombre",
-                rubro: data.rubro_principal || "Sin rubro",
-                similarity: profileText.length > 0 ? 0.5 : 0.3,
+            logger.info(`Búsqueda vectorial encontró ${vectorSnapshot.size} resultados`);
+
+            vectorSnapshot.forEach((doc: any) => {
+                const data = doc.data();
+                // Calcular similitud para mostrar (opcional, ya vienen ordenados)
+                let similarity = 0;
+                if (data.embedding) {
+                    similarity = cosineSimilarity(descEmbedding, data.embedding);
+                }
+
+                results.push({
+                    id: doc.id,
+                    nombre: data.nombre || "Sin nombre",
+                    rubro: data.rubro_principal || "Sin rubro",
+                    similarity: similarity,
+                });
             });
-        });
 
-        // Usar descEmbedding para evitar warning (aunque no se usa realmente aún)
-        logger.info(`Embedding generado: ${descEmbedding.length} dimensiones`);
+        } catch (error) {
+            logger.warn("Búsqueda vectorial no disponible (posible falta de índice), usando fallback en memoria:", error);
+
+            // FALLBACK: Comportamiento anterior (Scan completo + Filtro en memoria)
+            // Se mantiene por si falla la creación del índice o datos antiguos
+            let profQuery = db.collection("profesionales");
+
+            if (zona) {
+                profQuery = profQuery.where("zona", "==", zona) as any;
+            }
+
+            const snapshot = await profQuery.get();
+
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+
+                // Si tiene embedding, usarlo para similitud real
+                let similarity = 0;
+                if (data.embedding && Array.isArray(data.embedding)) {
+                    similarity = cosineSimilarity(descEmbedding, data.embedding);
+                } else {
+                    // Fallback si no hay embedding: lógica dummy original
+                    const profileText = `${data.rubro_principal || ""} ${data.descripcion || ""}`;
+                    similarity = profileText.length > 0 ? 0.3 : 0.1;
+                }
+
+                results.push({
+                    id: doc.id,
+                    nombre: data.nombre || "Sin nombre",
+                    rubro: data.rubro_principal || "Sin rubro",
+                    similarity: similarity,
+                });
+            });
+
+            // Ordenar por similitud y cortar (solo necesario en fallback)
+            results.sort((a, b) => b.similarity - a.similarity);
+            results = results.slice(0, limit);
+        }
 
         return {
             success: true,
-            results: results.slice(0, limit),
+            results: results,
         };
     } catch (error) {
         logger.error("Error buscando profesionales:", error);
