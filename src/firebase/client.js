@@ -1,6 +1,6 @@
 
 import { getApps, getApp, initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
@@ -23,4 +23,4 @@ export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
 export const messaging = typeof window !== "undefined" ? getMessaging(app) : null;
-export { app };
+export { app, addDoc, collection, serverTimestamp };
