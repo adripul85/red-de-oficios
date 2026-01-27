@@ -1,0 +1,448 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+// Categorías idénticas a tu index.astro
+const CATEGORIES = [
+    { value: "electricidad", label: "⚡ Electricidad e Iluminación" },
+    { value: "plomeria", label: "💧 Plomería y Gas" },
+    { value: "albanileria", label: "🧱 Albañilería y Construcción" },
+    { value: "aire-acondicionado", label: "❄️ Refrigeración" },
+    { value: "herramientas", label: "🛠️ Herramientas" },
+    { value: "negocios", label: "💼 Presupuestos y Negocios" },
+    { value: "ayuda", label: "🆘 Mesa de Ayuda" },
+    { value: "offtopic", label: "☕ El Bar (Off-Topic)" },
+    { value: "compra-venta", label: "💰 Clasificados" },
+    { value: "general", label: "🏠 General / Presentaciones" },
+];
+---
+
+<Layout title="Nuevo Tema - Foro DeOficios">
+    <div class="forum-background">
+        <div class="container main-wrapper">
+            <div class="forum-top-bar">
+                <div class="breadcrumb">
+                    <span>🏠 <a href="/foro">Foro</a></span>
+                    <span class="sep">&gt;</span>
+                    <span>Publicar Nuevo Tema</span>
+                </div>
+            </div>
+
+            <form id="create-topic-form">
+                <div class="forum-table-wrapper">
+                    <div class="table-header">Publicar Nuevo Tema</div>
+
+                    <div class="table-body">
+                        <div class="table-row">
+                            <div class="col-label">
+                                <label for="title">Título:</label>
+                                <small class="help-text">Sé descriptivo.</small>
+                            </div>
+                            <div class="col-input">
+                                <input
+                                    type="text"
+                                    id="title"
+                                    class="retro-input"
+                                    required
+                                    minlength="5"
+                                    maxlength="80"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="table-row">
+                            <div class="col-label">
+                                <label for="category">Foro:</label>
+                            </div>
+                            <div class="col-input">
+                                <select
+                                    id="category"
+                                    class="retro-select"
+                                    required
+                                >
+                                    <option value=""
+                                        >-- Seleccionar Foro --</option
+                                    >
+                                    {
+                                        CATEGORIES.map((c) => (
+                                            <option value={c.value}>
+                                                {c.label}
+                                            </option>
+                                        ))
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="table-row">
+                            <div class="col-label">Icono del mensaje:</div>
+                            <div class="col-input icons-radio">
+                                <label
+                                    ><input type="radio" name="icon" checked /> 📝</label
+                                >
+                                <label
+                                    ><input type="radio" name="icon" /> ❓</label
+                                >
+                                <label
+                                    ><input type="radio" name="icon" /> ⚠️</label
+                                >
+                                <label
+                                    ><input type="radio" name="icon" /> 💡</label
+                                >
+                                <label
+                                    ><input type="radio" name="icon" /> 😠</label
+                                >
+                                <label
+                                    ><input type="radio" name="icon" /> 😄</label
+                                >
+                                <small style="color:#666; margin-left:10px;"
+                                    >(Opcional)</small
+                                >
+                            </div>
+                        </div>
+
+                        <div class="table-row editor-row">
+                            <div class="col-label">
+                                <label for="content">Mensaje:</label>
+                                <div class="smilies-box">
+                                    🙂 😉 😛 😮 <br />
+                                    😠 😕 😐 😆
+                                </div>
+                            </div>
+                            <div class="col-input">
+                                <div class="bbcode-toolbar">
+                                    <button type="button" class="tool-btn"
+                                        ><b>B</b></button
+                                    >
+                                    <button type="button" class="tool-btn"
+                                        ><i>I</i></button
+                                    >
+                                    <button type="button" class="tool-btn"
+                                        ><u>U</u></button
+                                    >
+                                    <span class="sep">|</span>
+                                    <button type="button" class="tool-btn"
+                                        >🌎</button
+                                    >
+                                    <button type="button" class="tool-btn"
+                                        >🖼️</button
+                                    >
+                                    <button type="button" class="tool-btn"
+                                        >#️⃣</button
+                                    >
+                                    <select class="tool-select"
+                                        ><option>Fuente</option></select
+                                    >
+                                    <select class="tool-select"
+                                        ><option>Tamaño</option></select
+                                    >
+                                </div>
+
+                                <textarea
+                                    id="content"
+                                    class="retro-textarea"
+                                    rows="15"
+                                    required
+                                    minlength="10"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="table-row">
+                            <div class="col-label">Opciones:</div>
+                            <div class="col-input options-check">
+                                <label
+                                    ><input type="checkbox" checked /> Analizar automáticamente
+                                    URLs</label
+                                ><br />
+                                <label
+                                    ><input type="checkbox" checked /> Suscribirse
+                                    a la discusión</label
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-footer">
+                        <button type="submit" class="btn-retro submit"
+                            >Enviar Nuevo Tema</button
+                        >
+                        <button type="button" class="btn-retro preview"
+                            >Vista Previa</button
+                        >
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { onAuthStateChanged } from "firebase/auth";
+    import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+
+    // 👇 CAMBIO CLAVE: Importamos 'db' y 'auth' directo, sacamos 'app'
+    import { db, auth } from "../../firebase/client";
+
+    // const auth = getAuth(app);  <-- ESTO SE BORRA
+    // const db = getFirestore(app); <-- ESTO SE BORRA
+
+    const form = document.getElementById("create-topic-form");
+
+    // Verificar Auth
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            alert("Debes iniciar sesión.");
+            window.location.href = "/ingresar";
+        }
+    });
+
+    form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const user = auth.currentUser;
+        if (!user) return;
+
+        // @ts-ignore
+        const title = document.getElementById("title").value.trim();
+        // @ts-ignore
+        const category = document.getElementById("category").value;
+        // @ts-ignore
+        const content = document.getElementById("content").value.trim();
+        const btn = document.querySelector(".btn-retro.submit");
+
+        // @ts-ignore
+        btn.disabled = true;
+        // @ts-ignore
+        btn.innerText = "Publicando...";
+
+        try {
+            const docRef = await addDoc(collection(db, "foro_threads"), {
+                title: title,
+                category: category,
+                content: content,
+                authorId: user.uid,
+                authorName: user.displayName || "Usuario",
+                createdAt: serverTimestamp(),
+                replyCount: 0,
+                views: 0,
+                lastReplyAt: serverTimestamp(),
+            });
+
+            window.location.href = `/foro/${docRef.id}`;
+        } catch (error) {
+            console.error(error);
+            alert("Error al publicar.");
+            // @ts-ignore
+            btn.disabled = false;
+            // @ts-ignore
+            btn.innerText = "Enviar Nuevo Tema";
+        }
+    });
+</script>
+
+<style>
+    /* RESET ESPECÍFICO PARA EL FORO */
+    .forum-background {
+        background-color: #e1e4e8; /* Gris azulado clásico */
+        min-height: 100vh;
+        font-family: "Verdana", "Arial", sans-serif;
+        font-size: 13px;
+        color: #000;
+        padding-bottom: 50px;
+    }
+    .container {
+        max-width: 1000px; /* Ancho más contenido, no full width */
+        margin: 0 auto;
+        padding: 0 10px;
+    }
+
+    /* BREADCRUMB */
+    .forum-top-bar {
+        padding: 10px 5px;
+        font-size: 11px;
+        font-weight: bold;
+    }
+    .breadcrumb a {
+        color: #22229c;
+        text-decoration: none;
+    }
+    .breadcrumb a:hover {
+        text-decoration: underline;
+    }
+    .sep {
+        margin: 0 5px;
+        font-weight: normal;
+    }
+
+    /* ESTRUCTURA DE TABLA PRINCIPAL */
+    .forum-table-wrapper {
+        background: #f5f5ff; /* Fondo claro de la tabla */
+        border: 1px solid #0b198c; /* Borde azul oscuro clásico vBulletin */
+        margin-top: 10px;
+    }
+
+    /* CABECERA AZUL DEGRADADA */
+    .table-header {
+        background: #5c7099 url("/images/gradients/gradient_thead.gif") repeat-x; /* Fallback color */
+        background: linear-gradient(to bottom, #5c7099, #3a4f7a);
+        color: white;
+        font-weight: bold;
+        padding: 6px 10px;
+        font-size: 12px;
+        border-bottom: 1px solid #000;
+    }
+
+    /* FILAS (GRILLA) */
+    .table-row {
+        display: grid;
+        grid-template-columns: 200px 1fr; /* Columna Izq Fija | Columna Der Flexible */
+        border-bottom: 1px solid #d1d1e1;
+    }
+    .table-row:last-child {
+        border-bottom: none;
+    }
+
+    /* COLUMNA IZQUIERDA (LABELS) */
+    .col-label {
+        background: #f5f5ff; /* Gris muy clarito/azulado */
+        padding: 10px;
+        text-align: right;
+        font-weight: bold;
+        color: #333;
+        border-right: 1px solid #d1d1e1;
+        vertical-align: top;
+    }
+    .help-text {
+        display: block;
+        font-weight: normal;
+        font-size: 10px;
+        color: #666;
+        margin-top: 2px;
+    }
+
+    /* COLUMNA DERECHA (INPUTS) */
+    .col-input {
+        background: #fdfdff; /* Casi blanco */
+        padding: 10px;
+    }
+
+    /* INPUTS RETRO */
+    .retro-input,
+    .retro-select {
+        border: 1px solid #999;
+        padding: 3px;
+        font-family: "Verdana", sans-serif;
+        font-size: 13px;
+        width: 100%;
+        max-width: 450px;
+        background: #fff;
+    }
+    .retro-input:focus,
+    .retro-select:focus,
+    .retro-textarea:focus {
+        background-color: #ffffe0; /* Amarillo patito al enfocar (muy 2000s) */
+        outline: 1px solid #000;
+    }
+
+    /* RADIO ICONS */
+    .icons-radio label {
+        margin-right: 15px;
+        cursor: pointer;
+        font-weight: normal;
+    }
+
+    /* EDITOR DE TEXTO */
+    .bbcode-toolbar {
+        background: #e1e4f2;
+        border: 1px solid #999;
+        border-bottom: none;
+        padding: 4px;
+        display: flex;
+        gap: 2px;
+        max-width: 100%; /* Ojo */
+        flex-wrap: wrap;
+    }
+    .tool-btn {
+        border: 1px solid #f5f5ff;
+        border-right: 1px solid #888;
+        border-bottom: 1px solid #888;
+        background: #d1d4e0;
+        cursor: pointer;
+        width: 24px;
+        height: 22px;
+        font-size: 11px;
+        font-family: serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .tool-btn:active {
+        border: 1px solid #888;
+    }
+    .tool-select {
+        font-size: 10px;
+        margin-left: 5px;
+    }
+
+    .retro-textarea {
+        width: 100%;
+        border: 1px solid #999;
+        padding: 5px;
+        font-family: "Courier New", monospace;
+        font-size: 13px;
+    }
+
+    /* SMILIES (Izquierda del editor) */
+    .smilies-box {
+        margin-top: 10px;
+        border: 1px solid #d1d1e1;
+        padding: 5px;
+        text-align: center;
+        background: #fff;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+    /* FOOTER BOTONES */
+    .table-footer {
+        background: #e1e4f2;
+        padding: 10px;
+        text-align: center;
+        border-top: 1px solid #0b198c;
+    }
+    .btn-retro {
+        background: #5c7099;
+        color: white;
+        border: 2px outset #f5f5ff; /* Borde 3D falso */
+        padding: 4px 15px;
+        font-weight: bold;
+        font-size: 12px;
+        cursor: pointer;
+        font-family: "Verdana", sans-serif;
+    }
+    .btn-retro:active {
+        border-style: inset;
+    }
+    .btn-retro.submit {
+        background: #22229c;
+    } /* Botón principal más oscuro */
+
+    /* RESPONSIVE (Adaptamos la tabla a bloques en móvil) */
+    @media (max-width: 700px) {
+        .table-row {
+            grid-template-columns: 1fr; /* Una sola columna */
+        }
+        .col-label {
+            text-align: left;
+            background: #e1e4f2;
+            border-right: none;
+            border-bottom: 1px solid #ccc;
+            padding: 5px 10px;
+        }
+        .retro-input,
+        .retro-select {
+            max-width: 100%;
+        }
+        .smilies-box {
+            display: none;
+        } /* Ocultamos caritas en móvil para espacio */
+    }
+</style>

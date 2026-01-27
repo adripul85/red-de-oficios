@@ -1,0 +1,172 @@
+---
+const { currentPath } = Astro.props;
+
+const menuItems = [
+    { path: "/panel", icon: "📊", label: "Dashboard" },
+    {
+        path: "/panel/oportunidades",
+        icon: "🎯",
+        label: "Oportunidades",
+        badgeId: "badge-oportunidades-mobile",
+    },
+    { path: "/panel/presupuestos", icon: "📝", label: "Presupuestos" },
+    { path: "/panel/finanzas", icon: "💰", label: "Finanzas" },
+    { path: "/panel/mi-equipo", icon: "👷", label: "Mi Equipo" },
+    { path: "/panel/clientes", icon: "👥", label: "Clientes" },
+];
+
+const isActive = (path) => {
+    if (path === "/panel" && currentPath === "/panel") return true;
+    if (path !== "/panel" && currentPath.startsWith(path)) return true;
+    return false;
+};
+---
+
+<aside
+    id="mobile-sidebar"
+    class="md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-700 flex flex-col transform -translate-x-full transition-transform duration-300"
+>
+    <div
+        class="h-16 flex items-center justify-between px-6 border-b border-slate-700"
+    >
+        <a href="/" class="text-xl font-bold text-white">
+            DeOficios<span class="text-orange-500">Pro</span>
+        </a>
+        <button
+            id="close-sidebar"
+            class="text-2xl text-gray-400 hover:text-white"
+        >
+            ✕
+        </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto py-4">
+        <nav class="px-3 space-y-1">
+            {
+                menuItems.map((item) => (
+                    <a
+                        href={item.path}
+                        class:list={[
+                            "flex items-center gap-3 px-3 py-2.5 rounded-lg group transition-colors relative",
+                            isActive(item.path)
+                                ? "bg-orange-900/20 text-orange-500"
+                                : "text-gray-400 hover:bg-slate-800 hover:text-white",
+                        ]}
+                    >
+                        <span class="text-xl">{item.icon}</span>
+                        <span
+                            class={
+                                isActive(item.path)
+                                    ? "font-semibold text-sm"
+                                    : "font-medium text-sm"
+                            }
+                        >
+                            {item.label}
+                        </span>
+                        {item.badgeId && (
+                            <span
+                                id={item.badgeId}
+                                class="ml-auto bg-orange-600 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden"
+                            />
+                        )}
+                    </a>
+                ))
+            }
+        </nav>
+    </div>
+
+    <div class="p-4 border-t border-slate-700">
+        <a
+            href="/mi-perfil"
+            class="flex items-center gap-3 px-3 py-2 w-full text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors mb-1"
+        >
+            <span>👤</span>
+            <span class="font-medium text-sm">Mi Perfil</span>
+        </a>
+        <button
+            id="btn-logout-mobile"
+            class="flex items-center gap-3 px-3 py-2 w-full text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors text-left"
+        >
+            <span>🚪</span>
+            <span class="font-medium text-sm">Cerrar Sesión</span>
+        </button>
+    </div>
+    <button
+        id="btn-install-pwa-mobile"
+        class="hidden flex items-center gap-3 px-3 py-2 w-full text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors mt-2"
+    >
+        <span>📲</span>
+        <span class="font-medium text-sm">Instalar App</span>
+    </button>
+</aside>
+
+<!-- Mobile Sidebar Overlay -->
+<div
+    id="sidebar-overlay"
+    class="sidebar-overlay fixed inset-0 bg-black/50 z-40 hidden opacity-0 transition-opacity duration-300 md:hidden"
+>
+</div>
+
+<script>
+    import { auth } from "../../firebase/client";
+    import { signOut } from "firebase/auth";
+
+    function setupMobileSidebar() {
+        const mobileSidebar = document.getElementById("mobile-sidebar");
+        const sidebarOverlay = document.getElementById("sidebar-overlay");
+        const openSidebarBtns = document.querySelectorAll("#open-sidebar");
+        const closeSidebarBtn = document.getElementById("close-sidebar");
+        const logoutBtnMobile = document.getElementById("btn-logout-mobile");
+
+        if (!mobileSidebar) return;
+
+        function openMobileSidebar(e) {
+            e?.preventDefault();
+            e?.stopPropagation();
+            mobileSidebar.classList.remove("-translate-x-full");
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.remove("hidden");
+                // Allow browser to render hidden removal before changing opacity for transition
+                requestAnimationFrame(() => {
+                    sidebarOverlay.classList.remove("opacity-0");
+                    sidebarOverlay.classList.add("opacity-100");
+                });
+            }
+        }
+
+        function closeMobileSidebar(e) {
+            e?.preventDefault();
+            mobileSidebar.classList.add("-translate-x-full");
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.remove("opacity-100");
+                sidebarOverlay.classList.add("opacity-0");
+                setTimeout(() => {
+                    sidebarOverlay.classList.add("hidden");
+                }, 300);
+            }
+        }
+
+        openSidebarBtns.forEach((btn) => (btn.onclick = openMobileSidebar));
+
+        if (closeSidebarBtn) closeSidebarBtn.onclick = closeMobileSidebar;
+        if (sidebarOverlay) sidebarOverlay.onclick = closeMobileSidebar;
+
+        // Logout logic
+        if (logoutBtnMobile) {
+            logoutBtnMobile.onclick = async (e) => {
+                e.preventDefault();
+                try {
+                    await signOut(auth);
+                    window.location.href = "/ingresar";
+                } catch (error) {
+                    console.error("Error al cerrar sesión:", error);
+                }
+            };
+        }
+    }
+
+    // Initialize on load and after swaps
+    setupMobileSidebar();
+    document.addEventListener("astro:page-load", setupMobileSidebar);
+    document.addEventListener("astro:after-swap", setupMobileSidebar);
+</script>

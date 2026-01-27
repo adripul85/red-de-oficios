@@ -1,0 +1,26 @@
+---
+
+---
+
+<div id="tab-galeria" class="tab-content hidden">
+    <div class="flex justify-between items-center mb-4">
+        <div>
+            <h3 class="font-bold text-gray-700">Portfolio</h3>
+            <p id="gallery-limit-text" class="text-xs text-gray-500 mt-1">
+                Cargando...
+            </p>
+        </div>
+        <label
+            for="input-portfolio"
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold cursor-pointer hover:bg-blue-700 shadow-sm flex items-center gap-2"
+            >➕ Subir Foto</label
+        >
+        <input
+            type="file"
+            id="input-portfolio"
+            class="hidden"
+            accept="image/*"
+        />
+    </div>
+    <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+</div>

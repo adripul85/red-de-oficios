@@ -1,0 +1,143 @@
+---
+import { db } from '../../firebase/client';
+import { collection, getDocs, query, orderBy, limit, where } from 'firebase/firestore';
+
+let topPros = [];
+let error = null;
+
+try {
+  // CONSULTA DE ÉLITE 💎
+  // 1. Que tengan votos (total_votos > 0)
+  // 2. Ordenados por promedio descendente (5.0 primero)
+  // 3. Solo los 4 mejores
+  
+  // NOTA: Para que 'orderBy' funcione con 'where' en campos distintos, 
+  // a veces Firebase pide crear un índice en la consola. 
+  // Si te da error, simplificamos la query solo con orderBy.
+  
+  const q = query(
+    collection(db, "profesionales"),
+    orderBy("promedio", "desc"),
+    limit(4)
+  );
+
+  const querySnapshot = await getDocs(q);
+  
+  // Filtramos manualmente por si acaso trajo gente con promedio 0
+  topPros = querySnapshot.docs
+    .map(doc => ({ id: doc.id, ...doc.data() }))
+    .filter(pro => pro.total_votos > 0); 
+
+} catch (e) {
+  console.error("Error cargando tops:", e);
+}
+---
+
+{topPros.length > 0 && (
+  <section class="top-rated-section">
+    <div class="header-top">
+      <h2>🏆 Los Favoritos del Barrio</h2>
+      <p>Profesionales con 5 estrellas elegidos por los vecinos.</p>
+    </div>
+
+    <div class="grid-top">
+      {topPros.map((pro) => (
+        <a href={`/perfil?id=${pro.id}`} class="card-top">
+          
+          <div class="medal">🥇 Top</div>
+
+          <div class="card-avatar">
+             {pro.foto ? (
+                <img src={pro.foto} alt={pro.nombre} />
+              ) : (
+                <div class="avatar-placeholder">
+                  {pro.nombre ? pro.nombre[0].toUpperCase() : '?'}
+                </div>
+              )}
+          </div>
+          
+          <div class="card-info">
+            <h3>{pro.nombre}</h3>
+            <span class="category">{pro.categoria}</span>
+            
+            <div class="rating-box">
+              <span class="stars">{'⭐'.repeat(Math.round(pro.promedio))}</span>
+              <span class="score">{Number(pro.promedio).toFixed(1)}</span>
+            </div>
+            
+            <p class="opiniones-count">{pro.total_votos} opiniones verificadas</p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+)}
+
+<style>
+  .top-rated-section {
+    padding: 60px 20px;
+    background: linear-gradient(to bottom, #fffbeb, #ffffff); /* Degradado dorado suave */
+    margin-bottom: 40px;
+  }
+
+  .header-top { text-align: center; margin-bottom: 40px; }
+  .header-top h2 { font-size: 2.2rem; color: #92400e; margin-bottom: 10px; } /* Color ámbar oscuro */
+  .header-top p { color: #b45309; font-size: 1.1rem; }
+
+  .grid-top {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 30px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* TARJETA PREMIUM */
+  .card-top {
+    position: relative;
+    background: white;
+    border-radius: 20px;
+    padding: 30px 20px;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid #fcd34d; /* Borde dorado */
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.15); /* Sombra dorada */
+    transition: transform 0.3s ease;
+  }
+
+  .card-top:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 30px rgba(245, 158, 11, 0.25);
+  }
+
+  .medal {
+    position: absolute; top: -12px; right: 20px;
+    background: #f59e0b; color: white; padding: 5px 12px;
+    border-radius: 20px; font-weight: bold; font-size: 0.8rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+
+  .card-avatar {
+    width: 90px; height: 90px; margin: 0 auto 15px;
+    border-radius: 50%; padding: 4px;
+    background: linear-gradient(45deg, #fcd34d, #f59e0b); /* Anillo dorado */
+  }
+  
+  .card-avatar img, .avatar-placeholder {
+    width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
+    background: white; border: 3px solid white;
+  }
+  
+  .avatar-placeholder {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; color: #f59e0b; font-weight: bold;
+  }
+
+  .card-info h3 { margin: 10px 0 5px; color: #1f2937; font-size: 1.3rem; }
+  .category { display: inline-block; background: #fff7ed; color: #ea580c; padding: 4px 12px; border-radius: 15px; font-size: 0.8rem; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; }
+
+  .rating-box { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 5px; }
+  .score { font-weight: 800; color: #1f2937; font-size: 1.2rem; }
+  .opiniones-count { color: #6b7280; font-size: 0.9rem; }
+</style>

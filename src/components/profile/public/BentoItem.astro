@@ -1,0 +1,26 @@
+---
+interface Props {
+    class?: string;
+    span?: string; // e.g., "col-span-2 row-span-2"
+    title?: string;
+}
+
+const { class: className, span = "col-span-1 row-span-1", title } = Astro.props;
+---
+
+<div
+    class:list={[
+        "bg-white rounded-3xl p-6 shadow-sm border border-gray-100 overflow-hidden relative transition hover:shadow-md",
+        span,
+        className,
+    ]}
+>
+    {
+        title && (
+            <h3 class="font-bold text-gray-800 mb-4 text-lg border-l-4 border-orange-500 pl-3">
+                {title}
+            </h3>
+        )
+    }
+    <slot />
+</div>

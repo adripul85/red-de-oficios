@@ -1,0 +1,35 @@
+---
+
+---
+
+<div class="flex border-b border-gray-200 overflow-x-auto no-scrollbar">
+    <button
+        class="tab-btn active px-6 py-4 font-bold text-gray-500 hover:text-orange-600 border-b-2 border-transparent transition"
+        data-tab="datos">📝 Datos</button
+    >
+    <button
+        class="tab-btn px-6 py-4 font-bold text-gray-500 hover:text-orange-600 border-b-2 border-transparent transition"
+        data-tab="seo">🌐 Web & SEO</button
+    >
+    <button
+        class="tab-btn px-6 py-4 font-bold text-gray-500 hover:text-orange-600 border-b-2 border-transparent transition"
+        data-tab="galeria">📸 Galería</button
+    >
+    <button
+        class="tab-btn px-6 py-4 font-bold text-gray-500 hover:text-orange-600 border-b-2 border-transparent transition"
+        data-tab="presupuestos">💰 Presupuestos</button
+    >
+</div>
+
+<style>
+    .tab-btn.active {
+        @apply text-orange-600 border-orange-500 bg-orange-50;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>

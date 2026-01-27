@@ -1,0 +1,228 @@
+---
+import { CATEGORIES } from "../../data/categories";
+
+// 1. Mapa de Iconos Actualizado
+const iconMap: Record<string, string> = {
+  // Urgencias
+  Plomero: "💧",
+  Electricista: "⚡",
+  Gasista: "🔥",
+  Cerrajero: "🔑",
+  Destapaciones: "🚽",
+  "Técnico de Aire Acondicionado": "❄️",
+  "Técnico de Electrodomésticos": "🔌",
+  // Construcción
+  Albañil: "🧱",
+  Pintor: "🎨",
+  Techista: "🏠",
+  "Colocador de Pisos/Ceramista": "🔲",
+  Durlockero: "🏗️",
+  Herrero: "⚒️",
+  Carpintero: "🪚",
+  Vidriero: "🪟",
+  // Mantenimiento
+  Jardinero: "🌿",
+  Piletero: "🏊",
+  Persianista: "🪟",
+  Tapicero: "🛋️",
+  "Sastre / Modista": "🧵",
+  Zapatero: "👞",
+  Relojero: "⌚",
+  Matricero: "🔩",
+  // Eventos
+  "Pastelero/a": "🎂",
+  "DJ / Sonido": "🎧",
+  Fletero: "🚚",
+  Fumigador: "🦟",
+  // Estética
+  "Peinador / Estilista": "💇‍♀️",
+  Barbero: "💈",
+  "Maquillador / Maquilladora": "💄",
+  "Manicura / Pedicura": "💅",
+  // Seguridad
+  "Instalador de Cámaras de Seguridad": "📹",
+  "Técnico de PC / Celulares": "💻",
+  default: "🛠️",
+};
+
+// 2. Aplanar lista completa para el JS
+const allRubros = CATEGORIES.flatMap((grupo) =>
+  grupo.trades.map((trade) => ({
+    name: trade.name,
+    slug: trade.name,
+    icon: iconMap[trade.name] || iconMap["default"],
+  })),
+);
+---
+
+<section class="quick-links-section">
+  <div class="container">
+    <h2 class="section-title">¿Qué estás buscando hoy?</h2>
+
+    <div class="categories-grid" id="random-container">
+      <span style="color:#9ca3af; font-size:0.9rem;"
+        >Cargando sugerencias...</span
+      >
+    </div>
+
+    <div
+      id="rubros-data"
+      data-list={JSON.stringify(allRubros)}
+      style="display: none;"
+    >
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    const container = document.getElementById("random-container");
+    const dataDiv = document.getElementById("rubros-data");
+    if (!container || !dataDiv) return;
+
+    const allRubros = JSON.parse(dataDiv.getAttribute("data-list") || "[]");
+
+    // Función para obtener aleatorios
+    /**
+     * @param {any[]} arr - The array to get a subarray from.
+     * @param {number} size - The desired size of the subarray.
+     * @returns {any[]} A new array containing random elements from the original array.
+     */
+    function getRandomSubarray(arr, size) {
+      const shuffled = [...arr].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, size);
+    }
+
+    const randomCategories = getRandomSubarray(allRubros, 12); // Mostramos 12 aleatorios
+
+    const cardsHTML = randomCategories
+      .map(
+        (cat) => `
+      <a href="/resultados?q=${encodeURIComponent(cat.slug)}" class="category-card fade-in">
+        <span class="icon">${cat.icon}</span>
+        <span class="name">${cat.name || "Rubro"}</span>
+      </a>
+    `,
+      )
+      .join("");
+
+    const viewAllCard = `
+      <a href="/resultados" class="category-card view-all fade-in">
+        <span class="icon">🔍</span>
+        <span class="name">Ver todos<br>los rubros</span>
+      </a>
+    `;
+
+    container.innerHTML = cardsHTML + viewAllCard;
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.dispatchEvent(new Event("astro:page-load"));
+  });
+</script>
+
+<style>
+  .quick-links-section {
+    padding: 30px 0;
+    background: #ffffff;
+  }
+
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 15px;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+    color: #1f2937;
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 12px;
+    min-height: auto;
+  }
+
+  /* ESTILOS GLOBALES PARA ELEMENTOS INYECTADOS */
+  :global(.category-card) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 15px 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    height: 100%;
+    min-height: 95px;
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  :global(.category-card:hover) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.05);
+    border-color: #e67e22;
+    background: white;
+  }
+
+  :global(.category-card .icon) {
+    font-size: 1.6rem;
+    margin-bottom: 8px;
+  }
+
+  :global(.category-card .name) {
+    color: #4b5563;
+    font-weight: 600;
+    font-size: 0.75rem; /* Ajustado para nombres largos */
+    text-align: center;
+    line-height: 1.1;
+  }
+
+  :global(.view-all) {
+    background: #fff7ed !important;
+    border-color: #ffedd5 !important;
+  }
+  :global(.view-all .name) {
+    color: #ea580c !important;
+  }
+  :global(.view-all:hover) {
+    background: #ffedd5 !important;
+    border-color: #ea580c !important;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .categories-grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    :global(.category-card) {
+      padding: 10px 4px;
+      min-height: 80px;
+    }
+    :global(.category-card .icon) {
+      font-size: 1.3rem;
+      margin-bottom: 4px;
+    }
+    :global(.category-card .name) {
+      font-size: 0.6rem;
+    }
+  }
+</style>

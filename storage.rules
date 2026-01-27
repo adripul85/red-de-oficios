@@ -1,0 +1,40 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Reglas para el portafolio de profesionales
+    match /portfolios/{userId}/{categoria}/{filename} {
+      
+      // Lectura: Todos pueden ver las imágenes públicas
+      allow read: if true;
+      
+      // Escritura: Solo el dueño del portfolio puede subir/modificar
+      allow write: if request.auth != null 
+        && request.auth.uid == userId
+        && request.resource.size < 5 * 1024 * 1024 // Máximo 5MB
+        && request.resource.contentType.matches('image/.*'); // Solo imágenes
+      
+      // Eliminación: Solo el dueño puede eliminar
+      allow delete: if request.auth != null 
+        && request.auth.uid == userId;
+    }
+    
+    // Reglas para avatares de usuario (futuro)
+    match /avatars/{userId}/{filename} {
+      allow read: if true;
+      allow write: if request.auth != null 
+        && request.auth.uid == userId
+        && request.resource.size < 2 * 1024 * 1024 // Máximo 2MB
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null 
+        && request.auth.uid == userId;
+    }
+    
+    // Denegar todo lo demás por defecto
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

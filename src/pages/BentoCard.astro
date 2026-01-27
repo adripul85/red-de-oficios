@@ -1,0 +1,213 @@
+---
+interface Props {
+    name?: string; // Hacemos las props opcionales con ?
+    role?: string;
+    description?: string;
+    avatar?: string;
+    email?: string;
+    theme?: "green" | "orange" | "purple" | "brown";
+}
+
+const {
+    // Agregamos valores por defecto aquí vvv
+    name = "NOMBRE DESCONOCIDO",
+    role = "ROL PENDIENTE",
+    description = "Descripción no disponible.",
+    avatar = "https://via.placeholder.com/150",
+    email = "correo@ejemplo.com",
+    theme = "green",
+} = Astro.props;
+
+// Configuración de paletas de colores...
+// (El resto del código sigue igual)
+const themes = {
+    // ...
+};
+const t = themes[theme] || themes.green;
+---
+
+<article
+    class={`w-full max-w-[420px] mx-auto rounded-[3rem] overflow-hidden border-4 ${t.border} relative font-mono shadow-2xl ${t.bg} ${t.textMain}`}
+>
+    <header class="p-8 pb-6 relative">
+        <div
+            class={`absolute top-6 left-6 w-6 h-6 border-t-2 border-l-2 ${t.border}`}
+        >
+        </div>
+        <div
+            class={`absolute top-6 right-6 w-6 h-6 border-t-2 border-r-2 ${t.border}`}
+        >
+        </div>
+        <div
+            class={`absolute bottom-6 left-6 w-6 h-6 border-b-2 border-l-2 ${t.border}`}
+        >
+        </div>
+        <div
+            class={`absolute bottom-6 right-6 w-6 h-6 border-b-2 border-r-2 ${t.border}`}
+        >
+        </div>
+
+        <div class="flex justify-between items-start mb-6 pt-4 px-2">
+            <div class="flex-1 pr-4 z-10">
+                <p
+                    class="text-[10px] uppercase tracking-widest opacity-60 mb-2"
+                >
+                    Human Name:
+                </p>
+                <h1
+                    class="text-6xl font-oswald font-medium leading-[0.9] uppercase break-words mb-6"
+                >
+                    {name.split(" ").map((n) => <span class="block">{n}</span>)}
+                </h1>
+            </div>
+
+            <div
+                class="w-24 h-24 rounded-[2rem] overflow-hidden border-2 border-slate-800 bg-[#E88D67] shrink-0 z-10"
+            >
+                <img
+                    src={avatar}
+                    alt={name}
+                    class="w-full h-full object-cover mix-blend-multiply filter contrast-125"
+                />
+            </div>
+        </div>
+
+        <p
+            class="text-[11px] leading-relaxed opacity-80 text-justify px-2 mb-4"
+        >
+            {description}
+        </p>
+    </header>
+
+    <div
+        class={`grid grid-cols-5 border-y-2 ${t.border} divide-x-2 divide-slate-800 bg-white/50`}
+    >
+        {
+            ["X", "✦", "◎", "in", "⊕"].map((icon) => (
+                <a
+                    href="#"
+                    class="h-12 flex items-center justify-center hover:bg-slate-800 hover:text-white transition-colors text-lg font-bold"
+                >
+                    {icon}
+                </a>
+            ))
+        }
+    </div>
+
+    <div class={`bg-[#F1F1F1] relative border-b-2 ${t.border}`}>
+        <div
+            class={`absolute left-0 top-0 bottom-0 w-12 ${t.accentDark} flex items-center justify-center border-r-2 ${t.border}`}
+        >
+            <span
+                class="text-[10px] font-bold text-white -rotate-90 tracking-widest whitespace-nowrap"
+                >LINKS:</span
+            >
+        </div>
+
+        <div class="pl-12">
+            {
+                ["Sohail.com", "Sohaildraws.com", "Sohail.photography"].map(
+                    (link) => (
+                        <a
+                            href="#"
+                            class={`flex items-center justify-between p-4 border-b-2 ${t.border} last:border-b-0 hover:bg-white transition-colors group`}
+                        >
+                            <span class="text-xs font-bold font-oswald tracking-wide ml-2">
+                                {link}
+                            </span>
+                            <span class="transform group-hover:translate-x-1 transition-transform">
+                                →
+                            </span>
+                        </a>
+                    ),
+                )
+            }
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 h-[340px]">
+        <div class="grid grid-rows-2 h-full border-r-2 border-slate-800">
+            <div
+                class={`${t.accentLight} border-b-2 ${t.border} flex items-center justify-center relative overflow-hidden p-4`}
+            >
+                <img
+                    src="https://images.unsplash.com/photo-1535581652167-3d6b98ec5b6d?q=80&w=400"
+                    class="w-20 opacity-80 mix-blend-multiply grayscale contrast-200"
+                    alt="Skeleton Hand"
+                />
+            </div>
+            <div
+                class={`${t.accentLight} flex items-center justify-center relative overflow-hidden p-6`}
+            >
+                <img
+                    src="https://images.unsplash.com/photo-1585244962297-c88f72534575?q=80&w=400"
+                    class="w-32 drop-shadow-xl rotate-12 filter sepia-[.5]"
+                    alt="Retro Phone"
+                />
+            </div>
+        </div>
+
+        <div class="grid grid-rows-3 h-full">
+            <div
+                class={`row-span-1 ${t.accentDark} p-4 flex flex-col justify-center border-b-2 ${t.border}`}
+            >
+                <div class="flex justify-between items-start">
+                    <span class="text-[8px] uppercase text-white/70"
+                        >Services:</span
+                    >
+                    <ul
+                        class="text-[9px] uppercase font-bold leading-loose text-right text-white"
+                    >
+                        <li>Branding</li>
+                        <li>Graphic Design</li>
+                        <li>Web Design</li>
+                        <li>Illustration</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row-span-2 grid grid-rows-2">
+                <div
+                    class={`${t.accentYellow} border-b-2 ${t.border} flex items-center justify-center overflow-hidden`}
+                >
+                    <img
+                        src="https://images.unsplash.com/photo-1519455953755-af066f52f1a6?q=80&w=300"
+                        class="h-full object-cover grayscale"
+                        alt="Skull Suit"
+                    />
+                </div>
+                <div
+                    class={`${t.accentPink} flex items-center justify-center overflow-hidden`}
+                >
+                    <img
+                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300"
+                        class="h-full object-cover grayscale mix-blend-multiply opacity-80"
+                        alt="Woman"
+                    />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div
+        class={`flex justify-between items-center px-6 py-5 ${t.accentDark} text-white border-t-2 ${t.border} mt-[-2px] relative z-10`}
+    >
+        <div class="flex items-center gap-4">
+            <span class="text-[10px] uppercase opacity-60 font-bold"
+                >EMAIL:</span
+            >
+            <span class="text-sm font-bold tracking-wide">{email}</span>
+        </div>
+        <span>→</span>
+    </div>
+</article>
+
+<style>
+    /* Clases de utilidad para fuentes */
+    .font-oswald {
+        font-family: "Oswald", sans-serif;
+    }
+    .font-mono {
+        font-family: "Space Mono", monospace;
+    }
+</style>

@@ -1,0 +1,410 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Canjear Código - DeOficios">
+    <div class="redeem-wrapper">
+        <div class="redeem-card">
+            <div class="card-header">
+                <div class="icon-box">🎁</div>
+                <h1>Canjear Beneficio</h1>
+                <p>
+                    Activa tu código promocional y desbloquea funciones
+                    exclusivas.
+                </p>
+            </div>
+
+            <div class="card-body">
+                <form id="redeem-form" class="form-content">
+                    <div class="input-group">
+                        <label for="codigo">INGRESA TU CÓDIGO</label>
+                        <input
+                            type="text"
+                            id="codigo"
+                            placeholder="EJ: VERANO2024"
+                            required
+                            autocomplete="off"
+                        />
+                    </div>
+
+                    <button type="submit" id="btn-redeem" class="btn-redeem">
+                        <span class="btn-text">✨ Activar Plan Experto</span>
+                        <span class="loader hidden"></span>
+                    </button>
+                </form>
+
+                <div id="message-box" class="message-container hidden">
+                    <div id="icon-status" class="status-icon"></div>
+                    <p id="text-status" class="status-text"></p>
+                    <a
+                        href="/mi-perfil"
+                        id="btn-success-action"
+                        class="btn-secondary hidden"
+                    >
+                        Ir a mi Perfil ➡
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <small
+                    >¿No tienes un código? <a href="/planes"
+                        >Ver planes disponibles</a
+                    ></small
+                >
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { auth } from "../firebase/client";
+    import { onAuthStateChanged } from "firebase/auth";
+
+    // Usamos 'astro:page-load' para compatibilidad con transiciones
+    document.addEventListener("astro:page-load", () => {
+        const form = document.getElementById("redeem-form");
+        const codigoInput = document.getElementById(
+            "codigo",
+        ) as HTMLInputElement;
+        const btn = document.getElementById("btn-redeem") as HTMLButtonElement;
+        const btnText = btn?.querySelector(".btn-text");
+        const loader = btn?.querySelector(".loader");
+
+        const msgBox = document.getElementById("message-box");
+        const msgIcon = document.getElementById("icon-status");
+        const msgText = document.getElementById("text-status");
+        const btnSuccess = document.getElementById("btn-success-action");
+
+        let userUid = null;
+
+        // Verificar sesión
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                userUid = user.uid;
+            } else {
+                showMessage(
+                    "error",
+                    "Debes iniciar sesión para canjear un código.",
+                );
+                if (btn) btn.disabled = true;
+            }
+        });
+
+        form?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (!userUid) return (window.location.href = "/ingresar");
+
+            const codigo = codigoInput.value.trim().toUpperCase();
+            if (codigo.length < 4) return;
+
+            // Estado de carga
+            setLoading(true);
+            hideMessage();
+
+            try {
+                const res = await fetch("/api/canjear", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        codigoUsuario: codigo,
+                        uid: userUid,
+                    }),
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showMessage("success", data.message);
+                    form.style.display = "none"; // Ocultar form si fue exitoso
+                    launchConfetti(); // Efecto visual (simulado)
+                } else {
+                    showMessage("error", data.error);
+                }
+            } catch (error) {
+                showMessage("error", "Error de conexión. Intenta nuevamente.");
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        // --- FUNCIONES DE UI ---
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                btn.disabled = true;
+                btnText.classList.add("hidden");
+                loader.classList.remove("hidden");
+            } else {
+                btn.disabled = false;
+                btnText.classList.remove("hidden");
+                loader.classList.add("hidden");
+            }
+        }
+
+        function showMessage(type, text) {
+            msgBox.classList.remove("hidden");
+            msgBox.className = `message-container ${type}`;
+            msgText.textContent = text;
+
+            if (type === "success") {
+                msgIcon.textContent = "🎉";
+                btnSuccess.classList.remove("hidden");
+            } else {
+                msgIcon.textContent = "⚠️";
+                btnSuccess.classList.add("hidden");
+                // Animación de temblor en el input
+                codigoInput.classList.add("shake");
+                setTimeout(() => codigoInput.classList.remove("shake"), 500);
+            }
+        }
+
+        function hideMessage() {
+            msgBox.classList.add("hidden");
+        }
+
+        function launchConfetti() {
+            // Si tienes canvas-confetti instalado úsalo, sino es un placeholder visual
+            console.log("¡Felicidades!");
+        }
+    });
+</script>
+
+<style>
+    /* --- WRAPPER & CARD --- */
+    .redeem-wrapper {
+        min-height: 80vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #f3f4f6;
+        background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+        background-size: 20px 20px;
+        padding: 20px;
+    }
+
+    .redeem-card {
+        background: white;
+        width: 100%;
+        max-width: 450px;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        text-align: center;
+        border: 1px solid #ffffff;
+    }
+
+    /* --- HEADER --- */
+    .card-header {
+        background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+        padding: 40px 30px;
+        color: white;
+    }
+    .icon-box {
+        font-size: 3rem;
+        margin-bottom: 10px;
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+        animation: float 3s ease-in-out infinite;
+    }
+    .card-header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+    .card-header p {
+        margin: 5px 0 0;
+        font-size: 0.95rem;
+        opacity: 0.9;
+    }
+
+    /* --- BODY --- */
+    .card-body {
+        padding: 30px;
+    }
+
+    .input-group {
+        text-align: left;
+        margin-bottom: 25px;
+    }
+    .input-group label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #6b7280;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+    }
+    .input-group input {
+        width: 100%;
+        padding: 15px;
+        font-size: 1.5rem;
+        text-align: center;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #1f2937;
+        transition: all 0.3s;
+        background: #f9fafb;
+        box-sizing: border-box;
+    }
+    .input-group input:focus {
+        outline: none;
+        border-color: #ea580c;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.1);
+    }
+    .input-group input::placeholder {
+        color: #d1d5db;
+        font-weight: 400;
+    }
+
+    /* --- BUTTON --- */
+    .btn-redeem {
+        width: 100%;
+        background: #111827;
+        color: white;
+        padding: 16px;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition:
+            transform 0.2s,
+            background 0.2s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .btn-redeem:hover {
+        transform: translateY(-2px);
+        background: #000;
+        box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.2);
+    }
+    .btn-redeem:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* --- MESSAGE BOX --- */
+    .message-container {
+        margin-top: 20px;
+        padding: 20px;
+        border-radius: 12px;
+        animation: slideUp 0.3s ease-out;
+    }
+    .message-container.success {
+        background: #f0fdf4;
+        border: 1px dashed #22c55e;
+        color: #15803d;
+    }
+    .message-container.error {
+        background: #fef2f2;
+        border: 1px dashed #ef4444;
+        color: #991b1b;
+    }
+    .status-icon {
+        font-size: 2rem;
+        margin-bottom: 5px;
+    }
+    .status-text {
+        margin: 0;
+        font-weight: 600;
+    }
+    .btn-secondary {
+        display: inline-block;
+        margin-top: 15px;
+        text-decoration: none;
+        color: #15803d;
+        font-weight: 700;
+        border-bottom: 2px solid #15803d;
+    }
+
+    /* --- FOOTER --- */
+    .card-footer {
+        background: #f9fafb;
+        padding: 15px;
+        border-top: 1px solid #e5e7eb;
+        color: #6b7280;
+    }
+    .card-footer a {
+        color: #ea580c;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    /* --- UTILS & ANIMATIONS --- */
+    .hidden {
+        display: none !important;
+    }
+
+    /* Loader Simple */
+    .loader {
+        width: 20px;
+        height: 20px;
+        border: 3px solid #fff;
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        display: inline-block;
+        box-sizing: border-box;
+        animation: rotation 1s linear infinite;
+    }
+
+    @keyframes rotation {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes float {
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .shake {
+        animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    @keyframes shake {
+        10%,
+        90% {
+            transform: translate3d(-1px, 0, 0);
+        }
+        20%,
+        80% {
+            transform: translate3d(2px, 0, 0);
+        }
+        30%,
+        50%,
+        70% {
+            transform: translate3d(-4px, 0, 0);
+        }
+        40%,
+        60% {
+            transform: translate3d(4px, 0, 0);
+        }
+    }
+</style>

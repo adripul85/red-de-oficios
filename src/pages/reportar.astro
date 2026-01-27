@@ -1,0 +1,51 @@
+---
+import Layout from '../layouts/Layout.astro';
+const { searchParams } = Astro.url;
+const id = searchParams.get('id');
+const nombre = searchParams.get('nombre');
+---
+
+<Layout title="Reportar Usuario">
+    <main style="max-width:500px; margin:50px auto; padding:20px; font-family:sans-serif;">
+        <h1>Reportar a {nombre}</h1>
+        <p>Tu reporte es anónimo para el profesional.</p>
+        
+        <form id="report-form">
+            <label style="display:block; margin-top:10px;">Motivo:</label>
+            <select id="motivo" style="width:100%; padding:8px;">
+                <option>Datos Falsos</option>
+                <option>Estafa / Cobro indebido</option>
+                <option>Mal trato / Acoso</option>
+                <option>Spam</option>
+            </select>
+
+            <label style="display:block; margin-top:10px;">Detalles:</label>
+            <textarea id="desc" rows="4" style="width:100%; padding:8px;" required></textarea>
+
+            <button type="submit" style="margin-top:20px; width:100%; padding:10px; background:#ef4444; color:white; border:none; font-weight:bold;">Enviar Reporte 🚨</button>
+        </form>
+    </main>
+</Layout>
+
+<script>
+    import { db } from '../firebase/client';
+    import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+
+    const id = new URLSearchParams(window.location.search).get('id');
+    const nombre = new URLSearchParams(window.location.search).get('nombre');
+
+    document.getElementById('report-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+            await addDoc(collection(db, "denuncias"), {
+                profesionalId: id,
+                profesionalNombre: nombre,
+                motivo: document.getElementById('motivo').value,
+                descripcion: document.getElementById('desc').value,
+                fecha: serverTimestamp()
+            });
+            alert("Reporte enviado. Revisaremos el caso.");
+            window.location.href = "/";
+        } catch (err) { alert("Error al enviar."); }
+    });
+</script>

@@ -1,0 +1,300 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+
+const { id } = Astro.params;
+
+// Mapeo de categorías display -> Firebase ID (Inverso para pre-llenar)
+const CATEGORY_MAP = {
+    General: "general",
+    Electricidad: "electricidad",
+    Fontanería: "plomeria",
+    Albañilería: "albanileria",
+    Jardinería: "jardineria",
+    Herramientas: "herramientas",
+    Presupuestos: "negocios",
+};
+
+// Inverso para mostrar en el select
+const ID_TO_CATEGORY_NAME = Object.entries(CATEGORY_MAP).reduce(
+    (acc, [name, id]) => {
+        acc[id] = name;
+        return acc;
+    },
+    {},
+);
+
+const groups = Object.keys(CATEGORY_MAP);
+---
+
+<Layout title="Editar debate - Oficios">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    />
+
+    <div class="bg-[#F8FAFC] min-h-screen font-sans py-8">
+        <div
+            class="max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-8"
+        >
+            <main class="lg:col-span-8">
+                <div class="mb-6">
+                    <a
+                        href={`/foro/${id}`}
+                        class="text-sm text-slate-400 hover:text-[#FF5A5F] mb-2 inline-block"
+                        >← Volver al debate</a
+                    >
+                    <h1 class="text-3xl md:text-4xl font-serif text-slate-800">
+                        Editar debate
+                    </h1>
+                </div>
+
+                <div
+                    id="loading-skeleton"
+                    class="animate-pulse bg-white p-8 rounded-xl h-96"
+                >
+                    <div class="h-6 bg-slate-200 rounded w-1/3 mb-4"></div>
+                    <div class="h-10 bg-slate-200 rounded w-full mb-6"></div>
+                    <div class="h-40 bg-slate-200 rounded w-full"></div>
+                </div>
+
+                <form
+                    id="edit-debate-form"
+                    class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8 hidden"
+                    data-id={id}
+                >
+                    <div class="mb-6">
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide"
+                        >
+                            ¿En qué grupo quieres publicar? <span
+                                class="text-[#FF5A5F]">*</span
+                            >
+                        </label>
+                        <div class="relative">
+                            <select
+                                id="category"
+                                required
+                                class="w-full appearance-none bg-slate-50 border border-slate-300 text-slate-700 py-3 px-4 pr-8 rounded-lg focus:outline-none focus:border-[#FF5A5F] focus:ring-1 focus:ring-[#FF5A5F] cursor-pointer font-medium"
+                            >
+                                <option value="" disabled
+                                    >Selecciona un grupo...</option
+                                >
+                                {
+                                    groups.map((group) => (
+                                        <option value={group}>{group}</option>
+                                    ))
+                                }
+                            </select>
+                            <div
+                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500"
+                            >
+                                <svg
+                                    class="w-5 h-5"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide"
+                        >
+                            Título del debate <span class="text-[#FF5A5F]"
+                                >*</span
+                            >
+                        </label>
+                        <input
+                            type="text"
+                            id="title"
+                            required
+                            minlength="10"
+                            maxlength="100"
+                            class="w-full bg-slate-50 border border-slate-300 text-slate-700 py-3 px-4 rounded-lg focus:outline-none focus:border-[#FF5A5F] focus:ring-1 focus:ring-[#FF5A5F] placeholder:text-slate-400"
+                        />
+                    </div>
+
+                    <div class="mb-6">
+                        <label
+                            class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide"
+                        >
+                            Tu mensaje <span class="text-[#FF5A5F]">*</span>
+                        </label>
+
+                        <textarea
+                            id="content"
+                            rows="10"
+                            required
+                            minlength="20"
+                            class="w-full p-4 bg-slate-50 border border-slate-300 text-slate-700 rounded-lg focus:outline-none focus:border-[#FF5A5F] focus:ring-1 focus:ring-[#FF5A5F] resize-y min-h-[200px]"
+                        ></textarea>
+                    </div>
+
+                    <div
+                        class="flex flex-col-reverse sm:flex-row items-center justify-end gap-4"
+                    >
+                        <a
+                            href={`/foro/${id}`}
+                            class="text-slate-500 font-bold hover:text-slate-800 px-4 py-2 transition-colors"
+                            >Cancelar</a
+                        >
+                        <button
+                            type="submit"
+                            id="submit-btn"
+                            class="w-full sm:w-auto bg-[#FF5A5F] hover:bg-[#ff4146] text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-rose-100 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </main>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { auth, db } from "../../../firebase/client";
+    import { onAuthStateChanged } from "firebase/auth";
+    import { doc, getDoc, updateDoc } from "firebase/firestore";
+
+    const CATEGORY_MAP = {
+        General: "general",
+        Electricidad: "electricidad",
+        Fontanería: "plomeria",
+        Albañilería: "albanileria",
+        Jardinería: "jardineria",
+        Herramientas: "herramientas",
+        Presupuestos: "negocios",
+    };
+
+    // Inverso para setear el select
+    const ID_TO_CATEGORY_NAME = Object.entries(CATEGORY_MAP).reduce(
+        (acc, [name, id]) => {
+            // @ts-ignore
+            acc[id] = name;
+            return acc;
+        },
+        {},
+    );
+
+    document.addEventListener("astro:page-load", async () => {
+        console.log("🚀 [FORO-EDITAR] Página cargada");
+
+        const form = document.getElementById(
+            "edit-debate-form",
+        ) as HTMLFormElement;
+        if (!form) return; // No estamos en esta página
+
+        const threadId = form.dataset.id;
+        const skeleton = document.getElementById("loading-skeleton");
+        const titleInput = document.getElementById("title") as HTMLInputElement;
+        const categorySelect = document.getElementById(
+            "category",
+        ) as HTMLSelectElement;
+        const contentTextarea = document.getElementById(
+            "content",
+        ) as HTMLTextAreaElement;
+        const submitBtn = document.getElementById(
+            "submit-btn",
+        ) as HTMLButtonElement;
+
+        let currentUser = null;
+
+        // 1. Auth Check
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = "/ingresar";
+                return;
+            }
+            currentUser = user;
+            await loadThreadData();
+        });
+
+        // 2. Load Data
+        async function loadThreadData() {
+            if (!threadId) return;
+            try {
+                const docRef = doc(db, "foro_threads", threadId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+
+                    // Verificar propiedad
+                    if (data.authorId !== currentUser.uid) {
+                        alert("⛔ No tienes permiso para editar este debate.");
+                        window.location.href = `/foro/${threadId}`;
+                        return;
+                    }
+
+                    // Llenar campos
+                    titleInput.value = data.title;
+                    contentTextarea.value = data.content;
+
+                    // @ts-ignore
+                    const catName =
+                        ID_TO_CATEGORY_NAME[data.category] || "General";
+                    categorySelect.value = catName;
+
+                    // Mostrar form
+                    skeleton?.classList.add("hidden");
+                    form.classList.remove("hidden");
+                } else {
+                    alert("❌ El debate no existe.");
+                    window.location.href = "/foro";
+                }
+            } catch (error) {
+                console.error("Error cargando debate:", error);
+                alert("Error cargando los datos.");
+            }
+        }
+
+        // 3. Handle Update
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (!currentUser || !threadId) return;
+
+            const title = titleInput.value.trim();
+            const categoryDisplay = categorySelect.value;
+            const content = contentTextarea.value.trim();
+
+            if (!title || !categoryDisplay || !content) {
+                alert("Completa todos los campos.");
+                return;
+            }
+
+            // @ts-ignore
+            const category = CATEGORY_MAP[categoryDisplay];
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Guardando...";
+
+            try {
+                const docRef = doc(db, "foro_threads", threadId);
+                await updateDoc(docRef, {
+                    title,
+                    category,
+                    content,
+                    isEdited: true, // Flag opcional
+                    updatedAt: new Date(), // o serverTimestamp() si importas
+                });
+
+                alert("✅ Debate actualizado");
+                window.location.href = `/foro/${threadId}`;
+            } catch (error) {
+                console.error("Error actualizando:", error);
+                alert("Error al guardar cambios.");
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Guardar Cambios";
+            }
+        });
+    });
+</script>

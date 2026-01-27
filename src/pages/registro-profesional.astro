@@ -1,0 +1,12 @@
+---
+import Layout from "../layouts/Layout.astro";
+import RegistrationWizard from "../components/Registration/RegistrationWizard";
+---
+
+<Layout
+    title="Registro Profesional - DeOficios"
+    hideHeader={true}
+    hideFooter={true}
+>
+    <RegistrationWizard client:only="react" />
+</Layout>

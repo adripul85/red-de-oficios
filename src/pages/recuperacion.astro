@@ -1,0 +1,133 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Recuperar Contraseña - DeOficios">
+  <Header />
+
+  <main class="login-container">
+    <div class="login-box">
+      <div class="icon-lock">🔐</div>
+      <h1>Recuperar Acceso</h1>
+      <p>Ingresa tu email y te enviaremos un enlace para crear una nueva contraseña.</p>
+
+      <form id="recover-form">
+        <div class="input-group">
+          <label>Tu Correo Electrónico</label>
+          <input type="email" id="email" placeholder="ejemplo@email.com" required />
+        </div>
+
+        <button type="submit" class="btn-login">Enviar Enlace de Recuperación 📩</button>
+        <p id="feedback" class="feedback-msg"></p>
+      </form>
+
+      <div class="links">
+        <a href="/ingresar">Volver a Iniciar Sesión</a>
+      </div>
+    </div>
+  </main>
+  
+  <Footer />
+</Layout>
+
+<script>
+  import { auth } from '../firebase/client';
+  import { sendPasswordResetEmail } from 'firebase/auth';
+
+  const form = document.getElementById('recover-form');
+  const feedback = document.getElementById('feedback');
+  const btn = form.querySelector('button');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    
+    // Desactivar botón para evitar doble clic
+    btn.disabled = true;
+    btn.textContent = "Enviando...";
+    feedback.textContent = "";
+    feedback.className = "feedback-msg";
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      
+      // ÉXITO
+      feedback.textContent = "¡Listo! ✅ Revisa tu bandeja de entrada (y Spam).";
+      feedback.classList.add('success');
+      form.reset();
+
+    } catch (error) {
+      // ERRORES COMUNES
+      console.error(error);
+      feedback.classList.add('error');
+      
+      if (error.code === 'auth/user-not-found') {
+        feedback.textContent = "❌ Este correo no está registrado.";
+      } else if (error.code === 'auth/invalid-email') {
+        feedback.textContent = "❌ El correo no es válido.";
+      } else {
+        feedback.textContent = "❌ Ocurrió un error. Intenta más tarde.";
+      }
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Enviar Enlace de Recuperación 📩";
+    }
+  });
+</script>
+
+<style>
+  .login-container {
+    background-color: #f3f4f6;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  .login-box {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+
+  .icon-lock { font-size: 3rem; margin-bottom: 10px; }
+
+  h1 { color: #1f2937; margin-bottom: 10px; font-size: 1.8rem; }
+  p { color: #6b7280; margin-bottom: 30px; font-size: 0.95rem; line-height: 1.5; }
+
+  .input-group { text-align: left; margin-bottom: 20px; }
+  .input-group label { display: block; font-weight: 600; margin-bottom: 5px; color: #374151; }
+  .input-group input { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+  .input-group input:focus { border-color: #ea580c; outline: none; ring: 2px solid #ea580c; }
+
+  .btn-login {
+    width: 100%;
+    background: #1f2937;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .btn-login:hover { background: #ea580c; }
+  .btn-login:disabled { background: #9ca3af; cursor: not-allowed; }
+
+  .feedback-msg { margin-top: 15px; font-weight: bold; min-height: 20px; }
+  .success { color: #16a34a; }
+  .error { color: #dc2626; }
+
+  .links { margin-top: 25px; border-top: 1px solid #e5e7eb; padding-top: 20px; }
+  .links a { color: #2563eb; text-decoration: none; font-size: 0.9rem; }
+  .links a:hover { text-decoration: underline; }
+</style>

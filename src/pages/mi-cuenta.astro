@@ -1,0 +1,1268 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Mi Cuenta - Cliente">
+    <div
+        class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 py-8 px-4"
+    >
+        <div class="max-w-5xl mx-auto">
+            <!-- Header con saludo -->
+            <div class="mb-8">
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
+                    Mi Cuenta
+                </h1>
+                <p class="text-slate-500">Gestiona tu perfil y preferencias</p>
+            </div>
+
+            <!-- Dashboard Search Bar -->
+            <div class="mb-10">
+                <div
+                    class="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 max-w-2xl mx-auto"
+                >
+                    <form
+                        id="pro-search-form"
+                        class="flex flex-col md:flex-row gap-3"
+                    >
+                        <div class="flex-1 relative">
+                            <svg
+                                class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                ></path>
+                            </svg>
+                            <input
+                                type="text"
+                                id="pro-search-input"
+                                placeholder="Buscar profesional, rubro o zona..."
+                                class="w-full pl-12 pr-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-2xl transition-all shadow-lg shadow-blue-200"
+                        >
+                            Buscar Profesionales
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading" class="flex justify-center items-center py-20">
+                <div
+                    class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
+                >
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div
+                id="client-info"
+                class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6"
+            >
+                <!-- Sidebar - Perfil -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Card Perfil -->
+                    <div
+                        class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
+                    >
+                        <div class="text-center">
+                            <div class="relative w-28 h-28 mx-auto mb-4 group">
+                                <img
+                                    id="c-foto"
+                                    src=""
+                                    class="w-full h-full rounded-full object-cover border-4 border-blue-100 shadow-lg"
+                                    alt="Foto de perfil"
+                                />
+                                <div
+                                    class="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 border-4 border-white rounded-full"
+                                >
+                                </div>
+
+                                <!-- Botón cambiar foto -->
+                                <label
+                                    for="upload-avatar"
+                                    class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                >
+                                    <svg
+                                        class="w-8 h-8 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                        ></path>
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                                        ></path>
+                                    </svg>
+                                </label>
+                                <input
+                                    type="file"
+                                    id="upload-avatar"
+                                    accept="image/*"
+                                    class="hidden"
+                                />
+                            </div>
+
+                            <h2
+                                id="c-nombre"
+                                class="text-xl font-bold text-slate-900 mb-1"
+                            >
+                                Usuario
+                            </h2>
+                            <p id="c-email" class="text-sm text-slate-500 mb-4">
+                                email@ejemplo.com
+                            </p>
+
+                            <!-- Código de Seguridad para Cliente -->
+                            <div id="security-code-container" class="hidden mb-6">
+                                <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 inline-flex flex-col items-center">
+                                    <span class="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">Tu Código de Seguridad</span>
+                                    <span id="security-code-value" class="text-3xl font-black text-slate-900 tracking-widest">000000</span>
+                                    <p class="text-[9px] text-slate-400 mt-2 max-w-[150px] leading-tight">Mostrale este código al profesional para validar la visita.</p>
+                                </div>
+                            </div>
+
+                            <div id="verification-status" class="mt-4">
+                                <!-- Se llena dinámicamente -->
+                            </div>
+                        </div>
+
+                        <hr class="my-6 border-slate-100" />
+
+                        <!-- Estadísticas rápidas -->
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="text-center p-3 bg-blue-50 rounded-2xl">
+                                <p
+                                    class="text-2xl font-bold text-blue-600"
+                                    id="favorites-count"
+                                >
+                                    0
+                                </p>
+                                <p class="text-xs text-slate-600 font-medium">
+                                    Favoritos
+                                </p>
+                            </div>
+                            <div
+                                class="text-center p-3 bg-purple-50 rounded-2xl"
+                            >
+                                <p
+                                    id="reviews-count"
+                                    class="text-2xl font-bold text-purple-600"
+                                >
+                                    0
+                                </p>
+                                <p class="text-xs text-slate-600 font-medium">
+                                    Reseñas
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Botón Cerrar Sesión -->
+                        <button
+                            id="btn-logout"
+                            class="w-full py-3 px-4 bg-red-50 hover:bg-red-100 text-red-600 font-semibold rounded-2xl transition-all flex items-center justify-center gap-2 group"
+                        >
+                            <svg
+                                class="w-5 h-5 group-hover:rotate-12 transition-transform"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                                ></path>
+                            </svg>
+                            Cerrar Sesión
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Content (Tabs) -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Tab Navigation -->
+                    <div
+                        class="flex flex-wrap gap-2 p-1 bg-slate-100 rounded-2xl"
+                    >
+                        <button
+                            data-tab="solicitudes"
+                            class="tab-btn active flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all"
+                        >
+                            📋 Mis Solicitudes
+                        </button>
+                        <button
+                            data-tab="favoritos"
+                            class="tab-btn flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-white/50"
+                        >
+                            ❤️ Mis Favoritos
+                        </button>
+                        <button
+                            data-tab="comentarios"
+                            class="tab-btn flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-white/50"
+                        >
+                            ⭐ Mis Valoraciones
+                        </button>
+                    </div>
+
+                    <!-- Tab Panels -->
+                    <div id="tab-solicitudes" class="tab-panel space-y-6">
+                        <!-- Card Solicitar Presupuesto (DESTACADA) -->
+                        <div
+                            class="bg-gradient-to-br from-orange-500 to-red-600 rounded-3xl p-8 shadow-xl border-2 border-orange-400 relative overflow-hidden"
+                        >
+                            <!-- Decoración de fondo -->
+                            <div
+                                class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"
+                            >
+                            </div>
+                            <div
+                                class="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full -ml-16 -mb-16 blur-2xl"
+                            >
+                            </div>
+
+                            <div class="relative z-10">
+                                <div
+                                    class="flex items-start justify-between mb-4"
+                                >
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-3xl"
+                                        >
+                                            🚀
+                                        </div>
+                                        <div>
+                                            <h3
+                                                class="text-2xl font-bold text-white mb-1"
+                                            >
+                                                ¿Necesitas un profesional?
+                                            </h3>
+                                            <p class="text-orange-100 text-sm">
+                                                Recibe presupuestos de los
+                                                mejores
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/30"
+                                    >
+                                        GRATIS
+                                    </span>
+                                </div>
+
+                                <p
+                                    class="text-white/90 mb-6 text-sm leading-relaxed"
+                                >
+                                    Contanos qué necesitas y nosotros avisamos a
+                                    los
+                                    <strong
+                                        >profesionales mejor calificados</strong
+                                    > de tu zona. Ellos te contactarán directamente
+                                    con sus presupuestos.
+                                </p>
+
+                                <div
+                                    class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6"
+                                >
+                                    <div
+                                        class="flex items-center gap-2 text-white text-sm"
+                                    >
+                                        <svg
+                                            class="w-5 h-5 text-green-300"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fill-rule="evenodd"
+                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                clip-rule="evenodd"></path>
+                                        </svg>
+                                        <span>Sin compromiso</span>
+                                    </div>
+                                    <div
+                                        class="flex items-center gap-2 text-white text-sm"
+                                    >
+                                        <svg
+                                            class="w-5 h-5 text-green-300"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fill-rule="evenodd"
+                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                clip-rule="evenodd"></path>
+                                        </svg>
+                                        <span>Respuesta rápida</span>
+                                    </div>
+                                    <div
+                                        class="flex items-center gap-2 text-white text-sm"
+                                    >
+                                        <svg
+                                            class="w-5 h-5 text-green-300"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fill-rule="evenodd"
+                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                clip-rule="evenodd"></path>
+                                        </svg>
+                                        <span>Solo expertos</span>
+                                    </div>
+                                </div>
+
+                                <a
+                                    href="/solicitar"
+                                    class="block w-full bg-white hover:bg-orange-50 text-orange-600 font-bold py-4 px-6 rounded-2xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] text-center"
+                                >
+                                    📝 Solicitar Presupuesto Ahora
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Solicitudes (Ya implementada anteriormente) -->
+                        <div
+                            class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
+                        >
+                            <div class="flex items-center gap-3 mb-6">
+                                <div
+                                    class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl"
+                                >
+                                    📋
+                                </div>
+                                <div>
+                                    <h3
+                                        class="text-xl font-bold text-slate-900"
+                                    >
+                                        Historial de Solicitudes
+                                    </h3>
+                                    <p class="text-sm text-slate-500">
+                                        Tus pedidos de presupuesto
+                                    </p>
+                                </div>
+                            </div>
+                            <div
+                                id="solicitudes-loading"
+                                class="flex justify-center py-10"
+                            >
+                                <div
+                                    class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"
+                                >
+                                </div>
+                            </div>
+                            <div id="solicitudes-list" class="grid gap-4"></div>
+                            <div
+                                id="solicitudes-empty"
+                                class="hidden text-center py-10"
+                            >
+                                <p class="text-slate-500">
+                                    Aún no has enviado ninguna solicitud.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-favoritos" class="tab-panel hidden space-y-6">
+                        <!-- Card Favoritos -->
+                        <div
+                            class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
+                        >
+                            <div class="flex items-center justify-between mb-6">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center"
+                                    >
+                                        <svg
+                                            class="w-6 h-6 text-red-600"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fill-rule="evenodd"
+                                                d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                                                clip-rule="evenodd"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3
+                                            class="text-xl font-bold text-slate-900"
+                                        >
+                                            Mis Profesionales
+                                        </h3>
+                                        <p class="text-sm text-slate-500">
+                                            Tus favoritos guardados
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Lista de Favoritos -->
+                            <div id="favorites-list" class="grid gap-4">
+                                <!-- Se llena dinámicamente -->
+                            </div>
+
+                            <!-- Empty State -->
+                            <div
+                                id="empty-favorites"
+                                class="hidden text-center py-12"
+                            >
+                                <div
+                                    class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                                >
+                                    <svg
+                                        class="w-10 h-10 text-slate-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                                        ></path>
+                                    </svg>
+                                </div>
+                                <h4 class="font-bold text-slate-900 mb-2">
+                                    No hay favoritos aún
+                                </h4>
+                                <p class="text-slate-500 text-sm mb-4">
+                                    Explora profesionales y guárdalos como
+                                    favoritos
+                                </p>
+                                <a
+                                    href="/"
+                                    class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-all"
+                                >
+                                    Explorar Profesionales
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        id="tab-comentarios"
+                        class="tab-panel hidden space-y-6"
+                    >
+                        <!-- Card Mis Reseñas -->
+                        <div
+                            class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
+                        >
+                            <div class="flex items-center gap-3 mb-6">
+                                <div
+                                    class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center text-xl"
+                                >
+                                    ⭐
+                                </div>
+                                <div>
+                                    <h3
+                                        class="text-xl font-bold text-slate-900"
+                                    >
+                                        Mis Valoraciones
+                                    </h3>
+                                    <p class="text-sm text-slate-500">
+                                        Reseñas que has dejado
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div id="reviews-list" class="grid gap-6">
+                                <!-- Se llena dinámicamente -->
+                            </div>
+
+                            <div
+                                id="empty-reviews"
+                                class="hidden text-center py-12"
+                            >
+                                <p class="text-slate-500">
+                                    Aún no has valorado a ningún profesional.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Panels -->
+                    <div id="tab-solicitudes" class="tab-panel space-y-6"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        import { auth, db } from "../firebase/client";
+        import {
+            onAuthStateChanged,
+            signOut,
+            sendEmailVerification,
+        } from "firebase/auth";
+        import {
+            doc,
+            getDoc,
+            setDoc,
+            updateDoc,
+            deleteDoc,
+            arrayRemove,
+            deleteField,
+        } from "firebase/firestore";
+        import Swal from "sweetalert2";
+        import "sweetalert2/dist/sweetalert2.min.css";
+
+        let unsubscribe: any = null;
+        let currentUser: any = null;
+
+        // Wrap everything in a setup function handled by astro:page-load
+        document.addEventListener("astro:page-load", () => {
+            console.log("🚀 [MI-CUENTA] Página cargada/navegada");
+
+            // Cleanup previous listener if exists (though astro usually handles scripts well, good practice)
+            if (unsubscribe) unsubscribe();
+
+            unsubscribe = onAuthStateChanged(auth, async (user) => {
+                currentUser = user; // Update global var
+                if (user) {
+                    console.log(
+                        "✅ [MI-CUENTA] Usuario autenticado:",
+                        user.uid,
+                    );
+                    await initClientDashboard(user);
+                } else if (
+                    window.location.pathname === "/mi-cuenta" ||
+                    window.location.pathname.startsWith("/mi-cuenta")
+                ) {
+                    console.log(
+                        "⚠️ [MI-CUENTA] No autenticado, redirigiendo...",
+                    );
+                    window.location.href = "/ingresar-cliente";
+                }
+            });
+
+            // If we already have a user from previous state (fast navigation), trigger init immediately
+            if (auth.currentUser) {
+                console.log("⚡ [MI-CUENTA] Auth pre-existente detecado");
+                initClientDashboard(auth.currentUser);
+            }
+
+            // BTN LOGOUT
+
+            // BTN LOGOUT
+            document
+                .getElementById("btn-logout")
+                ?.addEventListener("click", async () => {
+                    const result = await Swal.fire({
+                        title: "¿Cerrar Sesión?",
+                        text: "¿Estás seguro de que quieres salir?",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#ef4444",
+                        cancelButtonColor: "#64748b",
+                        confirmButtonText: "Sí, cerrar sesión",
+                        cancelButtonText: "Cancelar",
+                        reverseButtons: true,
+                    });
+
+                    if (result.isConfirmed) {
+                        await signOut(auth);
+                        window.location.href = "/";
+                    }
+                });
+
+            // TAB SWITCHING LOGIC
+            const tabBtns = document.querySelectorAll(".tab-btn");
+            const tabPanels = document.querySelectorAll(".tab-panel");
+
+            tabBtns.forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    const targetTab = (btn as HTMLElement).dataset.tab;
+
+                    // Update buttons
+                    tabBtns.forEach((b) => {
+                        b.classList.remove("active", "bg-white", "shadow-sm");
+                        b.classList.add("text-slate-600", "hover:bg-white/50");
+                    });
+                    btn.classList.add("active", "bg-white", "shadow-sm");
+                    btn.classList.remove("text-slate-600", "hover:bg-white/50");
+
+                    // Update panels
+                    tabPanels.forEach((panel) => {
+                        panel.classList.add("hidden");
+                    });
+                    const activePanel = document.getElementById(
+                        `tab-${targetTab}`,
+                    );
+                    if (activePanel) activePanel.classList.remove("hidden");
+                });
+            });
+
+            // SEARCH BAR LOGIC
+            const searchForm = document.getElementById("pro-search-form");
+            searchForm?.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const query = (
+                    document.getElementById(
+                        "pro-search-input",
+                    ) as HTMLInputElement
+                ).value;
+                if (query.trim()) {
+                    window.location.href = `/resultados?q=${encodeURIComponent(query)}`;
+                }
+            });
+
+            // UPLOAD AVATAR
+            document
+                .getElementById("upload-avatar")
+                ?.addEventListener("change", async (e: any) => {
+                    const file = e.target?.files?.[0];
+                    if (!file || !auth.currentUser) return;
+
+                    try {
+                        const { ref, uploadBytes, getDownloadURL } =
+                            await import("firebase/storage");
+                        const { storage } = await import("../firebase/client");
+
+                        const fotoEl = document.getElementById("c-foto");
+                        if (fotoEl)
+                            (fotoEl as HTMLElement).style.opacity = "0.5";
+
+                        const storageRef = ref(
+                            storage,
+                            `clientes/${auth.currentUser.uid}/avatar.jpg`,
+                        );
+                        await uploadBytes(storageRef, file);
+                        const downloadURL = await getDownloadURL(storageRef);
+
+                        const userDocRef = doc(
+                            db,
+                            "clientes",
+                            auth.currentUser.uid,
+                        );
+                        await setDoc(
+                            userDocRef,
+                            { foto: downloadURL },
+                            { merge: true },
+                        );
+
+                        if (fotoEl) {
+                            (fotoEl as HTMLImageElement).src = downloadURL;
+                            (fotoEl as HTMLElement).style.opacity = "1";
+                        }
+
+                        Swal.fire({
+                            title: "¡Foto Actualizada!",
+                            icon: "success",
+                            timer: 2000,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: "top-end",
+                        });
+                    } catch (error) {
+                        console.error("Error subiendo avatar:", error);
+                        Swal.fire({
+                            title: "Error",
+                            text: "No se pudo actualizar la foto. Intenta nuevamente.",
+                            icon: "error",
+                        });
+                    }
+                });
+        });
+
+        async function initClientDashboard(user: any) {
+            // Essential elements check
+            const cNombre = document.getElementById("c-nombre");
+            if (!cNombre) return;
+
+            const loading = document.getElementById("loading");
+            const info = document.getElementById("client-info");
+            const cEmail = document.getElementById("c-email");
+            const cFoto = document.getElementById("c-foto") as HTMLImageElement;
+            const favCount = document.getElementById("favorites-count");
+            const favList = document.getElementById("favorites-list");
+            const emptyState = document.getElementById("empty-favorites");
+
+            try {
+                const docRef = doc(db, "clientes", user.uid);
+                let docSnap = await getDoc(docRef);
+
+                if (!docSnap.exists()) {
+                    await setDoc(docRef, {
+                        nombre: user.displayName || "Usuario",
+                        email: user.email,
+                        foto:
+                            user.photoURL ||
+                            `https://ui-avatars.com/api/?name=${user.displayName || "U"}`,
+                        rol: "cliente",
+                        createdAt: new Date(),
+                    });
+                    docSnap = await getDoc(docRef);
+                }
+
+                if (docSnap.exists() && cNombre) {
+                    const data = docSnap.data();
+
+                    // Update UI with null checks
+                    if (cNombre) cNombre.innerText = data.nombre;
+                    if (cEmail) cEmail.innerText = data.email;
+                    if (cFoto)
+                        cFoto.src =
+                            data.foto ||
+                            `https://ui-avatars.com/api/?name=${data.nombre}`;
+
+                    // SECURITY CODE LOGIC
+                    const secContainer = document.getElementById("security-code-container");
+                    const secValue = document.getElementById("security-code-value");
+                    if (secContainer && secValue) {
+                        const dateStr = new Date().toISOString().split('T')[0];
+                        const seed = user.uid + dateStr;
+                        let hash = 0;
+                        for (let i = 0; i < seed.length; i++) {
+                            hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+                            hash |= 0;
+                        }
+                        const code = Math.abs(hash % 1000000).toString().padStart(6, '0');
+                        secValue.textContent = code;
+                        secContainer.classList.remove("hidden");
+                    }
+
+                    // Favorites logic
+                    const favs = data.favoritos || [];
+                    if (favCount) favCount.innerText = favs.length.toString();
+
+                    if (favList && emptyState) {
+                        if (favs.length === 0) {
+                            emptyState.classList.remove("hidden");
+                            favList.innerHTML = "";
+                        } else {
+                            emptyState.classList.add("hidden");
+                            const favoritosPromises = favs.map(
+                                async (favId: string) => {
+                                    try {
+                                        const proDocRef = doc(
+                                            db,
+                                            "profesionales",
+                                            favId,
+                                        );
+                                        const proSnap = await getDoc(proDocRef);
+                                        return proSnap.exists()
+                                            ? { id: favId, ...proSnap.data() }
+                                            : null;
+                                    } catch (e) {
+                                        console.error(
+                                            "Error cargando profesional:",
+                                            e,
+                                        );
+                                        return null;
+                                    }
+                                },
+                            );
+
+                            const favoritosData =
+                                await Promise.all(favoritosPromises);
+                            const validFavoritos = favoritosData.filter(
+                                (f) => f !== null,
+                            );
+
+                            favList.innerHTML = validFavoritos
+                                .map(
+                                    (fav: any) => `
+                            <div class="flex items-center gap-4 p-4 bg-slate-50 hover:bg-blue-50 rounded-2xl transition-all border border-transparent hover:border-blue-200 group relative">
+                                <a href="/perfil?id=${fav.id}" class="flex-1 flex items-center gap-4">
+                                    <div class="relative">
+                                        <img src="${fav.foto || "https://ui-avatars.com/api/?name=" + fav.nombre}" class="w-14 h-14 rounded-xl object-cover border-2 border-white shadow-sm" alt="${fav.nombre}">
+                                        <div class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 border-2 border-white rounded-full flex items-center justify-center">
+                                            <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">${fav.nombre}</h4>
+                                        <p class="text-sm text-slate-500">${fav.rubro_principal || "Profesional"} • ${fav.zona || "Buenos Aires"}</p>
+                                        <div class="flex items-center gap-1 mt-1">
+                                            ${
+                                                fav.promedio > 0
+                                                    ? `
+                                                <span class="text-yellow-500 text-xs">⭐ ${fav.promedio.toFixed(1)}</span>
+                                                <span class="text-slate-400 text-xs">(${fav.total_votos || 0})</span>
+                                            `
+                                                    : ""
+                                            }
+                                        </div>
+                                    </div>
+                                </a>
+                                <button 
+                                    onclick="quitarFavorito('${fav.id}')"
+                                    class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                    title="Quitar de favoritos"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        `,
+                                )
+                                .join("");
+                        }
+                    }
+
+                    // Load dependent data (Solicitudes and Reviews)
+                    await Promise.all([
+                        loadClientReviews(user.uid),
+                        loadMisSolicitudes(user.uid),
+                    ]);
+
+                    if (loading) loading.classList.add("hidden");
+                    if (info) info.classList.remove("hidden");
+
+                    // Verification Check
+                    const verifStatus = document.getElementById(
+                        "verification-status",
+                    );
+                    if (verifStatus) {
+                        if (user.emailVerified) {
+                            verifStatus.innerHTML = `
+                                <span class="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full text-xs font-bold">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Cliente Verificado
+                                </span>
+                            `;
+                        } else {
+                            verifStatus.innerHTML = `
+                                <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center">
+                                    <p class="text-xs text-amber-800 font-bold mb-2">📩 Tu email no está verificado</p>
+                                    <button 
+                                        onclick="enviarVerificacion()" 
+                                        class="text-[10px] bg-amber-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-amber-700 transition-colors"
+                                    >
+                                        Reenviar Email de Verificación
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Error en initClientDashboard:", error);
+                if (loading)
+                    loading.innerHTML = `<p class="text-red-500">Error al cargar datos.</p>`;
+            }
+        }
+
+        async function loadClientReviews(userId: string) {
+            const list = document.getElementById("reviews-list");
+            const empty = document.getElementById("empty-reviews");
+            if (!list && !empty) return;
+
+            try {
+                const { collectionGroup, query, where, getDocs } =
+                    await import("firebase/firestore");
+                const q = query(
+                    collectionGroup(db, "resenas"),
+                    where("clienteId", "==", userId),
+                );
+                const snap = await getDocs(q);
+
+                const countEl = document.getElementById("reviews-count");
+                if (countEl) countEl.innerText = snap.size.toString();
+
+                if (snap.empty) {
+                    empty?.classList.remove("hidden");
+                    if (list) list.innerHTML = "";
+                } else {
+                    empty?.classList.add("hidden");
+                    if (list) {
+                        const reviewPromises = snap.docs.map(
+                            async (docSnap) => {
+                                const r = docSnap.data();
+                                // El ID del profesional puede venir en un campo o ser el padre del documento
+                                const proId =
+                                    r.profesionalId ||
+                                    docSnap.ref.parent.parent?.id ||
+                                    "";
+
+                                // Fetch professional details
+                                let proData: any = {
+                                    nombre: "Profesional",
+                                    foto: "",
+                                    rubro_principal: "Oficio",
+                                };
+
+                                if (proId) {
+                                    try {
+                                        const proDoc = await getDoc(
+                                            doc(db, "profesionales", proId),
+                                        );
+                                        if (proDoc.exists())
+                                            proData = proDoc.data();
+                                    } catch (e) {
+                                        console.error(
+                                            "Error fetching pro details:",
+                                            e,
+                                        );
+                                    }
+                                }
+
+                                return { id: docSnap.id, proId, ...r, proData };
+                            },
+                        );
+
+                        const reviewsData = await Promise.all(reviewPromises);
+
+                        list.innerHTML = reviewsData
+                            .map((r: any) => {
+                                const stars = "⭐".repeat(
+                                    r.estrellas || r.puntuacion || 0,
+                                );
+                                const fecha = r.fecha?.toDate
+                                    ? r.fecha
+                                          .toDate()
+                                          .toLocaleDateString("es-AR")
+                                    : "Reciente";
+
+                                return `
+                                <div class="review-card-modern p-6 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col md:flex-row gap-4 mb-4">
+                                    <div class="flex-shrink-0">
+                                        <img src="${r.proData.foto || "https://ui-avatars.com/api/?name=" + r.proData.nombre}" class="w-16 h-16 rounded-2xl object-cover border-2 border-white shadow-sm" alt="${r.proData.nombre}">
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex flex-wrap justify-between items-start gap-2 mb-2">
+                                            <div>
+                                                <h4 class="font-bold text-slate-900">${r.proData.nombre}</h4>
+                                                <p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">${r.proData.rubro_principal}</p>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="text-yellow-500 text-sm mb-1">${stars}</div>
+                                                <span class="text-[10px] text-slate-400 font-bold uppercase">${fecha}</span>
+                                            </div>
+                                        </div>
+                                        <div class="relative">
+                                            <svg class="absolute -left-1 -top-2 w-6 h-6 text-slate-200" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C20.1216 16 21.017 16.8954 21.017 18V21C21.017 22.1046 20.1216 23 19.017 23H16.017C14.9124 23 14.017 22.1046 14.017 21ZM14.017 13V10C14.017 8.89543 14.9124 8 16.017 8H19.017C20.1216 8 21.017 8.89543 21.017 10V13C21.017 14.1046 20.1216 15 19.017 15H16.017C14.9124 15 14.017 14.1046 14.017 13ZM3.01697 21L3.01697 18C3.01697 16.8954 3.9124 16 5.01697 16H8.01697C9.12154 16 10.017 16.8954 10.017 18V21C10.017 22.1046 9.12154 23 8.01697 23H5.01697C3.91157 23 3.01697 22.1046 3.01697 21ZM3.01697 13V10C3.01697 8.89543 3.9124 8 5.01697 8H8.01697C9.12154 8 10.017 8.89543 10.017 10V13C10.017 14.1046 9.12154 15 8.01697 15H5.01697C3.91157 15 3.01697 14.1046 3.01697 13Z" /></svg>
+                                            <p class="text-sm text-slate-700 italic bg-white p-4 pt-5 rounded-2xl border border-slate-100 shadow-sm relative z-10">"${r.comentario || r.texto || "Sin comentario"}"</p>
+                                        </div>
+                                        <div class="mt-4 flex justify-end">
+                                            <a href="/perfil?id=${r.proId}" class="inline-flex items-center gap-2 text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors bg-blue-50 px-3 py-2 rounded-xl">
+                                                Ver Profesional 
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7-7 7"/>
+                                                </svg>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            })
+                            .join("");
+                    }
+                }
+            } catch (e: any) {
+                console.error("DEBUG - Error cargando reseñas:", e);
+                if (e.code === "failed-precondition") {
+                    console.warn(
+                        "⚠️ FALTA ÍNDICE COMPUESTO. Haz clic en el enlace de arriba para crearlo.",
+                    );
+                    list.innerHTML = `<div class="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-amber-800 text-sm">
+                        <p class="font-bold mb-1">⚠️ Falta un índice en Firestore</p>
+                        <p>Para ver tus valoraciones, debes crear un índice en la consola de Firebase. Revisa la consola del navegador (F12) para encontrar el enlace de creación automática.</p>
+                    </div>`;
+                } else {
+                    empty?.classList.remove("hidden");
+                }
+            }
+        }
+
+        async function loadMisSolicitudes(userId: string) {
+            const list = document.getElementById("solicitudes-list");
+            const empty = document.getElementById("solicitudes-empty");
+            const loading = document.getElementById("solicitudes-loading");
+            if (!list) return;
+
+            try {
+                const { collection, query, where, getDocs, orderBy, limit } =
+                    await import("firebase/firestore");
+                const q = query(
+                    collection(db, "solicitudes"),
+                    where("clienteId", "==", userId),
+                    orderBy("fecha", "desc"),
+                    limit(10),
+                );
+                const snap = await getDocs(q);
+
+                loading?.classList.add("hidden");
+
+                if (snap.empty) {
+                    empty?.classList.remove("hidden");
+                    list.innerHTML = "";
+                } else {
+                    empty?.classList.add("hidden");
+                    list.innerHTML = snap.docs
+                        .map((doc) => {
+                            const s = doc.data();
+                            const fecha = s.fecha?.toDate
+                                ? s.fecha.toDate().toLocaleDateString("es-AR")
+                                : "Reciente";
+                            const contactados = s.contactados?.length || 0;
+                            const candidatos = s.candidatos?.length || 0;
+
+                            let statusLabel = "Nueva",
+                                statusClass = "bg-slate-100 text-slate-600",
+                                icon = "📝";
+
+                            let actionsHTML = `
+                                <button 
+                                    onclick="borrarSolicitud('${doc.id}')"
+                                    class="text-xs text-red-500 font-bold hover:underline transition-all mt-1"
+                                >
+                                    Eliminar Solicitud
+                                </button>
+                            `;
+
+                            if (s.status === "completada") {
+                                statusLabel = "Finalizada";
+                                statusClass = "bg-gray-100 text-gray-700";
+                                icon = "🏁";
+                            } else if (
+                                s.status === "aceptada" ||
+                                s.status === "en_progreso"
+                            ) {
+                                // Customize message with Professional Name
+                                const proName =
+                                    s.profesionalNombre || "El profesional";
+                                statusLabel = `${proName} se va a contactar con vos`;
+                                statusClass =
+                                    "bg-green-100 text-green-700 font-bold border border-green-200";
+                                icon = "🚀";
+
+                                // Allow cancelling/returning to pool
+                                actionsHTML = `
+                                    <div class="flex gap-2 mt-2">
+                                        <button 
+                                            onclick="cancelarTrabajo('${doc.id}')"
+                                            class="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded font-bold hover:bg-orange-200 transition"
+                                            title="El profesional no respondió o no hubo arreglo"
+                                        >
+                                            🔄 Volver a Publicar
+                                        </button>
+                                        <button 
+                                            onclick="borrarSolicitud('${doc.id}')"
+                                            class="text-xs text-red-400 hover:text-red-600 transition"
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                `;
+                            } else if (contactados > 0) {
+                                statusLabel = `${contactados} presupuestos`;
+                                statusClass = "bg-blue-100 text-blue-700";
+                                icon = "💬";
+                            } else if (candidatos > 0) {
+                                statusLabel = "Buscando expertos...";
+                                statusClass = "bg-yellow-100 text-yellow-700";
+                                icon = "🔍";
+                            }
+
+                            let securityCodeHTML = "";
+                            if (s.trabajoAceptadoPor && s.codigoSeguridad) {
+                                securityCodeHTML = `
+                                    <div class="mt-3 p-3 bg-orange-600 text-white rounded-xl text-center shadow-md animate-pulse">
+                                        <span class="text-[9px] uppercase font-black block opacity-80">Código de Seguridad para Visita</span>
+                                        <span class="text-xl font-black tracking-widest">${s.codigoSeguridad}</span>
+                                        <p class="text-[8px] mt-1 opacity-90 leading-tight">Mostrale este código al profesional al llegar.</p>
+                                    </div>
+                                `;
+                            }
+
+                            return `
+                        <div class="bg-slate-50 hover:bg-slate-100 rounded-2xl p-5 transition-all border border-slate-100 group shadow-sm hover:shadow-md">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="text-xl">${icon}</span>
+                                        <h4 class="font-extrabold text-slate-900">${s.rubro || "Servicio"}</h4>
+                                    </div>
+                                    <p class="text-sm text-slate-500 mb-2">📍 ${s.zona || "Sin zona"}</p>
+                                    ${actionsHTML}
+                                    ${securityCodeHTML}
+                                </div>
+                                <div class="text-right flex flex-col items-end gap-2">
+                                    <span class="inline-block px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-full ${statusClass} text-center leading-tight shadow-sm">
+                                        ${statusLabel}
+                                    </span>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">${fecha}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                        })
+                        .join("");
+                }
+            } catch (e) {
+                console.error("Error cargando solicitudes:", e);
+            }
+        }
+
+        // --- FUNCIONES GLOBALES DE GESTIÓN ---
+        (window as any).cancelarTrabajo = async (id: string) => {
+            if (!currentUser) return;
+
+            const result = await Swal.fire({
+                title: "¿Volver a Publicar?",
+                text: "El trabajo volverá a estar disponible para otros profesionales. Úsalo si el profesional actual no respondió.",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#f97316",
+                cancelButtonColor: "#64748b",
+                confirmButtonText: "Sí, republicar",
+                cancelButtonText: "Cancelar",
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                // @ts-ignore
+                const docRef = doc(db, "solicitudes", id);
+                await updateDoc(docRef, {
+                    status: "pendiente",
+                    profesionalId: deleteField(),
+                    profesionalNombre: deleteField(),
+                    profesionalFoto: deleteField(),
+                });
+
+                await loadMisSolicitudes(currentUser.uid);
+
+                Swal.fire({
+                    title: "¡Republicada!",
+                    text: "Tu solicitud está visible nuevamente en la bolsa de trabajo.",
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
+            } catch (e) {
+                console.error(e);
+                Swal.fire(
+                    "Error",
+                    "No se pudo actualizar la solicitud.",
+                    "error",
+                );
+            }
+        };
+
+        (window as any).borrarSolicitud = async (id: string) => {
+            const result = await Swal.fire({
+                title: "¿Eliminar Solicitud?",
+                text: "Se perderá el historial y los profesionales no podrán contactarte.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#ef4444",
+                cancelButtonColor: "#64748b",
+                confirmButtonText: "Sí, eliminar",
+                cancelButtonText: "Cancelar",
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                await deleteDoc(doc(db, "solicitudes", id));
+                if (currentUser) await loadMisSolicitudes(currentUser.uid);
+
+                Swal.fire({
+                    title: "Eliminada",
+                    text: "La solicitud ha sido eliminada.",
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
+            } catch (e) {
+                console.error(e);
+                Swal.fire(
+                    "Error",
+                    "No se pudo eliminar la solicitud.",
+                    "error",
+                );
+            }
+        };
+
+        (window as any).quitarFavorito = async (proId: string) => {
+            if (!currentUser) return;
+
+            const result = await Swal.fire({
+                title: "¿Quitar de favoritos?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Sí, quitar",
+                cancelButtonText: "Cancelar",
+                confirmButtonColor: "#ef4444",
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const userRef = doc(db, "clientes", currentUser.uid);
+                await updateDoc(userRef, {
+                    favoritos: arrayRemove(proId),
+                });
+                await initClientDashboard(currentUser);
+
+                Swal.fire({
+                    title: "Hecho",
+                    text: "Profesional eliminado de tus favoritos",
+                    icon: "success",
+                    timer: 1500,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: "top-end",
+                });
+            } catch (e) {
+                console.error(e);
+                Swal.fire("Error", "No se pudo quitar de favoritos.", "error");
+            }
+        };
+
+        (window as any).enviarVerificacion = async () => {
+            if (!auth.currentUser) return;
+            try {
+                await sendEmailVerification(auth.currentUser);
+                Swal.fire({
+                    title: "Email Enviado",
+                    text: "Revisa tu bandeja de entrada para verificar tu cuenta.",
+                    icon: "success",
+                    confirmButtonColor: "#2563eb",
+                });
+            } catch (e: any) {
+                console.error(e);
+                if (e.code === "auth/too-many-requests") {
+                    Swal.fire(
+                        "Espera",
+                        "Por favor espera un momento antes de solicitar otro email.",
+                        "warning",
+                    );
+                } else {
+                    Swal.fire(
+                        "Error",
+                        "No se pudo enviar el correo de verificación.",
+                        "error",
+                    );
+                }
+            }
+        };
+    </script>
+</Layout>

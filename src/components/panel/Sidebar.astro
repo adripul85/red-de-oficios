@@ -1,0 +1,177 @@
+---
+const { currentPath } = Astro.props;
+
+const menuItems = [
+    { path: "/panel", icon: "📊", label: "Dashboard" },
+    {
+        path: "/panel/oportunidades",
+        icon: "🎯",
+        label: "Oportunidades",
+        badgeId: "badge-oportunidades",
+    },
+    { path: "/panel/presupuestos", icon: "📝", label: "Presupuestos" },
+    { path: "/panel/finanzas", icon: "💰", label: "Finanzas" },
+    { path: "/panel/mi-equipo", icon: "👷", label: "Mi Equipo" },
+    { path: "/panel/clientes", icon: "👥", label: "Clientes" },
+];
+
+const isActive = (path) => {
+    if (path === "/panel" && currentPath === "/panel") return true;
+    if (path !== "/panel" && currentPath.startsWith(path)) return true;
+    return false;
+};
+---
+
+<aside
+    class="hidden md:flex flex-col w-64 bg-black border-r border-slate-700 h-full"
+>
+    <div class="h-16 flex items-center px-6 border-b border-slate-700">
+        <a href="/" class="text-xl font-bold text-white">
+            DeOficios<span class="text-orange-500">Pro</span>
+        </a>
+    </div>
+
+    <div class="flex-1 overflow-y-auto py-4">
+        <nav class="px-3 space-y-1">
+            {
+                menuItems.map((item) => (
+                    <a
+                        href={item.path}
+                        class:list={[
+                            "flex items-center gap-3 px-3 py-2.5 rounded-lg group transition-colors relative",
+                            isActive(item.path)
+                                ? "bg-orange-900/20 text-orange-500"
+                                : "text-gray-400 hover:bg-slate-800 hover:text-white",
+                        ]}
+                    >
+                        <span class="text-xl">{item.icon}</span>
+                        <span
+                            class={
+                                isActive(item.path)
+                                    ? "font-semibold text-sm"
+                                    : "font-medium text-sm"
+                            }
+                        >
+                            {item.label}
+                        </span>
+                        {item.badgeId && (
+                            <span
+                                id={item.badgeId}
+                                class="ml-auto bg-orange-600 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden"
+                            />
+                        )}
+                    </a>
+                ))
+            }
+        </nav>
+
+        <div class="px-6 mt-8 mb-2">
+            <h4
+                class="text-xs font-bold text-gray-500 uppercase tracking-wider"
+            >
+                Tu Nivel
+            </h4>
+        </div>
+        <div class="px-6">
+            <div class="bg-slate-800 rounded-xl p-4 border border-slate-700">
+                <div class="flex justify-between items-center mb-2">
+                    <span
+                        id="level-name"
+                        class="font-bold text-sm text-indigo-400"
+                        >Cargando...</span
+                    >
+                    <span id="level-number" class="text-xs text-gray-500"
+                        >Lvl ?</span
+                    >
+                </div>
+                <div class="w-full bg-slate-700 rounded-full h-2 mb-2">
+                    <div
+                        id="level-progress"
+                        class="bg-indigo-500 h-2 rounded-full transition-all duration-1000"
+                        style="width: 0%"
+                    >
+                    </div>
+                </div>
+                <p id="level-next" class="text-xs text-gray-500">
+                    Calculando puntos...
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-auto pt-4 border-t border-slate-700 space-y-2">
+        <a
+            href="/mi-perfil"
+            class="flex items-center gap-3 px-3 py-2 w-full text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+        >
+            <span>👤</span>
+            <span class="font-medium text-sm">Mi Perfil</span>
+        </a>
+
+        <button
+            id="btn-logout"
+            class="flex items-center gap-3 px-3 py-2 w-full text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors text-left"
+        >
+            <span>🚪</span>
+            <span class="font-medium text-sm">Cerrar Sesión</span>
+        </button>
+    </div>
+
+    <button
+        id="btn-install-pwa"
+        class="hidden flex items-center gap-3 px-3 py-2 w-full text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:text-white dark:bg-indigo-600 dark:hover:bg-indigo-700 rounded-lg transition-colors mt-2"
+    >
+        <span>📲</span>
+        <span class="font-medium text-sm">Instalar App</span>
+    </button>
+</aside>
+
+<script>
+    import { auth } from "../../firebase/client";
+    import { signOut } from "firebase/auth";
+
+    function setupSidebar() {
+        const logoutBtn = document.getElementById("btn-logout");
+        const installBtn = document.getElementById("btn-install-pwa");
+        let deferredPrompt;
+
+        // Logout
+        if (logoutBtn) {
+            logoutBtn.onclick = async (e) => {
+                e.preventDefault();
+                try {
+                    await signOut(auth);
+                    window.location.href = "/ingresar";
+                } catch (error) {
+                    console.error("Error al cerrar sesión:", error);
+                }
+            };
+        }
+
+        // PWA Install
+        window.addEventListener("beforeinstallprompt", (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (installBtn) installBtn.classList.remove("hidden");
+        });
+
+        if (installBtn) {
+            installBtn.onclick = async () => {
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                installBtn.classList.add("hidden");
+            };
+        }
+
+        window.addEventListener("appinstalled", () => {
+            if (installBtn) installBtn.classList.add("hidden");
+        });
+    }
+
+    // Initialize
+    setupSidebar();
+    document.addEventListener("astro:page-load", setupSidebar);
+    document.addEventListener("astro:after-swap", setupSidebar);
+</script>

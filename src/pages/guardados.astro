@@ -1,0 +1,118 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Mi Agenda - DeOficios">
+  <Header />
+
+  <main class="min-h-screen bg-gray-50 py-10 px-4">
+    <div class="max-w-4xl mx-auto">
+      
+      <h1 class="text-3xl font-bold text-secondary mb-2">Mi Agenda Personal ❤️</h1>
+      <p class="text-gray-500 mb-8">Tus profesionales de confianza guardados en este dispositivo.</p>
+
+      <div id="lista-guardados" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <p class="text-gray-400 col-span-2 text-center py-10">Cargando tu agenda...</p>
+      </div>
+
+      <div class="mt-10 text-center">
+        <button id="btn-borrar-todo" class="text-sm text-red-500 hover:text-red-700 underline hidden">
+          Borrar toda mi agenda
+        </button>
+      </div>
+      
+      <div class="text-center mt-6">
+        <a href="/" class="text-primary font-bold hover:underline">← Volver a buscar</a>
+      </div>
+
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<script>
+  const FAV_KEY = 'deoficios_guardados';
+  const contenedor = document.getElementById('lista-guardados');
+  const btnBorrar = document.getElementById('btn-borrar-todo');
+
+  function cargarFavoritos() {
+    const guardados = JSON.parse(localStorage.getItem(FAV_KEY)) || [];
+
+    if (guardados.length === 0) {
+      contenedor.innerHTML = `
+        <div class="col-span-2 text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100">
+          <div class="text-4xl mb-2">📭</div>
+          <p class="text-gray-500 font-medium">No tenés profesionales guardados aún.</p>
+          <a href="/" class="inline-block mt-4 bg-primary text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-orange-600 transition-colors">
+            Buscar Profesionales
+          </a>
+        </div>
+      `;
+      btnBorrar.classList.add('hidden');
+      return;
+    }
+
+    btnBorrar.classList.remove('hidden');
+    contenedor.innerHTML = ''; // Limpiar
+
+    guardados.forEach(pro => {
+      // Creamos la tarjetita mini
+      const card = document.createElement('div');
+      card.className = "bg-white p-6 rounded-xl shadow-md border-l-4 border-primary flex flex-col justify-between transition-transform hover:-translate-y-1";
+      
+      card.innerHTML = `
+        <div>
+          <div class="flex justify-between items-start mb-2">
+            <span class="bg-orange-50 text-orange-600 px-2 py-1 rounded text-xs font-bold uppercase tracking-wide">
+              ${pro.categoria}
+            </span>
+            <button class="btn-remove text-gray-300 hover:text-red-500 text-xl" data-id="${pro.id}" title="Quitar">
+              ✕
+            </button>
+          </div>
+          <h3 class="text-xl font-bold text-secondary mb-1">${pro.nombre}</h3>
+          <p class="text-gray-500 text-sm mb-4">📍 ${pro.zona}</p>
+        </div>
+
+        <div class="flex gap-2 mt-2">
+           <a href="https://wa.me/549${pro.telefono}" target="_blank" class="flex-1 bg-green-500 hover:bg-green-600 text-white text-center py-2 rounded-lg font-bold text-sm shadow-sm transition-colors">
+             WhatsApp 💬
+           </a>
+           <a href="/perfil?id=${pro.id}" class="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg font-bold text-sm hover:bg-gray-50 transition-colors">
+             Ver
+           </a>
+        </div>
+      `;
+      
+      contenedor.appendChild(card);
+    });
+
+    // Agregar lógica a los botones de "X" (Quitar uno)
+    document.querySelectorAll('.btn-remove').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idEliminar = (e.target as HTMLElement).getAttribute('data-id');
+        eliminarUno(idEliminar);
+      });
+    });
+  }
+
+  function eliminarUno(id) {
+    let guardados = JSON.parse(localStorage.getItem(FAV_KEY)) || [];
+    guardados = guardados.filter(p => p.id !== id);
+    localStorage.setItem(FAV_KEY, JSON.stringify(guardados));
+    cargarFavoritos(); // Recargar la vista
+  }
+
+  btnBorrar?.addEventListener('click', () => {
+    if(confirm("¿Estás seguro de vaciar tu agenda?")) {
+      localStorage.removeItem(FAV_KEY);
+      cargarFavoritos();
+    }
+  });
+
+  // Iniciar
+  cargarFavoritos();
+</script>

@@ -1,0 +1,31 @@
+# Vercel
+.vercel
+
+# Environment variables
+.env
+.env*.local
+serviceAccountKey.json
+
+# Dependencies
+node_modules
+
+# Build outputs
+dist/
+.astro/
+
+# Logs
+*.log
+build*.txt
+error.log
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary files
+test-astro-files.mjs
+reddeoficio/
+
+# OS
+.DS_Store
+Thumbs.db

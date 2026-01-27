@@ -1,0 +1,346 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { db } from "../../firebase/client";
+import { doc, getDoc } from "firebase/firestore";
+
+const { uid } = Astro.params;
+
+// 1. Fetch Professional Data
+let professional = null;
+try {
+    const docRef = doc(db, "profesionales", uid);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        professional = docSnap.data();
+    }
+} catch (e) {
+    console.error("Error fetching professional:", e);
+}
+
+if (!professional) {
+    return Astro.redirect("/404");
+}
+---
+
+<Layout title={`Calificar a ${professional.nombre} - DeOficios`}>
+    <main class="min-h-screen bg-slate-50 py-12 px-4">
+        <div
+            class="max-w-xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100"
+        >
+            <!-- Header -->
+            <div class="bg-orange-600 p-8 text-center text-white">
+                <div class="inline-block p-1 bg-white/20 rounded-full mb-4">
+                    <img
+                        src={professional.foto ||
+                            `https://ui-avatars.com/api/?name=${professional.nombre}&background=ea580c&color=fff`}
+                        alt={professional.nombre}
+                        class="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover"
+                    />
+                </div>
+                <h1 class="text-2xl font-bold">¿Cómo estuvo mi trabajo?</h1>
+                <p class="text-orange-100 mt-1">
+                    Tu opinión ayuda a {professional.nombre} a crecer
+                </p>
+            </div>
+
+            <!-- Form -->
+            <div class="p-8">
+                <form id="magic-review-form" class="space-y-8">
+                    <input type="hidden" id="pro-id" value={uid} />
+
+                    <!-- Stars -->
+                    <div class="text-center">
+                        <label
+                            class="block text-sm font-bold text-slate-500 uppercase tracking-wider mb-4"
+                            >Puntuación</label
+                        >
+                        <div
+                            class="star-rating flex flex-row-reverse justify-center gap-2"
+                        >
+                            <input
+                                type="radio"
+                                name="rating"
+                                id="s5"
+                                value="5"
+                                class="hidden peer/5"
+                            /><label
+                                for="s5"
+                                class="text-4xl cursor-pointer text-slate-200 hover:text-orange-400 peer-checked/5:text-orange-500 transition-colors"
+                                >★</label
+                            >
+                            <input
+                                type="radio"
+                                name="rating"
+                                id="s4"
+                                value="4"
+                                class="hidden peer/4"
+                            /><label
+                                for="s4"
+                                class="text-4xl cursor-pointer text-slate-200 hover:text-orange-400 peer-checked/4:text-orange-500 transition-colors"
+                                >★</label
+                            >
+                            <input
+                                type="radio"
+                                name="rating"
+                                id="s3"
+                                value="3"
+                                class="hidden peer/3"
+                            /><label
+                                for="s3"
+                                class="text-4xl cursor-pointer text-slate-200 hover:text-orange-400 peer-checked/3:text-orange-500 transition-colors"
+                                >★</label
+                            >
+                            <input
+                                type="radio"
+                                name="rating"
+                                id="s2"
+                                value="2"
+                                class="hidden peer/2"
+                            /><label
+                                for="s2"
+                                class="text-4xl cursor-pointer text-slate-200 hover:text-orange-400 peer-checked/2:text-orange-500 transition-colors"
+                                >★</label
+                            >
+                            <input
+                                type="radio"
+                                name="rating"
+                                id="s1"
+                                value="1"
+                                class="hidden peer/1"
+                            /><label
+                                for="s1"
+                                class="text-4xl cursor-pointer text-slate-200 hover:text-orange-400 peer-checked/1:text-orange-500 transition-colors"
+                                >★</label
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Comment -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-slate-700"
+                            >Tu Comentario</label
+                        >
+                        <textarea
+                            id="review-comment"
+                            placeholder="Contanos qué tal fue el servicio... (Puntualidad, calidad, precio, etc)"
+                            required
+                            rows="4"
+                            class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all resize-none"
+                        ></textarea>
+                    </div>
+
+                    <!-- Photo Evidence -->
+                    <div class="space-y-3">
+                        <label class="block text-sm font-bold text-slate-700"
+                            >Evidencia (Opcional) 📸</label
+                        >
+                        <div class="flex items-center justify-center w-full">
+                            <label
+                                for="review-photo"
+                                class="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-300 border-dashed rounded-xl cursor-copy bg-slate-50 hover:bg-slate-100 transition-colors overflow-hidden relative"
+                            >
+                                <div
+                                    class="flex flex-col items-center justify-center pt-5 pb-6"
+                                    id="upload-placeholder"
+                                >
+                                    <svg
+                                        class="w-8 h-8 mb-3 text-slate-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        ><path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                        ></path></svg
+                                    >
+                                    <p class="text-xs text-slate-500">
+                                        Sube una foto del trabajo terminado
+                                    </p>
+                                </div>
+                                <img
+                                    id="photo-preview"
+                                    class="hidden absolute inset-0 w-full h-full object-cover"
+                                />
+                                <input
+                                    id="review-photo"
+                                    type="file"
+                                    accept="image/*"
+                                    class="hidden"
+                                />
+                            </label>
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        id="btn-submit-review"
+                        class="w-full py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 transition-all transform active:scale-95 flex items-center justify-center gap-2"
+                    >
+                        Publicar Opinión 🚀
+                    </button>
+                </form>
+
+                <!-- Success State -->
+                <div id="success-state" class="hidden text-center py-8">
+                    <div
+                        class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl"
+                    >
+                        ✓
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">
+                        ¡Muchas gracias!
+                    </h2>
+                    <p class="text-slate-600 mb-8">
+                        Tu reseña fue publicada con éxito.
+                    </p>
+                    <a
+                        href="/"
+                        class="inline-block px-8 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-900 transition-colors"
+                    >
+                        Volver al inicio
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+</Layout>
+
+<script>
+    import { auth, db, storage } from "../../firebase/client";
+    import { onAuthStateChanged } from "firebase/auth";
+    import {
+        collection,
+        addDoc,
+        serverTimestamp,
+        doc,
+        getDoc,
+        updateDoc,
+    } from "firebase/firestore";
+    import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+    const form = document.getElementById("magic-review-form");
+    const successState = document.getElementById("success-state");
+    const photoInput = document.getElementById(
+        "review-photo",
+    ) as HTMLInputElement;
+    const photoPreview = document.getElementById(
+        "photo-preview",
+    ) as HTMLImageElement;
+    const uploadPlaceholder = document.getElementById("upload-placeholder");
+    const btnSubmit = document.getElementById(
+        "btn-submit-review",
+    ) as HTMLButtonElement;
+    const proId = (document.getElementById("pro-id") as HTMLInputElement).value;
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+    });
+
+    // Preview Photo
+    photoInput?.addEventListener("change", (e) => {
+        const file = photoInput.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (photoPreview) {
+                    photoPreview.src = e.target?.result as string;
+                    photoPreview.classList.remove("hidden");
+                }
+                uploadPlaceholder?.classList.add("hidden");
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const ratingEl = document.querySelector(
+            'input[name="rating"]:checked',
+        ) as HTMLInputElement;
+        const rating = ratingEl ? parseInt(ratingEl.value) : 0;
+        const comment = (
+            document.getElementById("review-comment") as HTMLTextAreaElement
+        ).value;
+
+        if (rating === 0) return alert("Por favor eleccioná una puntuación ⭐");
+
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = `<span class="animate-spin">🔄</span> Publicando...`;
+
+        try {
+            let photoUrl = null;
+
+            // 1. Upload Photo if exists
+            if (photoInput.files?.[0]) {
+                const file = photoInput.files[0];
+                const storageRef = ref(
+                    storage,
+                    `reviews/${proId}/${Date.now()}_${file.name}`,
+                );
+                const snapshot = await uploadBytes(storageRef, file);
+                photoUrl = await getDownloadURL(snapshot.ref);
+            }
+
+            // 2. Save Review
+            await addDoc(collection(db, "profesionales", proId, "resenas"), {
+                clienteId: currentUser?.uid || "anonimo",
+                clienteNombre: currentUser?.displayName || "Cliente Invitado",
+                puntuacion: rating,
+                comentario: comment,
+                fotoTrabajo: photoUrl,
+                fecha: serverTimestamp(),
+            });
+
+            // 3. Update Professional Stats
+            const profRef = doc(db, "profesionales", proId);
+            const profSnap = await getDoc(profRef);
+
+            if (profSnap.exists()) {
+                const d = profSnap.data();
+                const vPrevios = d.total_votos || 0;
+                const promPrevio = d.promedio || 0;
+                const vNuevo = vPrevios + 1;
+                const promNuevo = (promPrevio * vPrevios + rating) / vNuevo;
+
+                await updateDoc(profRef, {
+                    total_votos: vNuevo,
+                    promedio: promNuevo,
+                });
+            }
+
+            // 4. Show Success
+            form.classList.add("hidden");
+            successState?.classList.remove("hidden");
+        } catch (error) {
+            console.error(error);
+            alert("Error al publicar la reseña. Por favor reintentá.");
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = "Publicar Opinión 🚀";
+        }
+    });
+</script>
+
+<style>
+    .star-rating label:hover,
+    .star-rating label:hover ~ label {
+        color: #fbbf24 !important;
+    }
+
+    .peer-checked\/1:text-orange-500 ~ label,
+    .peer-checked\/2:text-orange-500 ~ label,
+    .peer-checked\/3:text-orange-500 ~ label,
+    .peer-checked\/4:text-orange-500 ~ label,
+    .peer-checked\/5:text-orange-500 ~ label {
+        color: #f97316 !important;
+    }
+
+    /* Simple trick for star selection to highlight previous stars */
+    .star-rating input:checked ~ label {
+        color: #f97316 !important;
+    }
+</style>

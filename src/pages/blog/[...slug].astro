@@ -1,0 +1,250 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import { db } from "../../firebase/client";
+import { collection, getDocs, query, where } from "firebase/firestore";
+// IMPORTAMOS MARKED
+import { marked } from "marked";
+
+const { slug } = Astro.params;
+let post = null;
+let contenidoHtml = "";
+
+if (slug) {
+  const q = query(collection(db, "blog"), where("slug", "==", slug));
+  const snapshot = await getDocs(q);
+
+  if (!snapshot.empty) {
+    post = snapshot.docs[0].data();
+    // CONVERTIR MARKDOWN A HTML
+    contenidoHtml = marked.parse(post.contenido || "");
+  }
+}
+
+if (!post) {
+  return Astro.redirect("/404");
+}
+
+const fecha = post.fecha
+  ? new Date(post.fecha.seconds * 1000).toLocaleDateString()
+  : "";
+---
+
+<Layout title={`${post.titulo} - Blog DeOficios`}>
+  <meta name="description" content={post.resumen} slot="head" />
+  <meta name="keywords" content={post.keywords?.join(", ")} slot="head" />
+  <meta name="author" content={post.autor} slot="head" />
+
+  <main class="article-container">
+    <div id="progress-bar" class="progress-bar"></div>
+
+    <article class="article-content">
+      <header class="article-header">
+        <span class="category-pill">{post.categoria}</span>
+        <h1>{post.titulo}</h1>
+        <div class="meta-info">
+          <span>✍️ Por <strong>{post.autor}</strong></span>
+          <span>📅 {fecha}</span>
+        </div>
+      </header>
+
+      <div class="main-image">
+        <img src={post.imagen} alt={post.titulo} />
+      </div>
+
+      <div class="prose" set:html={contenidoHtml} />
+
+      <hr class="divider" />
+
+      {
+        post.keywords && (
+          <div class="tags-cloud">
+            <span>Tags:</span>
+            {post.keywords.map((k) => (
+              <span class="keyword-tag">#{k}</span>
+            ))}
+          </div>
+        )
+      }
+
+      <div class="cta-banner">
+        <h3>¿Necesitás un profesional para esto?</h3>
+        <p>Encuentra expertos en {post.categoria} cerca de tu casa.</p>
+        <a href="/resultados" class="btn-cta">Buscar Profesional 🔎</a>
+      </div>
+    </article>
+  </main>
+</Layout>
+
+<script>
+  window.onscroll = function () {
+    const winScroll =
+      document.body.scrollTop || document.documentElement.scrollTop;
+    const height =
+      document.documentElement.scrollHeight -
+      document.documentElement.clientHeight;
+    const scrolled = (winScroll / height) * 100;
+    document.getElementById("progress-bar").style.width = scrolled + "%";
+  };
+</script>
+
+<style>
+  /* ... TUS ESTILOS ANTERIORES ... */
+  .article-container {
+    background: #fff;
+    min-height: 100vh;
+  }
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 4px;
+    background: #ea580c;
+    z-index: 999;
+    width: 0%;
+  }
+  .article-content {
+    max-width: 750px;
+    margin: 0 auto;
+    padding: 60px 20px;
+  }
+  .article-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .category-pill {
+    background: #eff6ff;
+    color: #1e40af;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: inline-block;
+  }
+  .article-header h1 {
+    font-size: 2.5rem;
+    color: #111827;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    font-weight: 800;
+  }
+  .meta-info {
+    color: #6b7280;
+    font-size: 0.9rem;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+  }
+  .main-image {
+    margin-bottom: 50px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+  .main-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* ESTILOS PROSE (MARKDOWN) */
+  .prose {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: #374151;
+  }
+  .prose :global(h2) {
+    font-size: 1.8rem;
+    color: #111827;
+    margin-top: 40px;
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+  .prose :global(h3) {
+    font-size: 1.4rem;
+    color: #333;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    font-weight: bold;
+  }
+  .prose :global(p) {
+    margin-bottom: 20px;
+  }
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin-bottom: 20px;
+    padding-left: 20px;
+  }
+  .prose :global(li) {
+    margin-bottom: 10px;
+  }
+  .prose :global(strong) {
+    color: #111827;
+    font-weight: 700;
+  }
+  .prose :global(blockquote) {
+    border-left: 4px solid #ea580c;
+    background: #fff7ed;
+    padding: 20px;
+    margin: 30px 0;
+    font-style: italic;
+  }
+
+  .tags-cloud {
+    margin-bottom: 30px;
+  }
+  .tags-cloud span {
+    color: #666;
+    font-size: 0.9rem;
+    margin-right: 5px;
+  }
+  .keyword-tag {
+    color: #ea580c !important;
+    font-weight: bold;
+  }
+
+  .divider {
+    border: 0;
+    border-top: 1px solid #e5e7eb;
+    margin: 40px 0;
+  }
+  .cta-banner {
+    background: #1f2937;
+    color: white;
+    padding: 40px;
+    border-radius: 16px;
+    text-align: center;
+  }
+  .cta-banner h3 {
+    margin: 0 0 10px;
+    font-size: 1.5rem;
+  }
+  .cta-banner p {
+    color: #9ca3af;
+    margin-bottom: 25px;
+  }
+  .btn-cta {
+    background: #ea580c;
+    color: white;
+    text-decoration: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: 0.2s;
+    display: inline-block;
+  }
+  .btn-cta:hover {
+    background: #c2410c;
+    transform: scale(1.05);
+  }
+
+  @media (max-width: 600px) {
+    .article-header h1 {
+      font-size: 2rem;
+    }
+  }
+</style>

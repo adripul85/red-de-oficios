@@ -1,0 +1,177 @@
+---
+import { House, Search, Plus, Map, User } from "lucide-astro";
+---
+
+<nav id="mobile-nav-bar" class="mobile-bottom-nav md:hidden">
+    <div class="nav-container">
+        <a href="/" class="nav-item flat-item" id="nav-home">
+            <House class="icon" />
+            <span class="label">Inicio</span>
+        </a>
+
+        <a href="/resultados" class="nav-item flat-item" id="nav-search">
+            <Search class="icon" />
+            <span class="label">Buscar</span>
+        </a>
+
+        <div class="nav-item fab-container">
+            <a href="/solicitar" class="floating-fab">
+                <Plus class="fab-icon" />
+            </a>
+        </div>
+
+        <a href="/mapa" class="nav-item flat-item" id="nav-map">
+            <Map class="icon" />
+            <span class="label">Mapa</span>
+        </a>
+
+        <a href="/ingresar-derivador" class="nav-item flat-item" id="nav-profile">
+            <User class="icon" />
+            <span class="label">Perfil</span>
+        </a>
+    </div>
+</nav>
+
+<style>
+    .mobile-bottom-nav {
+        position: fixed !important;
+        bottom: 20px !important;
+        left: 10px !important;
+        right: 10px !important;
+        height: 70px !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 20px !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+        z-index: 999999 !important;
+        display: block !important; /* Block because child is grid */
+        overflow: visible;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    @media (min-width: 768px) {
+        .mobile-bottom-nav {
+            display: none !important;
+        }
+    }
+
+    .nav-container {
+        display: grid !important;
+        grid-template-columns: repeat(5, 1fr) !important;
+        width: 100% !important;
+        height: 100% !important;
+        align-items: center !important;
+        justify-items: center !important;
+        position: relative;
+    }
+
+    .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        text-decoration: none;
+        flex: 1;
+        height: 100%;
+        gap: 2px;
+        transition: all 0.2s ease;
+    }
+
+    .nav-item.active {
+        color: #ea580c;
+    }
+
+    .icon {
+        width: 22px;
+        height: 22px;
+    }
+
+    .label {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .fab-container {
+        position: relative;
+        overflow: visible;
+    }
+
+    .floating-fab {
+        width: 52px;
+        height: 52px;
+        background: linear-gradient(135deg, #ea580c, #c2410c);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
+        margin-top: -45px;
+        border: 4px solid white;
+        transition: transform 0.2s ease;
+    }
+
+    .floating-fab:active {
+        transform: scale(0.9);
+    }
+
+    .fab-icon {
+        width: 28px;
+        height: 28px;
+    }
+</style>
+
+<script>
+    import { auth, db } from "../firebase/client";
+    import { onAuthStateChanged } from "firebase/auth";
+    import { doc, getDoc } from "firebase/firestore";
+
+    function initBottomNav() {
+        // Active State Logic
+        const path = window.location.pathname;
+        document
+            .querySelectorAll(".flat-item")
+            .forEach((el) => el.classList.remove("active"));
+
+        if (path === "/")
+            document.getElementById("nav-home")?.classList.add("active");
+        else if (path.startsWith("/resultados"))
+            document.getElementById("nav-search")?.classList.add("active");
+        else if (path.startsWith("/mapa"))
+            document.getElementById("nav-map")?.classList.add("active");
+        else if (
+            path.startsWith("/mi-") ||
+            path.startsWith("/panel") ||
+            path === "/ingresar"
+        )
+            document.getElementById("nav-profile")?.classList.add("active");
+
+        // Auth Profile Link Logic
+        onAuthStateChanged(auth, async (user) => {
+            const link = document.getElementById("nav-profile");
+            if (!link) return;
+
+            if (user) {
+                try {
+                    // Determine if pro or client
+                    const role = localStorage.getItem("userType_" + user.uid);
+                    if (role === "profesional")
+                        (link as HTMLAnchorElement).href = "/mi-perfil";
+                    else (link as HTMLAnchorElement).href = "/mi-cuenta";
+                } catch (e) {}
+            } else {
+                (link as HTMLAnchorElement).href = "/ingresar-derivador";
+            }
+        });
+    }
+
+    // Init
+    initBottomNav();
+    document.addEventListener("astro:page-load", initBottomNav);
+</script>
+

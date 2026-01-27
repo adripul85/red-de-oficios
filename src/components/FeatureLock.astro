@@ -1,0 +1,115 @@
+---
+interface Props {
+  locked: boolean;
+  planRequired: "impulso" | "experto";
+  feature: string;
+}
+
+const { locked = false, planRequired, feature } = Astro.props;
+---
+
+{locked ? (
+  <div class="feature-lock-container">
+    <!-- Contenido bloqueado con blur -->
+    <div class="feature-locked-content">
+      <slot />
+    </div>
+    
+    <!-- Overlay de glassmorfismo -->
+    <div class="feature-lock-overlay">
+      <div class="lock-card">
+        <div class="lock-icon">🔒</div>
+        <h4>Feature Premium</h4>
+        <p>{feature}</p>
+        <a href="/planes" class="btn-unlock">
+          Desbloquear con {planRequired === "experto" ? "Plan Experto" : "Plan Impulso"}
+        </a>
+      </div>
+    </div>
+  </div>
+) : (
+  <slot />
+)}
+
+<style>
+  .feature-lock-container {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .feature-locked-content {
+    filter: blur(8px);
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.4;
+  }
+  
+  .feature-lock-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.05)
+    );
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    z-index: 10;
+  }
+  
+  .lock-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    padding: 2rem;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    max-width: 300px;
+    border: 2px solid rgba(255, 138, 0, 0.2);
+  }
+  
+  .lock-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    animation: shake 0.5s ease-in-out infinite alternate;
+  }
+  
+  @keyframes shake {
+    0% { transform: rotate(-5deg); }
+    100% { transform: rotate(5deg); }
+  }
+  
+  .lock-card h4 {
+    margin: 0 0 0.5rem;
+    color: #1e293b;
+    font-size: 1.2rem;
+  }
+  
+  .lock-card p {
+    margin: 0 0 1.5rem;
+    color: #64748b;
+    font-size: 0.9rem;
+  }
+  
+  .btn-unlock {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #FF8A00, #FF6B00);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 12px rgba(255, 138, 0, 0.3);
+  }
+  
+  .btn-unlock:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 138, 0, 0.4);
+  }
+</style>

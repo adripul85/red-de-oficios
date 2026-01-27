@@ -1,0 +1,680 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { db } from "../firebase/client";
+import { collection, getDocs } from "firebase/firestore";
+import { LOCATIONS } from "../data/locations";
+import { CATEGORIES, ALL_TRADES } from "../data/categories";
+
+// 1. OBTENER PARÁMETROS
+const { searchParams } = Astro.url;
+const q = searchParams.get("q") || "";
+const urlUbicacion = searchParams.get("ubicacion") || "";
+const urlRubro = searchParams.get("rubro") || "";
+
+// 2. BUSCAR EN FIREBASE
+const snapshot = await getDocs(collection(db, "profesionales"));
+const todos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+// 3. FILTRADO DE TEXTO (LÓGICA MEJORADA PARA BÚSQUEDA COMBINADA)
+const resultados = todos.filter((pro: any) => {
+  // EXCLUIR STAFF
+  const esStaff = pro.rol === "admin" || pro.rol === "moderador" || pro.rol === "moderator";
+  if (esStaff) return false;
+
+  // Filtrado por parámetros específicos (IA o URL directa)
+  if (urlUbicacion || urlRubro) {
+      let match = true;
+      if (urlUbicacion) {
+          const zonaPro = (pro.zona || "").toLowerCase();
+          const targetZona = urlUbicacion.toLowerCase();
+          if (!zonaPro.includes(targetZona) && !targetZona.includes(zonaPro)) match = false;
+      }
+      if (urlRubro) {
+          const rubros = [pro.rubro_principal, ...(pro.rubros || [])].filter(Boolean).map(r => r.toLowerCase());
+          const targetRubro = urlRubro.toLowerCase();
+          if (!rubros.some(r => r.includes(targetRubro))) match = false;
+      }
+      if (match) return true;
+      // Si hay parámetros específicos pero no coinciden, y no hay búsqueda general 'q', descartar
+      if (!q) return false;
+  }
+
+  const termino = q.toLowerCase().trim();
+  if (termino === "" || termino === "todos") return true;
+
+  // Dividir el término en palabras para búsqueda combinada
+  const palabras = termino.split(/\s+/).filter((p) => p.length > 0);
+
+  // Para cada palabra, verificar si coincide con algún campo
+  const matches = palabras.map((palabra) => {
+    const matchNombre = pro.nombre?.toLowerCase().includes(palabra);
+    const rubros = [pro.rubro_principal, ...(pro.rubros || [])].filter(Boolean);
+    const matchRubro = rubros.some((r) => r.toLowerCase().includes(palabra));
+    const zonaLower = pro.zona?.toLowerCase() || "";
+    const matchZona = zonaLower.includes(palabra);
+    const matchTags = pro.etiquetas?.some((t: string) => t.toLowerCase().includes(palabra));
+
+    return matchNombre || matchRubro || matchZona || matchTags;
+  });
+
+  return matches.some((m) => m === true);
+});
+
+// Ordenar: Premium primero (Experto > Impulso > Free)
+const getPlanWeight = (plan: string) => {
+  if (plan === "experto" || plan === "semestral") return 3;
+  if (plan === "impulso" || plan === "mensual") return 2;
+  return 1;
+};
+
+resultados.sort((a: any, b: any) => {
+  const weightA = getPlanWeight(a.plan);
+  const weightB = getPlanWeight(b.plan);
+  return weightB - weightA;
+});
+
+const tradesJson = JSON.stringify(ALL_TRADES);
+---
+
+<Layout
+  title={`Resultados para ${q === "todos" ? "Todos" : q} | DeOficios`}
+  description="Encontrá los mejores profesionales para tu hogar o empresa."
+  hideHeader={false}
+  hideFooter={false}
+>
+  <style>
+    .soft-shadow {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+    .card-hover:hover {
+      box-shadow: 0 20px 40px rgba(204, 85, 0, 0.08);
+      transform: translateY(-4px);
+      transition: all 0.3s ease;
+    }
+    .material-symbols-outlined {
+      font-variation-settings:
+        "FILL" 0,
+        "wght" 400,
+        "GRAD" 0,
+        "opsz" 24;
+    }
+    .fill-1 {
+      font-variation-settings: "FILL" 1;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+
+  <main
+    class="max-w-[1440px] mx-auto px-6 lg:px-20 py-10 font-sans min-h-screen"
+  >
+    <div class="mb-10">
+      <h1 class="text-4xl font-black text-neutral-black mb-2 capitalize">
+        {q === "todos" ? "Todos los Profesionales" : q}
+      </h1>
+      <p class="text-gray-500 font-medium tracking-tight">
+        {resultados.length} profesionales certificados disponibles
+      </p>
+      <div class="flex flex-col md:flex-row gap-4 mt-8">
+        <!-- Barra de búsqueda interna -->
+        <div class="relative flex-1 max-w-lg">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400">search</span>
+          <input 
+            type="text" 
+            id="internal-search-input"
+            placeholder="Buscar por nombre o palabra clave..."
+            class="w-full pl-12 pr-4 py-3 rounded-full bg-white border-2 border-slate-100 focus:border-primary outline-none transition-all text-sm font-medium shadow-sm"
+          />
+        </div>
+
+        <div class="relative w-full md:w-64">
+          <select
+            class="filter-rubro w-full appearance-none bg-white border-2 border-slate-100 px-5 py-3 rounded-full text-xs font-black tracking-widest uppercase text-gray-600 hover:border-primary focus:border-primary focus:ring-0 outline-none cursor-pointer transition-all pr-10 shadow-sm"
+          >
+            <option value="">Todos los rubros</option>
+            {
+              CATEGORIES.map((cat) => (
+                <optgroup label={cat.group}>
+                  {cat.trades.map((trade) => (
+                    <option value={trade.name.toLowerCase()}>
+                      {trade.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ))
+            }
+          </select>
+          <div
+            class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-500"
+          >
+            <span class="material-symbols-outlined text-[20px]"
+              >keyboard_arrow_down</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK FILTER CHIPS -->
+    <div class="flex flex-wrap gap-3 mb-8">
+      <label class="cursor-pointer group">
+        <input
+          type="checkbox"
+          class="sr-only peer filter-chip-24hs"
+          value="24hs"
+        />
+        <div
+          class="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest text-gray-500 peer-checked:bg-red-50 peer-checked:text-red-600 peer-checked:border-red-200 hover:border-gray-300 transition-all select-none shadow-sm"
+        >
+          <span class="material-symbols-outlined text-[16px]">bolt</span>
+          24hs / Urgencias
+        </div>
+      </label>
+
+      <label class="cursor-pointer group">
+        <input
+          type="checkbox"
+          class="sr-only peer filter-chip-verified"
+          value="verified"
+        />
+        <div
+          class="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest text-gray-500 peer-checked:bg-primary/10 peer-checked:text-primary peer-checked:border-primary/20 hover:border-gray-300 transition-all select-none shadow-sm"
+        >
+          <span class="material-symbols-outlined text-[16px]">verified</span>
+          Verificados
+        </div>
+      </label>
+
+      <button
+        id="btn-chip-location"
+        class="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest text-gray-500 hover:text-primary hover:border-primary transition-all shadow-sm"
+      >
+        <span class="material-symbols-outlined text-[16px]">my_location</span>
+        Cerca de mí
+      </button>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 relative">
+      <!-- SIDEBAR FILTERS -->
+      <aside class="w-full lg:w-72 shrink-0 space-y-10 lg:sticky lg:top-28 h-fit z-10 bg-inherit pb-10 lg:pb-0">
+
+        <div>
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-black uppercase tracking-tight">Filtros</h2>
+            <button
+              class="text-primary text-xs font-black hover:underline uppercase tracking-widest"
+              onclick="window.location.href='/resultados'">Limpiar todo</button
+            >
+          </div>
+          <div class="mb-8">
+            <label
+              class="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-4 block"
+              >UBICACIÓN</label
+            >
+            <div class="relative">
+              <select
+                class="w-full p-3 pr-10 rounded-xl bg-white border border-gray-200 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-primary focus:border-primary outline-none appearance-none cursor-pointer filter-zona shadow-sm"
+              >
+                <option value="">Todas las ubicaciones</option>
+                {
+                  LOCATIONS.map((group) => (
+                    <optgroup label={group.group}>
+                      {group.zones.map((zone) => (
+                        <option value={zone}>{zone}</option>
+                      ))}
+                    </optgroup>
+                  ))
+                }
+              </select>
+            </div>
+          </div>
+          <button
+            id="btn-cerca-de-mi"
+            class="mt-3 w-full flex items-center justify-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:border-primary hover:text-primary transition-all shadow-sm"
+          >
+            <span class="material-symbols-outlined text-[18px]"
+              >my_location</span
+            >
+            Cerca de mí
+          </button>
+        </div>
+        <div class="mb-8">
+          <label
+            class="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-4 block"
+            >CALIFICACIÓN</label
+          >
+          <div class="space-y-3">
+            {
+              [5, 4, 3, 2, 1].map((starCount) => (
+                <label class="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    class="w-5 h-5 text-primary focus:ring-primary border-gray-300 filter-rating"
+                    name="rating"
+                    type="radio"
+                    value={starCount.toString()}
+                  />
+                  <div class="flex items-center gap-0.5 text-primary">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <span
+                        class={`material-symbols-outlined text-[20px] ${i < starCount ? "fill-1" : ""}`}
+                      >
+                        star
+                      </span>
+                    ))}
+                    <span class="text-neutral-black text-sm font-extrabold ml-1 pt-0.5">
+                      {starCount}
+                    </span>
+                  </div>
+                </label>
+              ))
+            }
+          </div>
+        </div>
+        <div class="p-6 bg-gray-50 rounded-2xl border border-gray-200">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-black uppercase tracking-widest"
+              >Verificados</span
+            >
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input
+                class="sr-only peer filter-verified"
+                type="checkbox"
+                value=""
+              />
+              <div
+                class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"
+              >
+              </div>
+            </label>
+          </div>
+          <p class="text-[11px] text-gray-500 font-medium leading-relaxed">
+            Mostrando profesionales con identidad y antecedentes validados.
+          </p>
+        </div>
+      </aside>
+      <!-- Flex wrapper continues -->
+
+      <div
+        class="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8"
+        id="cards-container"
+      >
+        {
+          resultados.map((p: any) => (
+            <div
+              class="card-professional-item bg-slate-50 rounded-2xl soft-shadow card-hover border border-transparent hover:border-primary/10 flex flex-col p-6 h-full relative"
+              data-verified={p.verificado ? "true" : "false"}
+              data-zona={p.zona}
+              data-rating={p.promedio || 0}
+              data-rubros={[p.rubro_principal, ...(p.rubros || [])]
+                .filter(Boolean)
+                .map((r: any) => r.toString().toLowerCase())
+                .join(",")}
+              data-search={`${p.nombre} ${p.rubro_principal} ${(p.rubros || []).join(" ")} ${p.descripcion || ""}`.toLowerCase()}
+              data-premium={
+                p.plan === "experto" || p.plan === "semestral"
+                  ? "true"
+                  : "false"
+              }
+            >
+              <div class="flex justify-between items-start mb-6">
+                <div class="relative">
+                  <img
+                    src={
+                      p.foto?.startsWith("http")
+                        ? p.foto
+                        : `https://ui-avatars.com/api/?name=${p.nombre || "U"}&background=random&size=256`
+                    }
+                    class="size-20 rounded-2xl object-cover border-4 border-white shadow-sm"
+                    alt={p.nombre}
+                  />
+                  {p.verificado && (
+                    <span class="absolute -bottom-2 -right-2 bg-neutral-black text-white size-8 rounded-lg flex items-center justify-center border-2 border-white shadow-lg">
+                      <span class="material-symbols-outlined text-[16px] text-primary fill-1">
+                        verified
+                      </span>
+                    </span>
+                  )}
+                </div>
+                <div class="text-right">
+                  <div class="flex items-center text-primary gap-1 justify-end">
+                    <span class="material-symbols-outlined text-[20px] fill-1">
+                      star
+                    </span>
+                    <span class="text-base font-black text-neutral-black">
+                      {(p.promedio || 5.0).toFixed(1)}
+                    </span>
+                  </div>
+                  <span class="text-[11px] text-gray-400 font-bold uppercase tracking-widest">
+                    {p.total_votos || 0} trabajos
+                  </span>
+                </div>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-xl font-black text-neutral-black mb-1 capitalize">
+                  {(p.nombre || "Usuario").toLowerCase()}
+                </h3>
+                <p class="text-primary text-[11px] font-black uppercase tracking-widest mb-4 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">
+                    location_on
+                  </span>{" "}
+                  {p.zona || "CABA"}
+                </p>
+                <p class="text-sm text-gray-600 leading-relaxed line-clamp-2 mb-6 font-medium h-10">
+                  {p.descripcion ||
+                    "Profesional certificado sin descripción disponible."}
+                </p>
+                <div class="flex flex-wrap gap-2 mb-6">
+                  <span class="text-[10px] bg-gray-100 text-gray-700 px-3 py-1.5 rounded-md font-bold uppercase tracking-widest">
+                    {p.rubro_principal || "Oficio"}
+                  </span>
+                  {p.es_24hs && (
+                    <span class="text-[10px] bg-red-50 text-red-600 px-3 py-1.5 rounded-md font-bold uppercase tracking-widest">
+                      24hs
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div class="flex items-center justify-between pt-5 border-t border-gray-100 mt-auto">
+                <div class="flex flex-col">
+                  <span class="text-[10px] text-gray-400 uppercase font-black tracking-widest">
+                    Desde
+                  </span>
+                  {p.presupuestos_config?.activo ? (
+                    <span class="text-lg font-black text-neutral-black">
+                      GRATIS
+                    </span>
+                  ) : (
+                    <span class="text-lg font-black text-neutral-black">
+                      $3.500
+                      <span class="text-xs font-bold text-gray-400">/h</span>
+                    </span>
+                  )}
+                </div>
+                <a
+                  href={`/perfil?id=${p.id}`}
+                  class="bg-primary text-white text-[11px] font-black uppercase tracking-widest px-5 py-3 rounded-xl hover:bg-primary-dark shadow-sm transition-colors"
+                >
+                  Ver Perfil
+                </a>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+
+      {
+        resultados.length === 0 && (
+          <div class="w-full text-center py-20 col-span-3">
+            <div class="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span class="material-symbols-outlined text-4xl text-gray-300">
+                search_off
+              </span>
+            </div>
+            <h3 class="text-xl font-black text-neutral-black mb-2">
+              No encontramos profesionales
+            </h3>
+            <p class="text-gray-500 text-sm max-w-md mx-auto mb-8">
+              Intenta ajustar los filtros, busca en otra zona o prueba con un
+              término más general.
+            </p>
+            <button
+              onclick="window.location.href='/resultados'"
+              class="bg-neutral-black text-white px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-primary transition-colors"
+            >
+              Limpiar Filtros
+            </button>
+          </div>
+        )
+      }
+    </div>
+  </main>
+
+  <div class="flex flex-col items-center justify-center mt-20 gap-4">
+    <button
+      class="bg-neutral-black text-white px-10 py-4 rounded-full text-xs font-black uppercase tracking-[0.2em] hover:bg-primary transition-all shadow-xl"
+    >
+      Cargar más resultados
+    </button>
+    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+      Mostrando {resultados.length} profesionales
+    </p>
+  </div>
+</Layout>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    const cards = document.querySelectorAll(".card-professional-item");
+    const countDisplay = document.getElementById("count-display");
+
+    // Inputs
+    const verifiedInput = document.querySelector(".filter-verified");
+    const chipVerified = document.querySelector(".filter-chip-verified");
+    const chip24hs = document.querySelector(".filter-chip-24hs");
+    const btnChipLocation = document.getElementById("btn-chip-location");
+
+    const ratingInputs = document.querySelectorAll(".filter-rating");
+    const zonaInput = document.querySelector(".filter-zona");
+    const rubroInput = document.querySelector(".filter-rubro");
+    const internalSearchInput = document.getElementById("internal-search-input") as HTMLInputElement;
+    const btnNearby = document.getElementById("btn-cerca-de-mi");
+
+    // 0. Pre-populate from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlUbi = urlParams.get("ubicacion");
+    const urlRubro = urlParams.get("rubro");
+
+    if (urlUbi && zonaInput) {
+        // Find best match in options
+        const options = Array.from((zonaInput as HTMLSelectElement).options);
+        const match = options.find(opt => opt.value.toLowerCase().includes(urlUbi.toLowerCase()) || urlUbi.toLowerCase().includes(opt.value.toLowerCase()));
+        if (match) (zonaInput as HTMLSelectElement).value = match.value;
+    }
+    if (urlRubro && rubroInput) {
+        const options = Array.from((rubroInput as HTMLSelectElement).options);
+        const match = options.find(opt => opt.value.toLowerCase().includes(urlRubro.toLowerCase()));
+        if (match) (rubroInput as HTMLSelectElement).value = match.value;
+    }
+
+    function filterResults() {
+      let visibleCount = 0;
+
+      // 1. Get Filters
+      const searchQuery = internalSearchInput?.value.toLowerCase().trim() || "";
+      const onlyVerified =
+        (verifiedInput && (verifiedInput as HTMLInputElement).checked) ||
+        (chipVerified && (chipVerified as HTMLInputElement).checked);
+
+      const only24hs = chip24hs && (chip24hs as HTMLInputElement).checked;
+
+      let minRating = 0;
+      ratingInputs.forEach((input) => {
+        if ((input as HTMLInputElement).checked) {
+          minRating = parseInt((input as HTMLInputElement).value || "0");
+        }
+      });
+
+      const selectedZona =
+        (zonaInput as HTMLSelectElement)?.value.toLowerCase() || "";
+      const selectedRubro =
+        (rubroInput as HTMLSelectElement)?.value.toLowerCase() || "";
+
+      cards.forEach((card) => {
+        const isVerified = card.getAttribute("data-verified") === "true";
+        const rating = parseFloat(card.getAttribute("data-rating") || "0");
+        const zona = (card.getAttribute("data-zona") || "").toLowerCase();
+        const rubros = (card.getAttribute("data-rubros") || "")
+          .toLowerCase()
+          .split(",");
+        const searchText = (card.getAttribute("data-search") || "").toLowerCase();
+
+        let show = true;
+
+        // Filter by Search Text
+        if (searchQuery && !searchText.includes(searchQuery)) {
+          show = false;
+        }
+
+        // Filter by Verified
+        if (onlyVerified && !isVerified) {
+          show = false;
+        }
+
+        // Filter by Rating
+        if (rating < minRating) {
+          show = false;
+        }
+
+        // Filter by 24hs (Nuevo)
+        if (only24hs) {
+          const es24hs = card.querySelector("span.text-red-600"); // Buscamos badge rojo de 24hs
+          if (!es24hs) show = false;
+        }
+
+        // Filter by Zona
+        if (selectedZona && !zona.includes(selectedZona)) {
+          show = false;
+        }
+
+        // Filter by Rubro
+        if (selectedRubro) {
+          const hasRubro =
+            rubros.includes(selectedRubro) ||
+            rubros.some((r) => r.includes(selectedRubro));
+          if (!hasRubro) show = false;
+        }
+
+        if (show) {
+          card.classList.remove("hidden");
+          visibleCount++;
+        } else {
+          card.classList.add("hidden");
+        }
+      });
+
+      if (countDisplay) countDisplay.textContent = visibleCount.toString();
+    }
+
+    // Add Listeners
+    if (verifiedInput) verifiedInput.addEventListener("change", filterResults);
+    if (chipVerified) chipVerified.addEventListener("change", filterResults);
+    if (chip24hs) chip24hs.addEventListener("change", filterResults);
+
+    ratingInputs.forEach((i) => i.addEventListener("change", filterResults));
+    if (zonaInput) zonaInput.addEventListener("change", filterResults);
+    if (rubroInput) rubroInput.addEventListener("change", filterResults);
+    if (internalSearchInput) internalSearchInput.addEventListener("input", filterResults);
+
+    // Sync Verified Filters (Sidebar Checkbox <-> Chip)
+    if (verifiedInput && chipVerified) {
+      verifiedInput.addEventListener("change", (e) => {
+        (chipVerified as HTMLInputElement).checked = (
+          e.target as HTMLInputElement
+        ).checked;
+      });
+      chipVerified.addEventListener("change", (e) => {
+        (verifiedInput as HTMLInputElement).checked = (
+          e.target as HTMLInputElement
+        ).checked;
+      });
+    }
+
+    // Connect Chip Location to Existing Logic
+    if (btnChipLocation && btnNearby) {
+      btnChipLocation.addEventListener("click", () => {
+        (btnNearby as HTMLButtonElement).click();
+      });
+    }
+
+    // Cerca de Mi Logic (Navigator + Nominatim)
+    if (btnNearby && zonaInput) {
+      btnNearby.addEventListener("click", () => {
+        const btn = btnNearby as HTMLButtonElement;
+        const originalContent = btn.innerHTML;
+
+        if (!navigator.geolocation) {
+          alert("Tu navegador no soporta geolocalización.");
+          return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = `<span class="animate-spin material-symbols-outlined text-[18px]">progress_activity</span> Buscando...`;
+
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            try {
+              const { latitude, longitude } = position.coords;
+
+              // Using OpenStreetMap Nominatim for free reverse geocoding
+              const res = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+              );
+              const data = await res.json();
+
+              if (data && data.address) {
+                const address = data.address;
+                // Try to find the most specific location part that might match our zones
+                const locationName = (
+                  address.suburb ||
+                  address.neighbourhood ||
+                  address.city_district ||
+                  address.city ||
+                  address.town ||
+                  ""
+                ).toLowerCase();
+
+                console.log("Detected Location:", locationName);
+
+                const options = Array.from(
+                  (zonaInput as HTMLSelectElement).options,
+                );
+
+                // Fuzzy match logic
+                const match = options.find((opt) => {
+                  const val = opt.value.toLowerCase();
+                  if (!val) return false;
+                  return (
+                    val === locationName ||
+                    val.includes(locationName) ||
+                    locationName.includes(val)
+                  );
+                });
+
+                if (match && match.value) {
+                  (zonaInput as HTMLInputElement).value = match.value;
+                  zonaInput.dispatchEvent(new Event("change"));
+                } else {
+                  alert(
+                    `Te ubicamos en "${address.suburb || address.neighbourhood || address.city || "tu zona"}", pero no encontramos un barrio exacto en nuestra lista.`,
+                  );
+                }
+              } else {
+                alert("No pudimos determinar la dirección exacta.");
+              }
+            } catch (e) {
+              console.error(e);
+              alert("Error al conectar con el servicio de ubicación.");
+            } finally {
+              btn.disabled = false;
+              btn.innerHTML = originalContent;
+            }
+          },
+          (error) => {
+            console.error(error);
+            alert(
+              "No pudimos obtener tu ubicación. Por favor revisa los permisos.",
+            );
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+          },
+        );
+      });
+    }
+
+    filterResults();
+  });
+</script>

@@ -1,0 +1,81 @@
+<section class="pro-cta-section">
+  <div class="cta-content">
+    <div class="text-content">
+      <h2>¿Eres profesional? 🛠️</h2>
+      <p>Únete a la red más grande de oficios. Consigue clientes cerca de tu zona, gestiona tu perfil y haz crecer tu negocio hoy mismo.</p>
+      
+      <ul class="benefits-list">
+        <li>✅ Publicación Gratuita</li>
+        <li>✅ Trato directo con el cliente</li>
+        <li>✅ Sin comisiones por trabajo</li>
+      </ul>
+    </div>
+
+    <div class="action-content">
+      <a href="/ingresar" class="btn-register">Publicar mis Servicios</a>
+      <p class="small-note">Toma menos de 2 minutos</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .pro-cta-section {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    color: white;
+    padding: 80px 20px;
+    margin-top: 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pro-cta-section::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 300px;
+    height: 300px;
+    background: rgba(230, 126, 34, 0.1);
+    border-radius: 50%;
+    z-index: 0;
+  }
+
+  .cta-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .text-content { flex: 1; }
+
+  h2 { font-size: 2.5rem; margin-bottom: 20px; font-weight: 800; color: #ffffff; }
+  p { font-size: 1.1rem; color: #d1d5db; margin-bottom: 30px; line-height: 1.6; max-width: 500px; }
+
+  .benefits-list { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 15px; }
+  .benefits-list li { background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; }
+
+  .action-content { text-align: center; flex-shrink: 0; }
+
+  .btn-register {
+    display: inline-block; background-color: #e67e22; color: white;
+    font-size: 1.2rem; font-weight: 700; padding: 18px 40px; border-radius: 50px;
+    text-decoration: none; transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  }
+  .btn-register:hover { background-color: #d35400; transform: translateY(-3px); box-shadow: 0 15px 25px rgba(0,0,0,0.4); }
+
+  .small-note { margin-top: 15px; font-size: 0.85rem; color: #9ca3af; }
+
+  @media (max-width: 768px) {
+    .cta-content { flex-direction: column; text-align: center; }
+    .benefits-list { justify-content: center; }
+    p { margin: 0 auto 30px; }
+    h2 { font-size: 2rem; }
+    .btn-register { width: 100%; box-sizing: border-box; }
+  }
+</style>

@@ -1,0 +1,80 @@
+[
+    {
+        "name": "Carlos Rodríguez",
+        "role": "Electricista Matriculado",
+        "description": "Más de 15 años de experiencia en instalaciones domiciliarias e industriales. Urgencias las 24hs en zona sur.",
+        "avatar": "https://images.unsplash.com/photo-1540560083278-d078839c802b?q=80&w=200",
+        "theme": "orange",
+        "whatsapp": "541122334455",
+        "email": "carlos.electricidad@email.com",
+        "location": "Quilmes / Berazategui",
+        "services": [
+            "Tableros Eléctricos",
+            "Aires Acondicionados",
+            "Cortocircuitos",
+            "Iluminación LED"
+        ],
+        "portfolio": [
+            {
+                "url": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=400",
+                "alt": "Tablero nuevo"
+            },
+            {
+                "url": "https://images.unsplash.com/photo-1558211583-d28f610b05a6?q=80&w=400",
+                "alt": "Instalación de luminaria"
+            }
+        ]
+    },
+    {
+        "name": "Ana Martínez",
+        "role": "Pintura y Diseño",
+        "description": "Especialista en acabados finos, empapelados y restauración de fachadas. Trabajo prolijo y detallista.",
+        "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200",
+        "theme": "green",
+        "whatsapp": "541199887766",
+        "email": "ana.pinturas@email.com",
+        "location": "Palermo / Colegiales",
+        "services": [
+            "Pintura Satinada",
+            "Durlock",
+            "Microcemento",
+            "Tratamiento Humedad"
+        ],
+        "portfolio": [
+            {
+                "url": "https://images.unsplash.com/photo-1562259949-e8e7689d7828?q=80&w=400",
+                "alt": "Living pintado"
+            },
+            {
+                "url": "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=400",
+                "alt": "Pared terminada"
+            }
+        ]
+    },
+    {
+        "name": "Marcos López",
+        "role": "Plomería Integral",
+        "description": "Experto en termofusión y detección de filtraciones. Presupuestos sin cargo en el momento.",
+        "avatar": "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=200",
+        "theme": "purple",
+        "whatsapp": "541155664433",
+        "email": "marcos.plomero@email.com",
+        "location": "Barracas / San Telmo",
+        "services": [
+            "Termofusión",
+            "Bombas Presurizadoras",
+            "Destapaciones",
+            "Grifería"
+        ],
+        "portfolio": [
+            {
+                "url": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=400",
+                "alt": "Cañerías baño"
+            },
+            {
+                "url": "https://images.unsplash.com/photo-1504148455328-c376907d081c?q=80&w=400",
+                "alt": "Cambio de bacha"
+            }
+        ]
+    }
+]

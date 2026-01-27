@@ -1,0 +1,470 @@
+---
+import { ALL_TRADES } from "../data/categories";
+
+const tradesJson = JSON.stringify(ALL_TRADES);
+---
+
+<div id="ai-assistant-wrapper" class="pointer-events-none" data-trades={tradesJson}>
+    <!-- FAB (Floating Action Button) -->
+    <div
+        id="ai-fab-container"
+        class="fixed bottom-32 left-4 md:left-8 md:bottom-8 z-50 group font-sans transition-all duration-300 pointer-events-auto">
+        <!-- Tooltip (Desktop Hover) -->
+        <div
+            id="ai-tooltip"
+            class="absolute bottom-full left-0 mb-4 w-52 bg-white border border-slate-200 p-3 rounded-2xl shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none hidden md:block">
+            <p class="text-[11px] font-bold text-slate-800 leading-tight">
+                 <strong>No sabés qué profesional necesitás?</strong> Describime
+                tu problema y yo te guío.
+            </p>
+            <div
+                class="absolute top-full left-6 w-3 h-3 bg-white border-l border-b border-slate-200 rotate-45 -mt-1.5">
+            </div>
+        </div>
+
+        <!-- Main Button -->
+        <button
+            id="btn-ai-toggle"
+            class="w-14 h-14 md:w-16 md:h-16 bg-slate-900 text-white rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.3)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all border-2 border-white/10 relative overflow-hidden"
+            aria-label="Asistente IA">
+            <span
+                id="ai-icon-sparkle"
+                class="text-2xl relative z-10 transition-transform duration-300">✨</span>
+            <span
+                id="ai-icon-close"
+                class="text-xl relative z-10 transition-transform duration-300 hidden">✕</span>
+
+            <!-- Shine Effect -->
+            <div
+                class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 rotate-45 translate-x-[-100%] animate-shine">
+            </div>
+        </button>
+    </div>
+
+    <!-- CHAT WINDOW (Hidden by default) -->
+    <div
+        id="ai-chat-window"
+        class="fixed bottom-40 left-4 md:left-8 md:bottom-28 w-[90%] md:w-[380px] h-[500px] bg-white rounded-3xl shadow-2xl border border-slate-100 z-40 hidden flex-col overflow-hidden transition-all duration-300 origin-bottom-left opacity-0 scale-90 pointer-events-auto">
+        <!-- Header -->
+        <div
+            class="bg-slate-900 px-5 py-4 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-lg">
+                    🔮
+                </div>
+                <div>
+                    <h3 class="text-white font-bold text-sm">
+                        Asistente DeOficios
+                    </h3>
+                    <p
+                        class="text-slate-400 text-[10px] flex items-center gap-1">
+                        <span
+                            class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+                        En línea
+                    </p>
+                </div>
+            </div>
+            <!-- Close Btn inside header -->
+            <button
+                id="btn-close-chat"
+                class="text-slate-400 hover:text-white transition">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                    class="w-5 h-5">
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Messages Area -->
+        <div
+            id="ai-messages"
+            class="flex-1 bg-slate-50 p-4 overflow-y-auto space-y-4">
+            <!-- Welcome Message -->
+            <div class="flex gap-3">
+                <div
+                    class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-sm shrink-0">
+                    
+                </div>
+                <div
+                    class="bg-white border border-slate-100 p-3 rounded-2xl rounded-tl-sm shadow-sm text-sm text-slate-700 max-w-[85%]">
+                    <p>¡Hola! Soy tu asistente de diagnóstico.</p>
+                    <p class="mt-2 text-slate-500 text-xs">
+                        Contame qué problema tenés en tu casa o empresa (ej:
+                        "tengo humedad", "se cortó la luz") y te ayudo a
+                        encontrar al profesional ideal.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Example User Message (Hidden initially, for structure) 
+            <div class="flex gap-3 justify-end hidden">
+                <div class="bg-slate-900 p-3 rounded-2xl rounded-tr-sm shadow-sm text-sm text-white max-w-[85%]">
+                    Me sale agua debajo de la bacha.
+                </div>
+            </div>
+            -->
+        </div>
+
+        <!-- Input Area -->
+        <div class="p-3 bg-white border-t border-slate-100 shrink-0">
+            <form id="ai-form" class="relative flex items-center gap-2">
+                <input
+                    type="text"
+                    id="ai-input"
+                    placeholder="Describ tu problema..."
+                    class="w-full bg-slate-50 border border-slate-200 rounded-full px-4 py-3 text-sm focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition-all placeholder:text-slate-400"
+                    autocomplete="off"
+                />
+                <button
+                    type="submit"
+                    class="absolute right-2 p-2 bg-slate-900 text-white rounded-full hover:bg-slate-800 transition shadow-sm flex items-center justify-center">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        class="w-4 h-4">
+                        <path
+                            d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z"></path>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes shine {
+        0% {
+            transform: translateX(-150%) rotate(45deg);
+        }
+        20%,
+        100% {
+            transform: translateX(150%) rotate(45deg);
+        }
+    }
+    .animate-shine {
+        animation: shine 3s infinite ease-in-out;
+    }
+
+    /* Scrollbar minimalista */
+    #ai-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+    #ai-messages::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 10px;
+    }
+    #ai-messages::-webkit-scrollbar-track {
+        background-color: transparent;
+    }
+
+    /* Animation Classes */
+    .chat-open {
+        display: flex !important;
+        opacity: 1 !important;
+        transform: scale(1) !important;
+    }
+</style>
+
+<script>
+    const aiWrapper = document.getElementById("ai-assistant-wrapper");
+    const ALL_TRADES_AI = JSON.parse(aiWrapper?.dataset.trades || "[]");
+
+    const btnToggle = document.getElementById("btn-ai-toggle");
+    const btnClose = document.getElementById("btn-close-chat");
+    const chatWindow = document.getElementById("ai-chat-window");
+    const iconSparkle = document.getElementById("ai-icon-sparkle");
+    const iconClose = document.getElementById("ai-icon-close");
+    const form = document.getElementById("ai-form");
+    // @ts-ignore
+    const input = document.getElementById("ai-input") as HTMLInputElement;
+    const messagesContainer = document.getElementById("ai-messages");
+
+    let isOpen = false;
+
+    function toggleChat() {
+        isOpen = !isOpen;
+        if (isOpen) {
+            // Open
+            chatWindow?.classList.remove("hidden");
+            // Small delay to allow display:flex to apply before transition
+            setTimeout(() => {
+                chatWindow?.classList.add("chat-open");
+                input?.focus();
+            }, 10);
+
+            // Icon transformation
+            iconSparkle?.classList.add("hidden");
+            iconClose?.classList.remove("hidden");
+
+            // Hide tooltip permanently after first open
+            document.getElementById("ai-tooltip")?.classList.add("!hidden");
+        } else {
+            // Close
+            chatWindow?.classList.remove("chat-open");
+            setTimeout(() => {
+                chatWindow?.classList.add("hidden");
+            }, 300); // Wait for transition
+
+            // Icon transformation
+            iconSparkle?.classList.remove("hidden");
+            iconClose?.classList.add("hidden");
+        }
+    }
+
+    btnToggle?.addEventListener("click", toggleChat);
+    btnClose?.addEventListener("click", toggleChat);
+
+    // State Management
+    let chatState = "idle"; // idle, waiting_problem, waiting_zone, done
+    let context = { problem: "", zone: "", rubro: "" };
+
+    // Higher quality trade detection
+    function detectRubro(text) {
+        const t = text.toLowerCase();
+        
+        const mappings = [
+            { rubro: "Electricista", keywords: ["luz", "enchufe", "cable", "eléctrico", "térmica", "corta la luz", "interruptor", "electricista"] },
+            { rubro: "Plomero", keywords: ["agua", "caño", "gotera", "inodoro", "bacha", "canilla", "terque", "filtración", "humedad", "plomero"] },
+            { rubro: "Gasista", keywords: ["gas", "estufa", "pérdida", "cocina", "termotanque", "calefón", "gasista"] },
+            { rubro: "Técnico de Aire Acondicionado", keywords: ["aire", "acondicionado", "climatizador", "split", "frío", "calor", "no enfría"] },
+            { rubro: "Cerrajero", keywords: ["llave", "puerta", "traba", "cerradura", "cerrojo", "abrir", "cerrajero"] },
+            { rubro: "Pintor", keywords: ["pintar", "pared", "pintura", "látex", "enduido", "pintor"] },
+            { rubro: "Jardinero", keywords: ["jardín", "pasto", "poda", "césped", "plantas", "árbol", "jardinero"] },
+            { rubro: "Albañil", keywords: ["construir", "ladrillo", "cemento", "revoque", "loza", "piso", "carpeta", "albañil"] },
+            { rubro: "Maquillador / Maquilladora", keywords: ["maquillaje", "maquilladora", "maquillador", "social", "novia", "casamiento", "fiesta", "maquillaj", "maquillar"] },
+            { rubro: "Peinador / Estilista", keywords: ["pelo", "cabello", "peinado", "corte", "peluquería", "estilista"] },
+            { rubro: "Fletero", keywords: ["flete", "mudanza", "traslado", "camioneta", "fletero"] },
+            { rubro: "Vidriero", keywords: ["vidrio", "ventana", "espejo", "mampara", "vidriero"] },
+            { rubro: "Carpintero", keywords: ["madera", "mueble", "placard", "mesa", "silla", "carpintero"] },
+            { rubro: "Persianista", keywords: ["persiana", "corraleja", "cinta", "persianista"] },
+            { rubro: "Destapaciones", keywords: ["destapaciones", "destape", "cloaca", "destapacion"] }
+        ];
+
+        for (const m of mappings) {
+            if (m.keywords.some(k => {
+                try {
+                    const regex = new RegExp("\\b" + k + "\\b", "i");
+                    return regex.test(t);
+                } catch(e) {
+                    return t.includes(k);
+                }
+            })) return m.rubro;
+        }
+
+        for (const trade of ALL_TRADES_AI) {
+            try {
+                const regex = new RegExp("\\b" + trade.toLowerCase() + "\\b", "i");
+                if (regex.test(t)) return trade;
+            } catch(e) {
+                if (t.includes(trade.toLowerCase())) return trade;
+            }
+        }
+        return "";
+    }
+
+    function detectLocation(text) {
+        let t = text.toLowerCase();
+        
+        // Remove common filler phrases
+        const fillers = [
+            "estoy en", "vivo en", "zona de", "cerca de", "en el barrio", 
+            "en la zona de", "en la ciudad de", "mi ubicacion es", "estoy por"
+        ];
+        
+        fillers.forEach(f => {
+            t = t.replace(f, "").trim();
+        });
+
+        const prefixes = ["en", "de", "por", "zona", "barrio"];
+        const words = t.split(/\s+/).filter(w => w.length > 0);
+        
+        // If it's a very short text (1-2 words) after stripping fillers, assume it's the location
+        if (words.length <= 2) {
+            return t.replace(/[?,.!]/g, "").trim();
+        }
+
+        for (let i = 0; i < words.length; i++) {
+            if (prefixes.includes(words[i]) && words[i+1]) {
+                return words.slice(i+1, i+3).join(" ").replace(/[?,.!]/g, "").trim();
+            }
+        }
+        return t.replace(/[?,.!]/g, "").trim(); // Fallback to cleaned text
+    }
+
+
+    // Mock Response Logic
+    form?.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+
+        // 1. Add User Message
+        addUserMessage(text);
+        input.value = "";
+
+        // Disable input to prevent race conditions
+        input.disabled = true;
+        input.placeholder = "Procesando...";
+
+        // 2. Mock AI Thinking & Response
+        showTypingIndicator();
+
+        setTimeout(() => {
+            removeTypingIndicator();
+            handleAiResponse(text);
+        }, 1200);
+    });
+
+    function handleAiResponse(text) {
+        if (chatState === "idle" || chatState === "waiting_problem") {
+            const detectedRubro = detectRubro(text);
+            const detectedZone = detectLocation(text);
+
+            if (detectedRubro) {
+                context.rubro = detectedRubro;
+                addAiMessage(`Entiendo, necesitás un **${detectedRubro}**. `);
+            } else {
+                addAiMessage(
+                    "Bien. Buscaré al profesional más adecuado para lo que describiste.",
+                );
+            }
+
+            if (detectedZone) {
+                context.zone = detectedZone;
+            }
+
+            context.problem = text;
+
+            setTimeout(() => {
+                showTypingIndicator();
+                setTimeout(() => {
+                    removeTypingIndicator();
+                    if (context.zone) {
+                        addAiMessage(
+                            `Me pareció entender que estás en **${context.zone}**, ¿es así? Si no, decime tu ubicación exacta.`,
+                        );
+                    } else {
+                        addAiMessage(
+                            "Para mostrarte los más cercanos: **¿En qué barrio o ciudad estás?** ",
+                        );
+                    }
+                    chatState = "waiting_zone";
+                    input.disabled = false;
+                    input.placeholder = "Ej: Yerba Buena, Palermo...";
+                    input.focus();
+                }, 800);
+            }, 600);
+        } else if (chatState === "waiting_zone") {
+            const cleanZone = detectLocation(text);
+            context.zone = cleanZone;
+            addAiMessage(`Perfecto, buscando en **${cleanZone}**... `);
+
+            setTimeout(() => {
+                showTypingIndicator();
+                setTimeout(() => {
+                    removeTypingIndicator();
+
+                    const rubroQuery = context.rubro
+                        ? encodeURIComponent(context.rubro)
+                        : "";
+                    const zonaQuery = encodeURIComponent(context.zone);
+
+                    addAiMessage("¡Listo! Tengo estas opciones para vos:");
+
+                    // Action Buttons
+                    const actionsDiv = document.createElement("div");
+                    actionsDiv.className =
+                        "flex flex-col gap-2 mt-2 animate-fade-in pl-11";
+
+                    let searchUrl = `/resultados?ubicacion=${zonaQuery}`;
+                    if (rubroQuery) searchUrl += `&rubro=${rubroQuery}`;
+
+                    let budgetUrl = `/solicitar?ubicacion=${zonaQuery}`;
+                    if (rubroQuery) budgetUrl += `&rubro=${rubroQuery}`;
+
+                    actionsDiv.innerHTML = `
+                        <a href="${searchUrl}" class="bg-slate-900 hover:bg-slate-800 text-white text-sm px-4 py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 shadow-md">
+                            <span></span> Ver Profesionales
+                        </a>
+                        <a href="${budgetUrl}" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm px-4 py-3 rounded-xl font-bold transition flex items-center justify-center gap-2 shadow-sm">
+                            <span></span> Pedir Presupuesto
+                        </a>
+                    `;
+                    messagesContainer?.appendChild(actionsDiv);
+                    scrollToBottom();
+
+                    chatState = "done";
+                    input.placeholder = "Búsqueda finalizada";
+                }, 1000);
+            }, 800);
+        } else if (chatState === "done") {
+            addAiMessage(
+                "Si necesitás más ayuda, podés usar los botones de arriba o iniciar una nueva búsqueda recargando la página. ",
+            );
+            // Optional: reset button logic could go here
+        }
+    }
+
+    function addUserMessage(text) {
+        const div = document.createElement("div");
+        div.className = "flex gap-3 justify-end animate-fade-in";
+        div.innerHTML = `
+            <div class="bg-slate-900 p-3 rounded-2xl rounded-tr-sm shadow-sm text-sm text-white max-w-[85%]">
+                ` + text + `
+            </div>
+        `;
+        messagesContainer?.appendChild(div);
+        scrollToBottom();
+    }
+
+    function addAiMessage(text) {
+        const div = document.createElement("div");
+        div.className = "flex gap-3 animate-fade-in";
+        div.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs shrink-0"></div>
+            <div class="bg-white border border-slate-100 p-3 rounded-2xl rounded-tl-sm shadow-sm text-sm text-slate-700 max-w-[85%]">
+                ` + text + `
+            </div>
+        `;
+        messagesContainer?.appendChild(div);
+        scrollToBottom();
+    }
+
+    function showTypingIndicator() {
+        const div = document.createElement("div");
+        div.id = "typing-indicator";
+        div.className = "flex gap-3 animate-fade-in";
+        div.innerHTML = `
+            <div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs shrink-0"></div>
+            <div class="bg-white border border-slate-100 p-3 rounded-2xl rounded-tl-sm shadow-sm flex items-center gap-1 h-10 w-16">
+                <span class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></span>
+                <span class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                <span class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></span>
+            </div>
+        `;
+        messagesContainer?.appendChild(div);
+        scrollToBottom();
+    }
+
+    function removeTypingIndicator() {
+        const el = document.getElementById("typing-indicator");
+        el?.remove();
+    }
+
+    function scrollToBottom() {
+        if (messagesContainer) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    }
+</script>
+

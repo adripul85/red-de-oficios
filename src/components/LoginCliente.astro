@@ -1,0 +1,187 @@
+<div id="login-wrapper" class="max-w-sm mx-auto">
+    <div id="state-loading" class="hidden text-center py-4">
+        <div class="animate-spin text-2xl mb-2">🔄</div>
+        <p class="text-sm text-gray-500">Verificando...</p>
+    </div>
+
+    <div id="state-form">
+        <button
+            id="btn-google"
+            class="w-full bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50 mb-3 text-sm"
+        >
+            <img
+                src="https://www.svgrepo.com/show/475656/google-color.svg"
+                class="w-4 h-4"
+            /> Ingresar con Google
+        </button>
+
+        <div class="flex items-center gap-2 my-3">
+            <hr class="flex-1 border-gray-200" />
+            <span class="text-xs text-gray-400 uppercase">O con email</span>
+            <hr class="flex-1 border-gray-200" />
+        </div>
+
+        <form id="form-magic" class="flex gap-2">
+            <input
+                type="email"
+                id="email-in"
+                placeholder="tu@email.com"
+                class="flex-1 border p-2 rounded-lg text-sm"
+                required
+            />
+            <button
+                type="submit"
+                class="bg-blue-600 text-white font-bold py-2 px-3 rounded-lg text-sm"
+                >Enviar</button
+            >
+        </form>
+    </div>
+
+    <div
+        id="state-sent"
+        class="hidden text-center py-4 bg-green-50 rounded-lg border border-green-100"
+    >
+        <p class="text-sm font-bold text-green-800">¡Enlace enviado!</p>
+        <p class="text-xs text-green-600 mt-1">
+            Revisa tu correo y haz clic en el link.
+        </p>
+        <button
+            onclick="window.location.reload()"
+            class="mt-3 text-xs bg-white border border-green-200 px-3 py-1 rounded text-green-700"
+            >🔄 Ya hice clic</button
+        >
+    </div>
+
+    <div id="state-name" class="hidden text-center">
+        <p class="text-sm font-bold mb-2">¡Hola! ¿Cómo te llamas?</p>
+        <input
+            type="text"
+            id="name-in"
+            placeholder="Tu Nombre"
+            class="w-full border p-2 rounded-lg mb-2 text-sm"
+        />
+        <button
+            id="btn-save"
+            class="w-full bg-green-600 text-white font-bold py-2 rounded-lg text-sm"
+            >Guardar</button
+        >
+    </div>
+</div>
+
+<script>
+    import {
+        signInWithPopup,
+        GoogleAuthProvider,
+        sendSignInLinkToEmail,
+        isSignInWithEmailLink,
+        signInWithEmailLink,
+    } from "firebase/auth";
+    import { doc, getDoc, setDoc } from "firebase/firestore";
+    import { auth, db } from "../firebase/client";
+
+    const form = document.getElementById("form-magic");
+    const btnGoogle = document.getElementById("btn-google");
+
+    // ESTADOS
+    const sForm = document.getElementById("state-form");
+    const sSent = document.getElementById("state-sent");
+    const sLoad = document.getElementById("state-loading");
+    const sName = document.getElementById("state-name");
+
+    // GOOGLE
+    btnGoogle?.addEventListener("click", async () => {
+        try {
+            const res = await signInWithPopup(auth, new GoogleAuthProvider());
+            await checkClient(res.user, res.user.displayName);
+        } catch (e) {
+            console.error(e);
+        }
+    });
+
+    // EMAIL
+    form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        // @ts-ignore
+        const email = document.getElementById("email-in").value;
+        const settings = { url: window.location.href, handleCodeInApp: true };
+
+        try {
+            await sendSignInLinkToEmail(auth, email, settings);
+            window.localStorage.setItem("emailForSignIn", email);
+            sForm.classList.add("hidden");
+            sSent.classList.remove("hidden");
+        } catch (e) {
+            alert("Error enviando correo.");
+        }
+    });
+
+    // VERIFICAR LINK
+    async function init() {
+        if (isSignInWithEmailLink(auth, window.location.href)) {
+            sForm.classList.add("hidden");
+            sLoad.classList.remove("hidden");
+
+            let email = window.localStorage.getItem("emailForSignIn");
+            if (!email) email = prompt("Confirma tu email:");
+
+            try {
+                const res = await signInWithEmailLink(
+                    auth,
+                    email,
+                    window.location.href,
+                );
+                window.localStorage.removeItem("emailForSignIn");
+
+                // LIMPIAR URL SIN RECARGAR (Mantiene el ID del profesional)
+                const url = new URL(window.location.href);
+                url.searchParams.delete("oobCode");
+                url.searchParams.delete("apiKey");
+                window.history.replaceState({}, "", url);
+
+                await checkClient(res.user, null);
+            } catch (e) {
+                console.error(e);
+                alert("Link inválido.");
+                window.location.reload();
+            }
+        }
+    }
+
+    // CHECK BASE DE DATOS
+    async function checkClient(user, name) {
+        // 1. ¿Es Profesional?
+        const docPro = await getDoc(doc(db, "profesionales", user.uid));
+        if (docPro.exists()) return window.location.reload();
+
+        // 2. ¿Es Cliente?
+        const docCli = await getDoc(doc(db, "clientes", user.uid));
+        if (docCli.exists()) return window.location.reload();
+
+        // 3. Nuevo Cliente
+        if (name) {
+            await save(user, name);
+        } else {
+            sLoad.classList.add("hidden");
+            sName.classList.remove("hidden");
+            // @ts-ignore
+            document.getElementById("btn-save").onclick = async () => {
+                // @ts-ignore
+                const n = document.getElementById("name-in").value;
+                if (n) await save(user, n);
+            };
+        }
+    }
+
+    async function save(user, name) {
+        await setDoc(doc(db, "clientes", user.uid), {
+            nombre: name,
+            email: user.email,
+            foto: user.photoURL,
+            rol: "cliente",
+            createdAt: new Date(),
+        });
+        window.location.reload();
+    }
+
+    init();
+</script>

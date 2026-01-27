@@ -1,0 +1,35 @@
+---
+interface Props {
+  icon: string;
+  name: string;
+}
+
+const { icon, name } = Astro.props;
+---
+
+<div class="card">
+  <span class="icon">{icon}</span>
+  {name}
+</div>
+
+<style>
+  .card {
+    border: 1px solid #eee;
+    padding: 20px;
+    border-radius: 10px;
+    transition: 0.3s;
+    cursor: pointer;
+    background: white;
+    text-align: center;
+  }
+  .card:hover {
+    background: #f9f9f9;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+  .icon {
+    font-size: 40px;
+    display: block;
+    margin-bottom: 10px;
+  }
+</style>
