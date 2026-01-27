@@ -2,6 +2,8 @@
 // Recibir tendencias como prop desde index.astro
 const { trends } = Astro.props;
 import { Mic } from "lucide-astro";
+import { Image } from "astro:assets";
+import heroImage from "../../assets/hero-worker.jpg";
 
 // --- TENDENCIAS ---
 let trendingTags = trends || [];
@@ -124,10 +126,12 @@ if (!trendingTags || trendingTags.length === 0) {
 
   <!-- Desktop: Imagen derecha con degradado -->
   <div class="hidden md:block w-1/2 h-auto relative">
-    <img
-      src="https://plus.unsplash.com/premium_photo-1683141043361-b927d1cb8694?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    <Image
+      src={heroImage}
       alt="Profesional trabajando"
       class="w-full h-full object-cover"
+      loading="eager"
+      fetchpriority="high"
     />
     <!-- Degradado sutil desde blanco -->
     <div
