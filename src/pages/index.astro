@@ -24,10 +24,17 @@ import {
 // 1. TRAER SOLO LOS DESTACADOS (PREMIUM)
 // 1. DEFINICIONES DE CONSULTAS (Queries)
 // Destacados (Premium)
-const qDestacados = query(
+// Optimization: Split query to prioritize "experto" without over-fetching.
+const qDestacadosHigh = query(
   collection(db, "profesionales"),
-  where("plan", "in", ["experto", "semestral", "impulso", "mensual"]),
-  limit(20),
+  where("plan", "in", ["experto", "semestral"]),
+  limit(4),
+);
+
+const qDestacadosLow = query(
+  collection(db, "profesionales"),
+  where("plan", "in", ["impulso", "mensual"]),
+  limit(4),
 );
 
 // Top Rated (Podio)
@@ -46,8 +53,9 @@ const qTrends = query(
 );
 
 // 2. EJECUCIN PARALELA (Optimizacin clave)
-const [snapDest, snapTop, snapTrends] = await Promise.all([
-  getDocs(qDestacados),
+const [snapDestHigh, snapDestLow, snapTop, snapTrends] = await Promise.all([
+  getDocs(qDestacadosHigh),
+  getDocs(qDestacadosLow),
   getDocs(qTop).catch((e) => {
     console.warn("Error TopRated", e);
     return { docs: [] };
@@ -61,13 +69,11 @@ const [snapDest, snapTop, snapTrends] = await Promise.all([
 // 3. PROCESAMIENTO DE DATOS
 
 // --- Destacados ---
-let destacados = snapDest.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-// Ordenar manualmente: Experto > Impulso
-destacados.sort((a: any, b: any) => {
-  const weightA = a.plan === "experto" || a.plan === "semestral" ? 2 : 1;
-  const weightB = b.plan === "experto" || b.plan === "semestral" ? 2 : 1;
-  return weightB - weightA;
-});
+// Combine High Priority (Experto/Semestral) first, then Low Priority (Impulso/Mensual)
+let destacados = [
+  ...snapDestHigh.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+  ...snapDestLow.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+];
 destacados = destacados.slice(0, 4);
 
 // --- Top Rated ---
@@ -187,6 +193,7 @@ if (trendingTags.length === 0) {
                   <div class="rating">
                     {"*".repeat(Math.round(pro.promedio || 5))} <span class="num">({pro.total_votos || 0})</span>
                   </div>
+                </div>
               </a>
             ))}
           </div>
