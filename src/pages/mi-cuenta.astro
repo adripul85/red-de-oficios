@@ -1075,7 +1075,7 @@ import Layout from "../layouts/Layout.astro";
                 const q = query(
                     collection(db, "solicitudes"),
                     where("clienteId", "==", userId),
-                    // orderBy("fecha", "desc"), // TODO: Check composite index requirement
+                    orderBy("fecha", "desc"),
                 );
 
                 // USAR onSnapshot EN LUGAR DE getDocs PARA TIEMPO REAL
@@ -1208,6 +1208,11 @@ import Layout from "../layouts/Layout.astro";
                             " Error en listener solicitudes:",
                             error,
                         );
+                        if (error.code === "failed-precondition") {
+                            console.error(
+                                " [MI-CUENTA] Falta índice compuesto para solicitudes. Ver consola para link de creación.",
+                            );
+                        }
                         loading?.classList.add("hidden");
                     },
                 );
@@ -1228,7 +1233,7 @@ import Layout from "../layouts/Layout.astro";
                 const q = query(
                     collection(db, "contactos"),
                     where("clienteId", "==", userId),
-                    // orderBy("fecha", "desc"), // TODO: Check if this requires composite index or affects rules
+                    orderBy("fecha", "desc"),
                 );
 
                 onSnapshot(
@@ -1278,6 +1283,11 @@ import Layout from "../layouts/Layout.astro";
                             " [MI-CUENTA] Error en listener de cdigos:",
                             error,
                         );
+                        if (error.code === "failed-precondition") {
+                            console.error(
+                                " [MI-CUENTA] Falta índice compuesto para códigos. Ver consola para link de creación.",
+                            );
+                        }
                         if (error.code === "permission-denied") {
                             if (list)
                                 list.innerHTML = `
