@@ -1,5 +1,5 @@
 ---
-import { House, Search, Plus, Map, User } from "lucide-astro";
+import { House, Search, Sparkles, Map, User } from "lucide-astro";
 ---
 
 <nav id="mobile-nav-bar" class="mobile-bottom-nav md:hidden">
@@ -15,9 +15,9 @@ import { House, Search, Plus, Map, User } from "lucide-astro";
         </a>
 
         <div class="nav-item fab-container">
-            <a href="/solicitar" class="floating-fab">
-                <Plus class="fab-icon" />
-            </a>
+            <button id="btn-ai-bottom-nav" class="floating-fab">
+                <Sparkles class="fab-icon" />
+            </button>
         </div>
 
         <a href="/mapa" class="nav-item flat-item" id="nav-map">
@@ -26,6 +26,7 @@ import { House, Search, Plus, Map, User } from "lucide-astro";
         </a>
 
         <a href="/ingresar" class="nav-item flat-item" id="nav-profile">
+
             <User class="icon" />
             <span class="label">Perfil</span>
         </a>
@@ -168,6 +169,15 @@ import { House, Search, Plus, Map, User } from "lucide-astro";
                 (link as HTMLAnchorElement).href = "/ingresar";
             }
         });
+
+        // AI Assistant Integration
+        const aiBtn = document.getElementById("btn-ai-bottom-nav");
+        if (aiBtn) {
+            aiBtn.onclick = () => {
+                const aiToggle = document.getElementById("btn-ai-toggle");
+                if (aiToggle) aiToggle.click();
+            };
+        }
     }
 
     // Init

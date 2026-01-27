@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { db, auth, storage } from '../../firebase/client';
+import { useState, useEffect } from 'react';
+import { db, auth } from '../../firebase/client';
 import {
     collection,
     query,
@@ -11,7 +11,6 @@ import {
     serverTimestamp
 } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export default function ProfileReviews({ idProfesional }) {
     const [currentUser, setCurrentUser] = useState(null);
@@ -21,8 +20,6 @@ export default function ProfileReviews({ idProfesional }) {
     const [comment, setComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [hoverRating, setHoverRating] = useState(0);
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [previewUrl, setPreviewUrl] = useState(null);
 
     // 1. Detectar Auth y Cargar Reseñas
     useEffect(() => {
@@ -30,12 +27,17 @@ export default function ProfileReviews({ idProfesional }) {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 // Buscar datos de cliente
-                const docSnap = await getDoc(doc(db, "clientes", user.uid));
-                if (docSnap.exists()) {
-                    setCurrentUser({ uid: user.uid, ...docSnap.data() });
+                const clientSnap = await getDoc(doc(db, "clientes", user.uid));
+                if (clientSnap.exists()) {
+                    setCurrentUser({ uid: user.uid, ...clientSnap.data(), role: 'cliente' });
                 } else {
-                    // Es usuario pero no cliente (quizas es el mismo profesional)
-                    setCurrentUser({ uid: user.uid, isPro: true });
+                    // Verificar si es profesional
+                    const proSnap = await getDoc(doc(db, "profesionales", user.uid));
+                    if (proSnap.exists()) {
+                        setCurrentUser({ uid: user.uid, ...proSnap.data(), role: 'profesional', isPro: true });
+                    } else {
+                        setCurrentUser({ uid: user.uid, role: 'unknown' });
+                    }
                 }
             } else {
                 setCurrentUser(null);
@@ -49,6 +51,13 @@ export default function ProfileReviews({ idProfesional }) {
     }, [idProfesional]);
 
     const loadReviews = async () => {
+        if (!idProfesional) {
+            console.warn("loadReviews: idProfesional es null o undefined");
+            setLoading(false);
+            return;
+        }
+
+        console.log(`Intentando cargar reseñas desde: profesionales/${idProfesional}/resenas`);
         try {
             const q = query(
                 collection(db, `profesionales/${idProfesional}/resenas`),
@@ -56,7 +65,25 @@ export default function ProfileReviews({ idProfesional }) {
             );
             const snapshot = await getDocs(q);
             const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setReviews(list);
+            console.log(`Cargadas ${list.length} reseñas (resenas)`);
+
+            // Si no hay en 'resenas', intentar 'reseñas' como fallback (por migración)
+            if (list.length === 0) {
+                const q2 = query(
+                    collection(db, `profesionales/${idProfesional}/reseñas`),
+                    orderBy("fecha", "desc")
+                );
+                const snapshot2 = await getDocs(q2);
+                const list2 = snapshot2.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (list2.length > 0) {
+                    console.log(`Cargadas ${list2.length} reseñas (reseñas - fallback)`);
+                    setReviews(list2);
+                } else {
+                    setReviews([]);
+                }
+            } else {
+                setReviews(list);
+            }
         } catch (error) {
             console.error("Error cargando reseñas:", error);
         } finally {
@@ -67,20 +94,12 @@ export default function ProfileReviews({ idProfesional }) {
     const handleSubmit = async () => {
         if (rating === 0) return alert("Por favor selecciona las estrellas.");
         if (comment.length < 5) return alert("Escribe un comentario un poco más largo.");
-        if (!currentUser || currentUser.isPro) return alert("Debes ser un cliente registrado para opinar.");
+        if (!currentUser || currentUser.role !== 'cliente') return alert("Debes estar registrado como cliente para opinar.");
+        if (currentUser.uid === idProfesional) return alert("No puedes dejarte una reseña a ti mismo.");
 
         setIsSubmitting(true);
 
         try {
-            let fotoTrabajo = null;
-
-            // 1. Upload Photo if selected
-            if (selectedFile) {
-                const storageRef = ref(storage, `resenas/${idProfesional}_${Date.now()}_${selectedFile.name}`);
-                const uploadResult = await uploadBytes(storageRef, selectedFile);
-                fotoTrabajo = await getDownloadURL(uploadResult.ref);
-            }
-
             await runTransaction(db, async (transaction) => {
                 const proRef = doc(db, "profesionales", idProfesional);
                 const proDoc = await transaction.get(proRef);
@@ -100,7 +119,6 @@ export default function ProfileReviews({ idProfesional }) {
                     clienteFoto: currentUser.foto || null,
                     estrellas: rating,
                     comentario: comment,
-                    fotoTrabajo: fotoTrabajo, // Save photo URL
                     fecha: serverTimestamp(),
                 });
 
@@ -112,12 +130,25 @@ export default function ProfileReviews({ idProfesional }) {
                 });
             });
 
-            alert("¡Gracias! Tu opinión ayuda a la comunidad.");
+
+            // Import SweetAlert2
+            const Swal = (await import('sweetalert2')).default;
+
+            await Swal.fire({
+                icon: 'success',
+                title: '¡Gracias!',
+                text: 'Tu opinión ayuda a la comunidad.',
+                confirmButtonText: 'Aceptar',
+                confirmButtonColor: '#2563eb',
+                timer: 3000,
+                timerProgressBar: true
+            });
+
             setComment("");
             setRating(0);
-            setSelectedFile(null);
-            setPreviewUrl(null);
-            loadReviews(); // Recargar lista
+
+            // Forzar recarga completa sin caché para mostrar la nueva calificación
+            window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
         } catch (error) {
             console.error(error);
             alert("Error al publicar. Intenta de nuevo.");
@@ -194,51 +225,6 @@ export default function ProfileReviews({ idProfesional }) {
                             placeholder="¿Cumplió con lo pactado? ¿Fue puntual? Cuéntanos..."
                         />
 
-                        {/* PHOTO UPLOAD UI */}
-                        <div className="mb-6">
-                            <label className="block font-bold mb-3 text-gray-700 text-sm flex items-center gap-2">
-                                📸 Evidencia (Opcional):
-                                <span className="text-xs font-normal text-gray-400 italic">Muestra el trabajo realizado</span>
-                            </label>
-
-                            <div className="flex items-center gap-4">
-                                <label className="flex flex-col items-center justify-center w-24 h-24 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all group overflow-hidden">
-                                    <div className="flex flex-col items-center justify-center">
-                                        <span className="text-3xl text-gray-300 group-hover:text-blue-500 transition-colors">+</span>
-                                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Subir Foto</span>
-                                    </div>
-                                    <input
-                                        type="file"
-                                        className="hidden"
-                                        accept="image/*"
-                                        onChange={(e) => {
-                                            const file = e.target.files[0];
-                                            if (file) {
-                                                setSelectedFile(file);
-                                                setPreviewUrl(URL.createObjectURL(file));
-                                            }
-                                        }}
-                                    />
-                                </label>
-
-                                {previewUrl && (
-                                    <div className="relative w-24 h-24 group animate-in zoom-in duration-300">
-                                        <img src={previewUrl} className="w-full h-full object-cover rounded-2xl shadow-sm border-2 border-blue-100" />
-                                        <button
-                                            onClick={() => {
-                                                setSelectedFile(null);
-                                                setPreviewUrl(null);
-                                            }}
-                                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-lg hover:bg-red-600 transition-colors active:scale-90"
-                                            title="Eliminar foto"
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
                         <button
                             onClick={handleSubmit}
                             disabled={isSubmitting}
@@ -275,20 +261,6 @@ export default function ProfileReviews({ idProfesional }) {
                                     <span className="text-xs text-gray-400">{fecha}</span>
                                 </div>
                                 <p className="mt-2 text-gray-600 text-sm whitespace-pre-wrap">{r.comentario}</p>
-
-                                {r.fotoTrabajo && (
-                                    <div className="mt-4 group relative inline-block overflow-hidden rounded-2xl border border-gray-100 shadow-sm cursor-zoom-in">
-                                        <img
-                                            src={r.fotoTrabajo}
-                                            className="max-h-60 w-auto object-cover transition-transform duration-500 group-hover:scale-105"
-                                            alt="Foto del trabajo realizado"
-                                            onClick={() => window.open(r.fotoTrabajo, '_blank')}
-                                        />
-                                        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                            <span className="bg-white/90 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-800 shadow-sm">Ver mas grande</span>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         );
                     })

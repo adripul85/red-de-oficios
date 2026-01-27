@@ -1,13 +1,15 @@
 <div id="login-wrapper" class="max-w-sm mx-auto">
     <div id="state-loading" class="hidden text-center py-4">
-        <div class="animate-spin text-2xl mb-2"></div>
+        <div class="animate-spin text-2xl mb-2">🔄</div>
         <p class="text-sm text-gray-500">Verificando...</p>
     </div>
 
     <div id="state-form">
         <button
             id="btn-google"
-            class="w-full bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50 mb-3 text-sm">
+            class="w-full bg-white border border-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50 mb-3 text-sm"
+        >
+
             <img
                 src="https://www.svgrepo.com/show/475656/google-color.svg"
                 class="w-4 h-4"
@@ -30,24 +32,32 @@
             />
             <button
                 type="submit"
-                class="bg-blue-600 text-white font-bold py-2 px-3 rounded-lg text-sm">Enviar</button>
+                class="bg-blue-600 text-white font-bold py-2 px-3 rounded-lg text-sm"
+                >Enviar</button
+            >
+
         </form>
     </div>
 
     <div
         id="state-sent"
-        class="hidden text-center py-4 bg-green-50 rounded-lg border border-green-100">
-        <p class="text-sm font-bold text-green-800">Enlace enviado!</p>
+        class="hidden text-center py-4 bg-green-50 rounded-lg border border-green-100"
+    >
+        <p class="text-sm font-bold text-green-800">¡Enlace enviado!</p>
+
         <p class="text-xs text-green-600 mt-1">
             Revisa tu correo y haz clic en el link.
         </p>
         <button
             onclick="window.location.reload()"
-            class="mt-3 text-xs bg-white border border-green-200 px-3 py-1 rounded text-green-700"> Ya hice clic</button>
+            class="mt-3 text-xs bg-white border border-green-200 px-3 py-1 rounded text-green-700"
+            >🔄 Ya hice clic</button
+        >
     </div>
 
     <div id="state-name" class="hidden text-center">
-        <p class="text-sm font-bold mb-2">Hola! Cmo te llamas?</p>
+        <p class="text-sm font-bold mb-2">¡Hola! ¿Cómo te llamas?</p>
+
         <input
             type="text"
             id="name-in"
@@ -56,7 +66,10 @@
         />
         <button
             id="btn-save"
-            class="w-full bg-green-600 text-white font-bold py-2 rounded-lg text-sm">Guardar</button>
+            class="w-full bg-green-600 text-white font-bold py-2 rounded-lg text-sm"
+            >Guardar</button
+        >
+
     </div>
 </div>
 
@@ -133,7 +146,8 @@
                 await checkClient(res.user, null);
             } catch (e) {
                 console.error(e);
-                alert("Link invlido.");
+                alert("Link inválido.");
+
                 window.location.reload();
             }
         }
@@ -141,11 +155,12 @@
 
     // CHECK BASE DE DATOS
     async function checkClient(user, name) {
-        // 1. Es Profesional?
+        // 1. ¿Es Profesional?
         const docPro = await getDoc(doc(db, "profesionales", user.uid));
         if (docPro.exists()) return window.location.reload();
 
-        // 2. Es Cliente?
+        // 2. ¿Es Cliente?
+
         const docCli = await getDoc(doc(db, "clientes", user.uid));
         if (docCli.exists()) return window.location.reload();
 

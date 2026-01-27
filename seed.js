@@ -5,7 +5,6 @@ import { createRequire } from "module";
 
 // --- CONFIGURACIÓN DE FIREBASE ---
 const require = createRequire(import.meta.url);
-// ⚠️ Asegúrate de que el nombre del archivo JSON sea correcto
 const serviceAccount = require("./serviceAccountKey.json");
 
 initializeApp({
@@ -88,8 +87,6 @@ const LOCATIONS = [
         group: "Río Negro",
         zones: ["Viedma", "San Carlos de Bariloche", "General Roca", "Cipolletti", "El Bolsón"]
     },
-    // Se agregan grupos representativos de las demás provincias para no hacer el código infinito, 
-    // pero usando la lógica de "jitter" se ubicarán bien.
     { group: "Chubut", zones: ["Comodoro Rivadavia", "Trelew", "Puerto Madryn", "Esquel"] },
     { group: "Santa Cruz", zones: ["Río Gallegos", "El Calafate", "Caleta Olivia"] },
     { group: "Tierra del Fuego", zones: ["Ushuaia", "Río Grande"] },
@@ -102,13 +99,12 @@ const LOCATIONS = [
 ];
 
 // --- MAPEO DE COORDENADAS BASE (Aproximadas por Grupo) ---
-// Esto sirve para que, al elegir "Zona Norte", el mapa caiga cerca de ahí.
 const COORD_BASES = {
     "Capital Federal (CABA)": { lat: -34.6037, lng: -58.3816 },
     "Zona Norte (GBA)": { lat: -34.4700, lng: -58.5300 },
     "Zona Oeste (GBA)": { lat: -34.6500, lng: -58.6200 },
     "Zona Sur (GBA)": { lat: -34.7600, lng: -58.4000 },
-    "Buenos Aires (Interior)": { lat: -37.3200, lng: -59.1300 }, // Centro PBA (Tandil aprox)
+    "Buenos Aires (Interior)": { lat: -37.3200, lng: -59.1300 },
     "Córdoba": { lat: -31.4201, lng: -64.1888 },
     "Santa Fe": { lat: -32.9442, lng: -60.6505 },
     "Mendoza": { lat: -32.8895, lng: -68.8458 },
@@ -127,7 +123,6 @@ const COORD_BASES = {
     "Chaco": { lat: -27.4514, lng: -58.9867 },
     "Jujuy": { lat: -24.1858, lng: -65.2995 },
     "Santiago del Estero": { lat: -27.7951, lng: -64.2615 },
-    // Default si no matchea
     "Default": { lat: -34.6037, lng: -58.3816 }
 };
 
@@ -281,8 +276,9 @@ async function crearPerfiles() {
             precio_desde: `$${randomInt(10, 40)}.000`,
 
             // --- ESTADÍSTICAS (Variadas para realismo) ---
-            promedio: parseFloat(randomFloat(3.5, 5.0)),
-            total_votos: randomInt(0, 80),
+            puntuacion: parseFloat(randomFloat(3.5, 5.0)),
+            total_valoraciones: randomInt(0, 80),
+            suma_puntuacion: 0, // Se calculará automáticamente
             likes: randomInt(0, 150),
             vistas_perfil: randomInt(20, 800),
             contactos_whatsapp: randomInt(1, 60),
@@ -314,6 +310,9 @@ async function crearPerfiles() {
 
             createdAt: new Date()
         };
+
+        // Calcular suma_puntuacion basado en puntuacion y total_valoraciones
+        nuevoPerfil.suma_puntuacion = nuevoPerfil.puntuacion * nuevoPerfil.total_valoraciones;
 
         promesas.push(db.collection('profesionales').add(nuevoPerfil));
     }

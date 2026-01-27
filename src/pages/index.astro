@@ -21,7 +21,6 @@ import {
   Briefcase,
 } from "lucide-astro";
 
-// 1. TRAER SOLO LOS DESTACADOS (PREMIUM)
 // 1. DEFINICIONES DE CONSULTAS (Queries)
 // Destacados (Premium)
 const qDestacados = query(
@@ -38,14 +37,14 @@ const qTop = query(
   limit(10),
 );
 
-// Trends (Bsquedas)
+// Trends (Búsquedas)
 const qTrends = query(
   collection(db, "search_trends"),
   orderBy("count", "desc"),
   limit(4),
 );
 
-// 2. EJECUCIN PARALELA (Optimizacin clave)
+// 2. EJECUCIÓN PARALELA (Optimización clave)
 const [snapDest, snapTop, snapTrends] = await Promise.all([
   getDocs(qDestacados),
   getDocs(qTop).catch((e) => {
@@ -61,7 +60,8 @@ const [snapDest, snapTop, snapTrends] = await Promise.all([
 // 3. PROCESAMIENTO DE DATOS
 
 // --- Destacados ---
-let destacados = snapDest.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+let destacados = snapDest.docs.map((doc) => ({ id: doc.id, ...doc.data() as any }));
+
 // Ordenar manualmente: Experto > Impulso
 destacados.sort((a: any, b: any) => {
   const weightA = a.plan === "experto" || a.plan === "semestral" ? 2 : 1;
@@ -72,7 +72,7 @@ destacados = destacados.slice(0, 4);
 
 // --- Top Rated ---
 let topRated = snapTop.docs
-  .map((doc) => ({ id: doc.id, ...doc.data() }))
+  .map((doc) => ({ id: doc.id, ...doc.data() as any }))
   .filter((p: any) => p.promedio > 0)
   .slice(0, 4);
 
@@ -82,17 +82,17 @@ let trendingTags = snapTrends.docs.map((doc) => ({
   link: doc.id,
 }));
 
-// Fallback Trends si falla o vaco
+// Fallback Trends si falla o vacío
 if (trendingTags.length === 0) {
   trendingTags = [
     { term: "Gasista", link: "gasista" },
     { term: "Electricista", link: "electricista" },
-    { term: "Albail", link: "albail" },
+    { term: "Albañil", link: "albañil" },
   ];
 }
 ---
 
-<Layout title="DeOficios - Encontr profesionales de confianza">
+<Layout title="DeOficios - Encontrá profesionales de confianza">
   <main>
     <HeroSearch trends={trendingTags} />
 
@@ -101,7 +101,8 @@ if (trendingTags.length === 0) {
     <section class="how-it-works section-pad">
       <div class="container">
         <div class="section-header">
-          <h2>Cmo funciona?</h2>
+          <h2>¿Cómo funciona?</h2>
+
           <p>El ciclo de confianza para un buen trabajo.</p>
         </div>
 
@@ -110,29 +111,30 @@ if (trendingTags.length === 0) {
             <div class="step-icon">
               <Search class="w-10 h-10 text-orange-600" />
             </div>
-            <h3>1. Busc</h3>
-            <p>Escrib qu necesits o naveg por el mapa interactivo.</p>
+            <h3>1. Buscá 🔍</h3>
+            <p>Escribí qué necesitás o navegá por el mapa interactivo.</p>
           </div>
           <div class="step-card">
             <div class="step-icon">
               <ShieldCheck class="w-10 h-10 text-orange-600" />
             </div>
-            <h3>2. Compar</h3>
-            <p>Mir fotos, le opiniones reales y cheque identidad.</p>
+            <h3>2. Compará ✅</h3>
+            <p>Mirá fotos, leé opiniones reales y chequeá identidad.</p>
           </div>
           <div class="step-card">
             <div class="step-icon">
               <MessageCircle class="w-10 h-10 text-orange-600" />
             </div>
-            <h3>3. Contact</h3>
-            <p>Habl directo por WhatsApp y coordin el trabajo.</p>
+            <h3>3. Contactá 📲</h3>
+            <p>Hablá directo por WhatsApp y coordiná el trabajo.</p>
           </div>
           <div class="step-card">
             <div class="step-icon">
               <Star class="w-10 h-10 text-orange-600" />
             </div>
-            <h3>4. Calific</h3>
-            <p>Valor al trabajador. Ayud a los honestos a crecer!</p>
+            <h3>4. Calificá ⭐</h3>
+            <p>Valorá al trabajador. ¡Ayudá a los honestos a crecer!</p>
+
           </div>
         </div>
       </div>
@@ -142,14 +144,15 @@ if (trendingTags.length === 0) {
       <div class="map-content-wrapper relative overflow-hidden">
         <div class="map-text relative z-10">
           <h3>
-            <MapPin class="w-8 h-8 inline-block text-yellow-500 mr-2" /> Mapa Interactivo
+            <MapPin class="w-8 h-8 inline-block text-yellow-500 mr-2" /> Mapa Interactivo 📍
           </h3>
-          <p>Fijate quin est trabajando cerca de tu casa ahora mismo.</p>
+          <p>Fijate quién está trabajando cerca de tu casa ahora mismo.</p>
           <a href="/mapa" class="btn-map">Explorar Mapa en Vivo</a>
         </div>
         <MapIcon
           class="absolute -right-10 -bottom-10 w-64 h-64 text-white/10 rotate-12 pointer-events-none"
         />
+
       </div>
     </section>
 
@@ -157,7 +160,8 @@ if (trendingTags.length === 0) {
       destacados.length > 0 && (
         <section class="featured-section container section-pad">
           <div class="section-header">
-            <h2>Profesionales Destacados </h2>
+            <h2>Profesionales Destacados ⭐</h2>
+
             <p>Los suscriptores Premium de la semana.</p>
           </div>
 
@@ -182,10 +186,14 @@ if (trendingTags.length === 0) {
                   <span class="badge-pro">DESTACADO</span>
                 </div>
                 <div class="pro-info">
-                  <h3>{pro.nombre} </h3>
+                  <h3>{pro.nombre} ✅</h3>
                   <span class="category">{pro.categoria}</span>
+                  <p class="zona">📍 {pro.zona || "Zona no disp."}</p>
                   <div class="rating">
-                    {"*".repeat(Math.round(pro.promedio || 5))} <span class="num">({pro.total_votos || 0})</span>
+                    {"★".repeat(Math.round(pro.promedio || 5))}{" "}
+                    <span class="num">({pro.total_votos || 0})</span>
+                  </div>
+
                   </div>
               </a>
             ))}
@@ -196,10 +204,9 @@ if (trendingTags.length === 0) {
 
     <section class="cta-pro section-pad">
       <div class="container">
-        <h2>
-          Sos Profesional? <Briefcase class="w-8 h-8 inline-block text-gray-400" />
-        </h2>
-        <p>Sumate a la red y consegu clientes nuevos.</p>
+        <h2>¿Sos Profesional? <Briefcase class="w-8 h-8 inline-block text-gray-400" /></h2>
+        <p>Sumate a la red y conseguí clientes nuevos.</p>
+
 
         <div class="cta-buttons">
           <a href="/ingresar" class="btn-join">Crear Perfil Gratis</a>
@@ -207,11 +214,12 @@ if (trendingTags.length === 0) {
         </div>
 
         <div style="margin-top: 30px; opacity: 0.8;">
-          <span style="color: #cbd5e1;">Sos un vecino buscando ayuda?</span>
+          <span style="color: #cbd5e1;">¿Sos un vecino buscando ayuda?</span>
           <a
             href="/ingresar-cliente"
             style="color: #fbbf24; font-weight: bold; text-decoration: underline; margin-left: 5px;">
-            Ingresa como Cliente aqu
+            Ingresa como Cliente aquí
+
           </a>
         </div>
       </div>
@@ -227,7 +235,8 @@ if (trendingTags.length === 0) {
     form.addEventListener("submit", () => {
       const term = input.value;
       // Enviamos el dato al backend sin detener el formulario (Fire & Forget)
-      // Usamos navigator.sendBeacon si est disponible para asegurar el envo aunque cambie la pgina
+      // Usamos navigator.sendBeacon si está disponible para asegurar el envío aunque cambie la página
+
       if (term.length > 2) {
         const data = JSON.stringify({ term });
         if (navigator.sendBeacon) {
@@ -262,6 +271,7 @@ if (trendingTags.length === 0) {
     flex-direction: column;
     /* Ensure background follows theme */
     @apply bg-white transition-colors duration-300;
+
   }
   .container {
     width: 100%;
@@ -393,7 +403,7 @@ if (trendingTags.length === 0) {
     text-decoration: none;
     font-weight: 600;
     border: 1px solid rgba(251, 191, 36, 0.3); /* Borde sutil */
-    padding: 5px 12px; /* Apariencia de botn/tag */
+    padding: 5px 12px; /* Apariencia de botón/tag */
     border-radius: 20px;
     background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(4px);
@@ -797,4 +807,3 @@ if (trendingTags.length === 0) {
     }
   }
 </style>
-

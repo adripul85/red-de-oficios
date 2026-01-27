@@ -1,4 +1,4 @@
----
+﻿---
 import { auth, db } from "../../firebase/client";
 import Sidebar from "../../components/panel/Sidebar.astro";
 import MobileSidebar from "../../components/panel/MobileSidebar.astro";
@@ -10,7 +10,8 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         <!-- Google tag (gtag.js) -->
         <script
             async
-            src="https://www.googletagmanager.com/gtag/js?id=G-LG6RPRWWDY"></script>
+src="https://www.googletagmanager.com/gtag/js?id=G-LG6RPRWWDY"
+        ></script>
         <script is:inline>
             window.dataLayer = window.dataLayer || [];
             function gtag() {
@@ -71,15 +72,19 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
             <main class="flex-1 flex flex-col h-screen overflow-hidden">
                 <!-- HEADER -->
                 <header
-                    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
-                    <button id="open-sidebar" class="md:hidden text-2xl mr-4"></button>
+class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6"
+                >
+                    <button id="open-sidebar" class="md:hidden text-2xl mr-4"
+                        >☰</button
+                    >
                     <h2 class="text-lg font-bold text-slate-800">
                         Mi Equipo de Trabajo
                     </h2>
 
                     <button
                         id="btn-add-member"
-                        class="bg-orange-600 hover:bg-orange-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
+class="bg-orange-600 hover:bg-orange-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2"
+                    >
                         <span>+</span> Agregar Miembro
                     </button>
                 </header>
@@ -90,10 +95,11 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         <!-- Total Miembros -->
                         <div
-                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
                             <div class="flex justify-between items-start mb-4">
                                 <div class="p-3 bg-indigo-50 rounded-xl">
-                                    <span class="text-2xl"></span>
+                                    <span class="text-2xl">👥</span>
                                 </div>
                             </div>
                             <p class="text-sm text-slate-500 font-medium mb-1">
@@ -101,17 +107,19 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             </p>
                             <h3
                                 id="stat-total-members"
-                                class="text-3xl font-bold text-indigo-600">
+class="text-3xl font-bold text-indigo-600"
+                            >
                                 0
                             </h3>
                         </div>
 
                         <!-- Derivaciones Pendientes -->
                         <div
-                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
                             <div class="flex justify-between items-start mb-4">
                                 <div class="p-3 bg-orange-50 rounded-xl">
-                                    <span class="text-2xl"></span>
+                                    <span class="text-2xl">💸</span>
                                 </div>
                             </div>
                             <p class="text-sm text-slate-500 font-medium mb-1">
@@ -119,25 +127,28 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             </p>
                             <h3
                                 id="stat-pending-payments"
-                                class="text-3xl font-bold text-orange-600">
+class="text-3xl font-bold text-orange-600"
+                            >
                                 $0
                             </h3>
                         </div>
 
                         <!-- Total Derivado -->
                         <div
-                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
                             <div class="flex justify-between items-start mb-4">
                                 <div class="p-3 bg-green-50 rounded-xl">
-                                    <span class="text-2xl"></span>
+                                    <span class="text-2xl">💰</span>
                                 </div>
                             </div>
                             <p class="text-sm text-slate-500 font-medium mb-1">
-                                Total Derivado (Histrico)
+                                Total Derivado (Histórico)
                             </p>
                             <h3
                                 id="stat-total-derived"
-                                class="text-3xl font-bold text-green-600">
+                                class="text-3xl font-bold text-green-600"
+                            >
                                 $0
                             </h3>
                         </div>
@@ -145,24 +156,26 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     <!-- TEAM MEMBERS GRID -->
                     <div
-                        class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6"
+                    >
                         <h3 class="text-lg font-bold text-slate-800 mb-6">
                             Miembros del Equipo
                         </h3>
 
                         <!-- Empty State -->
                         <div id="empty-state" class="text-center py-12">
-                            <div class="text-6xl mb-4"></div>
+<div class="text-6xl mb-4">👷‍♂️</div>
                             <p class="text-slate-600 font-medium mb-2">
                                 No hay miembros en tu equipo
                             </p>
                             <p class="text-sm text-slate-400 mb-6">
                                 Agrega ayudantes o socios para calcular
-                                derivaciones automticamente
+derivaciones automáticamente
                             </p>
                             <button
                                 onclick="document.getElementById('btn-add-member').click()"
-                                class="bg-orange-600 hover:bg-orange-700 text-white font-bold px-6 py-3 rounded-lg transition">
+                                class="bg-orange-600 hover:bg-orange-700 text-white font-bold px-6 py-3 rounded-lg transition"
+                            >
                                 + Agregar Primer Miembro
                             </button>
                         </div>
@@ -170,7 +183,8 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         <!-- Team Grid -->
                         <div
                             id="team-grid"
-                            class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                        >
                         </div>
                     </div>
                 </div>
@@ -180,9 +194,11 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         <!-- ADD/EDIT MEMBER MODAL -->
         <div
             id="modal-member"
-            class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4"
+        >
             <div
-                class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform scale-95 transition-all">
+                class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform scale-95 transition-all"
+            >
                 <div class="p-6 border-b border-slate-100">
                     <h3 class="text-xl font-bold text-slate-800">
                         Agregar Miembro del Equipo
@@ -192,7 +208,8 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 <form id="form-member" class="p-6 space-y-4">
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">
+class="block text-sm font-bold text-slate-700 mb-2"
+                        >
                             Nombre Completo
                         </label>
                         <input
@@ -200,34 +217,40 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             id="member-nombre"
                             required
                             class="w-full border border-slate-300 rounded-lg px-4 py-2 outline-none focus:border-orange-500"
-                            placeholder="Ej: Juan Prez"
+placeholder="Ej: Juan Pérez"
                         />
                     </div>
 
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">
+class="block text-sm font-bold text-slate-700 mb-2"
+                        >
                             Rol
                         </label>
                         <select
                             id="member-rol"
                             required
-                            class="w-full border border-slate-300 rounded-lg px-4 py-2 outline-none focus:border-orange-500">
+class="w-full border border-slate-300 rounded-lg px-4 py-2 outline-none focus:border-orange-500"
+                        >
                             <option value="ayudante">Ayudante</option>
                             <option value="socio">Socio</option>
-                            <option value="subcontratista">Subcontratista</option>
+                            <option value="subcontratista"
+                                >Subcontratista</option
+                            >
                         </select>
                     </div>
 
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">
+class="block text-sm font-bold text-slate-700 mb-2"
+                        >
                             Tipo de Pago
                         </label>
                         <select
                             id="member-tipo-pago"
                             required
-                            class="w-full border border-slate-300 rounded-lg px-4 py-2 outline-none focus:border-orange-500">
+class="w-full border border-slate-300 rounded-lg px-4 py-2 outline-none focus:border-orange-500"
+                        >
                             <option value="porcentaje">Porcentaje (%)</option>
                             <option value="fijo">Monto Fijo ($)</option>
                         </select>
@@ -235,7 +258,8 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">
+class="block text-sm font-bold text-slate-700 mb-2"
+                        >
                             <span id="label-valor">Porcentaje</span>
                         </label>
                         <input
@@ -254,8 +278,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">
-                            Telfono (opcional)
+class="block text-sm font-bold text-slate-700 mb-2"
+                        >
+                            Teléfono (opcional)
                         </label>
                         <input
                             type="tel"
@@ -269,12 +294,14 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         <button
                             type="button"
                             id="btn-cancel-member"
-                            class="flex-1 border border-slate-300 text-slate-700 font-bold px-4 py-2 rounded-lg hover:bg-slate-50 transition">
+class="flex-1 border border-slate-300 text-slate-700 font-bold px-4 py-2 rounded-lg hover:bg-slate-50 transition"
+                        >
                             Cancelar
                         </button>
                         <button
                             type="submit"
-                            class="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold px-4 py-2 rounded-lg transition">
+class="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold px-4 py-2 rounded-lg transition"
+                        >
                             Guardar
                         </button>
                     </div>
@@ -285,14 +312,17 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         <!-- ALERT MODAL -->
         <div
             id="alert-modal"
-            class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4"
+        >
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
             <div
-                class="bg-white rounded-2xl shadow-2xl w-full max-w-sm transform scale-95 transition-all relative z-10 overflow-hidden">
+                class="bg-white rounded-2xl shadow-2xl w-full max-w-sm transform scale-95 transition-all relative z-10 overflow-hidden"
+            >
                 <div
                     id="alert-header"
-                    class="p-4 border-b border-slate-100 flex items-center gap-3">
-                    <div id="alert-icon" class="text-2xl"></div>
+                    class="p-4 border-b border-slate-100 flex items-center gap-3"
+                >
+                    <div id="alert-icon" class="text-2xl">⚠️</div>
                     <h3 id="alert-title" class="font-bold text-slate-800">
                         Alerta
                     </h3>
@@ -305,12 +335,14 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 <div class="p-4 bg-slate-50 flex gap-3 justify-end">
                     <button
                         id="alert-cancel"
-                        class="hidden px-4 py-2 text-slate-500 font-bold hover:bg-slate-200 rounded-lg transition">
+class="hidden px-4 py-2 text-slate-500 font-bold hover:bg-slate-200 rounded-lg transition"
+                    >
                         Cancelar
                     </button>
                     <button
                         id="alert-ok"
-                        class="flex-1 bg-slate-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-slate-900 transition shadow-lg shadow-slate-200">
+class="flex-1 bg-slate-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-slate-900 transition shadow-lg shadow-slate-200"
+                    >
                         Aceptar
                     </button>
                 </div>
@@ -333,7 +365,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
             } from "firebase/firestore";
 
             (function () {
-                console.log(" [MI EQUIPO] Pgina cargada/navegada");
+console.log("🚀 [MI EQUIPO] Página cargada/navegada");
 
                 const logoutBtn = document.getElementById("btn-logout");
                 const btnAddMember = document.getElementById("btn-add-member");
@@ -407,7 +439,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                 <span class="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded-full">
                                     ${member.tipoPago === "porcentaje" ? member.valor + "%" : "$" + member.valor.toLocaleString()}
                                 </span>
-                                <button onclick="deleteMember('${member.id}', '${member.nombre}')" class="text-red-500 hover:text-red-700 text-xl" title="Eliminar"></button>
+<button onclick="deleteMember('${member.id}', '${member.nombre}')" class="text-red-500 hover:text-red-700 text-xl" title="Eliminar">🗑️</button>
                             </div>
                         </div>
                         <div class="text-xs text-slate-500 space-y-1">
@@ -418,7 +450,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                     ? `
                                 <div class="flex items-center justify-between pt-2 border-t border-slate-200 mt-2">
                                     <p class="text-orange-600 font-bold">Pendiente: $${member.pendientePago.toLocaleString()}</p>
-                                    <button onclick="markAsPaid('${member.id}')" class="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded"> Pagado</button>
+<button onclick="markAsPaid('${member.id}')" class="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded">✓ Pagado</button>
                                 </div>
                             `
                                     : ""
@@ -520,7 +552,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         );
 
                         await showAlert(
-                            "Miembro Agregado!",
+"¡Miembro Agregado!",
                             `${nombre} ha sido agregado a tu equipo.`,
                             "success",
                         );
@@ -542,7 +574,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 window.deleteMember = async (memberId, nombre) => {
                     const confirmed = await showConfirm(
                         "Eliminar Miembro",
-                        `Ests seguro de eliminar a ${nombre} de tu equipo?\nEsto NO eliminar el historial de trabajos anteriores.`,
+`¿Estás seguro de eliminar a ${nombre} de tu equipo?\nEsto NO eliminará el historial de trabajos anteriores.`,
                         "Eliminar",
                         "bg-red-600",
                     );
@@ -579,8 +611,8 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 window.markAsPaid = async (memberId) => {
                     const confirmed = await showConfirm(
                         "Confirmar Pago",
-                        "Confirmas que pagaste todas las derivaciones pendientes a este miembro?",
-                        "S, pagado",
+"¿Confirmas que pagaste todas las derivaciones pendientes a este miembro?",
+                        "Sí, pagado",
                         "bg-green-600",
                     );
 
@@ -660,15 +692,15 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         };
 
                         if (type === "success") {
-                            iconEl.innerText = "";
+iconEl.innerText = "✅";
                             okBtn.className =
                                 "flex-1 bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition shadow-lg shadow-green-200";
                         } else if (type === "error") {
-                            iconEl.innerText = "";
+                            iconEl.innerText = "❌";
                             okBtn.className =
                                 "flex-1 bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition shadow-lg shadow-red-200";
                         } else {
-                            iconEl.innerText = "";
+                            iconEl.innerText = "ℹ️";
                             okBtn.className =
                                 "flex-1 bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition shadow-lg shadow-indigo-200";
                         }
@@ -696,7 +728,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                         titleEl.innerText = title;
                         msgEl.innerText = message;
-                        iconEl.innerText = "";
+iconEl.innerText = "🤔";
 
                         cancelBtn.classList.remove("hidden");
                         cancelBtn.onclick = () => {
@@ -724,4 +756,3 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         </script>
     </body>
 </html>
-

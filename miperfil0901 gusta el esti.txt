@@ -1,0 +1,2402 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { auth } from "../firebase/client";
+import { CATEGORIES } from "../data/categories";
+import { LOCATIONS } from "../data/locations";
+---
+
+<Layout title="Mi Perfil Profesional - DeOficios">
+  <script
+    is:inline
+    src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
+  ></script>
+  <script
+    is:inline
+    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+  ></script>
+
+  <div class="profile-page-wrapper">
+    <div class="profile-container">
+      <aside class="sidebar-column">
+        <div class="sidebar-card admin-card">
+          <div class="avatar-wrapper">
+            <img id="avatar-img" src="" alt="Foto" class="avatar-img hidden" />
+            <div id="avatar-letter" class="avatar-circle">👤</div>
+          </div>
+
+          <h3 id="sidebar-name" class="user-name">Cargando...</h3>
+          <div class="status-badge">En línea 🟢</div>
+
+          <div class="plan-card-sidebar" id="plan-card-container">
+            <small>TU PLAN ACTUAL:</small>
+            <strong id="plan-nombre" class="plan-name-sidebar">...</strong>
+            <div id="plan-detalle" class="plan-status-sidebar">
+              <span class="loading-dots">Verificando...</span>
+            </div>
+            <ul id="plan-benefits-list" class="plan-benefits"></ul>
+            <a href="/planes" class="btn-upgrade-sidebar">Mejorar Plan ⭐</a>
+          </div>
+
+          <nav class="side-menu">
+            <a href="#" id="btn-ver-perfil" target="_blank" class="menu-link"
+              >👀 Ver perfil público</a
+            >
+
+            <a
+              href="/admin"
+              id="btn-admin-panel"
+              class="menu-link hidden admin-link-item">🕵️‍♂️ Panel Admin</a
+            >
+
+            <button id="btn-open-redeem-modal" class="menu-link"
+              >🎁 Canjear Código</button
+            >
+
+            <a href="/foro" class="menu-link">💬 Foro Profesional</a>
+
+            <button id="btn-logout-sidebar" class="logout-btn"
+              >🚪 Cerrar Sesión</button
+            >
+          </nav>
+
+          <div class="danger-zone-sidebar">
+            <button
+              type="button"
+              id="btn-delete-account"
+              class="btn-delete-small">Eliminar Cuenta</button
+            >
+          </div>
+        </div>
+      </aside>
+
+      <section class="main-column">
+        <div class="panel-header">
+          <h1>Editar Mi Perfil 📝</h1>
+        </div>
+
+        <div id="qr-card-container" class="qr-card hidden">
+          <div class="qr-text">
+            <h3>🚀 Tu QR y Credencial (Pack Experto)</h3>
+            <p>Descarga tu QR o genera tu credencial profesional.</p>
+            <div class="qr-buttons">
+              <button
+                type="button"
+                id="btn-download-qr"
+                class="btn-secondary-action">⬇️ Descargar QR</button
+              >
+              <button
+                type="button"
+                id="btn-generate-credential"
+                class="btn-primary-action">🪪 Generar Credencial</button
+              >
+            </div>
+            <p
+              id="credencial-lock-msg"
+              class="text-xs text-orange-300 mt-2 hidden"
+            >
+              🔒 Exclusivo Plan Experto.
+            </p>
+          </div>
+          <div id="qrcode" class="qr-code-box"></div>
+        </div>
+
+        <div class="tabs-header">
+          <button class="tab-btn active" data-tab="tab-datos"
+            >📝 Datos Grales.</button
+          >
+          <button class="tab-btn" data-tab="tab-ubicacion">📍 Ubicación</button>
+          <button class="tab-btn" data-tab="tab-fotos">📸 Galería</button>
+          <button class="tab-btn" data-tab="tab-presupuestos"
+            >💰 Presupuestos</button
+          >
+          <button class="tab-btn" data-tab="tab-redes">🌐 Redes</button>
+        </div>
+
+        <div id="tab-datos" class="tab-content active">
+          <div class="form-section">
+            <h3>Datos Principales</h3>
+            <div class="form-group mb-6">
+              <label class="checkbox-label-aligned">
+                <input type="checkbox" id="es_24hs" class="big-checkbox" />
+                <span class="label-text-24hs"
+                  >🚨 Ofrezco Servicio de Urgencia 24hs</span
+                >
+              </label>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Nombre y Apellido *</label>
+              <input
+                type="text"
+                id="nombre"
+                placeholder="Tu nombre real"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label>Nombre de Fantasía</label>
+              <input
+                type="text"
+                id="nombre_fantasia"
+                placeholder="Ej: Soluciones El Rayo"
+              />
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Rubro Principal *</label>
+              <select id="rubro_principal" required>
+                <option value="">Seleccionar...</option>
+                {
+                  CATEGORIES.map((group) => (
+                    <optgroup label={group.group}>
+                      {group.trades.map((trade) => (
+                        <option value={trade.name}>{trade.name}</option>
+                      ))}
+                    </optgroup>
+                  ))
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Matrícula (Opcional)</label>
+              <input
+                type="text"
+                id="numero_matricula"
+                placeholder="N° Matrícula (M.P. 1234)"
+              />
+            </div>
+          </div>
+
+          <div class="form-group mt-4">
+            <label>Descripción / Bio</label>
+            <textarea
+              id="descripcion"
+              rows="4"
+              placeholder="Cuenta tu experiencia..."></textarea>
+          </div>
+
+          <div class="form-section mt-6 border-t pt-6">
+            <label>Especialidades (Etiquetas)</label>
+            <div class="tags-wrapper">
+              <input
+                type="text"
+                id="tag-input"
+                placeholder="Escribe y agrega..."
+              />
+              <button type="button" id="btn-add-tag" class="btn-tag-add"
+                >Agregar +</button
+              >
+            </div>
+            <div id="tags-list" class="tags-list"></div>
+          </div>
+
+          <div class="form-section mt-6 border-t pt-6">
+            <h3>📞 Contacto y Perfil</h3>
+            <div class="grid-2">
+              <div class="form-group">
+                <label>WhatsApp Comercial *</label>
+                <input
+                  type="tel"
+                  id="telefono"
+                  placeholder="Ej: 11 2345 6789"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label>Foto de Perfil</label>
+                <div class="upload-widget">
+                  <input
+                    type="text"
+                    id="foto"
+                    placeholder="URL o subir..."
+                    readonly
+                    class="input-readonly"
+                  />
+                  <input
+                    type="file"
+                    id="file-foto"
+                    class="hidden-file-input"
+                    accept="image/*"
+                  />
+                  <label for="file-foto" class="btn-upload">📂 Subir</label>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="form-section mt-6 border-t pt-6 relative-lock"
+              style="background-color: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;"
+            >
+              <h3 style="color:#0f172a; margin-bottom: 5px;">
+                🌐 Tu Web Profesional (SEO)
+              </h3>
+              <p class="text-sm text-gray-600 mb-4">
+                Convierte tu perfil en tu página web oficial.
+              </p>
+
+              <div class="form-group">
+                <label>Tu Enlace Personalizado (Slug)</label>
+                <div class="input-prefix-group" style="display: flex;">
+                  <span
+                    class="prefix"
+                    style="background:#e5e7eb; color:#555; padding: 10px; border: 1px solid #d1d5db; border-right: none; border-radius: 8px 0 0 8px;"
+                    >deoficios.com.ar/</span
+                  >
+                  <input
+                    type="text"
+                    id="slug"
+                    placeholder="Generando automáticamente..."
+                    readonly
+                    style="background:#f3f4f6; font-weight:bold; color:#059669; border-radius: 0 8px 8px 0;"
+                  />
+                </div>
+                <small class="text-xs text-gray-500"
+                  >Se genera automáticamente con tu nombre y rubro al guardar.</small
+                >
+              </div>
+
+              <div class="form-group mt-4 relative-lock">
+                <div id="lock-overlay-landing" class="lock-overlay hidden">
+                  <div class="lock-message">
+                    <span>🔒 Modo Landing Page: Plan Experto</span>
+                    <a href="/planes" target="_blank">Desbloquear</a>
+                  </div>
+                </div>
+
+                <label
+                  class="checkbox-label-aligned"
+                  style="background: #f0f9ff; border-color: #bae6fd;"
+                >
+                  <input
+                    type="checkbox"
+                    id="modo_landing"
+                    class="big-checkbox"
+                  />
+                  <div style="margin-left: 10px;">
+                    <span style="display:block; font-weight:700; color:#0369a1;"
+                      >🖥️ Activar "Modo Web Propia"</span
+                    >
+                    <span
+                      style="font-size:0.85rem; color:#0284c7; font-weight:normal;"
+                      >Oculta el menú de DeOficios para que parezca tu sitio web
+                      personal.</span
+                    >
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div
+              class="private-data-box mt-4"
+              style="border: 1px solid #cbd5e1; padding: 20px; border-radius: 12px; background: white;"
+            >
+              <h4
+                style="border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 15px;"
+              >
+                👮‍♂️ Centro de Verificación de Identidad
+              </h4>
+              <p class="text-sm text-gray-500 mb-4">
+                Para obtener la insignia de <strong>VERIFICADO ✅</strong>,
+                necesitamos validar tu identidad. Estos documentos son privados.
+              </p>
+
+              <div class="grid-2">
+                <div class="form-group">
+                  <label>Número de DNI</label>
+                  <input type="number" id="dni" placeholder="Sin puntos" />
+                </div>
+                <div class="form-group">
+                  <label>CUIT / CUIL</label>
+                  <input
+                    type="number"
+                    id="cuit"
+                    placeholder="Para facturación"
+                  />
+                </div>
+              </div>
+
+              <div
+                class="docs-upload-grid"
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;"
+              >
+                <div class="doc-item">
+                  <label class="text-xs font-bold block mb-1"
+                    >Foto DNI (Frente)</label
+                  >
+                  <div class="upload-widget">
+                    <input
+                      type="text"
+                      id="url_dni_frente"
+                      readonly
+                      class="input-readonly text-xs"
+                      placeholder="Pendiente..."
+                    />
+                    <input
+                      type="file"
+                      id="file-dni-frente"
+                      class="hidden-file-input"
+                      accept="image/*"
+                    />
+                    <label for="file-dni-frente" class="btn-upload small"
+                      >Subir 📷</label
+                    >
+                  </div>
+                </div>
+
+                <div class="doc-item">
+                  <label class="text-xs font-bold block mb-1"
+                    >Certif. Antecedentes / Matrícula</label
+                  >
+                  <div class="upload-widget">
+                    <input
+                      type="text"
+                      id="certificado_url"
+                      readonly
+                      class="input-readonly text-xs"
+                      placeholder="Pendiente..."
+                    />
+                    <input
+                      type="file"
+                      id="file-certificado"
+                      class="hidden-file-input"
+                      accept="image/*,application/pdf"
+                    />
+                    <label for="file-certificado" class="btn-upload small"
+                      >Subir 📄</label
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-ubicacion" class="tab-content">
+          <div class="form-section relative-lock">
+            <div class="lock-overlay hidden" id="lock-overlay-map">
+              <div class="lock-message">
+                <span>📍 Mapa disponible desde Plan Profesional</span>
+                <a href="/planes" target="_blank">Ver Planes</a>
+              </div>
+            </div>
+
+            <h3>📍 Ubicación en Mapa</h3>
+            <p class="text-sm mb-3 text-gray-600">
+              Escribí tu dirección exacta para aparecer en el mapa.
+            </p>
+
+            <div class="geo-row relative">
+              <input
+                type="text"
+                id="direccion_input"
+                placeholder="Calle y altura, Localidad..."
+                autocomplete="off"
+                class="input-geo-search"
+              />
+              <ul id="geo-suggestions" class="suggestions-list hidden"></ul>
+            </div>
+
+            <p id="geo-status" class="status-text mt-2">
+              Sin ubicación guardada.
+            </p>
+            <input type="hidden" id="latitud" />
+            <input type="hidden" id="longitud" />
+
+            <div class="form-group mt-6">
+              <label>Barrio / Zona Aproximada *</label>
+              <select id="zona" required>
+                <option value="">Selecciona zona...</option>
+                {
+                  LOCATIONS.map((l) => (
+                    <optgroup label={l.group}>
+                      {l.zones.map((z) => (
+                        <option value={z}>{z}</option>
+                      ))}
+                    </optgroup>
+                  ))
+                }
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-fotos" class="tab-content">
+          <div class="form-section relative-lock">
+            <div id="lock-overlay-photos-free" class="lock-overlay hidden">
+              <div class="lock-message">
+                🔒 Plan Gratuito: Solo 1 foto disponible<br />
+                <a href="/planes">Mejorar a Profesional</a>
+              </div>
+            </div>
+
+            <h3>📸 Portfolio de Trabajos</h3>
+            <p class="mb-4 text-sm text-gray-600">
+              Muestra tus mejores trabajos.
+            </p>
+
+            <div class="portfolio-grid">
+              {
+                /* ✅ AHORA GENERAMOS 12 ESPACIOS PARA FOTOS */
+                Array.from({ length: 12 }, (_, i) => i + 1).map((i) => (
+                  <div class="photo-card" id={`photo-card-${i}`}>
+                    <div class="photo-preview" id={`preview-${i}`}>
+                      <span class="placeholder-text">Foto {i}</span>
+                    </div>
+                    <div class="photo-actions">
+                      <label for={`file-foto${i}`} class="btn-upload small">
+                        📂 Subir
+                      </label>
+                      <button
+                        type="button"
+                        class="btn-delete-photo hidden"
+                        data-index={i}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                    <input
+                      type="file"
+                      id={`file-foto${i}`}
+                      accept="image/*"
+                      class="hidden-input"
+                      onchange={`handlePhotoPreview(this, ${i})`}
+                    />
+                    <input type="hidden" id={`foto${i}`} />
+                  </div>
+                ))
+              }
+            </div>
+
+            <p
+              id="msg-upgrade-photos"
+              class="text-xs text-orange-500 mt-4 text-center hidden"
+            >
+              🔓 Para habilitar 12 fotos, pásate al Plan Experto.
+            </p>
+          </div>
+        </div>
+
+        <div id="tab-presupuestos" class="tab-content">
+          <div class="form-section relative-lock">
+            <div class="lock-overlay hidden" id="lock-overlay-budget">
+              <div class="lock-message">
+                <span>🔒 Presupuestos: Exclusivo Plan Experto</span>
+                <p class="text-xs text-gray-500 mt-1 mb-2">
+                  Permite que tus clientes coticen online.
+                </p>
+                <a href="/planes" target="_blank">Desbloquear Ahora</a>
+              </div>
+            </div>
+
+            <h3>💰 Sistema de Presupuestos</h3>
+            <div class="form-group mb-6">
+              <div class="flex-check-container">
+                <label class="checkbox-label-aligned">
+                  <input
+                    type="checkbox"
+                    id="presupuestos_activo"
+                    class="big-checkbox"
+                  />
+                  <span class="label-text-24hs">🚀 Activar Sistema</span>
+                </label>
+              </div>
+            </div>
+
+            <div id="budget-config-area" class="hidden">
+              <div
+                class="flex justify-between items-center mb-4"
+                style="display:flex; justify-content:space-between; align-items:center;"
+              >
+                <h4 class="mb-0">📋 Servicios</h4>
+                <button
+                  type="button"
+                  id="btn-preview-budget"
+                  class="btn-preview-pdf">👁️ Ver PDF</button
+                >
+              </div>
+
+              <div id="budget-services-list" class="budget-services-container">
+              </div>
+
+              <div class="budget-add-service-form">
+                <h5>➕ Agregar Nuevo Servicio</h5>
+                <div class="grid-3">
+                  <div class="form-group">
+                    <label>Nombre</label><input
+                      type="text"
+                      id="new-service-name"
+                      placeholder="Ej: Instalación"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>Mínimo ($)</label><input
+                      type="number"
+                      id="new-service-min"
+                      placeholder="10000"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>Máximo ($)</label><input
+                      type="number"
+                      id="new-service-max"
+                      placeholder="50000"
+                    />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Descripción</label><textarea
+                    id="new-service-desc"
+                    rows="2"></textarea>
+                </div>
+                <button
+                  type="button"
+                  id="btn-add-budget-service"
+                  class="btn-secondary">➕ Agregar</button
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-redes" class="tab-content">
+          <div class="form-section relative-lock">
+            <div class="lock-overlay hidden" id="lock-overlay-social">
+              <div class="lock-message">
+                <span>🔒 Redes Sociales: Exclusivo Plan Experto</span>
+                <a href="/planes" target="_blank">Desbloquear</a>
+              </div>
+            </div>
+
+            <h3>🌐 Presencia Digital</h3>
+            <div class="form-group">
+              <label>Instagram</label>
+              <div class="input-prefix-group">
+                <span class="prefix">@</span>
+                <input
+                  type="text"
+                  id="instagram"
+                  placeholder="usuario"
+                  class="expert-input"
+                />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Sitio Web</label>
+              <input
+                type="url"
+                id="website"
+                placeholder="https://tu-web.com"
+                class="expert-input"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="save-area">
+          <button type="button" id="btn-trigger-save" class="btn-save-main">
+            💾 Guardar Todos los Cambios
+          </button>
+          <span id="feedback-msg" class="feedback-text"></span>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- 🎁 MODAL DE CANJE DE CÓDIGO -->
+  <div id="redeem-modal" class="modal-overlay-redeem">
+    <div class="modal-content-redeem">
+      <button id="btn-close-redeem" class="modal-close-btn">×</button>
+
+      <div class="modal-header-redeem">
+        <div class="icon-box-redeem">🎁</div>
+        <h2>Canjear Beneficio</h2>
+        <p>Activa tu código promocional y desbloquea funciones exclusivas.</p>
+      </div>
+
+      <div class="modal-body-redeem">
+        <form id="redeem-form-modal" class="form-redeem">
+          <div class="input-group-redeem">
+            <label for="codigo-modal">INGRESA TU CÓDIGO</label>
+            <input
+              type="text"
+              id="codigo-modal"
+              placeholder="EJ: VERANO2024"
+              required
+              autocomplete="off"
+            />
+          </div>
+
+          <button type="submit" id="btn-redeem-modal" class="btn-redeem-submit">
+            <span class="btn-text-redeem">✨ Activar Plan Experto</span>
+            <span class="loader-redeem hidden"></span>
+          </button>
+        </form>
+
+        <div id="message-box-modal" class="message-container-redeem hidden">
+          <div id="icon-status-modal" class="status-icon-redeem"></div>
+          <p id="text-status-modal" class="status-text-redeem"></p>
+        </div>
+      </div>
+
+      <div class="modal-footer-redeem">
+        <small
+          >¿No tienes un código? <a href="/planes">Ver planes disponibles</a
+          ></small
+        >
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { auth, db, storage } from "../firebase/client";
+  import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
+  import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+  import { onAuthStateChanged, signOut, deleteUser } from "firebase/auth";
+
+  // 🔥 SOLUCIÓN: Envolver todo en 'astro:page-load' para que funcione siempre
+  document.addEventListener("astro:page-load", () => {
+    // VARIABLES GLOBALES
+    let tags = [];
+    let budgetServices = [];
+    let currentUid = null;
+    let userPlan = "gratuito";
+    let userData = {};
+
+    // ELEMENTOS DOM
+    // 🔥 CAMBIO CLAVE: Seleccionamos el botón por ID directamente
+    const btnSaveGlobal = document.getElementById("btn-trigger-save");
+    const feedback = document.getElementById("feedback-msg");
+
+    const tagsList = document.getElementById("tags-list");
+    const tagInput = document.getElementById("tag-input");
+    const tabBtns = document.querySelectorAll(".tab-btn");
+    const tabContents = document.querySelectorAll(".tab-content");
+    const inputGeo = document.getElementById("direccion_input");
+    const suggestionsList = document.getElementById("geo-suggestions");
+    const latField = document.getElementById("latitud");
+    const lngField = document.getElementById("longitud");
+    const statusGeo = document.getElementById("geo-status");
+
+    // --- 1. TABS SYSTEM ---
+    tabBtns.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        tabBtns.forEach((b) => b.classList.remove("active"));
+        tabContents.forEach((c) => c.classList.remove("active"));
+        btn.classList.add("active");
+        const targetId = btn.getAttribute("data-tab");
+        document.getElementById(targetId).classList.add("active");
+      });
+    });
+
+    // --- 2. AUTH & LOAD DATA ---
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUid = user.uid;
+        await cargarDatos(currentUid);
+
+        // QR Logic
+        if (userPlan === "semestral" || userPlan === "experto") {
+          document
+            .getElementById("qr-card-container")
+            .classList.remove("hidden");
+          setTimeout(() => {
+            if (typeof QRCode !== "undefined") {
+              const link = userData.slug
+                ? window.location.origin + `/${userData.slug}`
+                : window.location.origin + `/perfil?id=${currentUid}`;
+
+              const qrDiv = document.getElementById("qrcode");
+              if (qrDiv) {
+                qrDiv.innerHTML = "";
+                new QRCode(qrDiv, {
+                  text: link,
+                  width: 110,
+                  height: 110,
+                });
+              }
+            }
+          }, 1000);
+        }
+
+        if (userData.rol === "admin" || userData.rol === "moderador") {
+          document.getElementById("btn-admin-panel").classList.remove("hidden");
+        }
+      } else {
+        window.location.href = "/ingresar";
+      }
+    });
+
+    async function cargarDatos(uid) {
+      try {
+        const docSnap = await getDoc(doc(db, "profesionales", uid));
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          userData = data;
+          userPlan = data.plan ? data.plan.toLowerCase() : "gratuito";
+
+          // Llenar inputs simples
+          const fields = [
+            "nombre",
+            "nombre_fantasia",
+            "rubro_principal",
+            "zona",
+            "numero_matricula",
+            "dni",
+            "cuit",
+            "instagram",
+            "website",
+            "descripcion",
+            "telefono",
+          ];
+          fields.forEach((f) => {
+            const el = document.getElementById(f);
+            if (el) el.value = data[f] || "";
+          });
+
+          if (data.foto) document.getElementById("foto").value = data.foto;
+          if (data.certificado_url)
+            document.getElementById("certificado_url").value =
+              data.certificado_url;
+          // ...
+          if (data.dni_frente)
+            document.getElementById("url_dni_frente").value = data.dni_frente;
+          if (data.slug) document.getElementById("slug").value = data.slug;
+          if (document.getElementById("modo_landing")) {
+            document.getElementById("modo_landing").checked =
+              data.modo_landing || false;
+          }
+          // Control del candado para Landing Mode
+          const lockLanding = document.getElementById("lock-overlay-landing");
+          if (lockLanding) {
+            if (userPlan === "experto") {
+              lockLanding.classList.add("hidden");
+              document.getElementById("modo_landing").disabled = false;
+            } else {
+              lockLanding.classList.remove("hidden");
+              document.getElementById("modo_landing").disabled = true;
+            }
+          }
+
+          // Portfolio (HASTA 12 FOTOS)
+          const port = data.portfolio || [];
+          for (let i = 0; i < 12; i++) {
+            const url = port[i] || "";
+            const el = document.getElementById(`foto${i + 1}`);
+            if (el) {
+              el.value = url;
+              renderPortfolioFromUrl(url, i + 1);
+            }
+          }
+
+          setupFileUploads();
+
+          if (document.getElementById("es_24hs"))
+            document.getElementById("es_24hs").checked = data.es_24hs || false;
+
+          // Tags
+          tags = Array.isArray(data.etiquetas)
+            ? [...data.etiquetas]
+            : data.especialidades_secundarias || [];
+          renderTags();
+
+          // Presupuestos
+          if (data.presupuestos_config) {
+            const checkbox = document.getElementById("presupuestos_activo");
+            if (checkbox)
+              checkbox.checked = data.presupuestos_config.activo || false;
+            budgetServices = data.presupuestos_config.servicios || [];
+            toggleBudgetArea(data.presupuestos_config.activo || false);
+            renderBudgetServices();
+          }
+
+          // Sidebar Info
+          document.getElementById("sidebar-name").textContent =
+            data.nombre || "Usuario";
+          const img = document.getElementById("avatar-img");
+          const letter = document.getElementById("avatar-letter");
+          if (data.foto && data.foto.startsWith("http")) {
+            img.src = data.foto;
+            img.classList.remove("hidden");
+            letter.classList.add("hidden");
+          } else {
+            img.classList.add("hidden");
+            letter.classList.remove("hidden");
+            letter.textContent = data.nombre
+              ? data.nombre[0].toUpperCase()
+              : "U";
+          }
+
+          // Geo
+          if (data.ubicacion_exacta) {
+            latField.value = data.ubicacion_exacta.lat;
+            lngField.value = data.ubicacion_exacta.lng;
+            inputGeo.value = data.ubicacion_exacta.direccion_texto || "";
+            statusGeo.innerText = "✅ Ubicación guardada.";
+            statusGeo.style.color = "#15803d";
+          }
+
+          updatePlanUI(userPlan);
+          updateProfileLink(); // 🔥 Actualizar link después de cargar datos
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // 🔥 NUEVA FUNCIÓN: Actualizar link del perfil público
+    function updateProfileLink() {
+      const btnVerPerfil = document.getElementById("btn-ver-perfil");
+      if (!btnVerPerfil) return;
+
+      // Si tiene modo landing activado Y tiene slug, usar el slug
+      if (userData.modo_landing && userData.slug) {
+        btnVerPerfil.href = `/${userData.slug}`;
+      } else {
+        // Sino, usar el perfil estándar con ID
+        btnVerPerfil.href = `/perfil?id=${currentUid}`;
+      }
+    }
+
+    function updatePlanUI(plan) {
+      const pName = document.getElementById("plan-nombre");
+      const pDetalle = document.getElementById("plan-detalle");
+      const pList = document.getElementById("plan-benefits-list");
+
+      let displayPlan = "Gratuito";
+      let displayDetail = `<span class="badge-plan free">Básico</span>`;
+      let benefits = ["✅ Buscador", "❌ Sin mapa", "📷 1 Foto"];
+      let maxPhotos = 1;
+      let isExpert = false;
+
+      if (plan === "mensual" || plan === "profesional") {
+        displayPlan = "Profesional";
+        displayDetail = `<span class="badge-plan pro">Activo 🚀</span>`;
+        benefits = ["✅ Mapa", "📷 4 Fotos", "❌ Presupuestos", "❌ Redes"];
+        maxPhotos = 4;
+      } else if (plan === "semestral" || plan === "experto") {
+        displayPlan = "Experto";
+        displayDetail = `<span class="badge-plan expert">Semestral 🦁</span>`;
+        benefits = [
+          "⭐ Top Rank",
+          "✅ Mapa+Redes",
+          "✅ Presupuestos",
+          "📷 12 Fotos",
+        ];
+        maxPhotos = 12; // AUMENTADO A 12
+        isExpert = true;
+      }
+
+      if (pName) pName.textContent = displayPlan.toUpperCase();
+      if (pDetalle) pDetalle.innerHTML = displayDetail;
+      if (pList)
+        pList.innerHTML = benefits.map((b) => `<li>${b}</li>`).join("");
+
+      // 1. GESTIÓN DE FOTOS (Ocultar cards extra)
+      for (let i = 1; i <= 12; i++) {
+        const card = document.getElementById(`photo-card-${i}`);
+        if (card) {
+          if (i <= maxPhotos) card.classList.remove("hidden");
+          else card.classList.add("hidden");
+        }
+      }
+
+      const msgUpgradePhotos = document.getElementById("msg-upgrade-photos");
+      if (msgUpgradePhotos) {
+        if (plan === "mensual" || plan === "profesional")
+          msgUpgradePhotos.classList.remove("hidden");
+        else msgUpgradePhotos.classList.add("hidden");
+      }
+
+      toggleLock("lock-overlay-map", plan === "gratuito");
+      toggleLock("lock-overlay-photos-free", plan === "gratuito");
+      toggleLock("lock-overlay-budget", !isExpert);
+      toggleLock("lock-overlay-social", !isExpert);
+
+      const btnCred = document.getElementById("btn-generate-credential");
+      const msgCred = document.getElementById("credencial-lock-msg");
+      if (btnCred && msgCred) {
+        if (!isExpert) {
+          btnCred.disabled = true;
+          btnCred.style.opacity = "0.5";
+          btnCred.style.cursor = "not-allowed";
+          msgCred.classList.remove("hidden");
+        } else {
+          btnCred.disabled = false;
+          btnCred.style.opacity = "1";
+          btnCred.style.cursor = "pointer";
+          msgCred.classList.add("hidden");
+        }
+      }
+    }
+
+    function toggleLock(id, shouldLock) {
+      const el = document.getElementById(id);
+      if (el) {
+        if (shouldLock) el.classList.remove("hidden");
+        else el.classList.add("hidden");
+      }
+    }
+
+    window.handlePhotoPreview = function (input, index) {
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById(`preview-${index}`).innerHTML =
+            `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;" />`;
+          document
+            .querySelector(`.btn-delete-photo[data-index="${index}"]`)
+            ?.classList.remove("hidden");
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    function renderPortfolioFromUrl(url, index) {
+      const previewDiv = document.getElementById(`preview-${index}`);
+      const btnDel = document.querySelector(
+        `.btn-delete-photo[data-index="${index}"]`,
+      );
+      if (url) {
+        previewDiv.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;" />`;
+        if (btnDel) btnDel.classList.remove("hidden");
+      } else {
+        previewDiv.innerHTML = `<span class="placeholder-text">Foto ${index}</span>`;
+        if (btnDel) btnDel.classList.add("hidden");
+      }
+    }
+
+    document.addEventListener("click", (e) => {
+      if (e.target.closest(".btn-delete-photo")) {
+        const index = e.target.closest(".btn-delete-photo").dataset.index;
+        document.getElementById(`file-foto${index}`).value = "";
+        document.getElementById(`foto${index}`).value = "";
+        renderPortfolioFromUrl(null, index);
+      }
+    });
+
+    function setupFileUploads() {
+      const inputs = ["file-foto", "file-certificado", "file-dni-frente"];
+      inputs.forEach((inputId) => {
+        const fileInput = document.getElementById(inputId);
+        let textInputId = "foto";
+        if (inputId === "file-certificado") textInputId = "certificado_url";
+        if (inputId === "file-dni-frente") textInputId = "url_dni_frente";
+
+        const textInput = document.getElementById(textInputId);
+        if (fileInput && textInput) {
+          fileInput.addEventListener("change", (e) => {
+            if (e.target.files[0]) {
+              textInput.value = `📂 Seleccionado: ${e.target.files[0].name}`;
+              textInput.classList.add("pending-upload");
+            }
+          });
+        }
+      });
+    }
+
+    async function uploadFileToStorage(file, path) {
+      if (!storage) throw new Error("Firebase Storage no configurado");
+      const storageRef = ref(storage, path);
+      await uploadBytes(storageRef, file);
+      return await getDownloadURL(storageRef);
+    }
+
+    // --- 5. BUDGET FUNCTIONS ---
+    function toggleBudgetArea(isActive) {
+      const area = document.getElementById("budget-config-area");
+      if (area) {
+        isActive
+          ? area.classList.remove("hidden")
+          : area.classList.add("hidden");
+      }
+    }
+
+    function renderBudgetServices() {
+      const container = document.getElementById("budget-services-list");
+      if (!container) return;
+      if (budgetServices.length === 0) {
+        container.innerHTML =
+          '<p class="text-muted text-sm">No hay servicios agregados aún.</p>';
+        return;
+      }
+      container.innerHTML = budgetServices
+        .map(
+          (s, i) => `
+      <div class="budget-service-item">
+        <div class="budget-service-info">
+          <strong>${s.nombre}</strong>
+          ${s.descripcion ? `<p class="text-sm text-muted">${s.descripcion}</p>` : ""}
+          <span class="budget-price-range">$${s.precio_min} - $${s.precio_max}</span>
+        </div>
+        <button type="button" class="btn-remove-service" data-index="${i}">🗑️</button>
+      </div>
+    `,
+        )
+        .join("");
+
+      container.querySelectorAll(".btn-remove-service").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          budgetServices.splice(parseInt(e.target.dataset.index), 1);
+          renderBudgetServices();
+        });
+      });
+    }
+
+    document
+      .getElementById("btn-add-budget-service")
+      ?.addEventListener("click", () => {
+        const nombre = document.getElementById("new-service-name").value;
+        const min = parseInt(document.getElementById("new-service-min").value);
+        const max = parseInt(document.getElementById("new-service-max").value);
+        const desc = document.getElementById("new-service-desc").value;
+
+        if (!nombre || isNaN(min) || isNaN(max))
+          return alert("Completa los campos obligatorios");
+        budgetServices.push({
+          nombre,
+          precio_min: min,
+          precio_max: max,
+          descripcion: desc,
+        });
+
+        document.getElementById("new-service-name").value = "";
+        document.getElementById("new-service-min").value = "";
+        document.getElementById("new-service-max").value = "";
+        document.getElementById("new-service-desc").value = "";
+        renderBudgetServices();
+      });
+
+    document
+      .getElementById("presupuestos_activo")
+      ?.addEventListener("change", (e) => {
+        toggleBudgetArea(e.target.checked);
+      });
+
+    document
+      .getElementById("btn-preview-budget")
+      ?.addEventListener("click", () => {
+        if (budgetServices.length === 0)
+          return alert("Agrega servicios primero.");
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const colorPrimary = [234, 88, 12];
+        const colorDark = [17, 24, 39];
+        const colorLight = [249, 250, 251];
+        const colorGray = [107, 114, 128];
+
+        doc.setFillColor(...colorPrimary);
+        doc.rect(0, 0, 210, 4, "F");
+        doc.setFillColor(...colorDark);
+        doc.roundedRect(14, 15, 18, 18, 2, 2, "F");
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text((userData.nombre || "D")[0].toUpperCase(), 23, 27, {
+          align: "center",
+        });
+
+        doc.setTextColor(...colorDark);
+        doc.setFontSize(18);
+        doc.text(
+          (
+            userData.nombre_fantasia ||
+            userData.nombre ||
+            "Profesional"
+          ).toUpperCase(),
+          38,
+          20,
+        );
+
+        doc.setFontSize(9);
+        doc.setTextColor(...colorGray);
+        doc.setFont("helvetica", "normal");
+        let yPos = 26;
+        if (userData.rubro_principal) {
+          doc.text(userData.rubro_principal, 38, yPos);
+          yPos += 5;
+        }
+        if (userData.telefono) {
+          doc.text(`WhatsApp: ${userData.telefono}`, 38, yPos);
+        }
+
+        doc.setFontSize(26);
+        doc.setTextColor(230, 230, 230);
+        doc.setFont("helvetica", "bold");
+        doc.text("PRESUPUESTO", 200, 30, { align: "right" });
+        doc.setFontSize(10);
+        doc.setTextColor(...colorDark);
+        doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 200, 40, {
+          align: "right",
+        });
+
+        let y = 60;
+        doc.setFillColor(...colorDark);
+        doc.rect(14, y, 182, 8, "F");
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "bold");
+        doc.text("DESCRIPCIÓN DEL SERVICIO", 18, y + 5);
+        doc.text("RANGO ESTIMADO", 192, y + 5, { align: "right" });
+        y += 14;
+
+        let totalMin = 0;
+        let totalMax = 0;
+        budgetServices.forEach((s, i) => {
+          if (i % 2 === 0) {
+            doc.setFillColor(...colorLight);
+            doc.rect(14, y - 4, 182, 12, "F");
+          }
+          doc.setTextColor(...colorDark);
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "bold");
+          doc.text(s.nombre, 18, y);
+          if (s.descripcion) {
+            doc.setFontSize(8);
+            doc.setTextColor(...colorGray);
+            doc.setFont("helvetica", "normal");
+            doc.text(
+              s.descripcion.substring(0, 70) +
+                (s.descripcion.length > 70 ? "..." : ""),
+              18,
+              y + 4,
+            );
+          }
+          doc.setFontSize(10);
+          doc.setTextColor(...colorDark);
+          doc.setFont("helvetica", "bold");
+          doc.text(
+            `$${Number(s.precio_min).toLocaleString()} - $${Number(s.precio_max).toLocaleString()}`,
+            192,
+            y,
+            { align: "right" },
+          );
+          totalMin += Number(s.precio_min);
+          totalMax += Number(s.precio_max);
+          y += 12;
+        });
+
+        y += 5;
+        doc.setDrawColor(200, 200, 200);
+        doc.line(14, y, 196, y);
+        y += 10;
+        doc.setFillColor(255, 247, 237);
+        doc.roundedRect(120, y, 76, 25, 2, 2, "F");
+        doc.setDrawColor(...colorPrimary);
+        doc.rect(120, y, 76, 25, "S");
+        doc.setFontSize(10);
+        doc.setTextColor(...colorGray);
+        doc.text("Total Estimado:", 125, y + 8);
+        doc.setFontSize(16);
+        doc.setTextColor(...colorPrimary);
+        doc.setFont("helvetica", "bold");
+        doc.text(
+          `$${totalMin.toLocaleString()} - $${totalMax.toLocaleString()}`,
+          192,
+          y + 18,
+          { align: "right" },
+        );
+
+        const h = doc.internal.pageSize.height;
+        doc.setFontSize(8);
+        doc.setTextColor(...colorGray);
+        doc.setFont("helvetica", "normal");
+        doc.text(
+          "Este documento es un presupuesto estimado. Los precios pueden variar.",
+          14,
+          h - 30,
+        );
+        doc.setDrawColor(230, 230, 230);
+        doc.line(14, h - 15, 196, h - 15);
+        doc.setFontSize(7);
+        doc.setTextColor(150, 150, 150);
+        doc.text("Generado en DeOficios.com.ar", 105, h - 10, {
+          align: "center",
+        });
+
+        window.open(doc.output("bloburl"), "_blank");
+      });
+
+    // --- 7. GUARDAR TODO (LOGICA CORREGIDA: CLICK DEL BOTÓN) ---
+    if (btnSaveGlobal) {
+      // 1. Subir DNI Frente
+      let dniFrenteUrl = document.getElementById("url_dni_frente").value;
+      const fileDniFrente = document.getElementById("file-dni-frente").files[0];
+      // Nota: Esta logica de upload se ejecuta dentro del click handler abajo,
+      // aqui solo definimos variables que se usaran si estuvieran fuera, pero
+      // mejor dejar todo dentro del click handler para tener los valores frescos.
+
+      // 2. Generar Slug Automático para "Web Propia"
+      // Igual, mejor dentro del handler.
+
+      btnSaveGlobal.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        const originalText = btnSaveGlobal.textContent;
+        btnSaveGlobal.textContent = "Procesando...";
+        btnSaveGlobal.disabled = true;
+        if (feedback) feedback.textContent = "⏳ Subiendo datos...";
+
+        try {
+          const timestamp = Date.now();
+          let fotoUrl = document.getElementById("foto").value;
+          const fileFoto = document.getElementById("file-foto").files[0];
+
+          if (fileFoto) {
+            btnSaveGlobal.textContent = "Subiendo Perfil...";
+            fotoUrl = await uploadFileToStorage(
+              fileFoto,
+              `profesionales/${currentUid}/perfil_${timestamp}`,
+            );
+          }
+
+          let certUrl = document.getElementById("certificado_url").value;
+          const fileCert = document.getElementById("file-certificado").files[0];
+
+          if (fileCert) {
+            certUrl = await uploadFileToStorage(
+              fileCert,
+              `profesionales/${currentUid}/docs/dni_${timestamp}`,
+            );
+          }
+
+          // DNI FRENTE (NUEVO)
+          let dniFrenteUrl = document.getElementById("url_dni_frente").value;
+          const fileDniFrente =
+            document.getElementById("file-dni-frente").files[0];
+          if (fileDniFrente) {
+            btnSaveGlobal.textContent = "Subiendo DNI...";
+            dniFrenteUrl = await uploadFileToStorage(
+              fileDniFrente,
+              `profesionales/${currentUid}/docs/dni_frente_${timestamp}`,
+            );
+          }
+
+          let portfolio = [];
+          // GUARDAR HASTA 12 FOTOS
+          for (let i = 1; i <= 12; i++) {
+            let url = document.getElementById(`foto${i}`).value;
+            const file = document.getElementById(`file-foto${i}`).files[0];
+            if (file) {
+              btnSaveGlobal.textContent = `Subiendo Foto ${i}...`;
+              url = await uploadFileToStorage(
+                file,
+                `profesionales/${currentUid}/portfolio/img${i}_${timestamp}`,
+              );
+            }
+            if (url && url.includes("📂")) url = "";
+            if (url && url.trim()) portfolio.push(url.trim());
+          }
+
+          // GENERAR SLUG
+          const nombreRaw =
+            document.getElementById("nombre").value || "usuario";
+          const rubroRaw =
+            document.getElementById("rubro_principal").value || "general";
+          const cleanString = (str) =>
+            str
+              .toLowerCase()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .replace(/[^a-z0-9]/g, "-");
+          const slugBase = `${cleanString(rubroRaw)}-${cleanString(nombreRaw)}`;
+          const slugFinal = `${slugBase}-${currentUid.slice(0, 5)}`;
+
+          const updates = {
+            nombre: document.getElementById("nombre").value,
+            nombre_fantasia: document.getElementById("nombre_fantasia").value,
+            rubro_principal: document.getElementById("rubro_principal").value,
+            categoria: document.getElementById("rubro_principal").value,
+            numero_matricula: document.getElementById("numero_matricula").value,
+            descripcion: document.getElementById("descripcion").value,
+            telefono: document.getElementById("telefono").value,
+            foto: fotoUrl,
+            portfolio: portfolio,
+            etiquetas: tags,
+            instagram: document
+              .getElementById("instagram")
+              .value.replace("@", ""),
+            website: document.getElementById("website").value,
+            es_24hs: document.getElementById("es_24hs").checked,
+            dni: document.getElementById("dni").value,
+            cuit: document.getElementById("cuit").value,
+            certificado_url: certUrl,
+            dni_frente: dniFrenteUrl, // Guardamos DNI
+            zona: document.getElementById("zona").value,
+
+            slug: slugFinal,
+            modo_landing:
+              document.getElementById("modo_landing")?.checked || false,
+
+            ubicacion_exacta:
+              latField.value && lngField.value
+                ? {
+                    lat: parseFloat(latField.value),
+                    lng: parseFloat(lngField.value),
+                    direccion_texto: inputGeo.value,
+                  }
+                : null,
+            presupuestos_config: {
+              activo:
+                document.getElementById("presupuestos_activo")?.checked ||
+                false,
+              servicios: budgetServices,
+            },
+          };
+
+          await setDoc(doc(db, "profesionales", currentUid), updates, {
+            merge: true,
+          });
+
+          document.getElementById("slug").value = slugFinal;
+
+          if (feedback) {
+            feedback.textContent = "✅ Guardado con éxito!";
+            feedback.style.color = "green";
+          }
+          await cargarDatos(currentUid);
+          updateProfileLink(); // 🔥 Actualizar link después de guardar
+        } catch (err) {
+          console.error(err);
+          alert("Error al guardar: " + err.message);
+          if (feedback) {
+            feedback.textContent = "❌ Error al guardar";
+            feedback.style.color = "red";
+          }
+        } finally {
+          btnSaveGlobal.textContent = "💾 Guardar Todos los Cambios";
+          btnSaveGlobal.disabled = false;
+          setTimeout(() => {
+            if (feedback) feedback.textContent = "";
+          }, 3000);
+        }
+      });
+    }
+
+    // --- 8. TAGS ---
+    function renderTags() {
+      tagsList.innerHTML = "";
+      tags.forEach((t, i) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "tag-item";
+        b.innerHTML = `${t} <span class="tag-close">×</span>`;
+        b.onclick = () => {
+          tags.splice(i, 1);
+          renderTags();
+        };
+        tagsList.appendChild(b);
+      });
+    }
+    document.getElementById("btn-add-tag")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      const val = tagInput.value.trim();
+      if (val && !tags.includes(val) && tags.length < 10) {
+        tags.push(val);
+        tagInput.value = "";
+        renderTags();
+      }
+    });
+
+    // --- 9. LOGOUT & DELETE ---
+    document
+      .getElementById("btn-logout-sidebar")
+      ?.addEventListener("click", async () => {
+        await signOut(auth);
+        window.location.href = "/";
+      });
+    document
+      .getElementById("btn-delete-account")
+      ?.addEventListener("click", async () => {
+        if (confirm("¿Eliminar?")) {
+          await deleteDoc(doc(db, "profesionales", currentUid));
+          await deleteUser(auth.currentUser);
+          window.location.href = "/";
+        }
+      });
+
+    // --- 10. GEO ---
+    let debounceTimer;
+    inputGeo?.addEventListener("input", (e) => {
+      const query = e.target.value;
+      if (query.length < 4) {
+        suggestionsList.classList.add("hidden");
+        return;
+      }
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(async () => {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=ar`,
+        );
+        const results = await res.json();
+        suggestionsList.innerHTML = "";
+        if (results.length > 0) {
+          suggestionsList.classList.remove("hidden");
+          results.forEach((place) => {
+            const li = document.createElement("li");
+            li.textContent = place.display_name
+              .split(",")
+              .slice(0, 3)
+              .join(",");
+            li.onclick = () => {
+              inputGeo.value = li.textContent;
+              latField.value = place.lat;
+              lngField.value = place.lon;
+              statusGeo.innerText = "📍 Ubicación seleccionada.";
+              statusGeo.style.color = "#ea580c";
+              suggestionsList.classList.add("hidden");
+            };
+            suggestionsList.appendChild(li);
+          });
+        }
+      }, 400);
+    });
+  });
+
+  // 🎁 --- MODAL DE CANJE DE CÓDIGO ---
+  const btnOpenModal = document.getElementById("btn-open-redeem-modal");
+  const redeemModal = document.getElementById("redeem-modal");
+  const btnCloseModal = document.getElementById("btn-close-redeem");
+  const redeemForm = document.getElementById("redeem-form-modal");
+  const codigoInput = document.getElementById("codigo-modal");
+  const btnRedeemSubmit = document.getElementById("btn-redeem-modal");
+  const btnTextRedeem = btnRedeemSubmit?.querySelector(".btn-text-redeem");
+  const loaderRedeem = btnRedeemSubmit?.querySelector(".loader-redeem");
+  const msgBoxModal = document.getElementById("message-box-modal");
+  const msgIconModal = document.getElementById("icon-status-modal");
+  const msgTextModal = document.getElementById("text-status-modal");
+
+  // Abrir modal
+  btnOpenModal?.addEventListener("click", () => {
+    redeemModal.classList.add("open");
+    codigoInput.value = "";
+    msgBoxModal.classList.add("hidden");
+  });
+
+  // Cerrar modal
+  btnCloseModal?.addEventListener("click", () => {
+    redeemModal.classList.remove("open");
+  });
+
+  // Cerrar al hacer click fuera
+  redeemModal?.addEventListener("click", (e) => {
+    if (e.target === redeemModal) {
+      redeemModal.classList.remove("open");
+    }
+  });
+
+  // Enviar formulario
+  redeemForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (!currentUid) {
+      showModalMessage("error", "Debes iniciar sesión");
+      return;
+    }
+
+    const codigo = codigoInput.value.trim().toUpperCase();
+    if (codigo.length < 4) {
+      showModalMessage("error", "Código inválido");
+      return;
+    }
+
+    // Estado de carga
+    setModalLoading(true);
+    msgBoxModal.classList.add("hidden");
+
+    try {
+      const res = await fetch("/api/canjear", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          codigoUsuario: codigo,
+          uid: currentUid,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        showModalMessage("success", data.message);
+        redeemForm.style.display = "none";
+
+        // Recargar datos del usuario para actualizar el plan
+        setTimeout(async () => {
+          await cargarDatos(currentUid);
+          setTimeout(() => {
+            redeemModal.classList.remove("open");
+            redeemForm.style.display = "block";
+            alert(
+              "✅ ¡Plan actualizado! Recarga la página para ver los cambios.",
+            );
+            window.location.reload();
+          }, 2000);
+        }, 1500);
+      } else {
+        showModalMessage("error", data.error);
+      }
+    } catch (error) {
+      showModalMessage("error", "Error de conexión. Intenta nuevamente.");
+    } finally {
+      setModalLoading(false);
+    }
+  });
+
+  function setModalLoading(isLoading) {
+    if (isLoading) {
+      btnRedeemSubmit.disabled = true;
+      btnTextRedeem.classList.add("hidden");
+      loaderRedeem.classList.remove("hidden");
+    } else {
+      btnRedeemSubmit.disabled = false;
+      btnTextRedeem.classList.remove("hidden");
+      loaderRedeem.classList.add("hidden");
+    }
+  }
+
+  function showModalMessage(type, text) {
+    msgBoxModal.classList.remove("hidden");
+    msgBoxModal.className = `message-container-redeem ${type}`;
+    msgTextModal.textContent = text;
+
+    if (type === "success") {
+      msgIconModal.textContent = "🎉";
+    } else {
+      msgIconModal.textContent = "⚠️";
+      // Animación de temblor
+      codigoInput.classList.add("shake-input");
+      setTimeout(() => codigoInput.classList.remove("shake-input"), 500);
+    }
+  }
+</script>
+
+<style>
+  /* =========================================
+     1. RESET & BASE (MOBILE FIRST)
+     Estos estilos aplican a TODOS los dispositivos por defecto
+     ========================================= */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box; /* CLAVE: Evita que el padding rompa el ancho */
+  }
+
+  :root {
+    --primary: #ea580c;
+    --bg-body: #f9fafb;
+    --surface: #ffffff;
+    --text-main: #1f2937;
+    --text-muted: #6b7280;
+    --radius: 12px;
+  }
+
+  .profile-page-wrapper {
+    background-color: var(--bg-body);
+    min-height: 100vh;
+    padding: 15px; /* Espacio seguro bordes móvil */
+    padding-bottom: 100px; /* Espacio extra abajo para el botón guardar flotante */
+    font-family: "Inter", sans-serif;
+    color: var(--text-main);
+    overflow-x: hidden; /* Prevenir scroll horizontal fantasma */
+  }
+
+  .profile-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex; /* En móvil es una columna (Flex vertical) */
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* =========================================
+     2. SIDEBAR (PANEL DE USUARIO) - MÓVIL
+     ========================================= */
+  .sidebar-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .avatar-wrapper {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #f3f4f6;
+    border: 3px solid white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .avatar-circle {
+    font-size: 2.5rem;
+  }
+
+  .user-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 5px 0;
+    color: var(--text-main);
+  }
+
+  .status-badge {
+    background: #ecfdf5;
+    color: #059669;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    border: 1px solid #d1fae5;
+  }
+
+  /* Menú de Botones en Móvil: Grilla 2x2 para ahorrar espacio */
+  .side-menu {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    margin-top: 10px;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+  }
+
+  .menu-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .logout-btn {
+    grid-column: 1 / -1; /* Ocupa todo el ancho abajo */
+    width: 100%;
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fee2e2;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  /* Ocultamos cosas innecesarias en móvil para limpiar la vista */
+  .plan-card-sidebar,
+  .danger-zone-sidebar {
+    display: none;
+  }
+  /* El botón de admin se muestra dinámicamente via JS cuando el usuario es admin */
+
+  /* =========================================
+     3. CONTENIDO PRINCIPAL - MÓVIL
+     ========================================= */
+  .main-column {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .panel-header {
+    display: none;
+  } /* El título sobra en móvil */
+
+  /* QR Card (Apilada) */
+  .qr-card {
+    background: #1e293b;
+    color: white;
+    padding: 15px;
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .qr-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    justify-content: center;
+  }
+  .btn-primary-action,
+  .btn-secondary-action {
+    flex: 1;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-primary-action {
+    background: var(--primary);
+    color: white;
+  }
+  .btn-secondary-action {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+  .qr-code-box {
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 15px auto 0;
+    width: fit-content;
+  }
+
+  /* TABS (Pestañas Scrollables) */
+  .tabs-header {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto; /* Scroll horizontal */
+    padding-bottom: 5px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e5e7eb;
+
+    /* Sticky: Se pegan arriba al bajar */
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 20;
+    padding-top: 10px;
+  }
+
+  .tab-btn {
+    background: #f3f4f6;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    white-space: nowrap; /* Evita saltos de línea */
+    flex-shrink: 0; /* No se aplastan */
+  }
+  .tab-btn.active {
+    background: #1f2937;
+    color: white;
+  }
+
+  .tab-content {
+    display: none;
+    animation: fadeIn 0.3s;
+  }
+  .tab-content.active {
+    display: block;
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* FORMULARIOS */
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+  }
+
+  /* Inputs al 100% de ancho siempre */
+  input,
+  select,
+  textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 16px; /* Evita zoom en iPhone */
+    background: #fcfcfc;
+  }
+
+  /* Checkbox aligned */
+  .checkbox-label-aligned {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 8px;
+    width: 100%;
+  }
+  .big-checkbox {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--primary);
+    flex-shrink: 0;
+  }
+
+  /* Grillas (Por defecto 1 columna en móvil) */
+  .grid-2,
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  /* Fotos */
+  .portfolio-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 fotos por fila en móvil */
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .photo-preview {
+    aspect-ratio: 1;
+    background: #f3f4f6;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: #999;
+    overflow: hidden;
+  }
+  .btn-upload {
+    width: 100%;
+    padding: 8px;
+    background: #374151;
+    color: white;
+    text-align: center;
+    border-radius: 6px;
+    margin-top: 5px;
+    display: block;
+  }
+
+  /* BOTÓN GUARDAR (FLOTANTE EN MÓVIL) */
+  .save-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    border-top: 1px solid #eee;
+    padding: 15px 20px;
+    z-index: 100;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .btn-save-main {
+    width: 100%;
+    max-width: 400px;
+    background: linear-gradient(to right, var(--primary), #d946ef);
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .feedback-text {
+    font-size: 0.9rem;
+    margin-top: 5px;
+    font-weight: bold;
+    color: green;
+  }
+
+  /* Utils para inputs especiales */
+  .input-prefix-group {
+    display: flex;
+  }
+  .prefix {
+    background: #e5e7eb;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    border: 1px solid #d1d5db;
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    font-size: 0.85rem;
+    color: #555;
+  }
+  .expert-input,
+  .input-slug {
+    border-radius: 0 8px 8px 0 !important;
+  }
+
+  /* Bloqueos */
+  .relative-lock {
+    position: relative;
+  }
+  .lock-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(2px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5;
+  }
+  .lock-message {
+    background: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
+  /* Presupuestos */
+  .budget-service-item {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .budget-price-range {
+    background: #dcfce7;
+    color: #166534;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+  }
+
+  .tags-wrapper {
+    display: flex;
+    gap: 5px;
+  }
+  .btn-tag-add {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 0 15px;
+    border-radius: 0 8px 8px 0;
+  }
+  .tag-item {
+    background: #ffedd5;
+    padding: 4px 8px;
+    border-radius: 12px;
+    margin: 2px;
+    display: inline-block;
+    font-size: 0.85rem;
+    border: 1px solid #fed7aa;
+    cursor: pointer;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  /* =========================================
+     4. TABLET & DESKTOP (PANTALLAS > 900px)
+     Aquí transformamos el layout a 2 columnas
+     ========================================= */
+  @media (min-width: 900px) {
+    .profile-page-wrapper {
+      padding: 30px;
+      padding-bottom: 30px; /* Reset del padding bottom móvil */
+    }
+
+    .profile-container {
+      display: grid;
+      grid-template-columns: 300px 1fr; /* Sidebar fija | Contenido */
+      align-items: start;
+    }
+
+    /* Sidebar Desktop */
+    .sidebar-card {
+      position: sticky;
+      top: 20px;
+      padding: 30px;
+      border-right: 1px solid #e5e7eb;
+    }
+    .avatar-wrapper {
+      width: 120px;
+      height: 120px;
+    }
+
+    /* Mostrar elementos ocultos en móvil */
+    .plan-card-sidebar,
+    .danger-zone-sidebar {
+      display: block;
+    }
+
+    /* Menú vertical normal */
+    .side-menu {
+      display: flex;
+      flex-direction: column;
+      border: none;
+      margin-top: 20px;
+    }
+    .menu-link {
+      justify-content: flex-start;
+      background: transparent;
+      border: 1px solid transparent;
+    }
+    .menu-link:hover {
+      background: #f3f4f6;
+    }
+    .logout-btn {
+      background: transparent;
+      border: none;
+      border-top: 1px solid #eee;
+      color: red;
+    }
+
+    /* Main Content Desktop */
+    .main-column {
+      padding: 40px;
+      min-height: 80vh;
+    }
+    .panel-header {
+      display: block;
+      margin-bottom: 30px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    .panel-header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+    }
+
+    /* QR Horizontal */
+    .qr-card {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      text-align: left;
+    }
+    .qr-buttons {
+      justify-content: flex-start;
+      margin-top: 0;
+    }
+    .qr-code-box {
+      margin: 0;
+    }
+
+    /* Grillas Desktop */
+    .grid-2 {
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+    .grid-3 {
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+    }
+
+    .portfolio-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    /* Botón Guardar Desktop (No flotante) */
+    .save-area {
+      position: static; /* Ya no es fixed */
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      margin-top: 40px;
+      padding: 0;
+    }
+    .btn-save-main {
+      width: auto;
+      padding: 15px 60px;
+    }
+  }
+
+  /* =========================================
+     MODAL DE CANJE DE CÓDIGO
+     ========================================= */
+  .modal-overlay-redeem {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .modal-overlay-redeem.open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal-content-redeem {
+    background: white;
+    width: 90%;
+    max-width: 450px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    position: relative;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+  }
+
+  .modal-overlay-redeem.open .modal-content-redeem {
+    transform: scale(1);
+  }
+
+  .modal-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.1);
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s;
+    color: white;
+  }
+
+  .modal-close-btn:hover {
+    background: rgba(0, 0, 0, 0.2);
+    transform: rotate(90deg);
+  }
+
+  .modal-header-redeem {
+    background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+    padding: 40px 30px;
+    color: white;
+    text-align: center;
+  }
+
+  .icon-box-redeem {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+    animation: float-icon 3s ease-in-out infinite;
+  }
+
+  .modal-header-redeem h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 800;
+  }
+
+  .modal-header-redeem p {
+    margin: 5px 0 0;
+    font-size: 0.95rem;
+    opacity: 0.9;
+  }
+
+  .modal-body-redeem {
+    padding: 30px;
+  }
+
+  .input-group-redeem {
+    text-align: left;
+    margin-bottom: 25px;
+  }
+
+  .input-group-redeem label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #6b7280;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+
+  .input-group-redeem input {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.5rem;
+    text-align: center;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #1f2937;
+    transition: all 0.3s;
+    background: #f9fafb;
+    box-sizing: border-box;
+  }
+
+  .input-group-redeem input:focus {
+    outline: none;
+    border-color: #ea580c;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.1);
+  }
+
+  .btn-redeem-submit {
+    width: 100%;
+    background: #111827;
+    color: white;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .btn-redeem-submit:hover {
+    transform: translateY(-2px);
+    background: #000;
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-redeem-submit:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .loader-redeem {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #fff;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation-loader 1s linear infinite;
+  }
+
+  .message-container-redeem {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    animation: slideUp-msg 0.3s ease-out;
+  }
+
+  .message-container-redeem.success {
+    background: #f0fdf4;
+    border: 1px dashed #22c55e;
+    color: #15803d;
+  }
+
+  .message-container-redeem.error {
+    background: #fef2f2;
+    border: 1px dashed #ef4444;
+    color: #991b1b;
+  }
+
+  .status-icon-redeem {
+    font-size: 2rem;
+    margin-bottom: 5px;
+  }
+
+  .status-text-redeem {
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .modal-footer-redeem {
+    background: #f9fafb;
+    padding: 15px;
+    border-top: 1px solid #e5e7eb;
+    color: #6b7280;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+
+  .modal-footer-redeem a {
+    color: #ea580c;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .shake-input {
+    animation: shake-anim 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  }
+
+  @keyframes float-icon {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes rotation-loader {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes slideUp-msg {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes shake-anim {
+    10%,
+    90% {
+      transform: translate3d(-1px, 0, 0);
+    }
+    20%,
+    80% {
+      transform: translate3d(2px, 0, 0);
+    }
+    30%,
+    50%,
+    70% {
+      transform: translate3d(-4px, 0, 0);
+    }
+    40%,
+    60% {
+      transform: translate3d(4px, 0, 0);
+    }
+  }
+</style>

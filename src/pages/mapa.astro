@@ -12,14 +12,16 @@ const profesionales = snapshot.docs
     const data = doc.data();
     const zona = data.zona || "";
 
-    // ---  FILTRO DE SEGURIDAD: OCULTAR FREE ---
+    // --- 🔥 FILTRO DE SEGURIDAD: OCULTAR FREE ---
+
     const plan = data.plan || "gratuito";
     // Si el plan es alguno de estos, NO lo mostramos en el mapa
     if (plan === "semilla" || plan === "gratuito" || plan === "prueba_gratis") {
       return null;
     }
 
-    // 1. Ubicacin exacta
+    // 1. Ubicación exacta
+
     let lat = null,
       lng = null;
 
@@ -27,7 +29,8 @@ const profesionales = snapshot.docs
       lat = data.ubicacion_exacta.lat;
       lng = data.ubicacion_exacta.lng;
     }
-    // 2. Barrio Genrico (Fallback)
+    // 2. Barrio Genérico (Fallback)
+
     else if (BARRIOS_COORDENADAS && BARRIOS_COORDENADAS[zona]) {
       const coords = BARRIOS_COORDENADAS[zona];
       const noise = () => (Math.random() - 0.5) * 0.008;
@@ -35,14 +38,16 @@ const profesionales = snapshot.docs
       lng = coords[1] + noise();
     }
 
-    // Clasificacin para el color del pin
+    // Clasificación para el color del pin
+
     const esExperto = data.plan === "experto" || data.plan === "semestral";
     const esPro = data.plan === "mensual" || data.plan === "profesional";
 
     let nivel = "basico";
     if (esExperto) nivel = "experto";
     else if (esPro) nivel = "pro";
-    else return null; // Eliminar pines azules (bsicos)
+    else return null; // Eliminar pines azules (básicos)
+
 
     return {
       id: doc.id,
@@ -62,18 +67,22 @@ const prosJson = JSON.stringify(profesionales);
   <div class="map-page">
     <div class="map-sidebar">
       <div class="flex items-center gap-2 mb-4">
-        <span class="text-3xl"></span>
+        <span class="text-3xl">🗺️</span>
+
         <h1 class="text-xl font-bold text-gray-900">Mapa en Vivo</h1>
       </div>
 
       <button
         id="btn-locate"
-        class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow hover:bg-blue-700 transition flex items-center justify-center gap-2 text-sm">
-        <span></span> Ver mi ubicacin
+        class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow hover:bg-blue-700 transition flex items-center justify-center gap-2 text-sm"
+      >
+        <span>📍</span> Ver mi ubicación
       </button>
 
       <div
-        class="bg-gray-100 p-3 rounded-lg flex justify-between items-center text-sm mt-3">
+        class="bg-gray-100 p-3 rounded-lg flex justify-between items-center text-sm mt-3"
+      >
+
         <span class="font-bold text-gray-700">{profesionales.length}</span>
         <span class="text-gray-500">Profesionales activos</span>
       </div>
@@ -96,24 +105,36 @@ const prosJson = JSON.stringify(profesionales);
           />
           <span class="text-gray-600">Profesional</span>
         </div>
+<div class="flex items-center gap-2">
+          <img
+            src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png"
+            width="12"
+          />
+          <span class="text-gray-600">Estándar</span>
+        </div>
       </div>
 
       <div
-        class="mt-auto bg-gray-900 p-4 rounded-xl text-center text-white mt-4">
-        <p class="text-xs text-gray-400 mb-2">Quieres destacar aqu?</p>
+        class="mt-auto bg-gray-900 p-4 rounded-xl text-center text-white mt-4"
+      >
+        <p class="text-xs text-gray-400 mb-2">¿Quieres destacar aquí?</p>
         <a
           href="/planes"
-          class="block bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold py-2 rounded-lg transition">
-           Obtener Pin Rojo
+          class="block bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold py-2 rounded-lg transition"
+        >
+          🚀 Obtener Pin Rojo
         </a>
       </div>
 
       <a
         href="/"
-        class="block text-center text-gray-500 text-xs hover:text-orange-600 font-bold mt-2"> Volver al listado</a>
+        class="block text-center text-gray-500 text-xs hover:text-orange-600 font-bold mt-2"
+        >⬅ Volver al listado</a
+      >
     </div>
 
     <div id="map" class="map-container touch-none"></div>
+
   </div>
 </Layout>
 
@@ -123,39 +144,44 @@ const prosJson = JSON.stringify(profesionales);
 />
 <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+
 <script is:inline define:vars={{ prosJson }}>
   // Variable global para limpiar el mapa anterior
   let mapInstance = null;
 
   document.addEventListener("astro:page-load", () => {
-    console.log(" [MAPA] Inicializando mapa...");
+    console.log("🗺️ [MAPA] Inicializando mapa...");
 
     const mapContainer = document.getElementById("map");
     if (!mapContainer) {
-      console.error(" [MAPA] Contenedor #map no encontrado");
+      console.error("❌ [MAPA] Contenedor #map no encontrado");
+
       return;
     }
 
     // Limpiar mapa anterior si existe
     if (mapInstance) {
-      console.log(" [MAPA] Limpiando mapa anterior...");
+      console.log("🧹 [MAPA] Limpiando mapa anterior...");
+
       try {
         mapInstance.off();
         mapInstance.remove();
       } catch (e) {
-        console.warn(" [MAPA] Error limpiando mapa:", e);
+        console.warn("⚠️ [MAPA] Error limpiando mapa:", e);
+
       }
       mapInstance = null;
     }
 
     // Limpiar completamente el contenedor HTML
     mapContainer.innerHTML = "";
-    // Remover el ID interno de Leaflet para permitir reinicializacin
+    // Remover el ID interno de Leaflet para permitir reinicialización
     delete mapContainer._leaflet_id;
 
-    // Esperar a que Leaflet est disponible
+    // Esperar a que Leaflet esté disponible
     if (typeof L === "undefined") {
-      console.error(" [MAPA] Leaflet no est cargado");
+      console.error("❌ [MAPA] Leaflet no está cargado");
+
       setTimeout(() => {
         if (typeof L !== "undefined") {
           initMap();
@@ -167,19 +193,22 @@ const prosJson = JSON.stringify(profesionales);
     initMap();
 
     function initMap() {
-      console.log(" [MAPA] Creando instancia de mapa...");
+      console.log("✅ [MAPA] Creando instancia de mapa...");
+
 
       // Iniciar Mapa (Centro Buenos Aires por defecto)
       mapInstance = L.map("map", { zoomControl: false }).setView(
         [-34.6037, -58.3816],
         6,
-      ); // Zoom 6 para ver el pas
+      ); // Zoom 6 para ver el país
+
       L.control.zoom({ position: "bottomright" }).addTo(mapInstance);
 
       L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
         {
-          attribution: " OpenStreetMap",
+          attribution: "© OpenStreetMap",
+
           maxZoom: 19,
         },
       ).addTo(mapInstance);
@@ -201,7 +230,8 @@ const prosJson = JSON.stringify(profesionales);
       const blueIcon = IconFactory("blue"); // BASIC
 
       const pros = JSON.parse(prosJson);
-      console.log(` [MAPA] Agregando ${pros.length} marcadores...`);
+      console.log(`📍 [MAPA] Agregando ${pros.length} marcadores...`);
+
       const markers = [];
 
       // Agregar Marcadores
@@ -243,22 +273,23 @@ const prosJson = JSON.stringify(profesionales);
           padding: [50, 50],
           maxZoom: 15,
         });
-        console.log(" [MAPA] Mapa inicializado correctamente");
+console.log("✅ [MAPA] Mapa inicializado correctamente");
       } else {
-        console.warn(" [MAPA] No hay marcadores para mostrar");
+        console.warn("⚠️ [MAPA] No hay marcadores para mostrar");
       }
     }
 
-    // Geolocalizacin
+    // Geolocalización
     const btnLocate = document.getElementById("btn-locate");
     if (btnLocate) {
       btnLocate.addEventListener("click", () => {
-        btnLocate.innerHTML = "<span></span> Buscando...";
+        btnLocate.innerHTML = "<span>🔄</span> Buscando...";
         mapInstance.locate({ setView: true, maxZoom: 15 });
       });
     }
     mapInstance.on("locationfound", (e) => {
-      // User request: "Eliminar el punto azul el estndar"
+      // User request: "Eliminar el punto azul el estándar"
+
       // L.circle(e.latlng, { radius: e.accuracy / 2, color: "blue" }).addTo(mapInstance);
 
       // Instead, maybe just a custom marker or nothing, but for now we silence the blue circle.
@@ -270,7 +301,8 @@ const prosJson = JSON.stringify(profesionales);
       });
       L.marker(e.latlng, { icon: userIcon }).addTo(mapInstance);
 
-      if (btnLocate) btnLocate.innerHTML = "<span></span> Ests aqu";
+      if (btnLocate) btnLocate.innerHTML = "<span>✅</span> Estás aquí";
+
     });
   });
 </script>
@@ -318,5 +350,6 @@ const prosJson = JSON.stringify(profesionales);
       gap: 10px;
     }
   }
+</style>
 </style>
 

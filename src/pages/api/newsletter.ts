@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
-import { db } from '../../firebase/client';
-import { collection, addDoc, query, where, getDocs, Timestamp } from 'firebase/firestore';
+import { dbAdmin } from '../../firebase/admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 export const POST: APIRoute = async ({ request }) => {
     try {
@@ -10,18 +10,17 @@ export const POST: APIRoute = async ({ request }) => {
             return new Response(JSON.stringify({ error: "Email inválido" }), { status: 400 });
         }
 
-        // 1. Verificar si ya existe
-        const q = query(collection(db, "newsletter"), where("email", "==", email));
-        const snap = await getDocs(q);
+        // 1. Verificar si ya existe (Usando Admin SDK para bypassear reglas)
+        const snap = await dbAdmin.collection("newsletter").where("email", "==", email).get();
 
         if (!snap.empty) {
             return new Response(JSON.stringify({ success: true, message: "Ya estás suscrito" }), { status: 200 });
         }
 
         // 2. Guardar nuevo suscriptor
-        await addDoc(collection(db, "newsletter"), {
+        await dbAdmin.collection("newsletter").add({
             email,
-            fecha: Timestamp.now(),
+            fecha: new Date(), // FieldValue.serverTimestamp() a veces da problemas en serialización simple
             activo: true
         });
 

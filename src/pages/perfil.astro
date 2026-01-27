@@ -1,11 +1,13 @@
----
+﻿---
 import Layout from "../layouts/Layout.astro";
 import { db } from "../firebase/client";
+import { doc, getDoc, updateDoc, increment } from "firebase/firestore";
+
 import ModernProfileCard from "../components/ModernProfileCard.astro";
 import ProfileLightbox from "../components/profile/ProfileLightbox.jsx";
 import ProfileBudgetModal from "../components/profile/ProfileBudgetModal.jsx";
 import ProfileReviews from "../components/profile/ProfileReviews.jsx";
-import { doc, getDoc, updateDoc, increment } from "firebase/firestore";
+
 
 const id = Astro.url.searchParams.get("id");
 let profesional = null;
@@ -31,45 +33,50 @@ if (profesional.slug && profesional.web_propia) {
     return Astro.redirect(`/${profesional.slug}`);
 }
 
-// --- LGICA DE VISUALIZACIN ---
+
+// --- LÓGICA DE VISUALIZACIÓN ---
+
 const esExperto =
     profesional.plan === "experto" || profesional.plan === "semestral";
 const mostrarComoLanding = esExperto && profesional.web_propia;
-const promedio = profesional.promedio || 0;
-const votos = profesional.total_votos || 0;
+const promedio = profesional.puntuacion || profesional.promedio || 0;
+const votos = profesional.total_valoraciones || profesional.total_votos || 0;
 const ubicacion = profesional.zona || "Argentina";
 
 const portfolioJson = JSON.stringify(profesional.portfolio || []);
 const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
+const profesionalJson = JSON.stringify(profesional);
+
 
 const seoTitle = profesional.seo_nombre || `${profesional.nombre} | DeOficios`;
 const seoDescription =
     profesional.seo_profesion ||
     `Contacta a ${profesional.nombre}, ${profesional.rubro_principal} en ${ubicacion}. Ver perfil, fotos y opiniones.`;
-const serviceIcons = {
-    "Aire Acondicionado": "",
-    Electricidad: "",
-    Electricista: "",
-    Gasista: "",
-    Plomero: "",
-    Plomera: "",
-    Pintor: "",
-    Albail: "",
-    Construccin: "",
-    Flete: "",
-    Mudanza: "",
-    Jardinera: "",
-    Limpieza: "",
-    Carpintero: "",
-    Herrero: "",
-    Mecnico: "",
-    Cerrajero: "",
-    Techista: "",
-    Durlock: "",
+const serviceIcons: Record<string, string> = {
+    "Aire Acondicionado": "❄️",
+    Electricidad: "⚡",
+    Electricista: "⚡",
+    Gasista: "🔥",
+    Plomero: "🚰",
+    Plomería: "🚰",
+    Pintor: "🎨",
+    Albañil: "🧱",
+    Construcción: "🏗️",
+    Flete: "🚚",
+    Mudanza: "📦",
+    Jardinería: "🌿",
+    Limpieza: "🧹",
+    Carpintero: "🪚",
+    Herrero: "⚔️",
+    Mecánico: "🔧",
+    Cerrajero: "🔑",
+    Techista: "🏠",
+    Durlock: "🏗️",
 };
 
-const getServiceIcon = (serviceName) => {
-    if (!serviceName || typeof serviceName !== "string") return "";
+const getServiceIcon = (serviceName: any) => {
+    if (!serviceName || typeof serviceName !== "string") return "🛠️";
+
     // Buscar coincidencia parcial
     const lowerName = serviceName.toLowerCase();
     for (const key in serviceIcons) {
@@ -77,13 +84,14 @@ const getServiceIcon = (serviceName) => {
             return serviceIcons[key];
         }
     }
-    return ""; // Icono por defecto
+    return "🛠️"; // Icono por defecto
 };
 
 const mappedServices = (profesional.servicios_lista || [])
-    .filter((s) => s)
+    .filter((s: any) => s)
     .slice(0, 4)
-    .map((s) => {
+    .map((s: any) => {
+
         const name = typeof s === 'string' ? s : (s.nombre || s.label || s.servicio || "Servicio");
         return {
             label: name,
@@ -105,16 +113,17 @@ if (hasFullProfile) xp += 200;
 const hasPortfolio = (profesional.portfolio || []).length >= 3;
 if (hasPortfolio) xp += 150;
 
-const hasGoodRating = (profesional.promedio || 0) >= 4.5;
+const hasGoodRating = (profesional.puntuacion || profesional.promedio || 0) >= 4.5;
 if (hasGoodRating) xp += 300;
 
 // Levels
 const levels = [
-    { name: "Novato ", threshold: 0 },
-    { name: "Aprendiz ", threshold: 500 },
-    { name: "Profesional ", threshold: 1500 },
-    { name: "Experto ", threshold: 5000 },
-    { name: "Maestro ", threshold: 50000 },
+    { name: "Novato 🌱", threshold: 0 },
+    { name: "Aprendiz 🔨", threshold: 500 },
+    { name: "Profesional 👷", threshold: 1500 },
+    { name: "Experto 🦁", threshold: 5000 },
+    { name: "Maestro 👑", threshold: 50000 },
+
 ];
 
 let currentLevel = levels[0];
@@ -131,10 +140,17 @@ for (let i = 0; i < levels.length; i++) {
     image={profesional.foto}
     hideHeader={mostrarComoLanding}
     hideFooter={mostrarComoLanding}
-    hideIA={mostrarComoLanding}>
+    hideIA={mostrarComoLanding}
+>
+    <!-- Map Script (Head) -->
     <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- jsPDF Script -->
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <script is:inline>
+        // Map Initialization
         document.addEventListener("astro:page-load", () => {
             const mapContainer = document.getElementById("mini-map");
             if (mapContainer && window.L) {
@@ -158,14 +174,25 @@ for (let i = 0; i < levels.length; i++) {
                         },
                     ).addTo(map);
 
-                    const customIcon = L.divIcon({
-                        className: "custom-div-icon",
-                        html: "<div style='background-color: #ea580c; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);'></div>",
-                        iconSize: [12, 12],
-                        iconAnchor: [6, 6],
-                    });
+                    L.circle([lat, lng], {
+                        color: '#f97316', // Primary Orange
+                        fillColor: '#f97316',
+                        fillOpacity: 0.15,
+                        radius: 800, // 800 meters approx
+                        weight: 1
+                    }).addTo(map);
 
-                    L.marker([lat, lng], { icon: customIcon }).addTo(map);
+                    // Add text label for context
+                     L.popup({
+                        closeButton: false,
+                        autoClose: false,
+                        closeOnClick: false,
+                        className: 'zone-popup text-center font-bold text-xs',
+                        offset: [0, -10]
+                    })
+                    .setLatLng([lat, lng])
+                    .setContent('<div class="text-orange-600">Zona de Cobertura</div>')
+                    .openOn(map);
                 }
             }
         });
@@ -181,12 +208,14 @@ for (let i = 0; i < levels.length; i++) {
                     avatar={profesional.foto}
                     location={ubicacion}
                     rating={promedio.toFixed(1)}
-                    priceInfo={profesional.presupuestos_config?.activo ? "Presupuestos sin cargo" : (profesional.precio_visita ? `Precio visita: $${Number(profesional.precio_visita).toLocaleString('es-AR')}` : "Consultar precio")}
+                    priceInfo={profesional.presupuestos_config?.activo ? "Presupuestos sin cargo" : (profesional.precio_visita ? `Precio visita: $ ${Number(profesional.precio_visita).toLocaleString('es-AR')}` : "Consultar precio")}
                     services={mappedServices}
                     bio={profesional.descripcion}
                     experience={profesional.experiencia}
                     category={profesional.rubro_principal}
                     tags={profesional.etiquetas}
+                    
+                    /* Security Feature props */
                     id="btn-whatsapp-contact"
                     whatsappUrl="#"
                     data-whatsapp={profesional.telefono}
@@ -198,7 +227,7 @@ for (let i = 0; i < levels.length; i++) {
                 </div>
             </div>
         ) : (
-            /* MODO DIRECTORIO (NUEVO DISEO) */
+            /* MODO DIRECTORIO (NUEVO DISEÑO) */
             <div id="profile-directory" data-id={idProfesional} data-profesional-json={JSON.stringify(profesional)} class="bg-background-light font-sans min-h-screen text-neutral-black">
                <div class="max-w-5xl mx-auto px-6 md:px-12 lg:px-24 pt-8">
                      <a href="/resultados" class="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-primary transition-colors">
@@ -213,7 +242,7 @@ for (let i = 0; i < levels.length; i++) {
                              <div class="relative group">
                                 <img src={profesional.foto || ("https://ui-avatars.com/api/?name=" + profesional.nombre + "&background=random")} class="w-28 h-40 md:w-36 md:h-52 rounded-full border-4 border-white shadow-lg object-cover" />
                                 {profesional.verificado && (
-                                    <div class="absolute bottom-2 right-2 bg-green-500 size-4 rounded-full border-2 border-white shadow-sm" title="En lnea"></div>
+                                    <div class="absolute bottom-2 right-2 bg-green-500 size-4 rounded-full border-2 border-white shadow-sm" title="En línea"></div>
                                 )}
                              </div>
                              <div class="flex-1">
@@ -224,24 +253,28 @@ for (let i = 0; i < levels.length; i++) {
                                             <span class="text-sm font-bold text-neutral-gray text-center md:text-left">{profesional.nombre_fantasia}</span>
                                          )}
                                     </div>
-                                    {profesional.cuit && (
-                                        <span class="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded border border-slate-200" title="CUIT/CUIL">
-                                            {profesional.cuit}
-                                        </span>
-                                    )}
+                                    
+
                                     {profesional.matricula?.es_matriculado && (
                                         <span class="bg-primary/10 text-primary text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest border border-primary/20 whitespace-nowrap">
-                                            Matrcula: {profesional.matricula.numero || "Verificada"}
+                                            Matrícula: {profesional.matricula.numero || "Verificada"}
                                         </span>
                                     )}
                                      <span class="bg-black text-white text-[10px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-sm border border-transparent whitespace-nowrap" title={"Nivel calculado: " + xp + " XP"}>
                                         {currentLevel.name}
                                     </span>
+                                    
+                                    <!-- MEDALS -->
+                                    <div class="flex items-center gap-1">
+                                        {hasFullProfile && <span class="text-lg" title="Perfil Completo">🏅</span>}
+                                        {hasPortfolio && <span class="text-lg" title="Portfolio Destacado">🎨</span>}
+                                        {hasGoodRating && <span class="text-lg" title="Excelente Reputación">⭐</span>}
+                                        {profesional.verificado && <span class="text-lg" title="Identidad Verificada">🛡️</span>}
+                                    </div>
                                 </div>
                                 <p class="text-neutral-gray-dark font-medium flex items-center justify-center md:justify-start gap-1.5 text-sm">
                                     <span class="material-symbols-outlined text-primary text-base">location_on</span>
-                                    <span class="capitalize">{ubicacion}</span>
-                                      
+                                    <span class="capitalize">{ubicacion}</span> • 
                                     {profesional.verificado && (
                                         <span class="text-primary font-bold">Identidad Verificada</span>
                                     )}
@@ -253,7 +286,7 @@ for (let i = 0; i < levels.length; i++) {
                                      <div class="flex items-center gap-1.5">
                                         <span class="material-symbols-outlined text-primary fill-1 text-lg">star</span>
                                         <span class="font-bold text-neutral-black text-base">{promedio.toFixed(1)}</span>
-                                        <span class="text-neutral-gray text-xs font-medium">({votos} reseas)</span>
+                                        <span class="text-neutral-gray text-xs font-medium">({votos} reseñas)</span>
                                      </div>
                                      <div class="flex items-center gap-2 text-neutral-gray text-xs font-medium">
                                         <span class="material-symbols-outlined text-lg">work</span>
@@ -261,12 +294,23 @@ for (let i = 0; i < levels.length; i++) {
                                      </div>
                                 </div>
                              </div>
+                             
+                            <!-- FAVORITES BUTTON -->
+                             <button
+                                id="btn-toggle-fav"
+                                class="p-3 rounded-full bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm border border-slate-200 group flex-shrink-0"
+                                title="Guardar en Favoritos"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                            </button>
                         </div>
                    </section>
 
                     <!-- NAV TABS -->
                     <nav class="flex border-b border-neutral-gray-light mb-10 overflow-x-auto">
-                        <a class="flex-shrink-0 border-b-4 border-primary px-8 py-5 text-sm font-extrabold text-neutral-black tracking-widest uppercase" href="#sobre-mi">Sobre m</a>
+                        <a class="flex-shrink-0 border-b-4 border-primary px-8 py-5 text-sm font-extrabold text-neutral-black tracking-widest uppercase" href="#sobre-mi">Sobre mí</a>
                         <a class="flex-shrink-0 border-b-4 border-transparent px-8 py-5 text-sm font-bold text-neutral-gray hover:text-primary transition-colors tracking-widest uppercase" href="#portfolio">Trabajos</a>
                         <a class="flex-shrink-0 border-b-4 border-transparent px-8 py-5 text-sm font-bold text-neutral-gray hover:text-primary transition-colors tracking-widest uppercase" href="#reviews-section">Opiniones</a>
                     </nav>
@@ -279,19 +323,19 @@ for (let i = 0; i < levels.length; i++) {
                             <section id="sobre-mi" class="bg-white rounded-xl p-10 shadow-subtle border border-neutral-gray-light">
                                 <h2 class="text-lg font-black text-neutral-black mb-6 tracking-tight">Experiencia y Trayectoria</h2>
                                 <div class="space-y-4 text-neutral-gray-dark leading-relaxed text-sm whitespace-pre-line">
-                                    {profesional.descripcion || "Este profesional no ha detallado su experiencia an."}
+                                    {profesional.descripcion || "Este profesional no ha detallado su experiencia aún."}
                                 </div>
 
                                 <div class="mt-10">
                                     <h3 class="text-xs font-black text-neutral-gray uppercase tracking-[0.2em] mb-6">Servicios Ofrecidos</h3>
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        {profesional.servicios_lista?.map((s) => (
+                                        {profesional.servicios_lista?.map((s: any) => (
                                             <div class="flex items-center gap-3 p-3 rounded-xl bg-white border border-neutral-gray-light hover:border-primary/40 transition-colors">
                                                 <span class="material-symbols-outlined text-primary text-xl">check_circle</span>
                                                 <span class="text-xs font-bold text-neutral-black capitalize">{typeof s === 'object' ? (s.nombre || s.label || "Servicio") : s}</span>
                                             </div>
                                         ))}
-                                        {profesional.etiquetas?.map((tag) => (
+                                        {profesional.etiquetas?.map((tag: string) => (
                                             <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-primary/40 transition-colors">
                                                 <span class="material-symbols-outlined text-primary text-xl">check_circle</span>
                                                 <span class="text-xs font-bold text-slate-600 capitalize">{tag}</span>
@@ -334,7 +378,7 @@ for (let i = 0; i < levels.length; i++) {
                              <!-- Contact Card -->
                             <div class="sticky-card bg-white rounded-2xl p-8 shadow-elevated border border-neutral-gray-light z-40">
                                 <div class="mb-8">
-                                    <h3 class="text-2xl font-black text-neutral-black mb-2">Contratacin</h3>
+                                    <h3 class="text-2xl font-black text-neutral-black mb-2">Contratación</h3>
                                     <div class="flex items-center gap-2 text-sm text-green-600 font-bold uppercase tracking-widest">
                                         <span class="size-2.5 bg-green-500 rounded-full animate-pulse shadow-sm"></span>
                                         Disponible
@@ -348,13 +392,13 @@ for (let i = 0; i < levels.length; i++) {
                                             data-pro-id={idProfesional}
                                             data-pro-name={profesional.nombre}
                                             class="w-full flex items-center justify-center gap-3 bg-[#25D366] text-white rounded-xl py-4.5 font-black shadow-lg hover:opacity-95 transition-all text-base h-16">
-                                            <span class="text-2xl"></span> WhatsApp
+                                            <span class="text-2xl">💬</span> WhatsApp
                                         </button>
                                      )}
                                      
                                      {profesional.servicios_lista?.length > 0 && (
-                                        <button onclick="window.openBudgetModal()" class="w-full flex items-center justify-center gap-3 bg-neutral-black text-black rounded-xl py-4.5 font-black shadow-lg hover:bg-primary transition-all text-base h-16">
-                                            <span class="text-2xl"></span> Ver Tarifario
+                                        <button onclick="window.openBudgetModal()" class="w-full flex items-center justify-center gap-3 bg-muted-gray text-white rounded-xl py-4.5 font-black shadow-lg hover:bg-primary transition-all text-base h-16">
+                                            <span class="text-2xl">📄</span> Ver Presupuestos
                                         </button>
                                      )}
                                 </div>
@@ -366,23 +410,21 @@ for (let i = 0; i < levels.length; i++) {
                                     <div class="flex justify-between items-center text-sm">
                                         <span class="text-neutral-gray font-bold uppercase tracking-wider text-[11px]">Presupuesto</span>
                                         <span class="font-black text-primary">
-                                            {profesional.presupuestos_config?.activo 
-                                              ? "Sin Cargo" 
-                                              : (profesional.precio_visita ? `$${Number(profesional.precio_visita).toLocaleString('es-AR')}` : "Consultar")}
+                                            {profesional.presupuestos_config?.activo ? "Sin Cargo" : "Consultar"}
                                         </span>
                                     </div>
                                     <div class="flex justify-between items-center text-sm">
                                         <span class="text-neutral-gray font-bold uppercase tracking-wider text-[11px]">Factura</span>
                                         <span class="font-black text-neutral-black">
-                                            {profesional.emite_factura ? "S (A/B/C)" : "No especificado"}
+                                            {profesional.emite_factura ? "Sí (A/B/C)" : "No especificado"}
                                         </span>
                                     </div>
 
                                     {profesional.garantia?.ofrece && (
                                         <div class="flex justify-between items-center text-sm">
-                                            <span class="text-neutral-gray font-bold uppercase tracking-wider text-[11px]">Garanta</span>
+                                            <span class="text-neutral-gray font-bold uppercase tracking-wider text-[11px]">Garantía</span>
                                             <span class="font-black text-green-600">
-                                                {profesional.garantia.tiempo ? `${profesional.garantia.tiempo} das` : "S"}
+                                                {profesional.garantia.tiempo ? `${profesional.garantia.tiempo} días` : "Sí"}
                                             </span>
                                         </div>
                                     )}
@@ -398,7 +440,7 @@ for (let i = 0; i < levels.length; i++) {
                                         <div class="flex flex-col gap-1 text-sm pt-2 border-t border-dashed border-neutral-gray-light">
                                             <span class="text-neutral-gray font-bold uppercase tracking-wider text-[11px]">Medios de Pago</span>
                                             <div class="flex flex-wrap gap-1">
-                                                {profesional.formas_pago.map((pago) => (
+                                                {profesional.formas_pago.map((pago: string) => (
                                                     <span class="bg-slate-50 text-slate-600 px-2 py-0.5 rounded textxs border border-slate-100">{pago}</span>
                                                 ))}
                                             </div>
@@ -406,17 +448,21 @@ for (let i = 0; i < levels.length; i++) {
                                     )}
 
                                     {profesional.zonas && profesional.zonas.length > 0 && (
-                                        <div class="flex flex-col gap-1 text-sm pt-2 border-t border-dashed border-neutral-gray-light">
+                                        <div class="flex flex-col gap-2 text-sm pt-4 border-t border-dashed border-neutral-gray-light">
                                             <span class="text-neutral-gray font-bold uppercase tracking-wider text-[11px]">Zonas de Cobertura</span>
-                                            <p class="text-neutral-black font-medium text-xs leading-relaxed">
-                                                {profesional.zonas.map((z) => typeof z === 'object' ? (z.nombre || z.label) : z).join(", ")}
-                                            </p>
+                                            <div class="flex flex-wrap gap-1.5">
+                                                {profesional.zonas.map((z: any) => (
+                                                    <span class="bg-blue-50 text-blue-700 px-2 py-1 rounded-lg text-xs font-semibold border border-blue-100">
+                                                        {typeof z === 'object' ? (z.nombre || z.label) : z}
+                                                    </span>
+                                                ))}
+                                            </div>
                                         </div>
                                     )}
                                     <div class="pt-4">
-                                         <a href="/reportar" class="text-red-400 text-xs font-bold hover:text-red-500 flex items-center gap-1 justify-center">
-                                            <span></span> Reportar este perfil
-                                        </a>
+                                         <button id="btn-report-profile" class="text-red-400 text-xs font-bold hover:text-red-500 flex items-center gap-1 justify-center w-full transition-colors">
+                                            <span>🚩</span> Reportar este perfil
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -427,10 +473,10 @@ for (let i = 0; i < levels.length; i++) {
                                 </div>
                             )}
 
-                            <div class="bg-primary/[0.03] rounded-2xl p-8 border border-primary/20">
+                            <div class="bg-primary/5 rounded-2xl p-8 border border-primary/20">
                                 <h4 class="font-black text-primary mb-3 flex items-center gap-2 uppercase text-xs tracking-[0.15em]">
                                     <span class="material-symbols-outlined text-xl">shield</span>
-                                    Garanta Oficios
+                                    Garantía Oficios
                                 </h4>
                                 <p class="text-sm text-neutral-gray-dark leading-relaxed font-semibold">
                                     Los trabajos realizados cuentan con el respaldo de nuestra comunidad. Verifica siempre la identidad del profesional.
@@ -444,7 +490,6 @@ for (let i = 0; i < levels.length; i++) {
     }
 
     <ProfileLightbox client:load images={profesional.portfolio || []} />
-
     <ProfileBudgetModal
         client:load
         services={profesional.servicios_lista}
@@ -454,7 +499,7 @@ for (let i = 0; i < levels.length; i++) {
         proMat={profesional.matricula}
     />
 
-    <script is:inline>
+    <script>
         document.addEventListener("astro:page-load", () => {
             const btnContact = document.getElementById("btn-whatsapp-contact");
             if (!btnContact) return;
@@ -462,7 +507,7 @@ for (let i = 0; i < levels.length; i++) {
             btnContact.addEventListener("click", async (e) => {
                 e.preventDefault();
                 
-                // Intentar obtener idProfesional desde el atributo data si no est disponible directamente
+                // Intentar obtener idProfesional desde el atributo data si no está disponible directamente
                 const proId = btnContact.getAttribute("data-pro-id");
                 const proName = btnContact.getAttribute("data-pro-name");
                 const whatsapp = btnContact.getAttribute("data-whatsapp");
@@ -472,25 +517,25 @@ for (let i = 0; i < levels.length; i++) {
                     return;
                 }
 
-                // Generar token de 4 dgitos
+                // Generar token de 4 dígitos
                 const safetyToken = Math.floor(1000 + Math.random() * 9000).toString();
 
                 if (typeof Swal === 'undefined') {
-                    // Fallback si SweetAlert no carg
-                    window.open(`https://wa.me/549${whatsapp}?text=Hola ${proName}, te contacto desde DeOficios. Mi cdigo es ${safetyToken}`, "_blank");
+                    // Fallback si SweetAlert no cargó
+                    window.open(`https://wa.me/549${whatsapp}?text=Hola ${proName}, te contacto desde DeOficios. Mi código es ${safetyToken}`, "_blank");
                     return;
                 }
 
                 Swal.fire({
-                    title: " Cdigo de Seguridad",
+                    title: "🔐 Código de Seguridad",
                     html: `
-                        <p class="mb-4 text-gray-600">Tu codigo de verificacion para <strong>${proName}</strong> es:</p>
+                        <p class="mb-4 text-gray-600">Tu código de verificación para <strong>${proName}</strong> es:</p>
                         <div class="text-4xl font-black tracking-widest text-orange-600 bg-orange-50 py-4 rounded-xl border-2 border-orange-200 mb-4 shadow-inner">
                             ${safetyToken}
                         </div>
-                        <p class="text-xs text-gray-500 uppercase font-black tracking-tight">Mostrale este codigo al profesional al llegar</p>
+                        <p class="text-xs text-gray-500 uppercase font-black tracking-tight">Mostrale este código al profesional al llegar</p>
                     `,
-                    confirmButtonText: "Ir a WhatsApp ",
+                    confirmButtonText: "Ir a WhatsApp 💬",
                     confirmButtonColor: "#16a34a",
                     showCancelButton: true,
                     cancelButtonText: "Cancelar",
@@ -501,7 +546,7 @@ for (let i = 0; i < levels.length; i++) {
                 }).then(async (result) => {
                     if (result.isConfirmed) {
                         try {
-                            // Import dinmico para no cargar firebase si no es necesario al inicio
+                            // Import dinámico para no cargar firebase si no es necesario al inicio
                             const { addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
                             const { db, auth } = await import("/src/firebase/client.js");
                             
@@ -519,20 +564,20 @@ for (let i = 0; i < levels.length; i++) {
                             });
 
                             // Abrir WhatsApp
-                            const waUrl = `https://wa.me/549${whatsapp}?text=${encodeURIComponent(`Hola ${proName}, te contacto desde DeOficios. Mi cdigo de seguridad es ${safetyToken}`)}`;
+                            const waUrl = `https://wa.me/549${whatsapp}?text=${encodeURIComponent(`Hola ${proName}, te contacto desde DeOficios. Mi código de seguridad es ${safetyToken}`)}`;
                             window.open(waUrl, "_blank");
 
-                            // Feedback prompt despus de unos segundos
+                            // Feedback prompt después de unos segundos
                             setTimeout(() => {
                                 Swal.fire({
-                                    title: "Pudiste contactarlo? ",
+                                    title: "¿Pudiste contactarlo? 🤔",
                                     text: "Tu feedback nos ayuda a mejorar.",
                                     icon: "question",
                                     showDenyButton: true,
                                     showCancelButton: true,
-                                    confirmButtonText: " S",
-                                    denyButtonText: " No contest",
-                                    cancelButtonText: " Reportar",
+                                    confirmButtonText: "✅ Sí",
+                                    denyButtonText: "🚫 No contestó",
+                                    cancelButtonText: "🚩 Reportar",
                                     confirmButtonColor: "#16a34a",
                                     denyButtonColor: "#ef4444",
                                 }).then(async (res) => {
@@ -561,8 +606,159 @@ for (let i = 0; i < levels.length; i++) {
                 });
             });
         });
+
+
+        // CONSOLIDATED CLIENT LOGIC (Bundled)
+        import { auth, db } from "../firebase/client";
+        import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, setDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
+        import { onAuthStateChanged } from "firebase/auth";
+
+        document.addEventListener("astro:page-load", async () => {
+             console.log("🚀 Profile page loaded - checking elements");
+
+             // 1. REPORT PROFILE LOGIC
+             const btnReport = document.getElementById("btn-report-profile");
+             const profileDiv = document.getElementById("profile-directory");
+             
+             console.log("Report Btn:", btnReport, "Profile Div:", profileDiv);
+
+             if(btnReport && profileDiv) {
+                 btnReport.addEventListener("click", () => {
+                     // @ts-ignore
+                     const Swal = window.Swal;
+
+                     if (!Swal) {
+                         alert("Error: Librería de alertas no cargada.");
+                         return;
+                     }
+
+                     Swal.fire({
+                        title: '🚩 Reportar Perfil',
+                        text: '¿Por qué quieres reportar a este profesional?',
+                        input: 'select',
+                        inputOptions: {
+                            'fraude': 'Posible Fraude',
+                            'trato': 'Mal trato / Comportamiento ofensivo',
+                            'spam': 'Spam / Publicidad engañosa',
+                            'identidad': 'Suplantación de identidad',
+                            'otro': 'Otro motivo'
+                        },
+                        inputPlaceholder: 'Selecciona una razón',
+                        showCancelButton: true,
+                        confirmButtonText: 'Enviar Reporte',
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonText: 'Cancelar',
+                        inputValidator: (value) => {
+                            return !value && 'Debes seleccionar un motivo';
+                        }
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                             try {
+                                await addDoc(collection(db, "reportes"), {
+                                    idProfesional: profileDiv.dataset.id,
+                                    motivo: result.value,
+                                    fecha: serverTimestamp(),
+                                    reportadoPor: auth.currentUser ? auth.currentUser.uid : 'anonimo'
+                                });
+
+                                Swal.fire('Reporte Enviado', 'Nuestro equipo revisará el caso.', 'success');
+                             } catch(e) {
+                                 console.error("Error al enviar reporte:", e);
+                                 Swal.fire('Error', 'No se pudo enviar el reporte', 'error');
+                             }
+                        }
+                    });
+                 });
+             }
+
+             // 2. FAVORITES LOGIC
+             const btnFav = document.getElementById("btn-toggle-fav");
+             if(btnFav && profileDiv) {
+                 const idProfesional = profileDiv.dataset.id;
+                 let profesionalJson = {};
+                 try {
+                    profesionalJson = JSON.parse(profileDiv.dataset.profesionalJson);
+                 } catch(e) { console.error("Error parsing pro json", e); }
+
+                 onAuthStateChanged(auth, async (user) => {
+                     if(!user) return; 
+
+                     const favRef = doc(db, "favoritos", user.uid);
+                     let isFav = false;
+
+                     try {
+                        const favSnap = await getDoc(favRef);
+                        if(favSnap.exists()) {
+                            const data = favSnap.data();
+                            const list = data.profesionales || [];
+                            isFav = list.some(p => p.id === idProfesional);
+                        }
+                     } catch(e) { console.error("Error fetching favs", e); }
+
+                     updateFavIcon(isFav);
+
+                     btnFav.addEventListener("click", async () => {
+                         // @ts-ignore
+                          const Swal = window.Swal;
+                          
+                          if(!user) {
+                              if(Swal) Swal.fire('Inicia Sesión', 'Debes iniciar sesión para guardar favoritos', 'info');
+                              else alert('Debes iniciar sesión');
+                              return;
+                          }
+                          
+                          // Toggle state immediately for UI responsiveness
+                          isFav = !isFav;
+                          updateFavIcon(isFav);
+
+                          try {
+                              if (isFav) {
+                                  // Add
+                                  await setDoc(favRef, {
+                                      profesionales: arrayUnion({
+                                          id: idProfesional,
+                                          nombre: profesionalJson.nombre || "Profesional",
+                                          rubro: profesionalJson.rubro_principal || "",
+                                          foto: profesionalJson.foto || "",
+                                          zona: profesionalJson.zona || ""
+                                      })
+                                  }, { merge: true });
+                              } else {
+                                  // Remove - Read-Modify-Write strategy for object arrays
+                                   const currentSnap = await getDoc(favRef);
+                                   if(currentSnap.exists()) {
+                                       const currentList = currentSnap.data().profesionales || [];
+                                       const newList = currentList.filter(p => p.id !== idProfesional);
+                                       await updateDoc(favRef, { profesionales: newList });
+                                   }
+                              }
+                          } catch(e) {
+                              console.error("Error updating fav:", e);
+                              // Revert if error
+                              isFav = !isFav;
+                              updateFavIcon(isFav);
+                              if(Swal) Swal.fire('Error', 'No se pudo actualizar favoritos', 'error');
+                          }
+                     });
+                 });
+
+                 function updateFavIcon(fav) {
+                     const svg = btnFav.querySelector("svg");
+                     if(!svg) return;
+                     
+                     if(fav) {
+                         svg.setAttribute("fill", "currentColor");
+                         btnFav.classList.add("text-red-500", "bg-red-50");
+                         btnFav.classList.remove("text-slate-400", "bg-slate-50");
+                     } else {
+                         svg.setAttribute("fill", "none");
+                         btnFav.classList.remove("text-red-500", "bg-red-50");
+                         btnFav.classList.add("text-slate-400", "bg-slate-50");
+                     }
+                 }
+             }
+        });
     </script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <style>
         /* Fix map */
@@ -583,4 +779,3 @@ for (let i = 0; i < levels.length; i++) {
         }
     </style>
 </Layout>
-

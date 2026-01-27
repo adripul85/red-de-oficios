@@ -43,304 +43,238 @@ if (!profesional) return Astro.redirect("/404");
 ---
 
 <Layout title={`Perfil de ${profesional.nombre} - DeOficios`}>
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
-        <div class="grid md:grid-cols-3 gap-8 items-start">
-            <!-- LEFT COLUMN: STICKY PROFILE CARD -->
-            <aside class="md:col-span-1 sticky top-24 space-y-6">
-                <!-- Main Profile Card -->
-                <div
-                    class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm text-center relative overflow-hidden"
-                >
-                    <!-- Experto Badge Background Effect -->
+<div class="bg-white border-b mb-8">
+        <div class="container mx-auto px-4 py-8 max-w-4xl">
+            <div class="flex flex-col md:flex-row items-center gap-6">
+                <div class="relative">
+                    <img
+                        src={profesional.foto ||
+                            "https://ui-avatars.com/api/?name=" +
+                                profesional.nombre}
+                        class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
+                    />
                     {
                         profesional.plan === "experto" && (
-                            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-400 to-orange-500" />
+                            <span class="absolute bottom-0 right-0 bg-yellow-400 text-xs font-bold px-2 py-1 rounded-full border border-white">
+                                ⭐ EXPERTO
+                            </span>
                         )
                     }
+                </div>
 
-                    <div class="relative inline-block mb-4">
-                        <img
-                            src={profesional.foto ||
-                                "https://ui-avatars.com/api/?name=" +
-                                    profesional.nombre}
-                            class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg mx-auto"
-                        />
-                        {
-                            profesional.plan === "experto" && (
-                                <span class="absolute bottom-0 right-0 bg-yellow-400 text-xs font-bold px-2 py-1 rounded-full border border-white shadow-sm">
-                                    ⭐ EXPERTO
-                                </span>
-                            )
-                        }
-                    </div>
-
-                    <h1
-                        class="text-2xl font-bold text-gray-900 leading-tight mb-1"
-                    >
+                <div class="text-center md:text-left flex-1">
+                    <h1 class="text-3xl font-bold text-gray-800">
                         {profesional.nombre}
                     </h1>
-                    <p class="text-blue-600 font-bold mb-3">
+                    <p class="text-blue-600 font-medium text-lg">
                         {profesional.rubro_principal}
+                        {profesional.zona ? `en ${profesional.zona}` : ""}
                     </p>
 
-                    <!-- Stars -->
                     <div
-                        class="flex items-center justify-center gap-2 mb-6 bg-gray-50 py-2 rounded-lg"
+                        class="flex items-center justify-center md:justify-start gap-2 mt-2"
                     >
-                        <div class="text-yellow-400 text-lg">
+                        <div class="text-yellow-400 text-xl">
                             {
                                 "★".repeat(
                                     Math.round(profesional.puntuacion || 0),
                                 )
                             }
-                            <span class="text-gray-300">
-                                {
-                                    "*".repeat(
-                                        5 - Math.round(profesional.puntuacion || 0)
+<span class="text-gray-300"
+                                >{
+                                    "★".repeat(
+                                        5 -
+                                            Math.round(
+                                                profesional.puntuacion || 0,
+                                            ),
                                     )
-                                }
-                            </span>
+                                }</span
+                            >
                         </div>
-                        <span class="text-gray-500 text-xs font-bold">
-                            ({profesional.total_valoraciones || 0})
+                        <span class="text-gray-500 text-sm">
+                            ({profesional.total_valoraciones || 0} opiniones)
                         </span>
                     </div>
-
-                    <!-- Contact Buttons -->
-                    {
-                        profesional.telefono && (
-                            <div class="space-y-3">
-                                <button
-                                    id="btn-whatsapp-contact"
-                                    data-whatsapp={profesional.telefono}
-                                    data-pro-id={idProfesional}
-                                    data-pro-name={profesional.nombre}
-                                    class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-2"
-                                >
-                                    <span class="text-xl">💬</span> Contactar
-                                </button>
-
-                                <button
-                                    id="btn-vcard-download"
-                                    data-name={profesional.nombre}
-                                    data-phone={profesional.telefono}
-                                    data-rubro={profesional.rubro_principal}
-                                    class="w-full bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 font-bold py-3 px-4 rounded-xl shadow-sm transition-transform transform active:scale-95 flex items-center justify-center gap-2"
-                                >
-                                    <span class="text-xl">📲</span> Guardar
-                                </button>
-                            </div>
-                        )
-                    }
                 </div>
 
-                <!-- Info Box (Map & Security) -->
-                <div
-                    class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-4"
-                >
+                {
+                    profesional.telefono && (
+                        <a
+                            href={`https://wa.me/549${profesional.telefono}?text=Hola, te vi en DeOficios`}
+                            target="_blank"
+                            class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full shadow-md transition-transform transform hover:scale-105 flex items-center gap-2"
+                        >
+                            <span class="text-xl">💬</span> Contactar
+                        </a>
+                    )
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 max-w-4xl grid md:grid-cols-3 gap-8">
+        <div class="md:col-span-2 space-y-8">
+            <section
+                class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm"
+            >
+                <h3 class="font-bold text-lg mb-4 border-b pb-2">Sobre mí</h3>
+                <p class="text-gray-600 leading-relaxed whitespace-pre-line">
                     {
-                        profesional.zona && (
+                        profesional.descripcion ||
+                            "Este profesional aún no ha agregado una descripción."
+                    }
+                </p>
+
+                {/* Etiquetas */}
+                {
+                    profesional.etiquetas && (
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            {profesional.etiquetas.map((tag) => (
+                                <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">
+                                    #{tag}
+                                </span>
+                            ))}
+                        </div>
+                    )
+                }
+            </section>
+
+            <section id="reviews-section">
+                <h3 class="font-bold text-xl mb-6 flex items-center gap-2">
+                    🌟 Opiniones y Calificaciones
+                </h3>
+
+                <div id="review-action-area" class="mb-10">
+                    <div id="guest-view">
+                        <LoginCliente />
+                    </div>
+
+                    <div
+                        id="user-view"
+                        class="hidden bg-white p-6 rounded-xl border border-blue-100 shadow-md"
+                    >
+                        <div class="flex items-center gap-3 mb-4">
+                            <img
+                                id="user-avatar"
+                                src=""
+                                class="w-10 h-10 rounded-full bg-gray-200"
+                            />
                             <div>
-                                <h4 class="font-bold text-xs text-gray-400 uppercase tracking-wider mb-2">
-                                    Zona
-                                </h4>
-                                <div class="flex items-center gap-2 text-gray-700 font-medium">
-                                    <span>📍</span> {profesional.zona}
-                                </div>
-                            </div>
-                        )
-                    }
-
-                    <div class="border-t border-gray-100 pt-4">
-                        <h4
-                            class="font-bold text-xs text-gray-400 uppercase tracking-wider mb-2"
-                        >
-                            Seguridad
-                        </h4>
-                        <ul class="text-sm space-y-2">
-                            <li
-                                class={`flex items-center gap-2 font-bold ${profesional.verificado ? "text-green-600" : "text-orange-500"}`}
-                            >
-                                <span
-                                    >{
-                                        profesional.verificado ? "🛡️" : "⏳"
-                                    }</span
+                                <p
+                                    class="font-bold text-sm"
+                                    id="user-name-display"
                                 >
-                                {
-                                    profesional.verificado
-                                        ? "Identidad Verificada"
-                                        : "Validación Pendiente"
-                                }
-                            </li>
-                            <li class="flex items-center gap-2 text-gray-500">
-                                <span>📅</span> Miembro desde 2024
-                            </li>
-                        </ul>
+                                    Cargando...
+                                </p>
+                                <p class="text-xs text-green-600 font-semibold">
+                                    Cliente Verificado ✅
+                                </p>
+                            </div>
+                        </div>
+
+                        <label class="block font-bold mb-2 text-gray-700"
+                            >Califica tu experiencia:</label
+                        >
+
+                        <div
+                            class="flex gap-1 text-4xl mb-4 cursor-pointer"
+                            id="stars-selector"
+                        >
+                            <button
+                                type="button"
+                                class="star text-gray-300 hover:text-yellow-400 transition-colors"
+                                data-value="1">★</button
+                            >
+                            <button
+                                type="button"
+                                class="star text-gray-300 hover:text-yellow-400 transition-colors"
+                                data-value="2">★</button
+                            >
+                            <button
+                                type="button"
+                                class="star text-gray-300 hover:text-yellow-400 transition-colors"
+                                data-value="3">★</button
+                            >
+                            <button
+                                type="button"
+                                class="star text-gray-300 hover:text-yellow-400 transition-colors"
+                                data-value="4">★</button
+                            >
+                            <button
+                                type="button"
+                                class="star text-gray-300 hover:text-yellow-400 transition-colors"
+                                data-value="5">★</button
+                            >
+                        </div>
+                        <p
+                            id="rating-text"
+                            class="text-sm text-gray-500 mb-3 font-medium"
+                        >
+                            - Selecciona estrellas -
+                        </p>
+                        <input type="hidden" id="rating-value" value="0" />
+
+                        <textarea
+                            id="review-comment"
+                            class="w-full border border-gray-300 p-3 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 outline-none"
+                            rows="3"
+                            placeholder="¿Cumplió con lo pactado? ¿Fue puntual? Cuéntanos..."
+                        ></textarea>
+
+                        <button
+                            id="btn-submit-review"
+                            class="bg-blue-600 text-white font-bold py-2.5 px-6 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all w-full md:w-auto"
+                        >
+                            Publicar Reseña
+                        </button>
                     </div>
                 </div>
-            </aside>
 
-            <!-- RIGHT COLUMN: CONTENT SCROLL -->
-            <main class="md:col-span-2 space-y-8">
-                <!-- About Section -->
-                <section
-                    class="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm"
-                >
-                    <h3
-                        class="font-bold text-xl text-gray-900 mb-4 flex items-center gap-2"
-                    >
-                        👋 Sobre mí
-                    </h3>
-                    <p
-                        class="text-gray-600 leading-relaxed whitespace-pre-line text-lg"
-                    >
+                <div id="reviews-list" class="space-y-4">
+                    <div class="animate-pulse flex space-x-4">
+                        <div class="h-10 w-10 bg-gray-200 rounded-full"></div>
+                        <div class="flex-1 space-y-2 py-1">
+                            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="space-y-6">
+            {
+                profesional.latitud && (
+                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                        <h4 class="font-bold text-sm mb-3 text-gray-500 uppercase">
+                            Zona de Trabajo
+                        </h4>
+                        <div class="bg-gray-100 h-48 rounded-lg flex items-center justify-center text-gray-400">
+                            📍 Mapa
+                        </div>
+                        <p class="text-sm mt-2 text-center">
+                            {profesional.zona}
+                        </p>
+                    </div>
+                )
+            }
+
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                <h4 class="font-bold text-blue-800 mb-2">Seguridad</h4>
+                <ul class="text-sm text-blue-700 space-y-2">
+                    <li class="flex items-center gap-2">
+                        <span>{profesional.verificado ? "✅" : "⏳"}</span>
                         {
-                            profesional.descripcion ||
-                                "Este profesional aún no ha agregado una descripción."
+                            profesional.verificado
+                                ? "Identidad Verificada"
+                                : "Validación Pendiente"
                         }
-                    </p>
-
-                    {/* Etiquetas */}
-                    {
-                        profesional.etiquetas && (
-                            <div class="mt-6 flex flex-wrap gap-2 pt-4 border-t border-gray-100">
-                                {profesional.etiquetas.map((tag) => (
-                                    <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-bold border border-blue-100">
-                                        #{tag}
-                                    </span>
-                                ))}
-                            </div>
-                        )
-                    }
-                </section>
-
-                <!-- Reviews Section -->
-                <section id="reviews-section">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3
-                            class="font-bold text-2xl text-gray-900 flex items-center gap-2"
-                        >
-                            🌟 Opiniones
-                        </h3>
-                        <span
-                            class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded-full"
-                        >
-                            {profesional.total_valoraciones || 0} reviews
-                        </span>
-                    </div>
-
-                    <div id="review-action-area" class="mb-8">
-                        <div id="guest-view">
-                            <LoginCliente />
-                        </div>
-
-                        <div
-                            id="user-view"
-                            class="hidden bg-white p-6 rounded-2xl border border-blue-100 shadow-md relative overflow-hidden"
-                        >
-                            <div
-                                class="absolute top-0 right-0 w-20 h-20 bg-blue-50 rounded-full -mr-10 -mt-10 blur-xl"
-                            >
-                            </div>
-
-                            <div
-                                class="flex items-center gap-3 mb-4 relative z-10"
-                            >
-                                <img
-                                    id="user-avatar"
-                                    src=""
-                                    class="w-10 h-10 rounded-full bg-gray-200 border-2 border-white shadow-sm"
-                                />
-                                <div>
-                                    <p
-                                        class="font-bold text-sm text-gray-900"
-                                        id="user-name-display"
-                                    >
-                                        Cargando...
-                                    </p>
-                                    <p
-                                        class="text-xs text-green-600 font-bold flex items-center gap-1"
-                                    >
-                                        ✅ Cliente Verificado
-                                    </p>
-                                </div>
-                            </div>
-
-                            <label class="block font-bold mb-2 text-gray-700"
-                                >Califica tu experiencia:</label
-                            >
-
-                            <div
-                                class="flex gap-2 text-4xl mb-4 cursor-pointer"
-                                id="stars-selector"
-                            >
-                                <button
-                                    type="button"
-                                    class="star text-gray-200 hover:text-yellow-400 transition-all hover:scale-110"
-                                    data-value="1">★</button
-                                >
-                                <button
-                                    type="button"
-                                    class="star text-gray-200 hover:text-yellow-400 transition-all hover:scale-110"
-                                    data-value="2">★</button
-                                >
-                                <button
-                                    type="button"
-                                    class="star text-gray-200 hover:text-yellow-400 transition-all hover:scale-110"
-                                    data-value="3">★</button
-                                >
-                                <button
-                                    type="button"
-                                    class="star text-gray-200 hover:text-yellow-400 transition-all hover:scale-110"
-                                    data-value="4">★</button
-                                >
-                                <button
-                                    type="button"
-                                    class="star text-gray-200 hover:text-yellow-400 transition-all hover:scale-110"
-                                    data-value="5">★</button
-                                >
-                            </div>
-                            <p
-                                id="rating-text"
-                                class="text-sm text-gray-400 mb-3 font-medium min-h-[20px]"
-                            >
-                                - Selecciona estrellas -
-                            </p>
-                            <input type="hidden" id="rating-value" value="0" />
-
-                            <textarea
-                                id="review-comment"
-                                class="w-full border border-gray-200 bg-gray-50 p-4 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
-                                rows="3"
-                                placeholder="¿Cumplió con lo pactado? ¿Fue puntual? Cuéntanos..."
-                            ></textarea>
-
-                            <button
-                                id="btn-submit-review"
-                                class="w-full md:w-auto bg-blue-600 text-white font-bold py-3 px-8 rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-200"
-                            >
-                                Publicar Reseña
-                            </button>
-                        </div>
-                    </div>
-
-                    <div id="reviews-list" class="space-y-6">
-                        <!-- Skeleton -->
-                        <div
-                            class="animate-pulse flex gap-4 bg-white p-4 rounded-xl border border-gray-100"
-                        >
-                            <div class="h-12 w-12 bg-gray-200 rounded-full">
-                            </div>
-                            <div class="flex-1 space-y-3 py-1">
-                                <div class="h-4 bg-gray-200 rounded w-1/3">
-                                </div>
-                                <div class="h-4 bg-gray-200 rounded w-2/3">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </main>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        📅 Miembro desde 2024
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </Layout>
@@ -379,7 +313,6 @@ if (!profesional) return Astro.redirect("/404");
 <script define:vars={{ idProfesional }}>
     import { onAuthStateChanged } from "firebase/auth";
     import { auth, db } from "../../firebase/client";
-    import Swal from "sweetalert2";
     import {
         doc,
         getDoc,
@@ -490,7 +423,7 @@ if (!profesional) return Astro.redirect("/404");
                     const reseñaRef = doc(
                         collection(
                             db,
-                            `profesionales/${idProfesional}/reseñas`,
+                            `profesionales/${idProfesional}/resenas`,
                         ),
                     );
                     transaction.set(reseñaRef, {
@@ -510,7 +443,20 @@ if (!profesional) return Astro.redirect("/404");
                     });
                 });
 
-                alert("¡Gracias! Tu opinión ayuda a la comunidad.");
+
+                // Import SweetAlert2
+                const Swal = (await import('sweetalert2')).default;
+                
+                await Swal.fire({
+                    icon: 'success',
+                    title: '¡Gracias!',
+                    text: 'Tu opinión ayuda a la comunidad.',
+                    confirmButtonText: 'Aceptar',
+                    confirmButtonColor: '#2563eb',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+                
                 window.location.reload(); // Recargar para ver la reseña nueva
             } catch (error) {
                 console.error(error);
@@ -524,7 +470,7 @@ if (!profesional) return Astro.redirect("/404");
         async function loadReviews() {
             const container = document.getElementById("reviews-list");
             const q = query(
-                collection(db, `profesionales/${idProfesional}/reseñas`),
+                collection(db, `profesionales/${idProfesional}/resenas`),
                 orderBy("fecha", "desc"),
             );
 
@@ -558,137 +504,60 @@ if (!profesional) return Astro.redirect("/404");
                         <span class="text-xs text-gray-400">${fecha}</span>
                     </div>
                     <p class="mt-2 text-gray-600 text-sm">${r.comentario}</p>
-                    ${
-                        r.fotoTrabajo
-                            ? `
-                    <div class="mt-3 rounded-xl overflow-hidden border border-gray-100 max-w-xs shadow-sm">
-                        <img src="${r.fotoTrabajo}" class="w-full h-auto object-cover cursor-pointer hover:opacity-90 transition" onclick="window.open('${r.fotoTrabajo}', '_blank')">
-                    </div>
-                    `
-                            : ""
-                    }
                 </div>
             `;
                 container.innerHTML += html;
             });
+            
+            // Actualizar el contador de estrellas y opiniones en el header
+            updateRatingDisplay();
         }
 
-        // 5. SAFETY TOKEN & WHATSAPP CONTACT
-        const btnContact = document.getElementById("btn-whatsapp-contact");
-        btnContact?.addEventListener("click", async () => {
-            const whatsapp = btnContact.dataset.whatsapp;
-            const proId = btnContact.dataset.proId;
-            const proName = btnContact.dataset.proName;
-
-            // Generate 4 digit token
-            const safetyToken = Math.floor(
-                1000 + Math.random() * 9000,
-            ).toString();
-
-            // @ts-ignore
-            Swal.fire({
-                title: "🛡️ Código de Seguridad",
-                html: `
-                    <p class="mb-4">Tu codigo de verificacion para <strong>${proName}</strong> es:</p>
-                    <div class="text-4xl font-bold tracking-widest text-orange-600 bg-orange-50 py-4 rounded-xl border-2 border-orange-200 mb-4">
-                        ${safetyToken}
-                    </div>
-                    <p class="text-xs text-gray-500 uppercase font-bold tracking-tight">Mostrale este codigo al profesional al llegar</p>
-                `,
-                confirmButtonText: "Ir a WhatsApp 💬",
-                confirmButtonColor: "#16a34a",
-                showCancelButton: true,
-                cancelButtonText: "Cancelar",
-                reverseButtons: true,
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    // Log the contact event
-                    try {
-                        await addDoc(collection(db, "contactos"), {
-                            proId: proId,
-                            proNombre: proName,
-                            clienteId: currentUser?.uid || "anonimo",
-                            clienteNombre: currentUser?.nombre || "Anonimo",
-                            token: safetyToken,
-                            fecha: serverTimestamp(),
-                            visto: false,
-                        });
-
-                        // Redirect to WA
-                        window.open(
-                            `https://wa.me/549${whatsapp}?text=${encodeURIComponent(`Hola ${proName}, te contacto desde DeOficios. Mi código de seguridad es ${safetyToken}`)}`,
-                            "_blank",
-                        );
-
-                        // SHOW FEEDBACK PROMPT after a delay
-                        setTimeout(() => {
-                            // @ts-ignore
-                            Swal.fire({
-                                title: "¿Pudiste contactarlo? 🤔",
-                                text: "Tu feedback nos ayuda a mantener profesionales activos.",
-                                icon: "question",
-                                showDenyButton: true,
-                                showCancelButton: true,
-                                confirmButtonText: "✅ Sí, todo bien",
-                                denyButtonText: "❌ No contestó",
-                                cancelButtonText: "🚩 Reportar Perfil",
-                                confirmButtonColor: "#16a34a",
-                                denyButtonColor: "#ef4444",
-                                cancelButtonColor: "#374151",
-                            }).then(async (res) => {
-                                let feedbackType = "";
-                                if (res.isConfirmed) feedbackType = "positivo";
-                                else if (res.isDenied)
-                                    feedbackType = "sin_respuesta";
-                                else if (
-                                    res.isDismissed &&
-                                    res.dismiss === "cancel"
-                                )
-                                    feedbackType = "reporte";
-
-                                if (feedbackType) {
-                                    // Save feedback
-                                    await addDoc(
-                                        collection(db, "feedback_contactos"),
-                                        {
-                                            proId: proId,
-                                            tipo: feedbackType,
-                                            fecha: serverTimestamp(),
-                                            uid: currentUser?.uid || "anonimo",
-                                        },
-                                    );
-                                }
-                            });
-                        }, 5000);
-                    } catch (e) {
-                        console.error("Error logging contact:", e);
-                    }
+        // Función para actualizar la visualización de calificación
+        async function updateRatingDisplay() {
+            console.log("🔄 updateRatingDisplay() ejecutándose...");
+            try {
+                // Obtener datos actualizados del profesional
+                const proRef = doc(db, "profesionales", idProfesional);
+                const proSnap = await getDoc(proRef);
+                
+                if (!proSnap.exists()) {
+                    console.error("❌ Profesional no existe");
+                    return;
                 }
-            });
-        });
-
-        // 6. vCARD DOWNLOAD
-        const btnVCard = document.getElementById("btn-vcard-download");
-        btnVCard?.addEventListener("click", () => {
-            const name = btnVCard.dataset.name;
-            const phone = btnVCard.dataset.phone;
-            const rubro = btnVCard.dataset.rubro;
-
-            const vcard = `BEGIN:VCARD
-VERSION:3.0
-FN:${name} (DeOficios)
-ORG:DeOficios - ${rubro}
-TEL;TYPE=CELL,VOICE:+549${phone}
-END:VCARD`;
-
-            const blob = new Blob([vcard], { type: "text/vcard" });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `${name.replace(/\s+/g, "_")}_DeOficios.vcf`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-        });
+                
+                const proData = proSnap.data();
+                const rating = proData.puntuacion || 0;
+                const totalReviews = proData.total_valoraciones || 0;
+                
+                console.log("📊 Datos del profesional:", { rating, totalReviews, proData });
+                
+                // Actualizar estrellas
+                const starsContainer = document.querySelector('.text-yellow-400.text-xl');
+                console.log("⭐ Stars container:", starsContainer);
+                if (starsContainer) {
+                    const fullStars = Math.round(rating);
+                    const emptyStars = 5 - fullStars;
+                    const newHTML = "★".repeat(fullStars) + 
+                        '<span class="text-gray-300">' + "★".repeat(emptyStars) + '</span>';
+                    console.log("⭐ Actualizando estrellas:", { fullStars, emptyStars, newHTML });
+                    starsContainer.innerHTML = newHTML;
+                }
+                
+                // Actualizar contador de opiniones
+                const reviewCountSpan = document.querySelector('.text-gray-500.text-sm');
+                console.log("💬 Review count span:", reviewCountSpan);
+                if (reviewCountSpan && reviewCountSpan.textContent.includes('opiniones')) {
+                    const newText = `(${totalReviews} ${totalReviews === 1 ? 'opinión' : 'opiniones'})`;
+                    console.log("💬 Actualizando contador:", newText);
+                    reviewCountSpan.textContent = newText;
+                }
+                
+                console.log("✅ updateRatingDisplay() completado");
+            } catch (error) {
+                console.error("❌ Error actualizando rating display:", error);
+            }
+        }
 
         loadReviews();
     }); // End of astro:page-load

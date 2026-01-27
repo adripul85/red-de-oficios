@@ -40,10 +40,10 @@ const componentMap: Record<string, any> = {
   Gasista: Flame,
   Cerrajero: Key,
   Destapaciones: Wrench,
-  "Tcnico de Aire Acondicionado": Snowflake,
-  "Tcnico de Electrodomsticos": Plug,
-  // Construccin
-  Albail: BrickWall,
+  "Técnico de Aire Acondicionado": Snowflake,
+  "Técnico de Electrodomésticos": Plug,
+  // Construcción
+  Albañil: BrickWall,
   Pintor: PaintRoller,
   Techista: Home,
   "Colocador de Pisos/Ceramista": Grid,
@@ -66,14 +66,14 @@ const componentMap: Record<string, any> = {
   "DJ / Sonido": Music,
   Fletero: Truck,
   Fumigador: Bug,
-  // Esttica
+  // Estética
   "Peinador / Estilista": Scissors,
   Barbero: Scissors,
   "Maquillador / Maquilladora": User,
   "Manicura / Pedicura": User,
   // Seguridad
-  "Instalador de Cmaras de Seguridad": Video,
-  "Tcnico de PC / Celulares": Laptop,
+  "Instalador de Cámaras de Seguridad": Video,
+  "Técnico de PC / Celulares": Laptop,
   default: Wrench,
 };
 
@@ -93,7 +93,7 @@ const randomCategories = shuffled.slice(0, 12);
 
 <section class="quick-links-section">
   <div class="container">
-    <h2 class="section-title">Qu ests buscando hoy?</h2>
+    <h2 class="section-title">¿Qué estás buscando hoy?</h2>
 
     <div class="categories-grid">
       {
@@ -184,9 +184,10 @@ const randomCategories = shuffled.slice(0, 12);
     background: white;
   }
 
-  :global(.category-card .icon) {
-    font-size: 2rem;
-    margin-bottom: 10px;
+  :global(.category-card .icon-wrapper) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   :global(.category-card .name) {
@@ -234,7 +235,7 @@ const randomCategories = shuffled.slice(0, 12);
   }
 
   @media (max-width: 600px) {
-    /* MANTENER FLEX EN MVIL (NO GRID) */
+    /* MANTENER FLEX EN MÓVIL (NO GRID) */
     .categories-grid {
       display: flex; /* Asegurar flex */
       gap: 10px;
@@ -247,13 +248,8 @@ const randomCategories = shuffled.slice(0, 12);
       min-width: 110px; /* Reduced slightly */
       flex-shrink: 0;
     }
-    :global(.category-card .icon) {
-      font-size: 1.5rem;
-      margin-bottom: 5px;
-    }
     :global(.category-card .name) {
       font-size: 0.7rem;
     }
   }
 </style>
-

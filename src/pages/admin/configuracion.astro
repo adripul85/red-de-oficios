@@ -2,23 +2,23 @@
 import Layout from "../../layouts/Layout.astro";
 ---
 
-<Layout title="Configuracin Global - Admin">
+<Layout title="Configuración Global - Admin">
     <div class="admin-container">
         <header class="header-config">
-            <a href="/admin" class="btn-back"> Volver</a>
-            <h1>Configuracin del Sistema </h1>
+            <a href="/admin" class="btn-back">⬅ Volver</a>
+            <h1>Configuración del Sistema ⚙️</h1>
         </header>
 
         <div class="config-grid">
             <div class="config-card">
-                <h3> Gestin de Giftcard</h3>
+<h3>🎁 Gestión de Giftcard</h3>
                 <p class="text-sm text-muted mb-4">
-                    Configura el cdigo promocional para regalar planes premium.
+                    Configura el código promocional para regalar planes premium.
                 </p>
 
                 <form id="form-giftcard">
                     <div class="form-group">
-                        <label>Cdigo Promocional</label>
+<label>Código Promocional</label>
                         <input
                             type="text"
                             id="giftcard-code"
@@ -29,7 +29,7 @@ import Layout from "../../layouts/Layout.astro";
                     </div>
 
                     <div class="form-group">
-                        <label>Duracin (das)</label>
+<label>Duración (días)</label>
                         <input
                             type="number"
                             id="giftcard-duration"
@@ -42,18 +42,17 @@ import Layout from "../../layouts/Layout.astro";
                     <div class="form-group">
                         <label>Plan Otorgado</label>
                         <select id="giftcard-plan" required>
-                            <option value="mensual">Plan Impulso (Mensual)</option>
-                            <option value="profesional">Plan Profesional (90 das)</option>
-                            <option value="experto">Plan Experto (Semestral)</option>
+<option value="mensual">Plan Mensual</option>
+                            <option value="experto">Plan Experto</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label>Lmite de Usos (opcional)</label>
+<label>Límite de Usos (opcional)</label>
                         <input
                             type="number"
                             id="giftcard-max-uses"
-                            placeholder="1000 (dejar vaco = ilimitado)"
+                            placeholder="1000 (dejar vacío = ilimitado)"
                             min="1"
                         />
                     </div>
@@ -65,7 +64,7 @@ import Layout from "../../layouts/Layout.astro";
                                 id="giftcard-active"
                                 class="w-5 h-5"
                             />
-                            <span>Cdigo Activo</span>
+<span>Código Activo</span>
                         </label>
                     </div>
 
@@ -83,17 +82,18 @@ import Layout from "../../layouts/Layout.astro";
                     <button
                         type="submit"
                         class="btn-action"
-                        style="background: #9333ea;">
-                         Guardar Configuracin
+style="background: #9333ea;"
+                    >
+                        ✨ Guardar Configuración
                     </button>
                 </form>
             </div>
 
             <div class="config-card">
-                <h3> Precios de Planes</h3>
+<h3>💰 Precios de Planes</h3>
                 <form id="form-precios">
                     <div class="form-group">
-                        <label>Plan Impulso (Mensual) ($)</label>
+                        <label>Plan Mensual ($)</label>
                         <input
                             type="number"
                             id="price-monthly"
@@ -102,16 +102,7 @@ import Layout from "../../layouts/Layout.astro";
                         />
                     </div>
                     <div class="form-group">
-                        <label>Plan Profesional (90 das) ($)</label>
-                        <input
-                            type="number"
-                            id="price-professional"
-                            placeholder="90000"
-                            required
-                        />
-                    </div>
-                    <div class="form-group">
-                        <label>Plan Experto (Semestral) ($)</label>
+<label>Plan Experto ($)</label>
                         <input
                             type="number"
                             id="price-semestral"
@@ -119,41 +110,9 @@ import Layout from "../../layouts/Layout.astro";
                             required
                         />
                     </div>
-                    <button type="submit" class="btn-action">Guardar Precios</button>
-                </form>
-            </div>
-
-            <div class="config-card">
-                <h3> Aviso Global (Banner)</h3>
-                <p class="text-sm text-muted mb-4">
-                    Configura un mensaje que aparecer en la parte superior de
-                    todo el sitio.
-                </p>
-                <form id="form-aviso">
-                    <div class="form-group">
-                        <label>Mensaje del Banner</label>
-                        <textarea
-                            id="aviso-message"
-                            placeholder="Ej: Nuevo sistema de puntos activo!"
-                            class="w-full p-3 border rounded-lg h-24 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
-                            required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                id="aviso-active"
-                                class="w-5 h-5"
-                            />
-                            <span>Banner Activo</span>
-                        </label>
-                    </div>
-                    <button
-                        type="submit"
-                        class="btn-action"
-                        style="background: #f97316;">
-                         Actualizar Banner
-                    </button>
+<button type="submit" class="btn-action"
+                        >Guardar Precios</button
+                    >
                 </form>
             </div>
         </div>
@@ -166,41 +125,16 @@ import Layout from "../../layouts/Layout.astro";
     import { onAuthStateChanged } from "firebase/auth";
 
     document.addEventListener("astro:page-load", () => {
-        console.log(" [ADMIN-CONFIG] Pgina cargada/navegada");
+console.log("🚀 [ADMIN-CONFIG] Página cargada/navegada");
 
         onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                console.warn(" [ADMIN-CONFIG] No hay usuario autenticado");
-                window.location.href = "/admin/login";
-            } else {
-                console.log(" [ADMIN-CONFIG] Usuario autenticado:", user.uid);
-                loadConfig();
-            }
+            if (!user) window.location.href = "/admin/login";
+            else loadConfig();
         });
 
         async function loadConfig() {
-            console.log(" [ADMIN-CONFIG] Iniciando loadConfig...");
-            const user = auth.currentUser;
-            if (user) {
-                try {
-                    const snap = await getDoc(
-                        doc(db, "profesionales", user.uid),
-                    );
-                    const data = snap.data();
-                    console.log(
-                        " [ADMIN-CONFIG] Perfil data completo:",
-                        data,
-                    );
-                    if (data) {
-                        console.log(" [ADMIN-CONFIG] Rol field:", data.rol);
-                        console.log(" [ADMIN-CONFIG] Role field:", data.role);
-                    }
-                } catch (e: any) {
-                    console.error(" [ADMIN-CONFIG] Error leyendo perfil:", e);
-                }
-            }
             try {
-                // Cargar configuracin del giftcard
+                // Cargar configuración del giftcard
                 const giftcardRef = doc(db, "configuracion", "giftcard");
                 const giftcardSnap = await getDoc(giftcardRef);
 
@@ -241,42 +175,15 @@ import Layout from "../../layouts/Layout.astro";
                     const data = generalSnap.data();
                     // @ts-ignore
                     if (data.price_monthly)
-                        (
-                            document.getElementById(
-                                "price-monthly",
-                            ) as HTMLInputElement
-                        ).value = data.price_monthly;
-                    if (data.price_professional)
-                        (
-                            document.getElementById(
-                                "price-professional",
-                            ) as HTMLInputElement
-                        ).value = data.price_professional;
+document.getElementById("price-monthly").value =
+                            data.price_monthly;
+                    // @ts-ignore
                     if (data.price_semestral)
-                        (
-                            document.getElementById(
-                                "price-semestral",
-                            ) as HTMLInputElement
-                        ).value = data.price_semestral;
+                        document.getElementById("price-semestral").value =
+                            data.price_semestral;
                 }
-
-                // Cargar aviso global
-                const avisoRef = doc(db, "configuracion", "aviso_global");
-                const avisoSnap = await getDoc(avisoRef);
-
-                if (avisoSnap.exists()) {
-                    const data = avisoSnap.data();
-                    // @ts-ignore
-                    document.getElementById("aviso-message").value =
-                        data.mensaje || "";
-                    // @ts-ignore
-                    document.getElementById("aviso-active").checked =
-                        data.activo || false;
-                }
-            } catch (e: any) {
-                console.error(" [ADMIN-CONFIG] Error en loadConfig:", e);
-                console.error(" [ADMIN-CONFIG] Cdigo:", e.code);
-                console.error(" [ADMIN-CONFIG] Mensaje:", e.message);
+            } catch (e) {
+                console.error(e);
             }
         }
 
@@ -286,42 +193,30 @@ import Layout from "../../layouts/Layout.astro";
             ?.addEventListener("submit", async (e) => {
                 e.preventDefault();
                 // @ts-ignore
-                const code = (
-                    document.getElementById("giftcard-code") as HTMLInputElement
-                ).value
-                    .trim()
+const code = document
+                    .getElementById("giftcard-code")
+                    .value.trim()
                     .toUpperCase();
+                // @ts-ignore
                 const duration = parseInt(
-                    (
-                        document.getElementById(
-                            "giftcard-duration",
-                        ) as HTMLInputElement
-                    ).value,
+                    document.getElementById("giftcard-duration").value,
                 );
                 // @ts-ignore
-                const plan = (
-                    document.getElementById(
-                        "giftcard-plan",
-                    ) as HTMLSelectElement
-                ).value;
-                const maxUses = (
-                    document.getElementById(
-                        "giftcard-max-uses",
-                    ) as HTMLInputElement
-                ).value;
-                const active = (
-                    document.getElementById(
-                        "giftcard-active",
-                    ) as HTMLInputElement
-                ).checked;
+                const plan = document.getElementById("giftcard-plan").value;
+                // @ts-ignore
+                const maxUses =
+                    document.getElementById("giftcard-max-uses").value;
+                // @ts-ignore
+                const active =
+                    document.getElementById("giftcard-active").checked;
 
                 if (code.length < 3)
-                    return alert("Cdigo muy corto (mnimo 3 caracteres)");
+                    return alert("Código muy corto (mínimo 3 caracteres)");
                 if (duration < 1)
-                    return alert("Duracin debe ser al menos 1 da");
+                    return alert("Duración debe ser al menos 1 día");
 
                 try {
-                    const giftcardData: any = {
+                    const giftcardData = {
                         codigo: code,
                         duracionDias: duration,
                         planOtorgado: plan,
@@ -351,22 +246,12 @@ import Layout from "../../layouts/Layout.astro";
                     );
 
                     alert(
-                        ` Giftcard actualizado:\n\nCdigo: ${code}\nDuracin: ${duration} das\nPlan: ${plan}\nActivo: ${active ? "S" : "No"}`,
+`✅ Giftcard actualizado:\n\nCódigo: ${code}\nDuración: ${duration} días\nPlan: ${plan}\nActivo: ${active ? "Sí" : "No"}`,
                     );
                     loadConfig(); // Recargar para mostrar datos actualizados
-                } catch (e: any) {
-                    console.error(
-                        " [ADMIN-CONFIG] Error guardando giftcard:",
-                        e,
-                    );
-                    console.error(" [ADMIN-CONFIG] Cdigo error:", e.code);
-                    console.error(
-                        " [ADMIN-CONFIG] Mensaje error:",
-                        e.message,
-                    );
-                    alert(
-                        `Error guardando giftcard: ${e.message || "Error desconocido"}`,
-                    );
+                } catch (e) {
+                    console.error(e);
+                    alert("Error guardando giftcard");
                 }
             });
 
@@ -374,58 +259,20 @@ import Layout from "../../layouts/Layout.astro";
             .getElementById("form-precios")
             ?.addEventListener("submit", async (e) => {
                 e.preventDefault();
-                const monthlyEl = document.getElementById(
-                    "price-monthly",
-                ) as HTMLInputElement;
-                const professionalEl = document.getElementById(
-                    "price-professional",
-                ) as HTMLInputElement;
-                const semestralEl = document.getElementById(
-                    "price-semestral",
-                ) as HTMLInputElement;
-
-                const monthly = monthlyEl ? monthlyEl.value : "";
-                const professional = professionalEl ? professionalEl.value : "";
-                const semestral = semestralEl ? semestralEl.value : "";
+// @ts-ignore
+                const monthly = document.getElementById("price-monthly").value;
+                // @ts-ignore
+                const semestral =
+                    document.getElementById("price-semestral").value;
                 try {
                     await setDoc(
                         doc(db, "configuracion", "general"),
-                        {
-                            price_monthly: monthly,
-                            price_professional: professional,
-                            price_semestral: semestral,
-                        },
+                        { price_monthly: monthly, price_semestral: semestral },
                         { merge: true },
                     );
-                    alert(" Precios actualizados");
+                    alert("✅ Precios actualizados");
                 } catch (e) {
                     alert("Error guardando precios");
-                }
-            });
-
-        document
-            .getElementById("form-aviso")
-            ?.addEventListener("submit", async (e) => {
-                e.preventDefault();
-                // @ts-ignore
-                const message = document.getElementById("aviso-message").value;
-                // @ts-ignore
-                const active = document.getElementById("aviso-active").checked;
-
-                try {
-                    await setDoc(
-                        doc(db, "configuracion", "aviso_global"),
-                        {
-                            mensaje: message,
-                            activo: active,
-                            updatedAt: new Date(),
-                        },
-                        { merge: true },
-                    );
-                    alert(" Banner actualizado correctamente");
-                } catch (e) {
-                    console.error(e);
-                    alert("Error guardando el banner");
                 }
             });
     }); // End of astro:page-load
@@ -590,4 +437,3 @@ import Layout from "../../layouts/Layout.astro";
         height: 1.25rem;
     }
 </style>
-

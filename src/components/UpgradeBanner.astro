@@ -9,14 +9,16 @@ const { planRequired, feature } = Astro.props;
 
 <div class="upgrade-banner">
     <div class="banner-content">
-        <span class="banner-icon"></span>
+<span class="banner-icon">💎</span>
         <div class="banner-text">
             <strong>{feature}</strong>
-            <span>Disponible en Plan {
+            <span
+                >Disponible en Plan {
                     planRequired === "experto" ? "Experto" : "Impulso"
-                }</span>
+                }</span
+            >
         </div>
-        <a href="/planes" class="banner-cta"> Ver Planes  </a>
+        <a href="/planes" class="banner-cta"> Ver Planes → </a>
     </div>
 </div>
 
@@ -72,4 +74,3 @@ const { planRequired, feature } = Astro.props;
         background: #ff6b00;
     }
 </style>
-

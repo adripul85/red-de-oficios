@@ -1,16 +1,16 @@
----
+﻿---
 import { auth, db } from "../../firebase/client";
 import Sidebar from "../../components/panel/Sidebar.astro";
 import MobileSidebar from "../../components/panel/MobileSidebar.astro";
+import Layout from "../../layouts/Layout.astro";
 ---
 
-<!doctype html>
-<html lang="es">
-    <head>
+<Layout title="Finanzas - DeOficios Pro" hideHeader={true} hideBottomNav={true} hideIA={true}>
         <!-- Google tag (gtag.js) -->
         <script
             async
-            src="https://www.googletagmanager.com/gtag/js?id=G-LG6RPRWWDY"></script>
+src="https://www.googletagmanager.com/gtag/js?id=G-LG6RPRWWDY"
+        ></script>
         <script is:inline>
             window.dataLayer = window.dataLayer || [];
             function gtag() {
@@ -21,46 +21,12 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
             gtag("config", "G-LG6RPRWWDY");
         </script>
 
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Finanzas - DeOficios Pro</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-            rel="stylesheet"
-        />
-        <style>
-            body {
-                font-family: "Inter", sans-serif;
-                background-color: #f8fafc;
-            }
-            ::-webkit-scrollbar {
-                width: 6px;
-            }
-            ::-webkit-scrollbar-thumb {
-                background: #cbd5e1;
-                border-radius: 3px;
-            }
-
-            /* Page Transitions */
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                    transform: translateY(10px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            .fade-in {
-                animation: fadeIn 0.3s ease-out;
-            }
-        </style>
-    </head>
-    <body class="text-slate-800">
-        <!-- Mobile Sidebar Overlay Removed -->
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+    </style>
 
         <div class="flex h-screen overflow-hidden">
             <!-- SIDEBARS -->
@@ -70,21 +36,23 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
             <!-- MAIN CONTENT -->
             <main class="flex-1 flex flex-col h-screen overflow-hidden">
                 <!-- HEADER -->
-                <header
-                    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
-                    <h2 class="text-lg font-bold text-slate-800">
-                        Gestin Financiera
-                    </h2>
+                <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-30 relative shrink-0">
+                    <div class="flex items-center gap-4">
+                        <button id="open-sidebar" class="md:hidden text-2xl mr-2">☰</button>
+                        <h2 class="text-lg font-bold text-slate-800">Finanzas</h2>
+                    </div>
 
                     <div class="flex items-center gap-3">
                         <button
                             id="btn-add-income"
-                            class="bg-green-500 hover:bg-green-600 text-white font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
+class="bg-green-500 hover:bg-green-600 text-white font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2"
+                        >
                             <span>+</span> Ingreso
                         </button>
                         <button
                             id="btn-add-expense"
-                            class="bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
+class="bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2"
+                        >
                             <span>-</span> Gasto
                         </button>
                     </div>
@@ -94,83 +62,100 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 <div class="flex-1 overflow-y-auto p-6 bg-slate-50">
                     <!-- KPIS -->
                     <div
-                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+                    >
                         <!-- Ingresos -->
                         <div
-                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
                             <div class="flex justify-between items-start mb-4">
                                 <div class="p-3 bg-green-50 rounded-xl">
-                                    <span class="text-2xl"></span>
+                                    <span class="text-2xl">💵</span>
                                 </div>
                                 <span
-                                    class="text-xs text-green-600 font-bold bg-green-50 px-2 py-1 rounded-full">Este mes</span>
+                                    class="text-xs text-green-600 font-bold bg-green-50 px-2 py-1 rounded-full"
+                                    >Este mes</span
+                                >
                             </div>
                             <p class="text-sm text-slate-500 font-medium mb-1">
                                 Ingresos
                             </p>
                             <h3
                                 id="kpi-ingresos"
-                                class="text-3xl font-bold text-green-600">
+class="text-3xl font-bold text-green-600"
+                            >
                                 $0
                             </h3>
                         </div>
 
                         <!-- Gastos -->
                         <div
-                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
                             <div class="flex justify-between items-start mb-4">
                                 <div class="p-3 bg-red-50 rounded-xl">
-                                    <span class="text-2xl"></span>
+                                    <span class="text-2xl">💸</span>
                                 </div>
                                 <span
-                                    class="text-xs text-red-600 font-bold bg-red-50 px-2 py-1 rounded-full">Este mes</span>
+                                    class="text-xs text-red-600 font-bold bg-red-50 px-2 py-1 rounded-full"
+                                    >Este mes</span
+                                >
                             </div>
                             <p class="text-sm text-slate-500 font-medium mb-1">
                                 Gastos
                             </p>
                             <h3
                                 id="kpi-gastos"
-                                class="text-3xl font-bold text-red-600">
+class="text-3xl font-bold text-red-600"
+                            >
                                 $0
                             </h3>
                         </div>
 
                         <!-- Balance Neto -->
                         <div
-                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
                             <div class="flex justify-between items-start mb-4">
                                 <div class="p-3 bg-blue-50 rounded-xl">
-                                    <span class="text-2xl"></span>
+                                    <span class="text-2xl">💰</span>
                                 </div>
                                 <span
-                                    class="text-xs text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded-full">Neto</span>
+                                    class="text-xs text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded-full"
+                                    >Neto</span
+                                >
                             </div>
                             <p class="text-sm text-slate-500 font-medium mb-1">
                                 Balance
                             </p>
                             <h3
                                 id="kpi-balance"
-                                class="text-3xl font-bold text-blue-600">
+class="text-3xl font-bold text-blue-600"
+                            >
                                 $0
                             </h3>
                         </div>
 
                         <!-- Derivaciones -->
                         <div
-                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
                             <div class="flex justify-between items-start mb-4">
                                 <div class="p-3 bg-orange-50 rounded-xl">
-                                    <span class="text-2xl"></span>
+                                    <span class="text-2xl">👷</span>
                                 </div>
                                 <span
-                                    class="text-xs text-orange-600 font-bold bg-orange-50 px-2 py-1 rounded-full">Pendiente</span>
+                                    class="text-xs text-orange-600 font-bold bg-orange-50 px-2 py-1 rounded-full"
+                                    >Pendiente</span
+                                >
                             </div>
                             <p class="text-sm text-slate-500 font-medium mb-1">
                                 Derivaciones
                             </p>
                             <h3
                                 id="kpi-derivaciones"
-                                class="text-3xl font-bold text-orange-600">
+class="text-3xl font-bold text-orange-600"
+                            >
                                 $0
                             </h3>
                         </div>
@@ -178,12 +163,14 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     <!-- DATOS DE COBRO -->
                     <div
-                        class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8">
+class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8"
+                    >
                         <div
-                            class="p-6 border-b border-slate-100 flex justify-between items-center">
+                            class="p-6 border-b border-slate-100 flex justify-between items-center"
+                        >
                             <div>
                                 <h3 class="font-bold text-lg text-slate-800">
-                                    Datos de Cobro 
+                                    Datos de Cobro 💳
                                 </h3>
                                 <p class="text-sm text-slate-500">
                                     Tus datos para recibir transferencias
@@ -191,14 +178,17 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             </div>
                             <button
                                 id="btn-save-mp"
-                                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition hidden">
+class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition hidden"
+                            >
                                 Guardar Cambios
                             </button>
                         </div>
                         <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <label
-                                    class="block text-sm font-bold text-slate-700 mb-2">Alias</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                                    >Alias</label
+                                >
                                 <input
                                     type="text"
                                     id="mp-alias"
@@ -208,7 +198,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             </div>
                             <div>
                                 <label
-                                    class="block text-sm font-bold text-slate-700 mb-2">CBU / CVU</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                                    >CBU / CVU</label
+                                >
                                 <input
                                     type="text"
                                     id="mp-cbu"
@@ -218,7 +210,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             </div>
                             <div>
                                 <label
-                                    class="block text-sm font-bold text-slate-700 mb-2">Titular</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                                    >Titular</label
+                                >
                                 <input
                                     type="text"
                                     id="mp-titular"
@@ -231,12 +225,14 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     <!-- MI EQUIPO -->
                     <div
-                        class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8">
+class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8"
+                    >
                         <div
-                            class="p-6 border-b border-slate-100 flex justify-between items-center">
+                            class="p-6 border-b border-slate-100 flex justify-between items-center"
+                        >
                             <div>
                                 <h3 class="font-bold text-lg text-slate-800">
-                                    Mi Equipo 
+                                    Mi Equipo 👷
                                 </h3>
                                 <p class="text-sm text-slate-500">
                                     Gestiona derivaciones y comisiones
@@ -244,34 +240,37 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             </div>
                             <button
                                 id="btn-add-team"
-                                class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
+class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2"
+                            >
                                 <span>+</span> Agregar Miembro
                             </button>
                         </div>
 
                         <div id="equipo-container" class="p-6">
-                            <!-- Se llena dinmicamente -->
+<!-- Se llena dinámicamente -->
                             <div class="text-center py-8 text-slate-400">
-                                <div class="text-5xl mb-3"></div>
+                                <div class="text-5xl mb-3">👥</div>
                                 <p class="text-sm">
                                     No hay miembros en tu equipo
                                 </p>
                                 <p class="text-xs mt-1">
                                     Agrega ayudantes o socios para calcular
-                                    derivaciones automticamente
+derivaciones automáticamente
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- LTIMOS MOVIMIENTOS -->
+<!-- ÚLTIMOS MOVIMIENTOS -->
                     <div
-                        class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8">
+                        class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8"
+                    >
                         <div
-                            class="p-6 border-b border-slate-100 flex justify-between items-center">
+                            class="p-6 border-b border-slate-100 flex justify-between items-center"
+                        >
                             <div>
                                 <h3 class="font-bold text-lg text-slate-800">
-                                    ltimos Movimientos
+                                    Últimos Movimientos
                                 </h3>
                                 <p class="text-sm text-slate-500">
                                     Historial de ingresos y gastos
@@ -279,7 +278,8 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             </div>
                             <select
                                 id="filter-tipo"
-                                class="bg-slate-50 border border-slate-200 text-sm rounded-lg px-4 py-2 outline-none">
+class="bg-slate-50 border border-slate-200 text-sm rounded-lg px-4 py-2 outline-none"
+                            >
                                 <option value="todos">Todos</option>
                                 <option value="ingreso">Ingresos</option>
                                 <option value="gasto">Gastos</option>
@@ -288,10 +288,11 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                         <div
                             id="movimientos-container"
-                            class="divide-y divide-slate-100">
-                            <!-- Se llena dinmicamente -->
+class="divide-y divide-slate-100"
+                        >
+                            <!-- Se llena dinámicamente -->
                             <div class="p-12 text-center text-slate-400">
-                                <div class="text-6xl mb-4"></div>
+                                <div class="text-6xl mb-4">📊</div>
                                 <p>No hay movimientos registrados</p>
                                 <p class="text-sm mt-2">
                                     Comienza registrando tu primer ingreso o
@@ -303,10 +304,12 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 </div>
                 <!-- Danger Zone -->
                 <div
-                    class="mt-12 pt-8 border-t border-slate-200 text-center pb-8">
+class="mt-12 pt-8 border-t border-slate-200 text-center pb-8"
+                >
                     <button
                         onclick="resetValues()"
-                        class="text-sm text-slate-400 hover:text-red-600 transition flex items-center gap-2 mx-auto justify-center">
+                        class="text-sm text-slate-400 hover:text-red-600 transition flex items-center gap-2 mx-auto justify-center"
+                    >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="16"
@@ -317,12 +320,18 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             stroke-width="2"
                             stroke-linecap="round"
                             stroke-linejoin="round"
-                            class="lucide lucide-trash-2"><path d="M3 6h18"></path><path
-                                d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>
+class="lucide lucide-trash-2"
+                            ><path d="M3 6h18"></path><path
+                                d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"
+                            ></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+                            ></path><line x1="10" x2="10" y1="11" y2="17"
+                            ></line><line x1="14" x2="14" y1="11" y2="17"
+                            ></line></svg
+                        >
                         Reiniciar todos los datos
                     </button>
                     <p class="text-xs text-slate-300 mt-2">
-                        Esta accin borrar todas tus finanzas, equipo y
+                        Esta acción borrará todas tus finanzas, equipo y
                         derivaciones. No se puede deshacer.
                     </p>
                 </div>
@@ -332,11 +341,14 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         <!-- MODAL INGRESO -->
         <div
             id="modal-ingreso"
-            class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center p-4">
+class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center p-4"
+        >
             <div
-                class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+            >
                 <div
-                    class="p-6 border-b flex justify-between items-center bg-green-50">
+                    class="p-6 border-b flex justify-between items-center bg-green-50"
+                >
                     <div>
                         <h3 class="text-xl font-bold text-slate-900">
                             Registrar Ingreso
@@ -347,25 +359,31 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     </div>
                     <button
                         id="close-modal-ingreso"
-                        class="text-3xl text-slate-400 hover:text-slate-600">&times;</button>
+class="text-3xl text-slate-400 hover:text-slate-600"
+                        >&times;</button
+                    >
                 </div>
 
                 <form id="form-ingreso" class="p-6 space-y-4">
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">Concepto</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                            >Concepto</label
+                        >
                         <input
                             type="text"
                             id="ingreso-concepto"
                             required
                             class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-green-500"
-                            placeholder="Ej: Instalacin aire acondicionado"
+placeholder="Ej: Instalación aire acondicionado"
                         />
                     </div>
 
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">Monto</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                            >Monto</label
+                        >
                         <input
                             type="number"
                             id="ingreso-monto"
@@ -378,7 +396,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">Fecha</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                            >Fecha</label
+                        >
                         <input
                             type="date"
                             id="ingreso-fecha"
@@ -389,7 +409,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">Cliente (opcional)</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                            >Cliente (opcional)</label
+                        >
                         <input
                             type="text"
                             id="ingreso-cliente"
@@ -398,7 +420,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         />
                     </div>
 
-                    <!-- SELECCIN DE EQUIPO -->
+<!-- SELECCIÓN DE EQUIPO -->
                     <div class="pt-4 border-t">
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input
@@ -406,24 +428,28 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                 id="ingreso-con-equipo"
                                 class="w-5 h-5 text-green-600 accent-green-600"
                             />
-                            <span class="font-bold text-slate-700">Trabajaste con alguien de tu equipo?</span>
+<span class="font-bold text-slate-700"
+                                >¿Trabajaste con alguien de tu equipo?</span
+                            >
                         </label>
                     </div>
 
                     <div
                         id="ingreso-equipo-selector"
-                        class="hidden space-y-2 p-4 bg-slate-50 rounded-lg">
+class="hidden space-y-2 p-4 bg-slate-50 rounded-lg"
+                    >
                         <p class="text-sm font-bold text-slate-700 mb-2">
                             Selecciona miembros:
                         </p>
                         <div id="ingreso-equipo-list">
-                            <!-- Se llena dinmicamente -->
+<!-- Se llena dinámicamente -->
                         </div>
                         <div
                             id="ingreso-preview"
-                            class="mt-4 p-3 bg-white rounded-lg border border-slate-200 hidden">
+                            class="mt-4 p-3 bg-white rounded-lg border border-slate-200 hidden"
+                        >
                             <p class="text-xs font-bold text-slate-600 mb-2">
-                                Preview de distribucin:
+                                Preview de distribución:
                             </p>
                             <div id="ingreso-preview-content"></div>
                         </div>
@@ -433,10 +459,14 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         <button
                             type="button"
                             id="cancel-ingreso"
-                            class="flex-1 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 rounded-lg transition">Cancelar</button>
+class="flex-1 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 rounded-lg transition"
+                            >Cancelar</button
+                        >
                         <button
                             type="submit"
-                            class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition">Guardar Ingreso</button>
+                            class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition"
+                            >Guardar Ingreso</button
+                        >
                     </div>
                 </form>
             </div>
@@ -445,11 +475,14 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         <!-- MODAL GASTO -->
         <div
             id="modal-gasto"
-            class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center p-4">
+class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center p-4"
+        >
             <div
-                class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+            >
                 <div
-                    class="p-6 border-b flex justify-between items-center bg-red-50">
+                    class="p-6 border-b flex justify-between items-center bg-red-50"
+                >
                     <div>
                         <h3 class="text-xl font-bold text-slate-900">
                             Registrar Gasto
@@ -460,25 +493,31 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     </div>
                     <button
                         id="close-modal-gasto"
-                        class="text-3xl text-slate-400 hover:text-slate-600">&times;</button>
+class="text-3xl text-slate-400 hover:text-slate-600"
+                        >&times;</button
+                    >
                 </div>
 
                 <form id="form-gasto" class="p-6 space-y-4">
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">Concepto</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                            >Concepto</label
+                        >
                         <input
                             type="text"
                             id="gasto-concepto"
                             required
                             class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
-                            placeholder="Ej: Materiales elctricos"
+placeholder="Ej: Materiales eléctricos"
                         />
                     </div>
 
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">Monto</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                            >Monto</label
+                        >
                         <input
                             type="number"
                             id="gasto-monto"
@@ -491,7 +530,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">Fecha</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                            >Fecha</label
+                        >
                         <input
                             type="date"
                             id="gasto-fecha"
@@ -502,12 +543,15 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">Categora</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                            >Categoría</label
+                        >
                         <select
                             id="gasto-categoria"
                             required
-                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-red-500">
-                            <option value="">Selecciona una categora</option>
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
+                        >
+                            <option value="">Selecciona una categoría</option>
                             <option value="materiales">Materiales</option>
                             <option value="herramientas">Herramientas</option>
                             <option value="transporte">Transporte</option>
@@ -519,10 +563,14 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         <button
                             type="button"
                             id="cancel-gasto"
-                            class="flex-1 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 rounded-lg transition">Cancelar</button>
+class="flex-1 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 rounded-lg transition"
+                            >Cancelar</button
+                        >
                         <button
                             type="submit"
-                            class="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition">Guardar Gasto</button>
+                            class="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition"
+                            >Guardar Gasto</button
+                        >
                     </div>
                 </form>
             </div>
@@ -531,11 +579,14 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         <!-- MODAL EDITAR MOVIMIENTO -->
         <div
             id="modal-edit-mov"
-            class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center p-4">
+class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center p-4"
+        >
             <div
-                class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+            >
                 <div
-                    class="p-6 border-b flex justify-between items-center bg-blue-50">
+                    class="p-6 border-b flex justify-between items-center bg-blue-50"
+                >
                     <div>
                         <h3 class="text-xl font-bold text-slate-900">
                             Editar Movimiento
@@ -546,7 +597,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     </div>
                     <button
                         id="close-modal-edit"
-                        class="text-3xl text-slate-400 hover:text-slate-600">&times;</button>
+class="text-3xl text-slate-400 hover:text-slate-600"
+                        >&times;</button
+                    >
                 </div>
 
                 <form id="form-edit-mov" class="p-6 space-y-4">
@@ -555,7 +608,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">Concepto</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                            >Concepto</label
+                        >
                         <input
                             type="text"
                             id="edit-mov-concepto"
@@ -566,7 +621,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">Monto</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                            >Monto</label
+                        >
                         <input
                             type="number"
                             id="edit-mov-monto"
@@ -578,7 +635,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">Fecha</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                            >Fecha</label
+                        >
                         <input
                             type="date"
                             id="edit-mov-fecha"
@@ -588,17 +647,21 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     </div>
 
                     <div id="edit-mov-extra-container">
-                        <!-- Campos especficos segn tipo (cliente o categora) -->
+<!-- Campos específicos según tipo (cliente o categoría) -->
                     </div>
 
                     <div class="pt-4 border-t flex gap-3">
                         <button
                             type="button"
                             id="cancel-edit"
-                            class="flex-1 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 rounded-lg transition">Cancelar</button>
+class="flex-1 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 rounded-lg transition"
+                            >Cancelar</button
+                        >
                         <button
                             type="submit"
-                            class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition">Guardar Cambios</button>
+                            class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition"
+                            >Guardar Cambios</button
+                        >
                     </div>
                 </form>
             </div>
@@ -607,10 +670,12 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         <!-- MODAL AGREGAR MIEMBRO DEL EQUIPO -->
         <div
             id="modal-team"
-            class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center p-4">
+class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center p-4"
+        >
             <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
                 <div
-                    class="p-6 border-b flex justify-between items-center bg-orange-50">
+                    class="p-6 border-b flex justify-between items-center bg-orange-50"
+                >
                     <div>
                         <h3 class="text-xl font-bold text-slate-900">
                             Agregar Miembro del Equipo
@@ -621,43 +686,55 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     </div>
                     <button
                         id="close-modal-team"
-                        class="text-3xl text-slate-400 hover:text-slate-600">&times;</button>
+class="text-3xl text-slate-400 hover:text-slate-600"
+                        >&times;</button
+                    >
                 </div>
 
                 <form id="form-team" class="p-6 space-y-4">
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">Nombre</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                            >Nombre</label
+                        >
                         <input
                             type="text"
                             id="team-nombre"
                             required
                             class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500"
-                            placeholder="Ej: Juan Prez"
+placeholder="Ej: Juan Pérez"
                         />
                     </div>
 
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">Rol</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                            >Rol</label
+                        >
                         <select
                             id="team-rol"
                             required
-                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500">
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500"
+                        >
                             <option value="">Selecciona un rol</option>
                             <option value="ayudante">Ayudante</option>
                             <option value="socio">Socio</option>
-                            <option value="subcontratista">Subcontratista</option>
+                            <option value="subcontratista"
+                                >Subcontratista</option
+                            >
                         </select>
                     </div>
 
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">Tipo de Pago</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                            >Tipo de Pago</label
+                        >
                         <select
                             id="team-tipo-pago"
                             required
-                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500">
+                            class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-orange-500"
+                        >
                             <option value="">Selecciona tipo</option>
                             <option value="porcentaje">Porcentaje (%)</option>
                             <option value="fijo">Monto Fijo ($)</option>
@@ -666,7 +743,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     <div>
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2">Valor</label>
+class="block text-sm font-bold text-slate-700 mb-2"
+                            >Valor</label
+                        >
                         <input
                             type="number"
                             id="team-valor"
@@ -677,7 +756,8 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         />
                         <p
                             id="team-valor-hint"
-                            class="text-xs text-slate-500 mt-1">
+class="text-xs text-slate-500 mt-1"
+                        >
                             Selecciona primero el tipo de pago
                         </p>
                     </div>
@@ -686,10 +766,14 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         <button
                             type="button"
                             id="cancel-team"
-                            class="flex-1 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 rounded-lg transition">Cancelar</button>
+class="flex-1 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 rounded-lg transition"
+                            >Cancelar</button
+                        >
                         <button
                             type="submit"
-                            class="flex-1 px-6 py-3 bg-orange-600 text-white rounded-lg font-bold hover:bg-orange-700 transition">Guardar Miembro</button>
+                            class="flex-1 px-6 py-3 bg-orange-600 text-white rounded-lg font-bold hover:bg-orange-700 transition"
+                            >Guardar Miembro</button
+                        >
                     </div>
                 </form>
             </div>
@@ -698,22 +782,26 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         <!-- CUSTOM ALERT MODAL -->
         <div
             id="custom-alert"
-            class="hidden fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+class="hidden fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300"
+        >
             <div
-                class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl transform scale-95 transition-transform duration-300">
+                class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl transform scale-95 transition-transform duration-300"
+            >
                 <div class="text-center">
-                    <div id="alert-icon" class="text-5xl mb-4"></div>
+                    <div id="alert-icon" class="text-5xl mb-4">✅</div>
                     <h3
                         id="alert-title"
-                        class="text-xl font-bold text-slate-800 mb-2">
-                        xito!
+                        class="text-xl font-bold text-slate-800 mb-2"
+                    >
+                        ¡Éxito!
                     </h3>
                     <p id="alert-message" class="text-slate-600 mb-6">
-                        Operacin realizada correctamente.
+                        Operación realizada correctamente.
                     </p>
                     <button
                         id="alert-btn"
-                        class="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition">
+                        class="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition"
+                    >
                         Entendido
                     </button>
                 </div>
@@ -723,28 +811,33 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         <!-- CUSTOM CONFIRM MODAL -->
         <div
             id="custom-confirm"
-            class="hidden fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+class="hidden fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300"
+        >
             <div
-                class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl transform scale-95 transition-transform duration-300">
+                class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl transform scale-95 transition-transform duration-300"
+            >
                 <div class="text-center">
-                    <div class="text-5xl mb-4"></div>
+                    <div class="text-5xl mb-4">🤔</div>
                     <h3
                         id="confirm-title"
-                        class="text-xl font-bold text-slate-800 mb-2">
-                        Ests seguro?
+                        class="text-xl font-bold text-slate-800 mb-2"
+                    >
+                        ¿Estás seguro?
                     </h3>
                     <p id="confirm-message" class="text-slate-600 mb-6">
-                        Esta accin no se puede deshacer.
+                        Esta acción no se puede deshacer.
                     </p>
                     <div class="flex gap-3">
                         <button
                             id="confirm-cancel"
-                            class="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition">
+class="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition"
+                        >
                             Cancelar
                         </button>
                         <button
                             id="confirm-ok"
-                            class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition">
+class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition"
+                        >
                             Confirmar
                         </button>
                     </div>
@@ -771,7 +864,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
             } from "firebase/firestore";
 
             (function () {
-                console.log(" [FINANZAS] Pgina cargada/navegada");
+console.log("🚀 [FINANZAS] Página cargada/navegada");
 
                 const logoutBtn = document.getElementById("btn-logout");
                 const btnAddIncome = document.getElementById("btn-add-income");
@@ -806,7 +899,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     if (!modal || !icon || !titleEl || !msgEl || !btn) return;
 
-                    icon.textContent = type === "success" ? "" : "";
+icon.textContent = type === "success" ? "✅" : "❌";
                     titleEl.textContent = title;
                     msgEl.textContent = message;
 
@@ -964,7 +1057,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         modalTeam.classList.add("hidden"),
                     );
 
-                // Cambiar hint segn tipo de pago
+// Cambiar hint según tipo de pago
                 document
                     .getElementById("team-tipo-pago")
                     ?.addEventListener("change", (e) => {
@@ -1030,7 +1123,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         );
 
                         await showAlert(
-                            "Excelente!",
+"¡Excelente!",
                             "Has agregado un nuevo miembro a tu equipo.",
                             "success",
                         );
@@ -1062,7 +1155,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 // Open Edit Modal
                 (window as any).openEditMov = (async function (id, tipo) {
                     if (!currentUser) return;
-                    console.log(" Editando:", id, tipo);
+console.log("📝 Editando:", id, tipo);
 
                     try {
                         const docRef = doc(
@@ -1109,7 +1202,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             ) as HTMLInputElement
                         ).value = `${year}-${month}-${day}`;
 
-                        // Campos extra segn tipo
+// Campos extra según tipo
                         if (tipo === "ingreso" && editExtraContainer) {
                             editExtraContainer.innerHTML = `
                                 <div>
@@ -1120,7 +1213,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         } else if (tipo === "gasto" && editExtraContainer) {
                             editExtraContainer.innerHTML = `
                                 <div>
-                                    <label class="block text-sm font-bold text-slate-700 mb-2">Categora</label>
+<label class="block text-sm font-bold text-slate-700 mb-2">Categoría</label>
                                     <select id="edit-mov-categoria" required class="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
                                         <option value="materiales" ${data.categoria === "materiales" ? "selected" : ""}>Materiales</option>
                                         <option value="herramientas" ${data.categoria === "herramientas" ? "selected" : ""}>Herramientas</option>
@@ -1138,7 +1231,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         console.error(error);
                         showAlert(
                             "Error",
-                            "No se pudo cargar la informacin del movimiento",
+"No se pudo cargar la información del movimiento",
                             "error",
                         );
                     }
@@ -1147,8 +1240,8 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     window as any,
                 ).deleteMov = async function (id, tipo) {
                     const confirmed = await (window as any).showConfirm(
-                        "Eliminar movimiento?",
-                        "Esta accin borrar el registro de tus finanzas. Si es un ingreso que tena equipo asignado, las derivaciones no se borrarn automticamente.",
+"¿Eliminar movimiento?",
+                        "Esta acción borrará el registro de tus finanzas. Si es un ingreso que tenía equipo asignado, las derivaciones no se borrarán automáticamente.",
                     );
 
                     if (confirmed) {
@@ -1163,7 +1256,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             await deleteDoc(docRef);
                             showAlert(
                                 "Eliminado",
-                                "El movimiento ha sido borrado con xito.",
+"El movimiento ha sido borrado con éxito.",
                             );
                             await loadFinanzas(currentUser.uid);
                         } catch (error) {
@@ -1208,7 +1301,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             "edit-mov-fecha",
                         ) as HTMLInputElement
                     ).value;
-                    const fecha = new Date(fechaValue + "T12:00:00"); // Forzar medioda para evitar desfases de zona horaria
+const fecha = new Date(fechaValue + "T12:00:00"); // Forzar mediodía para evitar desfases de zona horaria
 
                     const updateData: any = {
                         concepto,
@@ -1242,7 +1335,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         await updateDoc(docRef, updateData);
 
                         showAlert(
-                            "Actualizado!",
+"¡Actualizado!",
                             "El movimiento ha sido modificado correctamente.",
                             "success",
                         );
@@ -1293,7 +1386,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         ) as HTMLInputElement
                     ).checked;
 
-                    // Calcular derivaciones si trabaj con equipo
+// Calcular derivaciones si trabajó con equipo
                     let equipoArray: any[] = [];
                     let montoNeto = monto;
 
@@ -1379,7 +1472,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             );
                             await Promise.all(derivacionesPromises);
 
-                            // Actualizar estadsticas del equipo
+// Actualizar estadísticas del equipo
                             const updatePromises = equipoArray.map(
                                 async (miembro) => {
                                     const miembroDoc = doc(
@@ -1411,7 +1504,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         }
 
                         await showAlert(
-                            "Ingreso Registrado!",
+"¡Ingreso Registrado!",
                             `El ingreso y las derivaciones han sido guardadas.${equipoArray.length > 0 ? ` (${equipoArray.length} derivaciones)` : ""}`,
                             "success",
                         );
@@ -1432,7 +1525,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         await loadEquipo(currentUser.uid);
                     } catch (error) {
                         console.error(error);
-                        alert(" Error al guardar ingreso");
+alert("❌ Error al guardar ingreso");
                     }
                 });
 
@@ -1701,7 +1794,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     if (movimientos.length === 0) {
                         container.innerHTML = `
                     <div class="p-12 text-center text-slate-400">
-                        <div class="text-6xl mb-4"></div>
+<div class="text-6xl mb-4">📊</div>
                         <p>No hay movimientos registrados</p>
                         <p class="text-sm mt-2">Comienza registrando tu primer ingreso o gasto</p>
                     </div>
@@ -1714,7 +1807,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             let fecha, color, signo, icon, concepto, detalle;
 
                             if (mov.tipo === "derivacion") {
-                                // DERIVACIN PAGADA
+// DERIVACIÓN PAGADA
                                 fecha = mov.fechaPago
                                     .toDate()
                                     .toLocaleDateString("es-AR", {
@@ -1723,7 +1816,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                     });
                                 color = "text-purple-600";
                                 signo = "-";
-                                icon = "";
+icon = "👷";
                                 concepto = `Pago a ${mov.miembroNombre}`;
                                 detalle = mov.trabajoConcepto;
                             } else {
@@ -1739,9 +1832,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                         ? "text-green-600"
                                         : "text-red-600";
                                 signo = mov.tipo === "ingreso" ? "+" : "-";
-                                icon = mov.tipo === "ingreso" ? "" : "";
+icon = mov.tipo === "ingreso" ? "💵" : "💸";
                                 concepto = mov.concepto;
-                                detalle = `${mov.clienteNombre ? mov.clienteNombre : ""}${mov.categoria ? (mov.clienteNombre ? "  " : "") + mov.categoria : ""}`;
+                                detalle = `${mov.clienteNombre ? mov.clienteNombre : ""}${mov.categoria ? (mov.clienteNombre ? " • " : "") + mov.categoria : ""}`;
                             }
 
                             return `
@@ -1750,7 +1843,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             <div class="text-2xl">${icon}</div>
                             <div>
                                 <p class="font-bold text-slate-800">${concepto}</p>
-                                <p class="text-sm text-slate-500">${fecha}${detalle ? "  " + detalle : ""}</p>
+<p class="text-sm text-slate-500">${fecha}${detalle ? " • " + detalle : ""}</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-4">
@@ -1806,9 +1899,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     if (equipoData.length === 0) {
                         container.innerHTML = `
                         <div class="text-center py-8 text-slate-400">
-                            <div class="text-5xl mb-3"></div>
+<div class="text-5xl mb-3">👥</div>
                             <p class="text-sm">No hay miembros en tu equipo</p>
-                            <p class="text-xs mt-1">Agrega ayudantes o socios para calcular derivaciones automticamente</p>
+                            <p class="text-xs mt-1">Agrega ayudantes o socios para calcular derivaciones automáticamente</p>
                         </div>
                     `;
                         return;
@@ -1829,8 +1922,8 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                         <span class="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded-full">
                                             ${miembro.tipoPago === "porcentaje" ? miembro.valor + "%" : "$" + miembro.valor.toLocaleString()}
                                         </span>
-                                        <button onclick="editarMiembro('${miembro.id}')" class="text-blue-500 hover:text-blue-700 text-xl" title="Editar"></button>
-                                        <button onclick="eliminarMiembro('${miembro.id}', '${miembro.nombre}')" class="text-red-500 hover:text-red-700 text-xl" title="Eliminar"></button>
+<button onclick="editarMiembro('${miembro.id}')" class="text-blue-500 hover:text-blue-700 text-xl" title="Editar">✏️</button>
+                                        <button onclick="eliminarMiembro('${miembro.id}', '${miembro.nombre}')" class="text-red-500 hover:text-red-700 text-xl" title="Eliminar">🗑️</button>
                                     </div>
                                 </div>
                                 <div class="text-xs text-slate-500 space-y-1">
@@ -1841,7 +1934,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                             ? `
                                         <div class="flex items-center justify-between pt-2 border-t border-slate-200 mt-2">
                                             <p class="text-orange-600 font-bold">Pendiente: $${miembro.pendientePago.toLocaleString()}</p>
-                                            <button onclick="marcarComoPagado('${miembro.id}')" class="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded"> Pagado</button>
+<button onclick="marcarComoPagado('${miembro.id}')" class="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded">✓ Pagado</button>
                                         </div>
                                     `
                                             : ""
@@ -1864,7 +1957,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     const confirmar = await showConfirm(
                         "Eliminar Miembro",
-                        `Ests seguro de eliminar a ${nombre} de tu equipo?\nEsto NO eliminar el historial de trabajos anteriores.`,
+`¿Estás seguro de eliminar a ${nombre} de tu equipo?\nEsto NO eliminará el historial de trabajos anteriores.`,
                         "Eliminar",
                         "bg-red-600",
                     );
@@ -1905,8 +1998,8 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                     const confirmar = await showConfirm(
                         "Confirmar Pago",
-                        "Confirmas que pagaste todas las derivaciones pendientes a este miembro?",
-                        "S, pagado",
+"¿Confirmas que pagaste todas las derivaciones pendientes a este miembro?",
+                        "Sí, pagado",
                         "bg-green-600",
                     );
 
@@ -1970,17 +2063,17 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     if (!currentUser) return;
 
                     const confirmar = await showConfirm(
-                        " ZONA DE PELIGRO",
-                        "Ests seguro de que quieres REINICIAR todo el panel?\n\nSe borrarn TODOS tus ingresos, gastos, equipo y registro de derivaciones.\n\nEsta accin NO SE PUEDE DESHACER.",
-                        "S, borrar todo",
+"⚠️ ZONA DE PELIGRO",
+                        "¿Estás seguro de que quieres REINICIAR todo el panel?\n\nSe borrarán TODOS tus ingresos, gastos, equipo y registro de derivaciones.\n\nEsta acción NO SE PUEDE DESHACER.",
+                        "Sí, borrar todo",
                         "bg-red-600",
                     );
 
                     if (!confirmar) return;
 
                     const segundaConfirmacion = await showConfirm(
-                        "Ests realmente seguro?",
-                        "Por favor confirma una ltima vez que deseas eliminar todos tus datos financieros.",
+"¿Estás realmente seguro?",
+                        "Por favor confirma una última vez que deseas eliminar todos tus datos financieros.",
                         "Confirmar borrado",
                         "bg-red-800",
                     );
@@ -2057,7 +2150,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 (window as any).marcarComoPagado = marcarComoPagado;
                 (window as any).resetValues = resetValues;
 
-                // === SELECCIN DE EQUIPO EN INGRESO ===
+// === SELECCIÓN DE EQUIPO EN INGRESO ===
                 function renderEquipoEnIngreso() {
                     const list = document.getElementById("ingreso-equipo-list");
                     if (!list) return;
@@ -2069,7 +2162,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         <input type="checkbox" class="equipo-checkbox w-5 h-5 text-orange-600 accent-orange-600" data-id="${miembro.id}" data-nombre="${miembro.nombre}" data-tipo="${miembro.tipoPago}" data-valor="${miembro.valor}">
                         <div class="flex-1">
                             <p class="font-bold text-sm text-slate-800">${miembro.nombre}</p>
-                            <p class="text-xs text-slate-500">${miembro.rol}  ${miembro.tipoPago === "porcentaje" ? miembro.valor + "%" : "$" + miembro.valor.toLocaleString()}</p>
+<p class="text-xs text-slate-500">${miembro.rol} • ${miembro.tipoPago === "porcentaje" ? miembro.valor + "%" : "$" + miembro.valor.toLocaleString()}</p>
                         </div>
                     </label>
                 `,
@@ -2175,6 +2268,16 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 });
             })(); // End of IIFE
         </script>
-    </body>
-</html>
+        <script>
+            // Sidebar Mobile Toggle
+            const btnOpenSidebar = document.getElementById("open-sidebar");
+            
+            btnOpenSidebar?.addEventListener("click", () => {
+                document.dispatchEvent(new CustomEvent("toggle-sidebar"));
+            });
+        </script>
 
+                </div> <!-- flex-1 overflow-y-auto -->
+            </main>
+        </div> <!-- flex h-screen -->
+    </Layout>

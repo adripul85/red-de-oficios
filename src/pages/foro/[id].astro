@@ -94,6 +94,7 @@ try {
                     authorPhoto:
                         rData?.authorPhoto ||
                         `https://ui-avatars.com/api/?name=A`,
+                    authorId: rData?.authorId, 
                     date: formatDate(rData?.createdAt),
                 };
             });
@@ -111,6 +112,9 @@ try {
     console.error("❌ Error CRÍTICO renderizando [id].astro:", e);
     error = `Error técnico: ${e.message}`;
 }
+
+const PRIVATE_IDS = ["proveedores", "herramientas", "negocios", "offtopic", "herramientas_pro", "gestoria", "offtopic_pro"];
+const isPrivate = thread && PRIVATE_IDS.includes(thread.category);
 ---
 
 <Layout title={thread ? thread.title : "Error"}>
@@ -141,132 +145,168 @@ try {
                         </a>
                     </div>
                 ) : (
-                    <>
-                        {/* --- DEBATE PRINCIPAL --- */}
-                        <article class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 mb-8 relative group">
-                            <div class="flex items-start justify-between mb-6">
+                    <div id="thread-container" data-category={thread.category}>
+                        {/* --- LOCK SCREEN --- */}
+                        <div id="lock-screen" class={isPrivate ? "flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-slate-200 shadow-sm text-center" : "hidden"}>
+                            <div class="text-6xl mb-4">🔒</div>
+                            <h2 class="text-2xl font-bold text-slate-800 mb-2">Contenido Exclusivo</h2>
+                            <p class="text-slate-500 max-w-md mx-auto mb-6">Esta sección es exclusiva para profesionales de la comunidad.</p>
+                            
+                            <div id="access-loading" class="hidden flex flex-col items-center gap-2 mb-6">
+                                <div class="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                                <span class="text-indigo-600 font-bold text-sm">Verificando tu acceso...</span>
+                            </div>
+
+                            <div class="flex gap-4 justify-center">
+                                <a href={`/ingresar?redirect=/foro/${id}`} class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
+                                    Iniciar Sesión
+                                </a>
+                                <a href="/foro" class="text-slate-500 px-6 py-2.5 font-bold hover:underline">
+                                    Volver al Foro
+                                </a>
+                            </div>
+                        </div>
+
+                        {/* --- DEBATE PRINCIPAL (Protected) --- */}
+                        <div id="thread-content" class={isPrivate ? "hidden" : ""}>
+                            <article class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 mb-8 relative group">
+                                <div class="flex items-start justify-between mb-6">
                                 <div class="flex items-center gap-4">
-                                    <img
-                                        src={thread.authorPhoto}
-                                        class="w-12 h-12 rounded-full border-2 border-slate-100"
-                                    />
-                                    <div>
-                                        <h1 class="text-2xl md:text-3xl font-bold text-slate-800 leading-tight mb-1">
-                                            {thread.title}
-                                        </h1>
-                                        <div class="flex items-center gap-2 text-sm text-slate-500">
-                                            <span class="font-bold text-[#FF5A5F]">
-                                                {thread.authorName}
-                                            </span>
-                                            <span>• {thread.date}</span>
-                                            <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-xs font-bold uppercase ml-2">
-                                                {thread.category}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="prose prose-slate max-w-none text-slate-700 leading-relaxed text-lg mb-6 whitespace-pre-line">
-                                {thread.content}
-                            </div>
-
-                            {thread.images.length > 0 && (
-                                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                                    {thread.images.map((img) => (
                                         <img
-                                            src={img}
-                                            class="rounded-xl border border-slate-100 w-full h-48 object-cover cursor-pointer hover:opacity-90"
-                                            onclick={`window.open('${img}', '_blank')`}
+                                            src={thread.authorPhoto}
+                                            class="w-12 h-12 rounded-full border-2 border-slate-100"
                                         />
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* CONTROLES (Solo visibles para el dueño) */}
-                            <div
-                                class="owner-controls hidden absolute top-6 right-6 flex gap-2"
-                                data-author-id={thread.authorId}
-                                data-thread-id={thread.id}
-                            >
-                                <button
-                                    class="btn-edit text-slate-400 hover:text-blue-600 p-2 transition"
-                                    title="Editar"
-                                >
-                                    ✏️
-                                </button>
-                                <button
-                                    class="btn-delete text-slate-400 hover:text-red-600 p-2 transition"
-                                    title="Eliminar"
-                                >
-                                    🗑️
-                                </button>
-                            </div>
-
-                            <div class="flex items-center gap-6 pt-6 border-t border-slate-100 text-slate-500 font-medium">
-                                <span>❤️ {thread.likes} Útil</span>
-                                <span>💬 {replies.length} Respuestas</span>
-                                <span>👁️ {thread.views} Vistas</span>
-                            </div>
-                        </article>
-
-                        {/* --- RESPUESTAS --- */}
-                        <div class="space-y-6 mb-12">
-                            <h3 class="text-xl font-bold text-slate-800 px-2">
-                                {replies.length} Respuestas
-                            </h3>
-                            {replies.map((reply) => (
-                                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex gap-4">
-                                    <img
-                                        src={reply.authorPhoto}
-                                        class="w-10 h-10 rounded-full border border-slate-100 flex-shrink-0"
-                                    />
-                                    <div class="flex-1">
-                                        <div class="flex justify-between items-center mb-2">
-                                            <span class="font-bold text-slate-800 text-sm">
-                                                {reply.authorName}
-                                            </span>
-                                            <span class="text-xs text-slate-400">
-                                                {reply.date}
-                                            </span>
+                                        <div>
+                                            <h1 class="text-2xl md:text-3xl font-bold text-slate-800 leading-tight mb-1">
+                                                {thread.title}
+                                            </h1>
+                                            <div class="flex items-center gap-2 text-sm text-slate-500">
+                                                <span class="font-bold text-[#FF5A5F]">
+                                                    {thread.authorName}
+                                                </span>
+                                                <span>• {thread.date}</span>
+                                                <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-xs font-bold uppercase ml-2">
+                                                    {thread.category}
+                                                </span>
+                                                {thread.authorId && thread.authorId !== "unknown" && (
+                                                    <a href={`/perfil?id=${thread.authorId}`} class="ml-2 text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded border border-blue-100 font-bold hover:bg-blue-100 transition">
+                                                        Ver Perfil Profesional
+                                                    </a>
+                                                )}
+                                            </div>
                                         </div>
-                                        <p class="text-slate-600 text-sm leading-relaxed whitespace-pre-line">
-                                            {reply.content}
-                                        </p>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
 
-                        {/* --- INPUT RESPUESTA --- */}
-                        <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 sticky bottom-4 z-10">
-                            <textarea
-                                id="reply-content"
-                                rows="3"
-                                class="w-full border border-slate-200 rounded-xl p-3 focus:border-[#FF5A5F] resize-none outline-none"
-                                placeholder="Escribe tu respuesta..."
-                            />
-                            <div class="flex justify-end mt-3">
-                                <button
-                                    id="btn-reply"
-                                    class="bg-[#FF5A5F] hover:bg-[#ff4146] text-white font-bold py-2 px-6 rounded-lg shadow-md transition"
+                                <div class="prose prose-slate max-w-none text-slate-700 leading-relaxed text-lg mb-6 whitespace-pre-line">
+                                    {thread.content}
+                                </div>
+
+                                {thread.images.length > 0 && (
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                                        {thread.images.map((img) => (
+                                            <img
+                                                src={img}
+                                                class="rounded-xl border border-slate-100 w-full h-48 object-cover cursor-pointer hover:opacity-90"
+                                                onclick={`window.open('${img}', '_blank')`}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* CONTROLES (Solo visibles para el dueño) */}
+                                <div
+                                    class="owner-controls hidden absolute top-6 right-6 flex gap-2"
+                                    data-author-id={thread.authorId}
+                                    data-thread-id={thread.id}
                                 >
-                                    Publicar
-                                </button>
+                                    <button
+                                        class="btn-edit text-slate-400 hover:text-blue-600 p-2 transition"
+                                        title="Editar"
+                                    >
+                                        ✏️
+                                    </button>
+                                    <button
+                                        class="btn-delete text-slate-400 hover:text-red-600 p-2 transition"
+                                        title="Eliminar"
+                                    >
+                                        🗑️
+                                    </button>
+                                </div>
+
+                                <div class="flex items-center gap-6 pt-6 border-t border-slate-100 text-slate-500 font-medium">
+                                    <span>❤️ {thread.likes} Útil</span>
+                                    <span>💬 {replies.length} Respuestas</span>
+                                    <span>👁️ {thread.views} Vistas</span>
+                                </div>
+                            </article>
+
+                            {/* --- RESPUESTAS --- */}
+                            <div class="space-y-6 mb-12">
+                                <h3 class="text-xl font-bold text-slate-800 px-2">
+                                    {replies.length} Respuestas
+                                </h3>
+                                {replies.map((reply) => (
+                                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex gap-4">
+                                        <img
+                                            src={reply.authorPhoto}
+                                            class="w-10 h-10 rounded-full border border-slate-100 flex-shrink-0"
+                                        />
+                                        <div class="flex-1">
+                                            <div class="flex justify-between items-center mb-2">
+                                                <span class="font-bold text-slate-800 text-sm">
+                                                    {reply.authorName}
+                                                </span>
+                                                <span class="text-xs text-slate-400">
+                                                    {reply.date}
+                                                </span>
+                                            </div>
+                                            <p class="text-slate-600 text-sm leading-relaxed whitespace-pre-line mb-3">
+                                                {reply.content}
+                                            </p>
+                                            
+                                            {reply.authorId && (
+                                                <a href={`/perfil?id=${reply.authorId}`} class="inline-flex items-center gap-2 text-xs bg-orange-50 text-orange-700 px-3 py-1.5 rounded-lg border border-orange-100 font-bold hover:bg-orange-100 transition">
+                                                    👷 Ver perfil de {reply.authorName} y contactar
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* --- INPUT RESPUESTA --- */}
+                            <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 sticky bottom-4 z-10">
+                                <textarea
+                                    id="reply-content"
+                                    rows="3"
+                                    class="w-full border border-slate-200 rounded-xl p-3 focus:border-[#FF5A5F] resize-none outline-none"
+                                    placeholder="Escribe tu respuesta..."
+                                />
+                                <div class="flex justify-end mt-3">
+                                    <button
+                                        id="btn-reply"
+                                        class="bg-[#FF5A5F] hover:bg-[#ff4146] text-white font-bold py-2 px-6 rounded-lg shadow-md transition"
+                                    >
+                                        Publicar
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </>
+                    </div>
                 )
             }
         </div>
     </div>
 </Layout>
 
-<script>
+</script>
+    <script>
     import { auth, db } from "../../firebase/client";
     import { onAuthStateChanged } from "firebase/auth";
     import {
         doc,
+        getDoc,
         updateDoc,
         addDoc,
         collection,
@@ -275,13 +315,112 @@ try {
         deleteDoc,
     } from "firebase/firestore";
 
+    // Define private categories
+    const PRIVATE_CATEGORIES = [
+        "proveedores", 
+        "herramientas_pro", 
+        "negocios", // Fix: 'negocios' was missing regarding index.astro
+        "offtopic", // index.astro says "offtopic_pro" but structure says "offtopic" in validCategories but "offtopic" in structure array? 
+                    // Let's match index.astro list: "proveedores", "herramientas_pro", "gestoria", "offtopic_pro" 
+                    // AND "negocios" from structure? 
+                    // Looking at index.astro line 40: items are suppliers, tools, business, off-topic.
+                    // IDs: proveedores, herramientas, negocios, offtopic.
+                    // Wait, index.astro validCategories line 12 has "offtopic_pro" but line 44 structure has ID "offtopic".
+                    // I will include ALL potentially private IDs to be safe.
+        "gestoria",
+        "offtopic_pro" 
+    ];
+    // Add IDs from forumStructure in index.astro to be sure
+    const PRIVATE_IDS = ["proveedores", "herramientas", "negocios", "offtopic", "herramientas_pro", "gestoria", "offtopic_pro"];
+
     document.addEventListener("astro:page-load", () => {
         console.log("🚀 [FORO-POST] Página cargada/navegada");
 
         // @ts-ignore
         const currentThreadId = window.location.pathname.split("/").pop();
+        
+        // Access Control Logic
+        const article = document.querySelector('article'); 
+        const categoryBadge = article?.querySelector('.bg-slate-100'); // Assuming category is here
+        // Better: Read from server rendered data attribute if possible, or parse HTML
+        // For now, let's rely on the DOM content or pass it via data attribute
+        
+        // We need the category ID. The HTML shows "Name", not ID.
+        // Let's assume we need to check this securely.
+        // But since we are modifying the file, let's add a data attribute to the article.
+        
+        const threadContainer = document.getElementById("thread-container");
+        // @ts-ignore
+        const currentCategory = threadContainer?.dataset.category;
 
-        onAuthStateChanged(auth, (user) => {
+        // AUTH CHECK
+        onAuthStateChanged(auth, async (user) => {
+            const lockScreen = document.getElementById("lock-screen");
+            const content = document.getElementById("thread-content");
+            const loading = document.getElementById("access-loading");
+
+            if (!content || !currentCategory) return;
+            
+            // Check if private
+            if (PRIVATE_IDS.includes(currentCategory)) {
+                if (!user) {
+                    // Not logged in -> Redirect
+                    window.location.href = `/ingresar?redirect=/foro/${currentThreadId}`;
+                    return;
+                }
+
+                // Logged in -> Check Role
+                if (loading) loading.classList.remove("hidden");
+                
+                try {
+                    // Check if Admin or Professional
+                    const proRef = doc(db, "profesionales", user.uid);
+                    const proSnap = await getDoc(proRef);
+
+                    let accessGranted = false;
+
+                    if (proSnap.exists()) {
+                        accessGranted = true; // Is a professional
+                        // Check if admin (optional, as pros have access anyway)
+                        const data = proSnap.data();
+                        if (data.rol === 'admin') console.log("👮‍♂️ Acceso Admin");
+                    } else {
+                        // Check if explicitly Admin in other collection (e.g. specialized admin auth)
+                        // Or maybe 'clientes' with admin role?
+                        const clientRef = doc(db, "clientes", user.uid);
+                        const clientSnap = await getDoc(clientRef);
+                        if (clientSnap.exists() && clientSnap.data().rol === 'admin') {
+                            accessGranted = true;
+                        }
+                    }
+                    
+                    // Allow owner access regardless of role
+                    // @ts-ignore
+                    const ownerId = document.querySelector(".owner-controls")?.dataset.authorId;
+                    if (user.uid === ownerId) accessGranted = true;
+
+                    if (accessGranted) {
+                        if (lockScreen) lockScreen.remove();
+                        content.classList.remove("hidden");
+                    } else {
+                        if (loading) loading.classList.add("hidden");
+                        if (lockScreen) lockScreen.classList.remove("hidden");
+                        // Optional: Redirect after few seconds
+                        setTimeout(() => window.location.href = "/foro", 3000);
+                    }
+
+                } catch (e) {
+                    console.error("Error verificando acceso:", e);
+                    alert("Error verificando permisos.");
+                    window.location.href = "/foro";
+                }
+            } else {
+                // Public category -> Show content
+                content.classList.remove("hidden");
+                if (lockScreen) lockScreen.remove();
+            }
+
+            // Owner Controls (Existing Logic)
             if (user) {
                 document.querySelectorAll(".owner-controls").forEach((div) => {
                     // @ts-ignore

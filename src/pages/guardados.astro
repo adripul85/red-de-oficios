@@ -10,7 +10,7 @@ import Footer from '../components/Footer.astro';
   <main class="min-h-screen bg-gray-50 py-10 px-4">
     <div class="max-w-4xl mx-auto">
       
-      <h1 class="text-3xl font-bold text-secondary mb-2">Mi Agenda Personal </h1>
+<h1 class="text-3xl font-bold text-secondary mb-2">Mi Agenda Personal ❤️</h1>
       <p class="text-gray-500 mb-8">Tus profesionales de confianza guardados en este dispositivo.</p>
 
       <div id="lista-guardados" class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -24,7 +24,7 @@ import Footer from '../components/Footer.astro';
       </div>
       
       <div class="text-center mt-6">
-        <a href="/" class="text-primary font-bold hover:underline"> Volver a buscar</a>
+<a href="/" class="text-primary font-bold hover:underline">← Volver a buscar</a>
       </div>
 
     </div>
@@ -44,8 +44,8 @@ import Footer from '../components/Footer.astro';
     if (guardados.length === 0) {
       contenedor.innerHTML = `
         <div class="col-span-2 text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100">
-          <div class="text-4xl mb-2"></div>
-          <p class="text-gray-500 font-medium">No tens profesionales guardados an.</p>
+<div class="text-4xl mb-2">📭</div>
+          <p class="text-gray-500 font-medium">No tenés profesionales guardados aún.</p>
           <a href="/" class="inline-block mt-4 bg-primary text-white px-6 py-2 rounded-full text-sm font-bold hover:bg-orange-600 transition-colors">
             Buscar Profesionales
           </a>
@@ -70,16 +70,16 @@ import Footer from '../components/Footer.astro';
               ${pro.categoria}
             </span>
             <button class="btn-remove text-gray-300 hover:text-red-500 text-xl" data-id="${pro.id}" title="Quitar">
-              
+✕
             </button>
           </div>
           <h3 class="text-xl font-bold text-secondary mb-1">${pro.nombre}</h3>
-          <p class="text-gray-500 text-sm mb-4"> ${pro.zona}</p>
+          <p class="text-gray-500 text-sm mb-4">📍 ${pro.zona}</p>
         </div>
 
         <div class="flex gap-2 mt-2">
            <a href="https://wa.me/549${pro.telefono}" target="_blank" class="flex-1 bg-green-500 hover:bg-green-600 text-white text-center py-2 rounded-lg font-bold text-sm shadow-sm transition-colors">
-             WhatsApp 
+WhatsApp 💬
            </a>
            <a href="/perfil?id=${pro.id}" class="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg font-bold text-sm hover:bg-gray-50 transition-colors">
              Ver
@@ -90,7 +90,7 @@ import Footer from '../components/Footer.astro';
       contenedor.appendChild(card);
     });
 
-    // Agregar lgica a los botones de "X" (Quitar uno)
+// Agregar lógica a los botones de "X" (Quitar uno)
     document.querySelectorAll('.btn-remove').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const idEliminar = (e.target as HTMLElement).getAttribute('data-id');
@@ -107,7 +107,7 @@ import Footer from '../components/Footer.astro';
   }
 
   btnBorrar?.addEventListener('click', () => {
-    if(confirm("Ests seguro de vaciar tu agenda?")) {
+if(confirm("¿Estás seguro de vaciar tu agenda?")) {
       localStorage.removeItem(FAV_KEY);
       cargarFavoritos();
     }
@@ -116,4 +116,3 @@ import Footer from '../components/Footer.astro';
   // Iniciar
   cargarFavoritos();
 </script>
-

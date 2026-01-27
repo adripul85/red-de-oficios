@@ -5,8 +5,8 @@ import Footer from '../components/Footer.astro';
 import { db } from '../firebase/client';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
-// 1. TRAER ARTCULOS DE FIREBASE
-// Ordenamos por fecha descendente (lo ms nuevo arriba)
+// 1. TRAER ARTÍCULOS DE FIREBASE
+// Ordenamos por fecha descendente (lo más nuevo arriba)
 let posts = [];
 try {
   const q = query(collection(db, "blog"), orderBy("fecha", "desc"));
@@ -14,7 +14,7 @@ try {
   posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 } catch (e) {
   console.error("Error trayendo blog:", e);
-  // Si falla el ndice de fecha, traemos sin ordenar como fallback
+// Si falla el índice de fecha, traemos sin ordenar como fallback
   const snapshot = await getDocs(collection(db, "blog"));
   posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
@@ -27,8 +27,8 @@ try {
     
     <section class="blog-hero">
       <div class="container">
-        <h1>Consejos para tu Hogar </h1>
-        <p>Guas, precios de referencia y trucos de nuestros expertos.</p>
+<h1>Consejos para tu Hogar 💡</h1>
+        <p>Guías, precios de referencia y trucos de nuestros expertos.</p>
       </div>
     </section>
 
@@ -36,9 +36,9 @@ try {
       
       {posts.length === 0 ? (
         <div class="empty-state">
-            <span class="icon"></span>
-            <h3>An no hay noticias</h3>
-            <p>Estamos redactando los mejores consejos para vos. Vuelve pronto!</p>
+<span class="icon">📭</span>
+            <h3>Aún no hay noticias</h3>
+            <p>Estamos redactando los mejores consejos para vos. ¡Vuelve pronto!</p>
         </div>
       ) : (
         <div class="blog-grid">
@@ -53,8 +53,8 @@ try {
                 <h2>{post.titulo}</h2>
                 <p class="excerpt">{post.resumen}</p>
                 <div class="card-footer">
-                  <small> {post.fecha ? new Date(post.fecha.seconds * 1000).toLocaleDateString() : ''}</small>
-                  <span class="read-more">Leer ms </span>
+<small>📅 {post.fecha ? new Date(post.fecha.seconds * 1000).toLocaleDateString() : ''}</small>
+                  <span class="read-more">Leer más ➜</span>
                 </div>
               </div>
             </a>
@@ -100,4 +100,3 @@ try {
   .empty-state { text-align: center; padding: 50px; color: #6b7280; grid-column: 1 / -1; }
   .empty-state .icon { font-size: 4rem; display: block; margin-bottom: 10px; }
 </style>
-

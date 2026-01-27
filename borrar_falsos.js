@@ -28,15 +28,21 @@ async function borrarFalsos() {
 
     console.log(`⚠️  Se encontraron ${snapshot.size} perfiles falsos. Eliminando...`);
 
-    // 2. Usamos Batch para borrar en grupos (es más rápido y seguro)
-    const batch = db.batch();
+    // 2. Chunks de 500 (límite de Firestore por batch)
+    const docs = snapshot.docs;
+    const CHUNK_SIZE = 500;
 
-    snapshot.docs.forEach((doc) => {
-        batch.delete(doc.ref);
-    });
+    for (let i = 0; i < docs.length; i += CHUNK_SIZE) {
+        const batch = db.batch();
+        const chunk = docs.slice(i, i + CHUNK_SIZE);
 
-    // 3. Confirmar borrado
-    await batch.commit();
+        chunk.forEach((doc) => {
+            batch.delete(doc.ref);
+        });
+
+        await batch.commit();
+        console.log(`✅ Lote de ${chunk.length} documentos eliminado (${i + chunk.length}/${docs.length})`);
+    }
 
     console.log("✨ ¡Limpieza completada! Todos los perfiles falsos fueron borrados.");
     console.log("🛡️  Tus usuarios reales están intactos.");

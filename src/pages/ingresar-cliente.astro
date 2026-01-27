@@ -3,223 +3,103 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Acceso Clientes - DeOficios">
-    <div
-        class="min-h-screen flex font-sans bg-slate-50 transition-colors duration-300">
-        <!-- BANNER IZQUIERDO (Decorative - matching pro style) -->
-        <div
-            class="hidden lg:flex flex-1 relative bg-cover bg-center"
-            style="background-image: url('https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=1000&auto=format&fit=crop');">
-            <div
-                class="absolute inset-0 bg-indigo-900/40 z-10 backdrop-blur-[2px]">
+<div class="login-wrapper">
+        <div class="login-card">
+            <div class="icon">🛡️</div>
+            <h1>Área de Clientes</h1>
+            <p>Acceso seguro para opinar y contratar</p>
+
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="login"
+                    >Iniciar Sesión</button
+                >
+                <button class="tab-btn" data-tab="register">Registrarse</button>
             </div>
-            <div
-                class="relative z-20 max-w-md text-center text-white p-12 self-center mx-auto">
-                <div
-                    class="w-20 h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-4xl mb-6 mx-auto shadow-xl border border-white/30">
-                    
-                </div>
-                <h1 class="text-5xl font-bold mb-6 drop-shadow-lg">
-                    rea de Clientes
-                </h1>
-                <p class="text-xl opacity-90 leading-relaxed font-medium">
-                    Acced para valorar profesionales, gestionar tus pedidos y
-                    conectarte con seguridad.
-                </p>
+
+            <div id="tab-login" class="tab-content active">
+                <form id="login-form" class="auth-form">
+                    <input
+                        type="email"
+                        id="login-email"
+                        placeholder="Email"
+                        required
+                    />
+                    <input
+                        type="password"
+                        id="login-password"
+                        placeholder="Contraseña"
+                        required
+                    />
+                    <button type="submit" class="btn-submit">Ingresar</button>
+                    <p id="login-feedback" class="feedback hidden"></p>
+                    <button
+                        type="button"
+                        id="btn-resend"
+                        class="text-sm text-blue-600 underline mt-2 hidden hover:text-blue-800"
+                        >Reenviar correo de verificación</button
+                    >
+                </form>
             </div>
-        </div>
 
-        <!-- FORMULARIO DERECHO -->
-        <div
-            class="flex-1 flex flex-col justify-center p-6 sm:p-12 lg:p-24 bg-white transition-colors duration-300">
-            <div class="w-full max-w-md mx-auto">
-                <!-- HEADER -->
-                <div class="flex justify-between items-center mb-10">
-                    <a
-                        href="/"
-                        class="text-slate-500 hover:text-indigo-600 text-sm font-medium transition-colors">
-                         Volver al inicio
-                    </a>
-                    <img src="/favicon.svg" alt="Logo" class="w-10 h-10" />
-                </div>
-
-                <!-- TABS -->
-                <div class="flex bg-slate-100 p-1 rounded-xl mb-8">
-                    <button
-                        class="flex-1 py-3 text-sm font-bold rounded-lg transition-all duration-200 tab-btn active"
-                        data-tab="login"
-                        id="btn-tab-login">
-                        Iniciar Sesin
-                    </button>
-                    <button
-                        class="flex-1 py-3 text-sm font-bold rounded-lg transition-all duration-200 text-slate-500 hover:text-slate-700 tab-btn"
-                        data-tab="register"
-                        id="btn-tab-register">
-                        Registrarse
-                    </button>
-                </div>
-
-                <!-- LOGIN CONTENT -->
-                <div id="tab-login" class="tab-content active">
-                    <div class="text-center mb-8">
-                        <h2 class="text-3xl font-bold text-slate-800 mb-2">
-                            Hola de nuevo 
-                        </h2>
-                        <p class="text-slate-500">
-                            Ingres tus datos para acceder a tu cuenta.
-                        </p>
-                    </div>
-
-                    <form id="login-form" class="space-y-5">
-                        <div class="space-y-2">
-                            <label
-                                class="block text-sm font-bold text-slate-700">Email</label>
-                            <input
-                                type="email"
-                                id="login-email"
-                                placeholder="tu@email.com"
-                                required
-                                class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-slate-400"
-                            />
-                        </div>
-                        <div class="space-y-2">
-                            <label
-                                class="block text-sm font-bold text-slate-700">Contrasea</label>
-                            <input
-                                type="password"
-                                id="login-password"
-                                placeholder=""
-                                required
-                                class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-slate-400"
-                            />
-                        </div>
+            <div id="tab-register" class="tab-content">
+                <div id="reg-form-container">
+                    <form id="register-form" class="auth-form">
+                        <input
+                            type="text"
+                            id="register-name"
+                            placeholder="Nombre completo"
+                            required
+                        />
+                        <input
+                            type="email"
+                            id="register-email"
+                            placeholder="Email real (te enviaremos un link)"
+                            required
+                        />
+                        <input
+                            type="password"
+                            id="register-password"
+                            placeholder="Contraseña (mínimo 6 caracteres)"
+                            required
+                            minlength="6"
+                        />
                         <button
                             type="submit"
-                            class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition-all transform active:scale-[0.98]">
-                            Ingresar
-                        </button>
-                        <p
-                            id="login-feedback"
-                            class="text-sm p-3 rounded-lg hidden text-center">
-                        </p>
-                        <div class="text-center">
-                            <button
-                                type="button"
-                                id="btn-resend"
-                                class="text-sm text-indigo-600 underline hidden hover:text-indigo-800 font-medium">
-                                Reenviar correo de verificacin
-                            </button>
-                        </div>
+                            class="btn-submit bg-green-600 hover:bg-green-700"
+                            >Crear Cuenta</button
+                        >
+                        <p id="register-feedback" class="feedback hidden"></p>
                     </form>
                 </div>
 
-                <!-- REGISTER CONTENT -->
-                <div id="tab-register" class="tab-content hidden">
-                    <div id="reg-form-container">
-                        <div class="text-center mb-8">
-                            <h2 class="text-3xl font-bold text-slate-800 mb-2">
-                                Crear Cuenta 
-                            </h2>
-                            <p class="text-slate-500">
-                                Unte a la comunidad de vecinos.
-                            </p>
-                        </div>
-
-                        <form id="register-form" class="space-y-5">
-                            <div class="space-y-2">
-                                <label
-                                    class="block text-sm font-bold text-slate-700">Nombre completo</label>
-                                <input
-                                    type="text"
-                                    id="register-name"
-                                    placeholder="Juan Prez"
-                                    required
-                                    class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all placeholder-slate-400"
-                                />
-                            </div>
-                            <div class="space-y-2">
-                                <label
-                                    class="block text-sm font-bold text-slate-700">Email real</label>
-                                <input
-                                    type="email"
-                                    id="register-email"
-                                    placeholder="te@enviaremos-un-link.com"
-                                    required
-                                    class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all placeholder-slate-400"
-                                />
-                            </div>
-                            <div class="space-y-2">
-                                <label
-                                    class="block text-sm font-bold text-slate-700">Contrasea</label>
-                                <input
-                                    type="password"
-                                    id="register-password"
-                                    placeholder="Mnimo 6 caracteres"
-                                    required
-                                    minlength="6"
-                                    class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all placeholder-slate-400"
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                class="w-full py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg shadow-green-500/30 transition-all transform active:scale-[0.98]">
-                                Crear Cuenta
-                            </button>
-                            <p
-                                id="register-feedback"
-                                class="text-sm p-3 rounded-lg hidden text-center">
-                            </p>
-                        </form>
-                    </div>
-
-                    <div id="reg-success" class="hidden text-center py-6">
-                        <div
-                            class="w-20 h-20 bg-green-100 rounded-2xl flex items-center justify-center text-4xl mb-6 mx-auto">
-                            
-                        </div>
-                        <h3 class="text-2xl font-bold text-slate-800">
-                            Revisa tu correo!
-                        </h3>
-                        <p class="text-slate-500 mt-2 mb-8 leading-relaxed">
-                            Te enviamos un enlace de confirmacin. <br />
-                            <strong>Debes hacer clic en l para activar tu cuenta.</strong>
-                        </p>
-                        <button
-                            onclick="window.location.reload()"
-                            class="w-full py-4 bg-slate-100 text-slate-700 font-bold rounded-xl border border-slate-200 hover:bg-slate-200 transition-all">
-                            Ya lo confirm, Iniciar Sesin
-                        </button>
-                    </div>
-                </div>
-
-                <!-- SOCILA LOGIN -->
-                <div class="relative py-8">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-slate-200"></div>
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                        <span
-                            class="px-4 bg-white text-slate-500 font-medium italic">o rpido con</span>
-                    </div>
-                </div>
-
-                <button
-                    id="btn-google"
-                    class="w-full py-3.5 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl flex items-center justify-center gap-3 hover:bg-slate-50 transition-all shadow-sm active:scale-[0.98]">
-                    <img
-                        src="https://www.svgrepo.com/show/475656/google-color.svg"
-                        alt="G"
-                        class="w-5 h-5"
-                    /> Google (Verificacin automtica)
-                </button>
-
-                <div class="mt-10 text-center">
-                    <a
-                        href="/ingresar"
-                        class="text-indigo-600 font-bold hover:underline transition-all">
-                        Sos profesional? Clic aqu
-                    </a>
+                <div id="reg-success" class="hidden text-center py-6">
+                    <div class="text-4xl mb-4">📩</div>
+                    <h3 class="font-bold text-gray-800 text-lg">
+                        ¡Revisa tu correo!
+                    </h3>
+                    <p class="text-gray-600 text-sm mt-2 mb-4">
+                        Te enviamos un enlace de confirmación. <br />
+                        <strong
+                            >Debes hacer clic en él para activar tu cuenta.</strong
+                        >
+                    </p>
+                    <button
+                        onclick="window.location.reload()"
+                        class="btn-submit bg-gray-100 text-gray-700 border border-gray-300"
+                        >Ya lo confirmé, Iniciar Sesión</button
+                    >
                 </div>
             </div>
+
+            <div class="divider"><span>o rápido con</span></div>
+            <button id="btn-google" class="btn-google">
+                <img
+                    src="https://www.svgrepo.com/show/475656/google-color.svg"
+                    alt="G"
+                /> Google (Verificación automática)
+            </button>
+
+            <a href="/ingresar" class="link-pro">¿Sos profesional? Clic aquí</a>
         </div>
     </div>
 </Layout>
@@ -243,50 +123,25 @@ import Layout from "../layouts/Layout.astro";
     // TABS LOGIC
     tabBtns.forEach((btn) => {
         btn.addEventListener("click", () => {
-            const tab = (btn as HTMLElement).dataset.tab;
-
-            // UI Update
-            tabBtns.forEach((b) => {
-                b.classList.remove(
-                    "active",
-                    "bg-white",
-                    "text-indigo-600",
-                    "shadow-md",
-                );
-                b.classList.add("text-slate-500");
-            });
-
-            btn.classList.add(
-                "active",
-                "bg-white",
-                "text-indigo-600",
-                "shadow-md",
-            );
-            btn.classList.remove("text-slate-500");
-
-            // Content Update
+const tab = btn.dataset.tab;
+            tabBtns.forEach((b) => b.classList.remove("active"));
             document
                 .querySelectorAll(".tab-content")
-                .forEach((c) => c.classList.add("hidden"));
-            document.getElementById(`tab-${tab}`)?.classList.remove("hidden");
+                .forEach((c) => c.classList.remove("active"));
+            btn.classList.add("active");
+            document.getElementById(`tab-${tab}`).classList.add("active");
         });
     });
 
-    // 1. INICIAR SESIN
+    // 1. INICIAR SESIÓN (CON CONTROL DE VERIFICACIÓN)
     document
         .getElementById("login-form")
         ?.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const email = (
-                document.getElementById("login-email") as HTMLInputElement
-            ).value;
-            const password = (
-                document.getElementById("login-password") as HTMLInputElement
-            ).value;
+const email = document.getElementById("login-email").value;
+            const password = document.getElementById("login-password").value;
             const feedback = document.getElementById("login-feedback");
             const btnResend = document.getElementById("btn-resend");
-
-            if (!feedback || !btnResend) return;
 
             feedback.classList.add("hidden");
             btnResend.classList.add("hidden");
@@ -299,12 +154,15 @@ import Layout from "../layouts/Layout.astro";
                 );
                 const user = userCredential.user;
 
+// 🔒 CANDADO: ¿Está verificado?
                 if (!user.emailVerified) {
-                    await signOut(auth);
-                    feedback.innerHTML = ` <strong>Email no verificado.</strong><br>Por favor revis tu bandeja de entrada o spam.`;
+                    await signOut(auth); // Lo sacamos inmediatamente
+                    feedback.innerHTML = `⚠️ <strong>Email no verificado.</strong><br>Por favor revisa tu bandeja de entrada o spam.`;
                     feedback.classList.remove("hidden");
-                    feedback.classList.add("bg-red-50", "text-red-700");
+                    feedback.style.color = "#b91c1c"; // Rojo oscuro
+                    feedback.style.backgroundColor = "#fef2f2";
 
+                    // Opción para reenviar
                     btnResend.classList.remove("hidden");
                     btnResend.onclick = async () => {
                         await sendEmailVerification(user);
@@ -313,78 +171,30 @@ import Layout from "../layouts/Layout.astro";
                     return;
                 }
 
-                // Check user role
-                const docSnap = await getDoc(doc(db, "clientes", user.uid));
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    if (data.rol === "profesional" || data.rol === "experto") {
-                        window.location.href = "/mi-perfil";
-                    } else {
-                        window.location.href = "/mi-cuenta";
-                    }
-                } else {
-                    // Should not happen for registered users, but fallback:
-                    window.location.href = "/mi-cuenta";
-                }
-            } catch (error: any) {
-                console.error("Login error:", error);
-
-                let msg = " Email o contrasea incorrectos";
-                let showRegisterLink = false;
-
-                if (
-                    error.code === "auth/user-not-found" ||
-                    error.code === "auth/invalid-credential"
-                ) {
-                    msg = " Usuario no encontrado. Quers crear una cuenta?";
-                    showRegisterLink = true;
-                } else if (error.code === "auth/wrong-password") {
-                    msg = " Contrasea incorrecta.";
-                }
-
-                feedback.innerHTML = msg;
-                if (showRegisterLink) {
-                    feedback.innerHTML += `<br><button id="btn-switch-to-register" class="text-indigo-600 underline mt-2 font-bold hover:text-indigo-800" type="button">Ir a Registrarse</button>`;
-                }
-
+// Si pasa, redireccionamos
+                window.location.href = returnUrl;
+            } catch (error) {
+                feedback.textContent = "❌ Email o contraseña incorrectos";
                 feedback.classList.remove("hidden");
-                feedback.classList.add("bg-red-50", "text-red-700");
-
-                // Add listener to new button
-                setTimeout(() => {
-                    document
-                        .getElementById("btn-switch-to-register")
-                        ?.addEventListener("click", () => {
-                            document
-                                .getElementById("btn-tab-register")
-                                ?.click();
-                        });
-                }, 100);
+                feedback.style.color = "red";
             }
         });
 
-    // 2. REGISTRO
+    // 2. REGISTRO (ENVÍA EMAIL Y BLOQUEA)
     document
         .getElementById("register-form")
         ?.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const name = (
-                document.getElementById("register-name") as HTMLInputElement
-            ).value;
-            const email = (
-                document.getElementById("register-email") as HTMLInputElement
-            ).value;
-            const password = (
-                document.getElementById("register-password") as HTMLInputElement
-            ).value;
+const name = document.getElementById("register-name").value;
+            const email = document.getElementById("register-email").value;
+            const password = document.getElementById("register-password").value;
             const feedback = document.getElementById("register-feedback");
 
-            if (!feedback) return;
-
             if (password.length < 6)
-                return alert("La contrasea debe tener al menos 6 caracteres");
+                return alert("La contraseña debe tener al menos 6 caracteres");
 
             try {
+                // A. Crear usuario en Auth
                 const userCredential = await createUserWithEmailAndPassword(
                     auth,
                     email,
@@ -392,8 +202,10 @@ import Layout from "../layouts/Layout.astro";
                 );
                 const user = userCredential.user;
 
+// B. Enviar Email de Verificación
                 await sendEmailVerification(user);
 
+                // C. Guardar en Firestore (Aunque no esté verificado aún, guardamos sus datos)
                 await setDoc(doc(db, "clientes", user.uid), {
                     nombre: name,
                     email: email,
@@ -401,27 +213,42 @@ import Layout from "../layouts/Layout.astro";
                     createdAt: new Date(),
                 });
 
+                // 🚀 ENVIAR EMAIL DE BIENVENIDA (Async)
+                try {
+                  fetch("/api/send-welcome", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      email: email,
+                      name: name,
+                      role: "cliente",
+                    }),
+                  }).catch(console.warn);
+                } catch (e) { console.warn(e) }
+
+// D. Cerrar sesión para que no entre directo
                 await signOut(auth);
 
+                // E. Mostrar pantalla de éxito
                 document
                     .getElementById("reg-form-container")
-                    ?.classList.add("hidden");
+                    .classList.add("hidden");
                 document
                     .getElementById("reg-success")
-                    ?.classList.remove("hidden");
-            } catch (error: any) {
+                    .classList.remove("hidden");
+            } catch (error) {
                 console.error(error);
                 feedback.textContent =
-                    " Error: " +
+                    "❌ Error: " +
                     (error.code === "auth/email-already-in-use"
-                        ? "El email ya est registrado"
+                        ? "El email ya está registrado"
                         : error.message);
                 feedback.classList.remove("hidden");
-                feedback.classList.add("bg-red-50", "text-red-700");
+                feedback.style.color = "red";
             }
         });
 
-    // 3. GOOGLE
+    // 3. GOOGLE (YA VIENE VERIFICADO POR DEFECTO)
     document
         .getElementById("btn-google")
         ?.addEventListener("click", async () => {
@@ -430,54 +257,167 @@ import Layout from "../layouts/Layout.astro";
                     auth,
                     new GoogleAuthProvider(),
                 );
-
-                // Fetch user data to check role
-                const docRef = doc(db, "clientes", result.user.uid);
-                const docSnap = await getDoc(docRef);
-
-                let targetUrl = "/mi-cuenta"; // Default for clients
-
+// Guardar si es nuevo
+                const docSnap = await getDoc(
+                    doc(db, "clientes", result.user.uid),
+                );
                 if (!docSnap.exists()) {
-                    // New User -> Create as Cliente
-                    await setDoc(docRef, {
+                    await setDoc(doc(db, "clientes", result.user.uid), {
                         nombre: result.user.displayName || "Usuario Google",
                         email: result.user.email,
                         foto: result.user.photoURL,
                         rol: "cliente",
                         createdAt: new Date(),
                     });
-                    // Force mi-cuenta for new users
-                    window.location.href = "/mi-cuenta";
-                    return;
-                } else {
-                    // Existing User -> Check Role
-                    const data = docSnap.data();
-                    if (data.rol === "profesional" || data.rol === "experto") {
-                        targetUrl = "/mi-perfil";
-                    } else {
-                        targetUrl = "/mi-cuenta";
-                    }
-                }
-
-                // If returnUrl is set and safe, valid, use it?
-                // Better to force role-based home to avoid cross-contamination
-                // unless we strictly validate returnUrl permissions (hard to do here).
-                // Let's prioritize correct panel.
-
-                window.location.href = targetUrl;
-            } catch (error: any) {
+}
+                window.location.href = returnUrl;
+            } catch (error) {
                 alert("Error con Google: " + error.message);
             }
         });
 </script>
 
 <style>
+.login-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+    }
+    .login-card {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        width: 100%;
+        max-width: 450px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    .icon {
+        font-size: 3.5rem;
+        margin-bottom: 10px;
+    }
+    h1 {
+        color: #1f2937;
+        margin-bottom: 5px;
+        font-size: 2rem;
+        font-weight: 700;
+    }
+    p {
+        color: #6b7280;
+        margin-bottom: 25px;
+        font-size: 0.95rem;
+    }
+    .tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 25px;
+    }
+    .tab-btn {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid #e5e7eb;
+        background: #f9fafb;
+        border-radius: 10px;
+        font-weight: 600;
+        color: #6b7280;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
     .tab-btn.active {
-        background-color: white;
-        color: #4f46e5; /* indigo-600 */
-        box-shadow:
-            0 4px 6px -1px rgba(0, 0, 0, 0.1),
-            0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+    }
+    .tab-content {
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+        animation: fadeIn 0.3s;
+    }
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .auth-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .auth-form input {
+        width: 100%;
+        padding: 14px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 1rem;
+        box-sizing: border-box;
+    }
+    .btn-submit {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+    .divider {
+        margin: 25px 0;
+        border-top: 1px solid #e5e7eb;
+        position: relative;
+    }
+    .divider span {
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        padding: 0 15px;
+        color: #9ca3af;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .btn-google {
+        width: 100%;
+        background: white;
+        border: 2px solid #e5e7eb;
+        padding: 14px;
+        border-radius: 10px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        cursor: pointer;
+    }
+    .btn-google img {
+        width: 22px;
+    }
+    .link-pro {
+        display: block;
+        margin-top: 25px;
+        color: #7c3aed;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    .feedback {
+        font-size: 0.9rem;
+        padding: 10px;
+        background: #fef2f2;
+        margin-top: 10px;
+        border-radius: 8px;
+    }
+    .hidden {
+        display: none;
     }
 </style>
-

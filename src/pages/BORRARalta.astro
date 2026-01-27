@@ -1,0 +1,153 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Alta de Profesional">
+  <Header />
+
+  <main>
+    <section class="form-container">
+      <h1>¡Sumate a la Red!</h1>
+      <p>Completá tus datos para que los clientes te encuentren.</p>
+
+      <form id="form-alta">
+        
+        <div class="input-group">
+          <label for="nombre">Nombre Completo</label>
+          <input type="text" id="nombre" name="nombre" required placeholder="Juan Pérez" />
+        </div>
+
+        <div class="input-group">
+          <label for="categoria">Oficio / Categoría</label>
+          <select id="categoria" name="categoria" required>
+            <option value="" disabled selected>Seleccioná una opción</option>
+            <option value="Cerrajería">Cerrajería</option>
+            <option value="Plomería">Plomería</option>
+            <option value="Electricidad">Electricidad</option>
+            <option value="Gasista">Gasista</option>
+            <option value="Climatización">Climatización</option>
+            <option value="Albañilería">Albañilería</option>
+            <option value="Pintura">Pintura</option>
+            <option value="Carpintería">Carpintería</option>
+            <option value="Maquillaje">Maquillaje</option>
+            <option value="Sastrería">Sastrería</option>
+            <option value="Zapatería">Zapatería</option>
+            <option value="Jardinería">Jardinería</option>
+            <option value="Mecánica">Mecánica</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label for="zona">Barrio / Zona de trabajo</label>
+          <input type="text" id="zona" name="zona" required placeholder="Ej: Palermo, Belgrano" />
+        </div>
+
+        <div class="input-group">
+          <label for="telefono">Teléfono / WhatsApp</label>
+          <input type="tel" id="telefono" name="telefono" required placeholder="11 1234 5678" />
+        </div>
+        
+        <div class="input-group">
+          <label for="descripcion">Descripción (Opcional)</label>
+          <textarea id="descripcion" name="descripcion" rows="3" placeholder="Experiencia, horarios..."></textarea>
+        </div>
+        <div class="form-group">
+  <label for="precio">Valor de Referencia / Visita ($)</label>
+  <input 
+    type="text" 
+    id="precio" 
+    name="precio" 
+    placeholder="Ej: Visita $10.000 / Presupuesto sin cargo" 
+    required
+  />
+  <small>Un precio orientativo ayuda a conseguir más clientes.</small>
+</div>
+        <div class="form-group checkbox-group">
+  <input type="checkbox" id="es_24hs" name="es_24hs">
+  <label for="es_24hs">
+    🚨 <strong>Atiendo Urgencias 24hs</strong>
+    <span class="small-text">(Marcá esto solo si trabajás fines de semana y noches)</span>
+  </label>
+</div>
+        <button type="submit" id="btn-submit">Publicar mi Perfil</button>
+      </form>
+      
+      <div id="mensaje" class="hidden"></div>
+    </section>
+  </main>
+
+  <Footer />
+</Layout>
+
+<script>
+  import { db } from "../firebase/client";
+  import { collection, addDoc } from "firebase/firestore";
+
+  const form = document.getElementById('form-alta') as HTMLFormElement;
+  const mensajeDiv = document.getElementById('mensaje');
+  const btnSubmit = document.getElementById('btn-submit') as HTMLButtonElement;
+
+  if (form) {
+   form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  // 1. Capturamos los valores
+  const nombre = document.getElementById('nombre').value;
+  const telefono = document.getElementById('telefono').value;
+  // NUEVO: Capturamos el precio
+  const precio = document.getElementById('precio').value; 
+  const zona = document.getElementById('zona').value;
+  const categoria = document.getElementById('categoria').value;
+  const descripcion = document.getElementById('descripcion').value;
+    const es_24hs = document.getElementById('es_24hs').checked;
+  try {
+    // 2. Guardamos en Firebase
+    await addDoc(collection(db, "profesionales"), {
+      nombre: nombre,
+      telefono: telefono,
+      precio: precio, // <--- ¡IMPORTANTE! Agregamos esto
+      zona: zona,
+      categoria: categoria,
+      descripcion: descripcion,
+      fecha_alta: new Date(),
+      es_24hs: es_24hs,
+      verificado: false // Por defecto no está verificado
+    });
+
+    alert("¡Profesional dado de alta con éxito!");
+    form.reset(); // Limpia el formulario
+    
+  } catch (e) {
+    console.error("Error al guardar: ", e);
+    alert("Hubo un error al guardar los datos.");
+  }
+});
+  }
+</script>
+
+<style>
+  .form-container { max-width: 500px; margin: 50px auto; padding: 30px; background: #fff; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+  h1 { text-align: center; color: #002244; }
+  p { text-align: center; color: #666; margin-bottom: 30px; }
+  .input-group { margin-bottom: 20px; text-align: left; }
+  label { display: block; margin-bottom: 5px; font-weight: bold; }
+  input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+  button { width: 100%; padding: 15px; background: #0044cc; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+  button:disabled { background: #ccc; }
+  .hidden { display: none; }
+  .success { background: #d4edda; color: #155724; padding: 15px; margin-top: 20px; text-align: center; border-radius: 5px; }
+  .error { background: #f8d7da; color: #721c24; padding: 15px; margin-top: 20px; text-align: center; border-radius: 5px; }
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff5f5; /* Fondo rojizo suave */
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #feb2b2;
+  }
+  .checkbox-group input { width: 20px; height: 20px; accent-color: #e53e3e; }
+  .small-text { display: block; font-weight: normal; font-size: 13px; color: #666; margin-top: 2px; }
+</style>

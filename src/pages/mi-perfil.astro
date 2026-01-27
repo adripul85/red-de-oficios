@@ -1,21 +1,35 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { auth as authClient } from "../firebase/client";
+import { sendEmailVerification } from "firebase/auth";
 ---
 
-<Layout title="Mi Panel Profesional - DeOficios">
-    <script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script
-        is:inline
-        src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-    <div class="profile-page-wrapper bg-gray-50 min-h-screen pb-20 font-sans">
+<Layout title="Mi Perfil Profesional - DeOficios" hideBottomNav={true} hideIA={true}>
+    <div class="bg-gray-50 min-h-screen pb-20 font-sans">
         <div class="container mx-auto px-4 py-8 max-w-7xl">
+            <!-- Banner de Verificación de Email -->
+            <div id="email-verification-banner" class="hidden bg-orange-50 border border-orange-100 p-4 rounded-2xl mb-6">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">📧</span>
+                        <div>
+                            <p class="text-sm font-bold text-orange-800">Tu correo no está verificado</p>
+                            <p class="text-xs text-orange-600">Verifica tu email para mayor seguridad y recibir alertas de trabajo.</p>
+                        </div>
+                    </div>
+                    <button id="btn-resend-verification" class="bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-orange-700 transition">
+                        Reenviar Email
+                    </button>
+                </div>
+            </div>
             <div
                 id="loading-overlay"
                 class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center"
-                style="display: flex;">
+                style="display: flex;"
+            >
                 <div
-                    class="animate-spin rounded-full h-16 w-16 border-t-4 border-orange-500 border-gray-200">
+                    class="animate-spin rounded-full h-16 w-16 border-t-4 border-orange-500 border-gray-200"
+                >
                 </div>
                 <p class="mt-4 text-gray-500 font-medium animate-pulse">
                     Cargando tu perfil...
@@ -25,9 +39,11 @@ import Layout from "../layouts/Layout.astro";
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 <aside class="lg:col-span-1 space-y-6">
                     <div
-                        class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-center sticky top-24">
+                        class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-center sticky top-24"
+                    >
                         <div
-                            class="relative w-28 h-28 md:w-36 md:h-36 mx-auto mb-4 group cursor-pointer">
+                            class="relative w-28 h-28 md:w-36 md:h-36 mx-auto mb-4 group cursor-pointer"
+                        >
                             <img
                                 id="avatar-img"
                                 src=""
@@ -36,13 +52,17 @@ import Layout from "../layouts/Layout.astro";
                             <!-- Overlay de carga -->
                             <div
                                 class="absolute inset-0 bg-black/40 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer backdrop-blur-[2px]"
-                                onclick="document.getElementById('file-foto').click()">
+                                onclick="document.getElementById('file-foto').click()"
+                            >
                                 <span
-                                    class="bg-white/20 p-2 rounded-full mb-1 backdrop-blur-md border border-white/30">
-                                    <span class="text-2xl"></span>
+                                    class="bg-white/20 p-2 rounded-full mb-1 backdrop-blur-md border border-white/30"
+                                >
+                                    <span class="text-2xl">📸</span>
                                 </span>
                                 <span
-                                    class="text-white text-[10px] font-bold tracking-wider uppercase">Cambiar</span>
+                                    class="text-white text-[10px] font-bold tracking-wider uppercase"
+                                    >Cambiar</span
+                                >
                             </div>
                             <input
                                 type="file"
@@ -54,118 +74,146 @@ import Layout from "../layouts/Layout.astro";
 
                         <h3
                             id="sidebar-name"
-                            class="text-xl font-bold text-gray-900 leading-tight">
+                            class="text-xl font-bold text-gray-900 leading-tight"
+                        >
                             ...
                         </h3>
                         <div
                             id="badges-container"
-                            class="flex flex-wrap justify-center gap-2 mt-2 mb-4">
+                            class="flex flex-wrap justify-center gap-2 mt-2 mb-4"
+                        >
                         </div>
 
                         <div
-                            class="bg-orange-50 rounded-xl p-5 border border-orange-200 text-left relative overflow-hidden mb-4">
+                            class="bg-orange-50 rounded-xl p-5 border border-orange-200 text-left relative overflow-hidden mb-4"
+                        >
                             <div class="text-center mb-2">
                                 <span
-                                    class="text-[10px] text-orange-600 font-bold uppercase tracking-widest">TU PLAN ACTUAL</span>
+                                    class="text-[10px] text-orange-600 font-bold uppercase tracking-widest"
+                                    >TU PLAN ACTUAL</span
+                                >
                                 <div
                                     id="plan-display"
-                                    class="font-black text-gray-900 text-xl mt-1">
+                                    class="font-black text-gray-900 text-xl mt-1"
+                                >
                                     ...
                                 </div>
                             </div>
 
                             <div
                                 id="click-counter"
-                                class="hidden mt-3 bg-white p-3 rounded-lg border border-orange-100">
+                                class="hidden mt-3 bg-white p-3 rounded-lg border border-orange-100"
+                            >
                                 <div
-                                    class="flex justify-between text-xs font-bold mb-1">
-                                    <span class="text-gray-600">Contactos este mes:</span>
-                                    <span class="text-orange-600"><span id="clicks-current">0</span>/20</span>
+                                    class="flex justify-between text-xs font-bold mb-1"
+                                >
+                                    <span class="text-gray-600"
+                                        >Contactos este mes:</span
+                                    >
+                                    <span class="text-orange-600"
+                                        ><span id="clicks-current">0</span
+                                        >/20</span
+                                    >
                                 </div>
                                 <div
-                                    class="w-full bg-gray-200 rounded-full h-2.5">
+                                    class="w-full bg-gray-200 rounded-full h-2.5"
+                                >
                                     <div
                                         id="clicks-progress"
                                         class="bg-orange-500 h-2.5 rounded-full"
-                                        style="width: 0%">
+                                        style="width: 0%"
+                                    >
                                     </div>
                                 </div>
                             </div>
 
                             <ul
                                 id="plan-benefits"
-                                class="space-y-2 text-sm text-gray-700 mt-4 mb-4">
+                                class="space-y-2 text-sm text-gray-700 mt-4 mb-4"
+                            >
                             </ul>
                             <a
                                 href="/planes"
-                                class="block w-full py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-bold rounded-lg text-center hover:shadow-lg transition text-shadow"> Mejorar Plan</a>
+                                class="block w-full py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-bold rounded-lg text-center hover:shadow-lg transition text-shadow"
+                                >⭐ Mejorar Plan</a
+                            >
                         </div>
 
                         <div class="mt-6 space-y-2">
                             <a
                                 href="#"
                                 id="btn-ver-perfil"
-                                class="block w-full py-2 px-4 border border-gray-200 text-gray-600 font-bold rounded-lg hover:bg-gray-50 transition text-sm text-center">
-                                 Ver perfil pblico
+                                class="block w-full py-2 px-4 border border-gray-200 text-gray-600 font-bold rounded-lg hover:bg-gray-50 transition text-sm text-center"
+                            >
+                                👀 Ver perfil público
                             </a>
 
                             <a
                                 href="/panel"
                                 id="btn-panel-pro"
-                                class="hidden w-full py-2 px-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-lg hover:from-orange-600 hover:to-orange-700 transition text-sm text-center shadow-md transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
-                                <span></span> Panel Pro
+                                class="hidden w-full py-2 px-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-lg hover:from-orange-600 hover:to-orange-700 transition text-sm text-center shadow-md transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                            >
+                                <span>📊</span> Panel Pro
                             </a>
 
                             <button
                                 id="btn-giftcard"
-                                class="block w-full py-2 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-lg hover:from-purple-700 hover:to-indigo-700 transition text-sm text-center shadow-md transform hover:-translate-y-0.5">
-                                 Canjear Cdigo
+                                class="block w-full py-2 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-lg hover:from-purple-700 hover:to-indigo-700 transition text-sm text-center shadow-md transform hover:-translate-y-0.5"
+                            >
+                                🎁 Canjear Código
                             </button>
 
                             <div id="premium-tools" class="hidden space-y-2">
                                 <button
                                     id="btn-show-qr-profile"
-                                    class="w-full py-2 px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-lg hover:from-purple-600 hover:to-pink-600 transition text-sm text-center shadow-md flex items-center justify-center gap-2">
-                                    <span></span> Ver Cdigo QR
+                                    class="w-full py-2 px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-lg hover:from-purple-600 hover:to-pink-600 transition text-sm text-center shadow-md flex items-center justify-center gap-2"
+                                >
+                                    <span>📱</span> Ver Código QR
                                 </button>
 
                                 <button
                                     id="btn-share-card-profile"
-                                    class="w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-lg hover:from-blue-600 hover:to-cyan-600 transition text-sm text-center shadow-md flex items-center justify-center gap-2">
-                                    <span></span> Compartir Tarjeta
+                                    class="w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-lg hover:from-blue-600 hover:to-cyan-600 transition text-sm text-center shadow-md flex items-center justify-center gap-2"
+                                >
+                                    <span>📤</span> Compartir Tarjeta
                                 </button>
 
                                 <button
                                     id="btn-download-card-profile"
-                                    class="w-full py-2 px-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg hover:from-indigo-600 hover:to-purple-600 transition text-sm text-center shadow-md flex items-center justify-center gap-2">
-                                    <span></span> Tarjeta Digital
+                                    class="w-full py-2 px-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-lg hover:from-indigo-600 hover:to-purple-600 transition text-sm text-center shadow-md flex items-center justify-center gap-2"
+                                >
+                                    <span>💳</span> Tarjeta Digital
                                 </button>
                             </div>
 
                             <a
                                 href="/admin/"
                                 id="btn-admin-panel"
-                                class="hidden block w-full py-2 px-4 bg-gray-800 text-white font-bold rounded-lg hover:bg-black transition text-sm text-center">
-                                 Panel Admin
+                                class="hidden block w-full py-2 px-4 bg-gray-800 text-white font-bold rounded-lg hover:bg-black transition text-sm text-center"
+                            >
+                                🛡️ Panel Admin
                             </a>
 
                             <a
                                 href="/foro"
-                                class="block w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-sm text-center shadow-sm">
-                                 Comunidad
+                                class="block w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-lg hover:from-blue-600 hover:to-blue-700 transition text-sm text-center shadow-sm"
+                            >
+                                👥 Comunidad
                             </a>
 
                             <hr class="my-4 border-gray-100" />
 
                             <button
                                 id="btn-logout"
-                                class="w-full py-2 px-4 text-slate-400 hover:text-red-500 transition text-sm font-bold flex items-center justify-center gap-2">
-                                <span></span> Cerrar Sesin
+                                class="w-full py-2 px-4 text-slate-400 hover:text-red-500 transition text-sm font-bold flex items-center justify-center gap-2"
+                            >
+                                <span>🚪</span> Cerrar Sesión
                             </button>
                             <button
                                 id="btn-delete-account"
-                                class="block w-full py-2 px-4 text-red-300 hover:text-red-600 font-medium rounded-lg text-xs transition">
-                                 Eliminar Cuenta
+                                class="block w-full py-2 px-4 text-red-300 hover:text-red-600 font-medium rounded-lg text-xs transition"
+                            >
+                                ❌ Eliminar Cuenta
                             </button>
                         </div>
                     </div>
@@ -174,33 +222,41 @@ import Layout from "../layouts/Layout.astro";
                 <div class="lg:col-span-3 space-y-6">
                     <!-- Blindaje de Identidad Premium -->
                     <div
-                        class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
+                        class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden"
+                    >
                         <div
-                            class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl opacity-50 -mr-16 -mt-16 pointer-events-none">
+                            class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl opacity-50 -mr-16 -mt-16 pointer-events-none"
+                        >
                         </div>
 
                         <div
-                            class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 relative z-10">
+                            class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 relative z-10"
+                        >
                             <div class="flex items-center gap-4">
                                 <div
-                                    class="bg-blue-100 p-3 rounded-xl text-2xl shadow-sm">
-                                    
+                                    class="bg-blue-100 p-3 rounded-xl text-2xl shadow-sm"
+                                >
+                                    🛡️
                                 </div>
                                 <div>
                                     <h3
-                                        class="font-bold text-lg text-slate-800">
+                                        class="font-bold text-lg text-slate-800"
+                                    >
                                         Blindaje de Identidad
                                     </h3>
                                     <p class="text-sm text-slate-500">
-                                        Sube tu documentacin para activar tu
+                                        Sube tu documentación para activar tu
                                         insignia de verificado.
                                     </p>
                                 </div>
                             </div>
                             <div
-                                class="bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+                                class="bg-blue-50 px-3 py-1 rounded-full border border-blue-100"
+                            >
                                 <span
-                                    class="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Seguridad Garantizada</span>
+                                    class="text-[10px] font-bold text-blue-600 uppercase tracking-wider"
+                                    >Seguridad Garantizada</span
+                                >
                             </div>
                         </div>
 
@@ -208,19 +264,24 @@ import Layout from "../layouts/Layout.astro";
                             <!-- DNI Upload Card -->
                             <div
                                 class="border border-dashed border-slate-300 rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors cursor-pointer group"
-                                onclick="document.getElementById('file-dni').click()">
+                                onclick="document.getElementById('file-dni').click()"
+                            >
                                 <div
-                                    class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                                    <span class="text-xl"></span>
+                                    class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"
+                                >
+                                    <span class="text-xl">📄</span>
                                 </div>
                                 <div class="text-center">
                                     <p
-                                        class="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                                        class="text-xs font-bold text-slate-700 uppercase tracking-wide"
+                                    >
                                         DNI / Pasaporte
                                     </p>
                                     <span
                                         id="status-dni"
-                                        class="text-[10px] text-orange-500 font-bold bg-orange-50 px-2 py-0.5 rounded-full mt-1 inline-block">Pendiente</span>
+                                        class="text-[10px] text-orange-500 font-bold bg-orange-50 px-2 py-0.5 rounded-full mt-1 inline-block"
+                                        >Pendiente</span
+                                    >
                                 </div>
                                 <input
                                     type="file"
@@ -233,19 +294,24 @@ import Layout from "../layouts/Layout.astro";
                             <!-- Antecedentes Upload Card -->
                             <div
                                 class="border border-dashed border-slate-300 rounded-xl p-4 flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors cursor-pointer group"
-                                onclick="document.getElementById('file-ant').click()">
+                                onclick="document.getElementById('file-ant').click()"
+                            >
                                 <div
-                                    class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                                    <span class="text-xl"></span>
+                                    class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"
+                                >
+                                    <span class="text-xl">⚖️</span>
                                 </div>
                                 <div class="text-center">
                                     <p
-                                        class="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                                        class="text-xs font-bold text-slate-700 uppercase tracking-wide"
+                                    >
                                         Antecedentes
                                     </p>
                                     <span
                                         id="status-ant"
-                                        class="text-[10px] text-orange-500 font-bold bg-orange-50 px-2 py-0.5 rounded-full mt-1 inline-block">Pendiente</span>
+                                        class="text-[10px] text-orange-500 font-bold bg-orange-50 px-2 py-0.5 rounded-full mt-1 inline-block"
+                                        >Pendiente</span
+                                    >
                                 </div>
                                 <input
                                     type="file"
@@ -258,45 +324,58 @@ import Layout from "../layouts/Layout.astro";
                     </div>
 
                     <div
-                        class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden relative">
+                        class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden relative"
+                    >
                         <div
                             id="overlay-lock"
-                            class="absolute inset-0 bg-white/90 z-50 hidden flex flex-col items-center justify-center text-center p-6 backdrop-blur-sm">
-                            <div class="text-6xl mb-4"></div>
+                            class="absolute inset-0 bg-white/90 z-50 hidden flex flex-col items-center justify-center text-center p-6 backdrop-blur-sm"
+                        >
+                            <div class="text-6xl mb-4">⏳</div>
                             <h3 class="text-2xl font-bold text-gray-800">
-                                Perfil en Revisin
+                                Perfil en Revisión
                             </h3>
                             <p class="text-gray-600 mb-6 max-w-md">
-                                Tu documentacin est siendo validada por
+                                Tu documentación está siendo validada por
                                 nuestro equipo.
                             </p>
                         </div>
 
                         <div
-                            class="flex border-b border-gray-200 overflow-x-auto no-scrollbar bg-gray-50">
+                            class="flex border-b border-gray-200 overflow-x-auto no-scrollbar bg-gray-50"
+                        >
                             <button
                                 class="tab-btn active px-6 py-4 font-bold text-gray-700 border-b-2 border-orange-500 bg-white"
-                                data-tab="datos"> Datos</button>
+                                data-tab="datos">📝 Datos</button
+                            >
                             <button
                                 id="btn-seo"
                                 class="tab-btn px-6 py-4 font-bold text-gray-500 hover:text-orange-600 border-b-2 border-transparent relative group"
-                                data-tab="seo">
-                                 Web & SEO <span
-                                    class="text-[10px] bg-gray-200 text-gray-600 px-1 rounded ml-1 premium-lock"></span>
+                                data-tab="seo"
+                            >
+                                🌐 Web & SEO <span
+                                    class="text-[10px] bg-gray-200 text-gray-600 px-1 rounded ml-1 premium-lock"
+                                    >🔒</span
+                                >
                             </button>
                             <button
                                 id="btn-galeria"
                                 class="tab-btn px-6 py-4 font-bold text-gray-500 hover:text-orange-600 border-b-2 border-transparent relative group"
-                                data-tab="galeria">
-                                 Galera <span
-                                    class="text-[10px] bg-gray-200 text-gray-600 px-1 rounded ml-1 premium-lock"></span>
+                                data-tab="galeria"
+                            >
+                                📸 Galería <span
+                                    class="text-[10px] bg-gray-200 text-gray-600 px-1 rounded ml-1 premium-lock"
+                                    >🔒</span
+                                >
                             </button>
                             <button
                                 id="btn-presupuestos"
                                 class="tab-btn px-6 py-4 font-bold text-gray-500 hover:text-orange-600 border-b-2 border-transparent relative group"
-                                data-tab="presupuestos">
-                                 Presupuestos <span
-                                    class="text-[10px] bg-gray-200 text-gray-600 px-1 rounded ml-1 premium-lock"></span>
+                                data-tab="presupuestos"
+                            >
+                                💰 Presupuestos <span
+                                    class="text-[10px] bg-gray-200 text-gray-600 px-1 rounded ml-1 premium-lock"
+                                    >🔒</span
+                                >
                             </button>
                         </div>
 
@@ -305,7 +384,9 @@ import Layout from "../layouts/Layout.astro";
                                 <div class="grid md:grid-cols-2 gap-6 mb-4">
                                     <div>
                                         <label
-                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Nombre y Apellido</label><input
+                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
+                                            >Nombre y Apellido</label
+                                        ><input
                                             type="text"
                                             id="nombre"
                                             class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
@@ -314,11 +395,13 @@ import Layout from "../layouts/Layout.astro";
                                     </div>
                                     <div>
                                         <label
-                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Nombre de Fantasa (Opcional)</label><input
+                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
+                                            >Nombre de Fantasía (Opcional)</label
+                                        ><input
                                             type="text"
                                             id="nombre_fantasia"
                                             class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
-                                            placeholder="Ej: Plomera El Rayo"
+                                            placeholder="Ej: Plomería El Rayo"
                                             data-allow-free
                                         />
                                     </div>
@@ -327,9 +410,12 @@ import Layout from "../layouts/Layout.astro";
                                 <div class="grid md:grid-cols-2 gap-6 mb-4">
                                     <div>
                                         <label
-                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">CUIT / CUIL</label><input
+                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
+                                            >CUIT / CUIL <span class="text-red-500">*Obligatorio</span></label
+                                        ><input
                                             type="text"
                                             id="cuit"
+                                            required
                                             class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
                                             placeholder="20-12345678-9"
                                             data-allow-free
@@ -337,7 +423,9 @@ import Layout from "../layouts/Layout.astro";
                                     </div>
                                     <div>
                                         <label
-                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">N Matrcula (Opcional)</label><input
+                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
+                                            >N° Matrícula (Opcional)</label
+                                        ><input
                                             type="text"
                                             id="numero_matricula"
                                             class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
@@ -351,41 +439,57 @@ import Layout from "../layouts/Layout.astro";
                                 <div class="grid md:grid-cols-2 gap-6 mb-4">
                                     <div>
                                         <label
-                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Rubros (Mx 5)</label>
+                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
+                                            >Rubros (Máx 5)</label
+                                        >
                                         <div class="flex gap-2 mb-2">
                                             <select
                                                 id="rubro_select"
-                                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700 text-sm">
-                                                <option value="">Seleccionar Rubro...</option>
+                                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700 text-sm"
+                                            >
+                                                <option value=""
+                                                    >Seleccionar Rubro...</option
+                                                >
                                             </select>
                                             <button
                                                 type="button"
                                                 id="btn-add-rubro"
-                                                class="bg-orange-500 text-white px-3 rounded-lg font-bold hover:bg-orange-600">+</button>
+                                                class="bg-orange-500 text-white px-3 rounded-lg font-bold hover:bg-orange-600"
+                                                >+</button
+                                            >
                                         </div>
                                         <div
                                             id="rubros-container"
-                                            class="flex flex-wrap gap-2 min-h-[40px] p-2 bg-gray-50 rounded border border-gray-200">
+                                            class="flex flex-wrap gap-2 min-h-[40px] p-2 bg-gray-50 rounded border border-gray-200"
+                                        >
                                             <!-- Chips here -->
                                         </div>
                                     </div>
                                     <div>
                                         <label
-                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Zonas (Mx 3)</label>
+                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
+                                            >Zonas (Máx 3)</label
+                                        >
                                         <div class="flex gap-2 mb-2">
                                             <select
                                                 id="zona_select"
-                                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700 text-sm">
-                                                <option value="">Seleccionar Zona...</option>
+                                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700 text-sm"
+                                            >
+                                                <option value=""
+                                                    >Seleccionar Zona...</option
+                                                >
                                             </select>
                                             <button
                                                 type="button"
                                                 id="btn-add-zona"
-                                                class="bg-blue-500 text-white px-3 rounded-lg font-bold hover:bg-blue-600">+</button>
+                                                class="bg-blue-500 text-white px-3 rounded-lg font-bold hover:bg-blue-600"
+                                                >+</button
+                                            >
                                         </div>
                                         <div
                                             id="zonas-container"
-                                            class="flex flex-wrap gap-2 min-h-[40px] p-2 bg-gray-50 rounded border border-gray-200">
+                                            class="flex flex-wrap gap-2 min-h-[40px] p-2 bg-gray-50 rounded border border-gray-200"
+                                        >
                                             <!-- Chips here -->
                                         </div>
                                     </div>
@@ -394,7 +498,9 @@ import Layout from "../layouts/Layout.astro";
                                 <div class="grid md:grid-cols-2 gap-6 mb-4">
                                     <div>
                                         <label
-                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">WhatsApp (Sin 0 ni 15)</label><input
+                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
+                                            >WhatsApp (Sin 0 ni 15)</label
+                                        ><input
                                             type="text"
                                             id="telefono"
                                             class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
@@ -403,25 +509,17 @@ import Layout from "../layouts/Layout.astro";
                                         />
                                     </div>
 
-                                    <div>
-                                        <label
-                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Valor Visita / Mano de Obra
-                                            (Opcional)</label><input
-                                            type="number"
-                                            id="precio_visita"
-                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
-                                            placeholder="Ej: 3500"
-                                            data-allow-free
-                                        />
-                                    </div>
-                                </div>
-
-                                <div class="grid md:grid-cols-2 gap-6 mb-4">
                                     <div class="relative">
                                         <label
-                                            class="flex text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider justify-between"><span>Direccin Exacta (Auto) </span><span
+                                            class="flex text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider justify-between"
+                                            ><span
+                                                >Dirección Exacta (Auto) 🇦🇷</span
+                                            ><span
                                                 id="geo-status"
-                                                class="text-xs text-gray-400">...</span></label>
+                                                class="text-xs text-gray-400"
+                                                >...</span
+                                            ></label
+                                        >
                                         <input
                                             type="text"
                                             id="direccion_input"
@@ -432,7 +530,8 @@ import Layout from "../layouts/Layout.astro";
                                         />
                                         <ul
                                             id="geo-suggestions"
-                                            class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden max-h-48 overflow-y-auto">
+                                            class="absolute z-50 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden max-h-48 overflow-y-auto"
+                                        >
                                         </ul>
                                         <input
                                             type="hidden"
@@ -441,26 +540,33 @@ import Layout from "../layouts/Layout.astro";
                                     </div>
                                 </div>
 
-                                <!-- NUEVOS CAMPOS: EQUIPO, MATRCULA, GARANTA -->
+                                <!-- NUEVOS CAMPOS: EQUIPO, MATRÍCULA, GARANTÍA -->
                                 <div class="grid md:grid-cols-2 gap-6 mb-4">
                                     <!-- Equipo -->
                                     <div
-                                        class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                        class="p-4 bg-gray-50 rounded-lg border border-gray-200"
+                                    >
                                         <label
-                                            class="flex items-center gap-2 mb-2 cursor-pointer select-none">
+                                            class="flex items-center gap-2 mb-2 cursor-pointer select-none"
+                                        >
                                             <input
                                                 type="checkbox"
                                                 id="tiene_equipo"
                                                 class="w-4 h-4 text-blue-600 rounded"
                                             />
                                             <span
-                                                class="font-bold text-gray-700 text-sm"> Trabajo con Equipo</span>
+                                                class="font-bold text-gray-700 text-sm"
+                                                >👥 Trabajo con Equipo</span
+                                            >
                                         </label>
                                         <div
                                             id="equipo-options"
-                                            class="hidden pl-6 mt-2">
+                                            class="hidden pl-6 mt-2"
+                                        >
                                             <label
-                                                class="block text-xs mb-1 text-gray-500 font-bold">Cantidad de personas</label>
+                                                class="block text-xs mb-1 text-gray-500 font-bold"
+                                                >Cantidad de personas</label
+                                            >
                                             <input
                                                 type="number"
                                                 id="equipo_cantidad"
@@ -470,41 +576,50 @@ import Layout from "../layouts/Layout.astro";
                                         </div>
                                     </div>
 
-                                    <!-- Matrcula -->
+                                    <!-- Matrícula -->
                                     <div
-                                        class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                        class="p-4 bg-gray-50 rounded-lg border border-gray-200"
+                                    >
                                         <label
-                                            class="flex items-center gap-2 mb-2 cursor-pointer select-none">
+                                            class="flex items-center gap-2 mb-2 cursor-pointer select-none"
+                                        >
                                             <input
                                                 type="checkbox"
                                                 id="matriculado"
                                                 class="w-4 h-4 text-blue-600 rounded"
                                             />
                                             <span
-                                                class="font-bold text-gray-700 text-sm"> Soy Matriculado</span>
+                                                class="font-bold text-gray-700 text-sm"
+                                                >🎓 Soy Matriculado</span
+                                            >
                                         </label>
                                         <div
                                             id="matricula-options"
-                                            class="hidden pl-6 mt-2">
+                                            class="hidden pl-6 mt-2"
+                                        >
                                             <div class="mb-2">
                                                 <label
-                                                    class="block text-xs mb-1 text-gray-500 font-bold">N Matrcula / Entidad (1)</label>
+                                                    class="block text-xs mb-1 text-gray-500 font-bold"
+                                                    >N° Matrícula / Entidad (1)</label
+                                                >
                                                 <input
                                                     type="text"
                                                     id="matricula_texto"
                                                     class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700 py-1"
-                                                    placeholder="Ej: N 1234 - COPIME"
+                                                    placeholder="Ej: N° 1234 - COPIME"
                                                 />
                                             </div>
                                             <div>
                                                 <label
-                                                    class="block text-xs mb-1 text-gray-500 font-bold">N Matrcula / Entidad (2)
-                                                    - Opcional</label>
+                                                    class="block text-xs mb-1 text-gray-500 font-bold"
+                                                    >N° Matrícula / Entidad (2)
+                                                    - Opcional</label
+                                                >
                                                 <input
                                                     type="text"
                                                     id="matricula_texto_2"
                                                     class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700 py-1"
-                                                    placeholder="Ej: Gasista N 5678"
+                                                    placeholder="Ej: Gasista N° 5678"
                                                 />
                                             </div>
                                         </div>
@@ -512,32 +627,50 @@ import Layout from "../layouts/Layout.astro";
                                 </div>
 
                                 <div class="grid md:grid-cols-2 gap-6 mb-4">
-                                    <!-- Garanta -->
+                                    <!-- Garantía -->
                                     <div
-                                        class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                        class="p-4 bg-gray-50 rounded-lg border border-gray-200"
+                                    >
                                         <label
-                                            class="flex items-center gap-2 mb-2 cursor-pointer select-none">
+                                            class="flex items-center gap-2 mb-2 cursor-pointer select-none"
+                                        >
                                             <input
                                                 type="checkbox"
                                                 id="garantia_asegurada"
                                                 class="w-4 h-4 text-green-600 rounded"
                                             />
                                             <span
-                                                class="font-bold text-gray-700 text-sm"> Ofrezco Garanta Escrita</span>
+                                                class="font-bold text-gray-700 text-sm"
+                                                >🛡️ Ofrezco Garantía Escrita</span
+                                            >
                                         </label>
                                         <div
                                             id="garantia-options"
-                                            class="hidden pl-6 mt-2">
+                                            class="hidden pl-6 mt-2"
+                                        >
                                             <label
-                                                class="block text-xs mb-1 text-gray-500 font-bold">Duracin</label>
+                                                class="block text-xs mb-1 text-gray-500 font-bold"
+                                                >Duración</label
+                                            >
                                             <select
                                                 id="garantia_tiempo"
-                                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700 py-1 text-sm bg-white">
-                                                <option value="30">30 Das</option>
-                                                <option value="60">60 Das</option>
-                                                <option value="90">90 Das</option>
-                                                <option value="180">6 Meses</option>
-                                                <option value="360">1 Ao</option>
+                                                class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700 py-1 text-sm bg-white"
+                                            >
+                                                <option value="30"
+                                                    >30 Días</option
+                                                >
+                                                <option value="60"
+                                                    >60 Días</option
+                                                >
+                                                <option value="90"
+                                                    >90 Días</option
+                                                >
+                                                <option value="180"
+                                                    >6 Meses</option
+                                                >
+                                                <option value="360"
+                                                    >1 Año</option
+                                                >
                                             </select>
                                         </div>
                                     </div>
@@ -545,25 +678,30 @@ import Layout from "../layouts/Layout.astro";
                                     <!-- Certificados -->
                                     <div>
                                         <label
-                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Certificados / Cursos</label>
+                                            class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
+                                            >Certificados / Cursos</label
+                                        >
                                         <textarea
                                             id="certificados"
                                             class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
                                             rows="3"
-                                            placeholder="Ej: Curso de Electricidad Industrial (UTN), Instalador de Aire..."></textarea>
+                                            placeholder="Ej: Curso de Electricidad Industrial (UTN), Instalador de Aire..."
+                                        ></textarea>
                                     </div>
                                 </div>
 
                                 <div class="mb-4 relative">
                                     <label
-                                        class="flex text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider justify-between items-center">
-                                        Biografa / Descripcin
+                                        class="flex text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider justify-between items-center"
+                                    >
+                                        Biografía / Descripción
                                         <button
                                             type="button"
                                             id="btn-ai-bio"
                                             class="text-[10px] bg-purple-100 text-purple-700 px-2 py-1 rounded-full border border-purple-200 hover:bg-purple-200 transition flex items-center gap-1"
-                                            data-allow-free>
-                                            <span></span> Mejorar con IA
+                                            data-allow-free
+                                        >
+                                            <span>✨</span> Mejorar con IA
                                         </button>
                                     </label>
                                     <textarea
@@ -576,7 +714,9 @@ import Layout from "../layouts/Layout.astro";
 
                                 <div class="mb-4">
                                     <label
-                                        class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Etiquetas (Max 5)</label>
+                                        class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider"
+                                        >Etiquetas (Max 5)</label
+                                    >
                                     <div class="flex gap-2 mb-2">
                                         <input
                                             type="text"
@@ -588,23 +728,29 @@ import Layout from "../layouts/Layout.astro";
                                         <button
                                             type="button"
                                             id="btn-add-tag"
-                                            class="bg-gray-800 text-white px-4 py-2 rounded-lg font-bold text-sm">Agregar</button>
+                                            class="bg-gray-800 text-white px-4 py-2 rounded-lg font-bold text-sm"
+                                            >Agregar</button
+                                        >
                                     </div>
                                     <div
                                         id="tags-container"
-                                        class="flex flex-wrap gap-2">
+                                        class="flex flex-wrap gap-2"
+                                    >
                                     </div>
                                 </div>
 
                                 <div
-                                    class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                    class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200"
+                                >
                                     <h4
-                                        class="font-bold text-sm text-gray-700 mb-2">
-                                         Datos de Cobro (Visible en Perfil)
+                                        class="font-bold text-sm text-gray-700 mb-2"
+                                    >
+                                        💰 Datos de Cobro (Visible en Perfil)
                                     </h4>
                                     <div class="flex flex-wrap gap-4">
                                         <label
-                                            class="flex items-center gap-2 text-sm cursor-pointer select-none">
+                                            class="flex items-center gap-2 text-sm cursor-pointer select-none"
+                                        >
                                             <input
                                                 type="checkbox"
                                                 id="emite_factura"
@@ -612,10 +758,13 @@ import Layout from "../layouts/Layout.astro";
                                                 data-allow-free
                                             />
                                             <span
-                                                class="font-medium text-gray-700"> Emite Factura</span>
+                                                class="font-medium text-gray-700"
+                                                >🧾 Emite Factura</span
+                                            >
                                         </label>
                                         <label
-                                            class="flex items-center gap-2 text-sm cursor-pointer select-none">
+                                            class="flex items-center gap-2 text-sm cursor-pointer select-none"
+                                        >
                                             <input
                                                 type="checkbox"
                                                 id="no_emite_factura"
@@ -623,44 +772,56 @@ import Layout from "../layouts/Layout.astro";
                                                 data-allow-free
                                             />
                                             <span
-                                                class="font-medium text-gray-700"> No Emite Factura</span>
+                                                class="font-medium text-gray-700"
+                                                >❌ No Emite Factura</span
+                                            >
                                         </label>
                                         <div
-                                            class="w-full border-t border-gray-200 my-1">
+                                            class="w-full border-t border-gray-200 my-1"
+                                        >
                                         </div>
                                         <label
-                                            class="flex items-center gap-2 text-sm"><input
+                                            class="flex items-center gap-2 text-sm"
+                                            ><input
                                                 type="checkbox"
                                                 class="pago-check w-4 h-4 text-green-600 rounded"
                                                 value="Efectivo"
                                                 data-allow-free
-                                            /> Efectivo</label>
+                                            /> Efectivo</label
+                                        >
                                         <label
-                                            class="flex items-center gap-2 text-sm"><input
+                                            class="flex items-center gap-2 text-sm"
+                                            ><input
                                                 type="checkbox"
                                                 class="pago-check w-4 h-4 text-blue-600 rounded"
                                                 value="Transferencia"
                                                 data-allow-free
-                                            /> Transferencia</label>
+                                            /> Transferencia</label
+                                        >
                                         <label
-                                            class="flex items-center gap-2 text-sm"><input
+                                            class="flex items-center gap-2 text-sm"
+                                            ><input
                                                 type="checkbox"
                                                 class="pago-check w-4 h-4 text-sky-500 rounded"
                                                 value="MercadoPago"
                                                 data-allow-free
-                                            /> MercadoPago</label>
+                                            /> MercadoPago</label
+                                        >
                                         <label
-                                            class="flex items-center gap-2 text-sm"><input
+                                            class="flex items-center gap-2 text-sm"
+                                            ><input
                                                 type="checkbox"
                                                 class="pago-check w-4 h-4 text-indigo-500 rounded"
                                                 value="Tarjeta"
                                                 data-allow-free
-                                            /> Tarjeta</label>
+                                            /> Tarjeta</label
+                                        >
                                     </div>
                                 </div>
 
                                 <div
-                                    class="flex items-center gap-3 bg-red-50 p-4 rounded-lg border border-red-100">
+                                    class="flex items-center gap-3 bg-red-50 p-4 rounded-lg border border-red-100"
+                                >
                                     <input
                                         type="checkbox"
                                         id="es_24hs"
@@ -669,8 +830,9 @@ import Layout from "../layouts/Layout.astro";
                                     />
                                     <div>
                                         <p
-                                            class="font-bold text-red-800 text-sm">
-                                             Servicio de Urgencia 24hs
+                                            class="font-bold text-red-800 text-sm"
+                                        >
+                                            🚨 Servicio de Urgencia 24hs
                                         </p>
                                     </div>
                                 </div>
@@ -684,33 +846,45 @@ import Layout from "../layouts/Layout.astro";
 
                         <div id="tab-seo" class="tab-content hidden">
                             <div
-                                class="premium-overlay hidden absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center">
-                                <div class="text-4xl mb-2"></div>
+                                class="premium-overlay hidden absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center"
+                            >
+                                <div class="text-4xl mb-2">🔒</div>
                                 <h3 class="font-bold text-gray-800">
-                                    Funcin Premium
+                                    Función Premium
                                 </h3>
                                 <p class="text-sm text-gray-500 mb-4">
                                     Actualiza tu plan para tener tu propia Web.
                                 </p>
                                 <a
                                     href="/planes"
-                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700">Ver Planes</a>
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700"
+                                    >Ver Planes</a
+                                >
                             </div>
                             <div
-                                class="bg-gray-900 text-white p-6 rounded-xl mb-6 relative overflow-hidden">
+                                class="bg-gray-900 text-white p-6 rounded-xl mb-6 relative overflow-hidden"
+                            >
                                 <h3 class="text-xl font-bold mb-2">
-                                     Tu Web Profesional
+                                    🌐 Tu Web Profesional
                                 </h3>
                                 <label
-                                    class="flex items-center gap-3 cursor-pointer"><input
+                                    class="flex items-center gap-3 cursor-pointer"
+                                    ><input
                                         type="checkbox"
                                         id="web_propia"
                                         class="w-5 h-5 rounded text-blue-600"
-                                    /><span class="font-bold text-sm">Activar Modo Landing</span></label><div class="mt-4">
+                                    /><span class="font-bold text-sm"
+                                        >Activar Modo Landing</span
+                                    ></label
+                                ><div class="mt-4">
                                     <label
-                                        class="block text-xs mb-1 text-gray-300">Direccin personalizada (Slug)</label>
+                                        class="block text-xs mb-1 text-gray-300"
+                                        >Dirección personalizada (Slug)</label
+                                    >
                                     <div class="flex items-center gap-2">
-                                        <span class="text-gray-500 text-sm">reddeoficio.com/</span>
+                                        <span class="text-gray-500 text-sm"
+                                            >reddeoficio.com/</span
+                                        >
                                         <input
                                             type="text"
                                             id="slug_custom"
@@ -726,13 +900,16 @@ import Layout from "../layouts/Layout.astro";
 
                                 <div class="mt-4 pt-4 border-t border-gray-700">
                                     <p
-                                        class="text-xs text-gray-400 mb-2 uppercase font-bold">
-                                        Configuracin SEO
+                                        class="text-xs text-gray-400 mb-2 uppercase font-bold"
+                                    >
+                                        Configuración SEO
                                     </p>
                                     <div class="grid md:grid-cols-2 gap-4">
                                         <div>
                                             <label
-                                                class="block text-xs mb-1 text-gray-300">Nombre Pblico (Ttulo SEO)</label>
+                                                class="block text-xs mb-1 text-gray-300"
+                                                >Nombre Público (Título SEO)</label
+                                            >
                                             <input
                                                 type="text"
                                                 id="seo_nombre"
@@ -742,7 +919,9 @@ import Layout from "../layouts/Layout.astro";
                                         </div>
                                         <div>
                                             <label
-                                                class="block text-xs mb-1 text-gray-300">Profesin / Palabras Clave</label>
+                                                class="block text-xs mb-1 text-gray-300"
+                                                >Profesión / Palabras Clave</label
+                                            >
                                             <input
                                                 type="text"
                                                 id="seo_profesion"
@@ -753,229 +932,168 @@ import Layout from "../layouts/Layout.astro";
                                     </div>
                                 </div>
                             </div>
-                            <div class="grid md:grid-cols-2 gap-6">
+                            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <!-- Instagram -->
                                 <div>
-                                    <label
-                                        class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Instagram</label>
+                                    <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Instagram</label>
                                     <div class="flex">
-                                        <span
-                                            class="bg-gray-100 border border-r-0 border-slate-200 p-3 rounded-l-lg text-gray-500 flex items-center justify-center min-w-[40px]"></span>
-                                        <input
-                                            type="text"
-                                            id="instagram"
-                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg rounded-l-none px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
-                                            placeholder="usuario"
-                                        />
+                                        <span class="bg-gray-100 border border-r-0 p-3 rounded-l-lg text-gray-500 text-sm">@</span>
+                                        <input type="text" id="instagram" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700 rounded-l-none text-sm" placeholder="usuario" />
                                     </div>
                                 </div>
+                                <!-- TikTok -->
                                 <div>
-                                    <label
-                                        class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Facebook</label>
+                                    <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">TikTok</label>
                                     <div class="flex">
-                                        <span
-                                            class="bg-gray-100 border border-r-0 border-slate-200 p-3 rounded-l-lg text-gray-500 flex items-center justify-center min-w-[40px]">f</span>
-                                        <input
-                                            type="text"
-                                            id="facebook"
-                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg rounded-l-none px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
-                                            placeholder="usuario o URL"
-                                        />
+                                        <span class="bg-gray-100 border border-r-0 p-3 rounded-l-lg text-gray-500 text-sm">@</span>
+                                        <input type="text" id="tiktok" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700 rounded-l-none text-sm" placeholder="usuario" />
                                     </div>
                                 </div>
+                                <!-- Facebook -->
                                 <div>
-                                    <label
-                                        class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">TikTok</label>
+                                    <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Facebook</label>
+                                    <input type="text" id="facebook" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700 text-sm" placeholder="link o usuario" />
+                                </div>
+                                <!-- X / Twitter -->
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">X (Twitter)</label>
                                     <div class="flex">
-                                        <span
-                                            class="bg-gray-100 border border-r-0 border-slate-200 p-3 rounded-l-lg text-gray-500 flex items-center justify-center min-w-[40px]"></span>
-                                        <input
-                                            type="text"
-                                            id="tiktok"
-                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg rounded-l-none px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
-                                            placeholder="@usuario"
-                                        />
+                                        <span class="bg-gray-100 border border-r-0 p-3 rounded-l-lg text-gray-500 text-sm">@</span>
+                                        <input type="text" id="twitter" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700 rounded-l-none text-sm" placeholder="usuario" />
                                     </div>
                                 </div>
+                                <!-- YouTube -->
                                 <div>
-                                    <label
-                                        class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">YouTube</label>
-                                    <div class="flex">
-                                        <span
-                                            class="bg-gray-100 border border-r-0 border-slate-200 p-3 rounded-l-lg text-gray-500 flex items-center justify-center min-w-[40px]"></span>
-                                        <input
-                                            type="text"
-                                            id="youtube"
-                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg rounded-l-none px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
-                                            placeholder="Canal o URL"
-                                        />
-                                    </div>
+                                    <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">YouTube</label>
+                                    <input type="text" id="youtube" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700 text-sm" placeholder="Canal" />
                                 </div>
+                                <!-- Twitch -->
                                 <div>
-                                    <label
-                                        class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Twitch / Kick</label>
-                                    <div class="flex">
-                                        <span
-                                            class="bg-gray-100 border border-r-0 border-slate-200 p-3 rounded-l-lg text-gray-500 flex items-center justify-center min-w-[40px]"></span>
-                                        <input
-                                            type="text"
-                                            id="twitch"
-                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg rounded-l-none px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
-                                            placeholder="usuario"
-                                        />
-                                    </div>
+                                    <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Twitch</label>
+                                    <input type="text" id="twitch" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700 text-sm" placeholder="usuario" />
                                 </div>
+                                <!-- Kick -->
                                 <div>
-                                    <label
-                                        class="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Sitio Web</label>
-                                    <div class="flex">
-                                        <span
-                                            class="bg-gray-100 border border-r-0 border-slate-200 p-3 rounded-l-lg text-gray-500 flex items-center justify-center min-w-[40px]"></span>
-                                        <input
-                                            type="url"
-                                            id="website"
-                                            class="w-full bg-slate-50 border border-slate-200 rounded-lg rounded-l-none px-4 py-3 focus:ring-2 focus:ring-[#A0522D] focus:border-[#A0522D] outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700"
-                                            placeholder="https://..."
-                                        />
-                                    </div>
+                                    <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Kick</label>
+                                    <input type="text" id="kick" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700 text-sm" placeholder="usuario" />
+                                </div>
+                                <!-- Web -->
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider">Web Personal</label>
+                                    <input type="url" id="website" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none transition-all placeholder:text-slate-400 font-medium text-slate-700 text-sm" placeholder="https://miweb.com" />
                                 </div>
                             </div>
                         </div>
 
                         <div
                             id="tab-galeria"
-                            class="tab-content hidden relative">
-                            <!-- Premium Overlay -->
+                            class="tab-content hidden relative"
+                        >
                             <div
-                                class="premium-overlay hidden absolute inset-0 bg-white/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-center p-8">
-                                <span
-                                    class="material-symbols-outlined text-6xl text-orange-500 mb-4">lock_clock</span>
-                                <h3
-                                    class="font-black text-2xl text-gray-900 mb-2">
-                                    Galera Premium
+                                class="premium-overlay hidden absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center"
+                            >
+                                <div class="text-4xl mb-2">📸</div>
+                                <h3 class="font-bold text-gray-800">
+                                    Galería de Fotos
                                 </h3>
-                                <p class="text-gray-600 mb-6 max-w-sm">
-                                    Desbloquea la capacidad de mostrar tus
-                                    mejores trabajos y atraer clientes de alto
-                                    valor.
+                                <p class="text-sm text-gray-500 mb-4">
+                                    Muestra tus trabajos con un plan superior.
                                 </p>
                                 <a
                                     href="/planes"
-                                    class="bg-gradient-to-r from-orange-600 to-red-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-orange-500/30 transition-all transform hover:scale-105">
-                                    Ver Planes
-                                </a>
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700"
+                                    >Actualizar</a
+                                >
                             </div>
-
-                            <!-- Header actions -->
-                            <div
-                                class="flex flex-col md:flex-row justify-between items-end gap-4 mb-8 border-b border-gray-100 pb-6">
-                                <div>
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <span
-                                            class="material-symbols-outlined text-primary text-3xl">photo_library</span>
-                                        <h2
-                                            class="text-3xl font-black text-gray-900">
-                                            Galera de Trabajos
+                            <div class="mb-8">
+                                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <div>
+                                        <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                                            🖼️ Galería de Trabajos
                                         </h2>
+                                        <p class="text-sm text-gray-500 mt-1">
+                                            Muestra tus mejores proyectos realizados y atrae a potenciales clientes.
+                                        </p>
                                     </div>
-                                    <p class="text-gray-500 font-medium">
-                                        Gestiona tu portafolio profesional from. <span
-                                            id="gallery-limit-text"
-                                            class="text-xs font-bold bg-gray-100 px-2 py-1 rounded-full text-gray-600 ml-2"></span>
-                                    </p>
+                                    <label
+                                        for="input-portfolio"
+                                        class="bg-orange-600 text-white px-6 py-3 rounded-xl text-sm font-bold cursor-pointer hover:bg-orange-700 shadow-md transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <span class="text-lg">⊕</span> Subir Nuevo Trabajo
+                                    </label>
+                                    <input
+                                        type="file"
+                                        id="input-portfolio"
+                                        class="hidden"
+                                        accept="image/*"
+                                    />
                                 </div>
 
-                                <label
-                                    for="input-portfolio"
-                                    class="flex cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full h-12 px-6 bg-primary text-white text-base font-bold shadow-lg hover:shadow-primary/30 transition-all transform hover:-translate-y-0.5 active:scale-95">
-                                    <span class="material-symbols-outlined">add_circle</span>
-                                    <span>Subir Nuevo Trabajo</span>
-                                </label>
-                                <input
-                                    type="file"
-                                    id="input-portfolio"
-                                    class="hidden"
-                                    accept="image/*"
-                                />
+                                <div class="mt-8 flex flex-wrap items-center gap-2 border-b border-gray-100 pb-4">
+                                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider mr-2">Filtrar por:</span>
+                                    <button type="button" class="gallery-filter-btn active px-4 py-1.5 rounded-full text-sm font-bold transition-all bg-orange-600 text-white shadow-sm" data-category="todos">Todos</button>
+                                    <button type="button" class="gallery-filter-btn px-4 py-1.5 rounded-full text-sm font-bold transition-all bg-gray-100 text-gray-600 hover:bg-gray-200" data-category="Instalaciones">Instalaciones</button>
+                                    <button type="button" class="gallery-filter-btn px-4 py-1.5 rounded-full text-sm font-bold transition-all bg-gray-100 text-gray-600 hover:bg-gray-200" data-category="Reparaciones">Reparaciones</button>
+                                    <button type="button" class="gallery-filter-btn px-4 py-1.5 rounded-full text-sm font-bold transition-all bg-gray-100 text-gray-600 hover:bg-gray-200" data-category="Mantenimiento">Mantenimiento</button>
+                                    <button type="button" class="gallery-filter-btn px-4 py-1.5 rounded-full text-sm font-bold transition-all bg-gray-100 text-gray-600 hover:bg-gray-200" data-category="Urgencias">Urgencias</button>
+                                    <span id="gallery-limit-text" class="text-xs text-gray-400 ml-auto"></span>
+                                </div>
                             </div>
 
-                            <!-- Filters (Visual only for now) -->
-                            <div class="flex items-center gap-3 flex-wrap mb-8">
-                                <span
-                                    class="text-sm font-bold text-gray-800 mr-2">Filtrar por:</span>
-                                <button
-                                    type="button"
-                                    class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-primary px-5 text-white text-xs font-bold transition-all shadow-md">Todos</button>
-                                <button
-                                    type="button"
-                                    class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-white border border-gray-200 px-5 text-gray-600 text-xs font-bold hover:bg-gray-50 transition-all">Recientes</button>
-                                <button
-                                    type="button"
-                                    class="flex h-9 items-center justify-center gap-x-2 rounded-full bg-white border border-gray-200 px-5 text-gray-600 text-xs font-bold hover:bg-gray-50 transition-all">Antiguos</button>
-                            </div>
-
-                            <!-- Gallery Grid -->
                             <div
                                 id="gallery-grid"
-                                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <!-- Cards will be injected here via JS -->
-                            </div>
-
-                            <!-- Empty State -->
-                            <div
-                                id="gallery-empty"
-                                class="hidden flex flex-col items-center justify-center py-20 text-center bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-                                <div
-                                    class="bg-white p-4 rounded-full shadow-sm mb-4">
-                                    <span
-                                        class="material-symbols-outlined text-4xl text-gray-300">add_photo_alternate</span>
-                                </div>
-                                <h4
-                                    class="text-lg font-bold text-gray-700 mb-1">
-                                    Tu galera est vaca
-                                </h4>
-                                <p class="text-gray-500 text-sm max-w-xs">
-                                    Sube fotos de tus trabajos para aumentar la
-                                    confianza de tus clientes.
-                                </p>
+                                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                            >
+                                <!-- Cards will be rendered here -->
                             </div>
                         </div>
 
                         <div
                             id="tab-presupuestos"
-                            class="tab-content hidden relative">
+                            class="tab-content hidden relative"
+                        >
                             <div
-                                class="premium-overlay hidden absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center">
-                                <div class="text-4xl mb-2"></div>
+                                class="premium-overlay hidden absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center"
+                            >
+                                <div class="text-4xl mb-2">💰</div>
                                 <h3 class="font-bold text-gray-800">
                                     Cotizador PDF
                                 </h3>
                                 <p class="text-sm text-gray-500 mb-4">
-                                    Enva presupuestos profesionales
-                                    automticamente.
+                                    Envía presupuestos profesionales
+                                    automáticamente.
                                 </p>
                                 <a
                                     href="/planes"
-                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700">Desbloquear</a>
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-blue-700"
+                                    >Desbloquear</a
+                                >
                             </div>
                             <div
-                                class="bg-orange-50 p-4 rounded-xl border border-orange-200 mb-6 flex justify-between items-center">
+                                class="bg-orange-50 p-4 rounded-xl border border-orange-200 mb-6 flex justify-between items-center"
+                            >
                                 <div>
                                     <h3 class="font-bold text-orange-800">
-                                         Sistema de Presupuestos
+                                        💰 Sistema de Presupuestos
                                     </h3>
-                                </div><label class="flex items-center gap-2"><input
+                                </div><label class="flex items-center gap-2"
+                                    ><input
                                         type="checkbox"
                                         id="presupuestos_activo"
                                         class="w-5 h-5 text-orange-600"
                                     /><span
-                                        class="text-xs font-bold text-orange-800">Activar</span></label>
+                                        class="text-xs font-bold text-orange-800"
+                                        >Activar</span
+                                    ></label
+                                >
                             </div>
                             <div class="bg-gray-50 p-4 rounded-lg border mb-4">
                                 <h4 class="font-bold text-sm mb-3">
-                                     Agregar Servicio
+                                    ➕ Agregar Servicio
                                 </h4>
                                 <div
-                                    class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                                    class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3"
+                                >
                                     <input
                                         type="text"
                                         id="serv-nombre"
@@ -996,38 +1114,53 @@ import Layout from "../layouts/Layout.astro";
                                 <textarea
                                     id="serv-desc"
                                     class="border p-2 rounded text-sm w-full mb-3"
-                                    placeholder="Descripcin breve..."></textarea>
+                                    placeholder="Descripción breve..."
+                                ></textarea>
                                 <button
                                     type="button"
                                     id="btn-add-service"
-                                    class="w-full bg-gray-800 text-white font-bold py-2 rounded text-sm">Agregar a Lista</button>
+                                    class="w-full bg-gray-800 text-white font-bold py-2 rounded text-sm"
+                                    >Agregar a Lista</button
+                                >
                             </div>
                             <div class="border rounded overflow-hidden mb-4">
                                 <table class="w-full text-sm text-left">
                                     <thead
-                                        class="bg-gray-100 text-gray-600 font-bold text-xs uppercase"><tr><th class="p-3">Servicio</th><th
-                                                class="p-3">Descripcin</th><th class="p-3">Rango $</th><th
-                                                class="p-3 text-right"></th></tr></thead><tbody id="services-list" class="divide-y"></tbody>
+                                        class="bg-gray-100 text-gray-600 font-bold text-xs uppercase"
+                                        ><tr
+                                            ><th class="p-3">Servicio</th><th
+                                                class="p-3">Descripción</th
+                                            ><th class="p-3">Rango $</th><th
+                                                class="p-3 text-right"></th></tr
+                                        ></thead
+                                    ><tbody id="services-list" class="divide-y"
+                                    ></tbody>
                                 </table>
                             </div>
                             <button
                                 type="button"
                                 id="btn-generate-pdf"
-                                class="w-full bg-red-600 text-white font-bold py-3 rounded hover:bg-red-700 transition"> Generar PDF Profesional</button>
+                                class="w-full bg-red-600 text-white font-bold py-3 rounded hover:bg-red-700 transition"
+                                >📄 Generar PDF Profesional</button
+                            >
                         </div>
 
                         <div
-                            class="pt-6 mt-6 border-t border-gray-100 flex justify-end sticky bottom-0 bg-white z-10 pb-4">
+                            class="pt-6 mt-6 border-t border-gray-100 flex justify-end sticky bottom-0 bg-white z-10 pb-4"
+                        >
                             <button
                                 type="button"
                                 id="btn-top-save"
                                 class="bg-green-600 text-white px-8 py-3 rounded-lg font-bold shadow hover:bg-green-700 transition"
-                                data-allow-free> Guardar Todo</button>
+                                data-allow-free>💾 Guardar Todo</button
+                            >
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+                </div>
+            </div>
+        </main>
     </div>
 </Layout>
 
@@ -1061,29 +1194,26 @@ import Layout from "../layouts/Layout.astro";
     import { CATEGORIES } from "../data/categories";
 
     // --- 1. HELPERS Y RENDER FUNCTIONS (HOISTING FIX) ---
-    const setVal = (id: string, v: string | number) => {
-        const el = document.getElementById(id) as
-            | HTMLInputElement
-            | HTMLSelectElement
-            | HTMLTextAreaElement;
-        if (el) el.value = String(v || "");
+    const setVal = (id, v) => {
+        const el = document.getElementById(id);
+        if (el) el.value = v || "";
     };
-    const setText = (id: string, t: string) => {
+    const setText = (id, t) => {
         const el = document.getElementById(id);
         if (el) el.innerText = t || "";
     };
-    const setSrc = (id: string, s: string) => {
-        const el = document.getElementById(id) as HTMLImageElement;
+    const setSrc = (id, s) => {
+        const el = document.getElementById(id);
         if (el) el.src = s || "";
     };
 
-    // Definir render functions aqu arriba para que existan cuando se llaman
+    // Definir render functions aquí arriba para que existan cuando se llaman
     function renderServices() {
         const list = document.getElementById("services-list");
         if (!list) return;
         list.innerHTML = "";
         userServices.forEach((s, i) => {
-            list.innerHTML += `<tr class="border-b"><td class="p-3 font-bold">${s.nombre}</td><td class="p-3 text-xs text-gray-500">${s.descripcion || "-"}</td><td class="p-3">$${s.min} - $${s.max}</td><td class="p-3 text-right"><button type="button" class="text-red-500 font-bold remove-service-btn" data-index="${i}"></button></td></tr>`;
+            list.innerHTML += `<tr class="border-b"><td class="p-3 font-bold">${s.nombre}</td><td class="p-3 text-xs text-gray-500">${s.descripcion || "-"}</td><td class="p-3">$${s.min} - $${s.max}</td><td class="p-3 text-right"><button type="button" class="text-red-500 font-bold remove-service-btn" data-index="${i}">×</button></td></tr>`;
         });
         list.querySelectorAll(".remove-service-btn").forEach((btn) => {
             btn.addEventListener("click", (e) => {
@@ -1100,7 +1230,7 @@ import Layout from "../layouts/Layout.astro";
         if (!container) return;
         container.innerHTML = "";
         userTags.forEach((t, i) => {
-            container.innerHTML += `<span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2">${t} <button type="button" class="text-red-500 font-bold remove-tag-btn" data-index="${i}"></button></span>`;
+            container.innerHTML += `<span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2">${t} <button type="button" class="text-red-500 font-bold remove-tag-btn" data-index="${i}">×</button></span>`;
         });
         container.querySelectorAll(".remove-tag-btn").forEach((btn) => {
             btn.addEventListener("click", (e) => {
@@ -1112,74 +1242,175 @@ import Layout from "../layouts/Layout.astro";
         });
     }
 
-    function renderGallery(images) {
+    function renderGallery(portfolio) {
         const grid = document.getElementById("gallery-grid");
         if (!grid) return;
         grid.innerHTML = "";
+        console.log("🎨 Rendering Gallery V2 (With Edit Button)");
 
-        // Actualizar contador de fotos
-        const planLimits = {
-            gratuito: 0,
-            semilla: 0,
-            basico: 3,
-            mensual: 6, // Plan Impulso/Mensual
-            impulso: 6,
-            experto: 12,
-            semestral: 12,
-        };
+        const planLimits = { gratuito: 0, semilla: 0, basico: 3, impulso: 6, mensual: 6, experto: 12, semestral: 12 };
         const userPlan = userData?.plan || "gratuito";
         const maxPhotos = planLimits[userPlan] || 0;
-        const currentCount = images?.length || 0;
+        const currentCount = portfolio?.length || 0;
         const limitText = document.getElementById("gallery-limit-text");
         if (limitText) {
             limitText.textContent = `(${currentCount} de ${maxPhotos})`;
             limitText.style.color = currentCount >= maxPhotos ? "red" : "";
         }
 
-        images.forEach((img, index) => {
+        const activeFilter = document.querySelector(".gallery-filter-btn.active")?.dataset.category || "todos";
+
+        portfolio?.forEach((item, i) => {
+            const isLegacy = typeof item === "string";
+            const url = isLegacy ? item : item.url;
+            const title = isLegacy ? "Trabajo sin título" : item.titulo;
+            const category = isLegacy ? "Sin categoría" : item.categoria;
+            const desc = isLegacy ? "Sube los detalles de este trabajo" : item.descripcion;
+            const dateStr = isLegacy ? "Sin fecha" : item.fecha;
+
+            if (activeFilter !== "todos" && category !== activeFilter) return;
+
             grid.innerHTML += `
-                <div class="project-card flex flex-col group relative">
-                    <div class="relative w-full aspect-[4/3] overflow-hidden rounded-2xl bg-gray-100 border border-gray-100">
-                        <div class="w-full h-full bg-center bg-no-repeat bg-cover transition-transform duration-500 group-hover:scale-110" style="background-image: url('${img}');"></div>
-                        
-                        <!-- Overlay Actions -->
-                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 p-4">
-                            <button type="button" class="delete-img-btn bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg transform transition hover:scale-105 flex items-center gap-2" data-url="${img}">
-                                <span></span> Eliminar
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-gray-100 group animate-fade-in relative">
+                    <div class="aspect-[4/3] overflow-hidden relative">
+                        <img src="${url}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="${title}">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                            <button type="button" class="bg-blue-600 text-white p-2.5 rounded-xl hover:scale-110 active:scale-95 transition-all shadow-lg edit-img-btn" data-index="${i}" title="Editar detalles">
+                                ✏️
                             </button>
-                            <span class="text-white/80 text-xs font-medium">Foto #${index + 1}</span>
+                            <button type="button" class="bg-red-600 text-white p-2.5 rounded-xl hover:scale-110 active:scale-95 transition-all shadow-lg delete-img-btn" data-index="${i}" title="Eliminar trabajo">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-gray-800 line-clamp-1 text-sm">${title}</h4>
+                        <p class="text-[10px] text-gray-400 mb-2 uppercase font-bold tracking-wider">${category}</p>
+                        <p class="text-xs text-gray-500 line-clamp-2 mb-3 leading-relaxed h-8">${desc}</p>
+                        <div class="flex items-center gap-1.5 text-orange-600 text-[10px] font-bold mt-2">
+                             <span class="text-xs">📅</span> ${dateStr.toUpperCase()}
                         </div>
                     </div>
                 </div>
             `;
         });
+
+        // Event listeners para editar
+        grid.querySelectorAll(".edit-img-btn").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+                const idx = parseInt(e.currentTarget.dataset.index);
+                editWorkDetail(idx);
+            });
+        });
+
+        // Event listeners para borrar
         grid.querySelectorAll(".delete-img-btn").forEach((btn) => {
             btn.addEventListener("click", async (e) => {
-                // @ts-ignore
-                const url = e.target.dataset.url;
+                const idx = parseInt(e.currentTarget.dataset.index);
                 // @ts-ignore
                 const result = await Swal.fire({
-                    title: "Borrar foto?",
-                    text: "Esta accin no se puede deshacer",
+                    title: "¿Borrar trabajo?",
+                    text: "Esta acción no se puede deshacer",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#d33",
                     cancelButtonColor: "#3085d6",
-                    confirmButtonText: "S, borrar",
+                    confirmButtonText: "Sí, borrar",
                 });
 
                 if (result.isConfirmed) {
+                    const newPortfolio = [...portfolio];
+                    newPortfolio.splice(idx, 1);
                     await updateDoc(doc(db, "profesionales", currentUserUid), {
-                        portfolio: arrayRemove(url),
+                        portfolio: newPortfolio,
                     });
-                    const newSnap = await getDoc(
-                        doc(db, "profesionales", currentUserUid),
-                    );
-                    renderGallery(newSnap.data().portfolio || []);
+                    loadUserProfile(currentUserUid); // Recargar
                 }
             });
         });
     }
+
+    async function editWorkDetail(index) {
+        const portfolio = userData.portfolio || [];
+        const item = portfolio[index];
+        if (!item) return;
+
+        const isLegacy = typeof item === "string";
+        const currentData = isLegacy ? {
+            url: item,
+            titulo: "",
+            descripcion: "",
+            categoria: "Instalaciones",
+            fecha: ""
+        } : item;
+
+        // @ts-ignore
+        const { value: formValues } = await Swal.fire({
+            title: 'Editar Detalles del Trabajo',
+            html:
+                '<div class="text-left">' +
+                '<label class="block text-xs font-bold text-gray-400 uppercase mb-1">Título del Proyecto</label>' +
+                `<input id="swal-title" class="swal2-input !mt-0 !mb-4 !w-full" placeholder="ej: Instalación Eléctrica Completa" value="${currentData.titulo || ''}">` +
+                '<label class="block text-xs font-bold text-gray-400 uppercase mb-1">Categoría</label>' +
+                `<select id="swal-category" class="swal2-input !mt-0 !mb-4 !w-full">` +
+                    `<option value="Instalaciones" ${currentData.categoria === 'Instalaciones' ? 'selected' : ''}>Instalaciones</option>` +
+                    `<option value="Reparaciones" ${currentData.categoria === 'Reparaciones' ? 'selected' : ''}>Reparaciones</option>` +
+                    `<option value="Mantenimiento" ${currentData.categoria === 'Mantenimiento' ? 'selected' : ''}>Mantenimiento</option>` +
+                    `<option value="Urgencias" ${currentData.categoria === 'Urgencias' ? 'selected' : ''}>Urgencias</option>` +
+                '</select>' +
+                '<label class="block text-xs font-bold text-gray-400 uppercase mb-1">Descripción</label>' +
+                `<textarea id="swal-desc" class="swal2-textarea !mt-0 !mb-4 !w-full" placeholder="Cuéntanos un poco sobre el trabajo...">${currentData.descripcion || ''}</textarea>` +
+                '<label class="block text-xs font-bold text-gray-400 uppercase mb-1">Fecha</label>' +
+                `<input id="swal-date" type="text" class="swal2-input !mt-0 !w-full" placeholder="ej: Octubre 2023" value="${currentData.fecha || ''}">` +
+                '</div>',
+            focusConfirm: false,
+            confirmButtonText: 'Guardar Cambios',
+            confirmButtonColor: '#ea580c',
+            showCancelButton: true,
+            preConfirm: () => {
+                return {
+                    titulo: document.getElementById('swal-title').value || "Trabajo de Calidad",
+                    descripcion: document.getElementById('swal-desc').value || "",
+                    categoria: document.getElementById('swal-category').value,
+                    fecha: document.getElementById('swal-date').value || "Reciente"
+                }
+            }
+        });
+
+        if (formValues) {
+            const newPortfolio = [...portfolio];
+            newPortfolio[index] = {
+                url: currentData.url,
+                ...formValues,
+                updatedAt: new Date()
+            };
+
+            // @ts-ignore
+            Swal.fire({ title: 'Guardando...', didOpen: () => Swal.showLoading() });
+            
+            await updateDoc(doc(db, "profesionales", currentUserUid), {
+                portfolio: newPortfolio
+            });
+
+            await loadUserProfile(currentUserUid);
+            // @ts-ignore
+            Swal.close();
+        }
+    }
+
+    // Sistema de filtros
+    document.addEventListener("click", (e) => {
+        const btn = e.target.closest(".gallery-filter-btn");
+        if (btn) {
+            document.querySelectorAll(".gallery-filter-btn").forEach(b => {
+                b.classList.remove("active", "bg-orange-600", "text-white");
+                b.classList.add("bg-gray-100", "text-gray-600");
+            });
+            btn.classList.add("active", "bg-orange-600", "text-white");
+            btn.classList.remove("bg-gray-100", "text-gray-600");
+            renderGallery(userData.portfolio || []);
+        }
+    });
 
     function renderPlanInfo(planKey) {
         const config = PLAN_DETAILS[planKey] || PLAN_DETAILS["semilla"];
@@ -1189,7 +1420,7 @@ import Layout from "../layouts/Layout.astro";
             container.innerHTML = config.label;
             container.className = `font-black text-xl mt-1 ${config.class}`;
 
-            // Agregar badge de das restantes si hay vencimiento
+            // Agregar badge de días restantes si hay vencimiento
             if (userData.plan_vencimiento && planKey !== "semilla") {
                 const vencimiento = userData.plan_vencimiento.toDate();
                 const ahora = new Date();
@@ -1204,7 +1435,7 @@ import Layout from "../layouts/Layout.astro";
                             : "text-gray-500 bg-gray-100";
                     const badge = document.createElement("div");
                     badge.className = `mt-2 text-xs text-center font-bold px-2 py-1 rounded ${badgeColor}`;
-                    badge.innerHTML = ` ${diasRestantes} da${diasRestantes > 1 ? "s" : ""} restante${diasRestantes > 1 ? "s" : ""}`;
+                    badge.innerHTML = `⏰ ${diasRestantes} día${diasRestantes > 1 ? "s" : ""} restante${diasRestantes > 1 ? "s" : ""}`;
                     container.parentElement?.appendChild(badge);
                 }
             }
@@ -1223,14 +1454,13 @@ import Layout from "../layouts/Layout.astro";
         if (!c) return;
         c.innerHTML = "";
         if (data.verificado)
-            c.innerHTML += `<span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded"> Verificado</span>`;
+            c.innerHTML += `<span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded">✅ Verificado</span>`;
         if ((data.promedio || 0) > 4.5)
-            c.innerHTML += `<span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded"> Top</span>`;
+            c.innerHTML += `<span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded">⭐ Top</span>`;
     }
 
     function updateClickCounter(clicks) {
         const counter = document.getElementById("click-counter");
-        if (!counter) return; // Fix for null error
         if (userPlan !== "semilla") {
             counter.classList.add("hidden");
             return;
@@ -1241,55 +1471,37 @@ import Layout from "../layouts/Layout.astro";
         document.getElementById("clicks-progress").style.width = `${pct}%`;
     }
 
-    // --- 2. CONFIGURACIN ---
+    // --- 2. CONFIGURACIÓN ---
     const PLAN_DETAILS = {
         semilla: {
-            label: " Semilla (Gratis)",
+            label: "🌱 Semilla (Gratis)",
             class: "text-gray-700",
             benefits: [
-                { icon: "", text: "Perfil Bsico", active: true },
-                { icon: "", text: "Sin Fotos", active: false },
-            ],
-        },
-        profesional: {
-            label: " Profesional",
-            class: "text-teal-600",
-            benefits: [
-                { icon: "", text: "6 Fotos", active: true },
-                { icon: "", text: "Mapa Visible", active: true },
-                { icon: "", text: "Verificado", active: true },
-            ],
-        },
-        profesional: {
-            label: " Profesional",
-            class: "text-teal-600",
-            benefits: [
-                { icon: "", text: "6 Fotos", active: true },
-                { icon: "", text: "Mapa Visible", active: true },
-                { icon: "", text: "Verificado", active: true },
+                { icon: "✅", text: "Perfil Básico", active: true },
+                { icon: "🔒", text: "Sin Fotos", active: false },
             ],
         },
         mensual: {
-            label: " Impulso",
+            label: "🚀 Impulso",
             class: "text-blue-600",
             benefits: [
-                { icon: "", text: "6 Fotos", active: true },
-                { icon: "", text: "Mapa", active: true },
+                { icon: "✅", text: "6 Fotos", active: true },
+                { icon: "🗺️", text: "Mapa", active: true },
             ],
         },
         experto: {
-            label: " Experto",
+            label: "👑 Experto",
             class: "text-orange-600",
             benefits: [
-                { icon: "", text: "12 Fotos", active: true },
-                { icon: "", text: "Destacado", active: true },
+                { icon: "✅", text: "12 Fotos", active: true },
+                { icon: "⭐", text: "Destacado", active: true },
             ],
         },
     };
 
     const ZONAS = {
         "Capital Federal (CABA)": [
-            "Agronoma",
+            "Agronomía",
             "Almagro",
             "Balvanera",
             "Barracas",
@@ -1299,7 +1511,7 @@ import Layout from "../layouts/Layout.astro";
             "Chacarita",
             "Coghlan",
             "Colegiales",
-            "Constitucin",
+            "Constitución",
             "Flores",
             "Floresta",
             "La Boca",
@@ -1309,7 +1521,7 @@ import Layout from "../layouts/Layout.astro";
             "Monte Castro",
             "Montserrat",
             "Nueva Pompeya",
-            "Nez",
+            "Núñez",
             "Palermo",
             "Parque Avellaneda",
             "Parque Chacabuco",
@@ -1319,8 +1531,8 @@ import Layout from "../layouts/Layout.astro";
             "Recoleta",
             "Retiro",
             "Saavedra",
-            "San Cristbal",
-            "San Nicols",
+            "San Cristóbal",
+            "San Nicolás",
             "San Telmo",
             "Versalles",
             "Villa Crespo",
@@ -1328,35 +1540,35 @@ import Layout from "../layouts/Layout.astro";
             "Villa General Mitre",
             "Villa Lugano",
             "Villa Luro",
-            "Villa Ortzar",
-            "Villa Pueyrredn",
+            "Villa Ortúzar",
+            "Villa Pueyrredón",
             "Villa Real",
             "Villa Riachuelo",
             "Villa Santa Rita",
             "Villa Soldati",
             "Villa Urquiza",
             "Villa del Parque",
-            "Vlez Srsfield",
+            "Vélez Sársfield",
         ],
         "GBA Norte": [
-            "Vicente Lpez",
+            "Vicente López",
             "Olivos",
             "San Isidro",
-            "Martnez",
+            "Martínez",
             "Tigre",
             "Nordelta",
             "San Fernando",
             "Pilar",
             "Escobar",
-            "San Martn",
+            "San Martín",
         ],
         "GBA Sur": [
             "Avellaneda",
-            "Lans",
+            "Lanús",
             "Lomas de Zamora",
             "Quilmes",
             "Bernal",
-            "Adrogu",
+            "Adrogué",
             "Temperley",
             "Ezeiza",
             "Canning",
@@ -1364,11 +1576,11 @@ import Layout from "../layouts/Layout.astro";
             "Florencio Varela",
         ],
         "GBA Oeste": [
-            "Ramos Meja",
-            "Morn",
+            "Ramos Mejía",
+            "Morón",
             "Haedo",
             "Castelar",
-            "Ituzaing",
+            "Ituzaingó",
             "Merlo",
             "Moreno",
             "San Justo",
@@ -1378,18 +1590,18 @@ import Layout from "../layouts/Layout.astro";
         "Buenos Aires (Interior)": [
             "La Plata",
             "Mar del Plata",
-            "Baha Blanca",
+            "Bahía Blanca",
             "Tandil",
-            "San Nicols",
+            "San Nicolás",
             "Pergamino",
-            "Olavarra",
-            "Junn",
+            "Olavarría",
+            "Junín",
         ],
-        Crdoba: [
-            "Crdoba Capital",
+        Córdoba: [
+            "Córdoba Capital",
             "Villa Carlos Paz",
-            "Ro Cuarto",
-            "Villa Mara",
+            "Río Cuarto",
+            "Villa María",
             "Alta Gracia",
         ],
         "Santa Fe": [
@@ -1401,22 +1613,22 @@ import Layout from "../layouts/Layout.astro";
         ],
         Mendoza: [
             "Mendoza Capital",
-            "Guaymalln",
+            "Guaymallén",
             "Godoy Cruz",
             "Las Heras",
             "San Rafael",
         ],
-        Tucumn: ["San Miguel de Tucumn", "Yerba Buena", "Taf Viejo"],
-        "Resto del Pas": [
+        Tucumán: ["San Miguel de Tucumán", "Yerba Buena", "Tafí Viejo"],
+        "Resto del País": [
             "Salta",
             "Misiones",
             "Chaco",
             "Corrientes",
-            "Entre Ros",
+            "Entre Ríos",
             "San Juan",
             "San Luis",
-            "Neuqun",
-            "Ro Negro",
+            "Neuquén",
+            "Río Negro",
             "Chubut",
             "Santa Cruz",
             "Tierra del Fuego",
@@ -1433,36 +1645,36 @@ import Layout from "../layouts/Layout.astro";
 
     // --- 3. ESTADO GLOBAL ---
     /** @type {string | null} */
-    let currentUserUid: string | null = null;
+    let currentUserUid = null;
     /** @type {string} */
-    let userPlan: string = "semilla";
+    let userPlan = "semilla";
     /** @type {any[]} */
-    let userServices: any[] = [];
+    let userServices = [];
     /** @type {string[]} */
-    let selectedRubros: string[] = [];
+    let selectedRubros = [];
     /** @type {string[]} */
-    let selectedZonas: string[] = [];
+    let selectedZonas = [];
     /** @type {string[]} */
-    let userTags: string[] = [];
+    let userTags = [];
     /** @type {any} */
-    let userData: any = {};
-    let docDniUrl: string | null = null;
-    let docAntUrl: string | null = null;
-    let isVerified: boolean = false;
+    let userData = {};
+    let docDniUrl = null;
+    let docAntUrl = null;
+    let isVerified = false;
 
     // --- 4. DURACIONES DE PLANES ---
     /**
-     * Calcula la duracin en das segn el tipo de plan
-     * - Plan Impulso/Mensual: 30 das
-     * - Plan Experto/Semestral: 180 das (6 meses)
+     * Calcula la duración en días según el tipo de plan
+     * - Plan Impulso/Mensual: 30 días
+     * - Plan Experto/Semestral: 180 días (6 meses)
      * - Plan Semilla: Sin vencimiento
      */
     function getPlanDuration(planType) {
         const duraciones = {
             semilla: 0, // Sin vencimiento
             gratuito: 0,
-            mensual: 30, // 30 das
-            impulso: 30, // 30 das
+            mensual: 30, // 30 días
+            impulso: 30, // 30 días
             experto: 180, // 6 meses
             semestral: 180, // 6 meses
         };
@@ -1471,14 +1683,14 @@ import Layout from "../layouts/Layout.astro";
 
     // --- 4. INICIO SEGURO ---
     document.addEventListener("astro:page-load", () => {
-        console.log(" [MI-PERFIL] DOM Loaded - Iniciando...");
+        console.log("🚀 [MI-PERFIL] DOM Loaded - Iniciando...");
         initSelects();
         setupGeo();
         setupTabs();
         setupButtons();
         setupAIBio();
 
-        // Funcin helper para ocultar loading
+        // Función helper para ocultar loading
         function hideLoadingOverlay() {
             const overlay = document.getElementById("loading-overlay");
             if (overlay) {
@@ -1487,36 +1699,58 @@ import Layout from "../layouts/Layout.astro";
             }
         }
 
-        // Timeout de seguridad: 3 segundos mximo
+        // Timeout de seguridad: 8 segundos máximo para dar tiempo en conexiones lentas
         setTimeout(() => {
-            hideLoadingOverlay();
-            console.warn("Loading forzado a ocultar despus de 3seg");
-        }, 3000);
+            const overlay = document.getElementById("loading-overlay");
+            if (overlay && !overlay.classList.contains("hidden")) {
+                hideLoadingOverlay();
+                console.warn("Loading forzado a ocultar después de 8seg");
+            }
+        }, 8000);
 
         onAuthStateChanged(auth, async (user) => {
             try {
                 if (user) {
-                    console.log(" [AUTH] Usuario autenticado:", user.uid);
+                    console.log("✅ [AUTH] Usuario autenticado:", user.uid);
                     currentUserUid = user.uid;
-                    console.log(" [DATA] Cargando perfil desde Firestore...");
+
+                    // Email Verification Banner
+                    const banner = document.getElementById("email-verification-banner");
+                    if (banner) {
+                        if (!user.emailVerified) banner.classList.remove("hidden");
+                        else banner.classList.add("hidden");
+                    }
+
+                    document.getElementById("btn-resend-verification")?.addEventListener("click", async () => {
+                        try {
+                            await sendEmailVerification(user);
+                            // @ts-ignore
+                            Swal.fire("Enviado", "Revisa tu casilla de correo", "success");
+                        } catch (e) {
+                             // @ts-ignore
+                            Swal.fire("Error", "Intenta de nuevo más tarde", "error");
+                        }
+                    });
+
+                    console.log("📥 [DATA] Cargando perfil desde Firestore...");
                     await loadUserProfile(user.uid);
-                    console.log(" [DATA] Perfil cargado exitosamente");
+                    console.log("✅ [DATA] Perfil cargado exitosamente");
                     hideLoadingOverlay();
                 } else {
                     console.warn(
-                        " [AUTH] No hay usuario - Redirigiendo a /ingresar",
+                        "⚠️ [AUTH] No hay usuario - Redirigiendo a /ingresar",
                     );
                     window.location.href = "/ingresar";
                 }
             } catch (error) {
-                console.error(" [ERROR] Error cargando perfil:", error);
-                console.error(" [ERROR] Stack:", error.stack);
+                console.error("❌ [ERROR] Error cargando perfil:", error);
+                console.error("❌ [ERROR] Stack:", error.stack);
                 hideLoadingOverlay();
                 // @ts-ignore
                 Swal.fire({
                     icon: "error",
                     title: "Error",
-                    text: "Error cargando tu perfil. Por favor recarga la pgina.",
+                    text: "Error cargando tu perfil. Por favor recarga la página.",
                     confirmButtonColor: "#ea580c",
                 });
             }
@@ -1564,7 +1798,7 @@ import Layout from "../layouts/Layout.astro";
                 // @ts-ignore
                 const val = document.getElementById("rubro_select")?.value;
                 if (!val) return;
-                if (selectedRubros.length >= 5) return alert("Mximo 5 rubros");
+                if (selectedRubros.length >= 5) return alert("Máximo 5 rubros");
                 if (!selectedRubros.includes(val)) {
                     selectedRubros.push(val);
                     renderRubros();
@@ -1577,7 +1811,7 @@ import Layout from "../layouts/Layout.astro";
                 // @ts-ignore
                 const val = document.getElementById("zona_select")?.value;
                 if (!val) return;
-                if (selectedZonas.length >= 3) return alert("Mximo 3 zonas");
+                if (selectedZonas.length >= 3) return alert("Máximo 3 zonas");
                 if (!selectedZonas.includes(val)) {
                     selectedZonas.push(val);
                     renderZonas();
@@ -1592,7 +1826,7 @@ import Layout from "../layouts/Layout.astro";
             .map(
                 (r, i) => `
             <span class="bg-orange-100 text-orange-800 text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
-                ${r} <button type="button" class="text-orange-900 hover:text-red-500" onclick="removeRubro(${i})"></button>
+                ${r} <button type="button" class="text-orange-900 hover:text-red-500" onclick="removeRubro(${i})">×</button>
             </span>
         `,
             )
@@ -1606,7 +1840,7 @@ import Layout from "../layouts/Layout.astro";
             .map(
                 (z, i) => `
             <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
-                ${z} <button type="button" class="text-blue-900 hover:text-red-500" onclick="removeZona(${i})"></button>
+                ${z} <button type="button" class="text-blue-900 hover:text-red-500" onclick="removeZona(${i})">×</button>
             </span>
         `,
             )
@@ -1626,13 +1860,17 @@ import Layout from "../layouts/Layout.astro";
     };
 
     async function loadUserProfile(uid) {
+        if (!uid || !db) {
+            console.error("❌ [LOAD] Abortando carga: uid o db no disponibles", { uid, db: !!db });
+            return;
+        }
         try {
-            console.log(" [FIRESTORE] Consultando documento:", uid);
+            console.log("📡 [FIRESTORE] Consultando documento:", uid);
             const docRef = doc(db, "profesionales", uid);
             const snap = await getDoc(docRef);
             if (!snap.exists()) {
                 console.error(
-                    " [FIRESTORE] Documento no existe para uid:",
+                    "❌ [FIRESTORE] Documento no existe para uid:",
                     uid,
                 );
                 alert("Perfil no encontrado.");
@@ -1641,7 +1879,7 @@ import Layout from "../layouts/Layout.astro";
             }
 
             let data = snap.data();
-            console.log(" [FIRESTORE] Datos recibidos:", {
+            console.log("✅ [FIRESTORE] Datos recibidos:", {
                 nombre: data.nombre,
                 plan: data.plan,
                 verificado: data.verificado,
@@ -1649,7 +1887,7 @@ import Layout from "../layouts/Layout.astro";
             });
             userData = data;
 
-            //  VERIFICAR EXPIRACIN DEL PLAN
+            // ⏰ VERIFICAR EXPIRACIÓN DEL PLAN
             if (data.plan_vencimiento && data.plan !== "semilla") {
                 const vencimiento = data.plan_vencimiento.toDate();
                 const ahora = new Date();
@@ -1657,10 +1895,10 @@ import Layout from "../layouts/Layout.astro";
                     (vencimiento - ahora) / (1000 * 60 * 60 * 24),
                 );
 
-                // Plan expirado - Downgrade automtico
+                // Plan expirado - Downgrade automático
                 if (ahora > vencimiento) {
                     console.warn(
-                        " [PLAN] Plan expirado, haciendo downgrade...",
+                        "⚠️ [PLAN] Plan expirado, haciendo downgrade...",
                     );
                     await updateDoc(doc(db, "profesionales", uid), {
                         plan: "semilla",
@@ -1674,7 +1912,7 @@ import Layout from "../layouts/Layout.astro";
                         title: "Plan Expirado",
                         html: `
               <p class="mb-4">Tu plan <strong>${data.plan}</strong> ha vencido.</p>
-              <p class="text-gray-600">Ahora ests en <strong>Plan Semilla</strong>.</p>
+              <p class="text-gray-600">Ahora estás en <strong>Plan Semilla</strong>.</p>
             `,
                         confirmButtonText: "Ver Planes",
                         confirmButtonColor: "#ea580c",
@@ -1684,9 +1922,9 @@ import Layout from "../layouts/Layout.astro";
                     return;
                 }
 
-                // Advertencia 10 das antes
+                // Advertencia 10 días antes
                 if (diasRestantes <= 10 && diasRestantes > 0) {
-                    console.log(` [PLAN] ${diasRestantes} das restantes`);
+                    console.log(`⏰ [PLAN] ${diasRestantes} días restantes`);
 
                     // Banner de advertencia
                     const banner = document.createElement("div");
@@ -1695,9 +1933,9 @@ import Layout from "../layouts/Layout.astro";
                     banner.innerHTML = `
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
-                <span class="text-3xl"></span>
+                <span class="text-3xl">⚠️</span>
                 <div>
-                  <p class="font-bold text-orange-800">Tu plan vence en ${diasRestantes} da${diasRestantes > 1 ? "s" : ""}</p>
+                  <p class="font-bold text-orange-800">Tu plan vence en ${diasRestantes} día${diasRestantes > 1 ? "s" : ""}</p>
                   <p class="text-sm text-orange-700">Renueva ahora para no perder tus beneficios premium</p>
                 </div>
               </div>
@@ -1712,8 +1950,8 @@ import Layout from "../layouts/Layout.astro";
                 }
             }
 
-            //  CORREGIR DURACIN DEL PLAN SI ES NECESARIA
-            // Si el plan tiene una duracin incorrecta, la corregimos
+            // 🔧 CORREGIR DURACIÓN DEL PLAN SI ES NECESARIA
+            // Si el plan tiene una duración incorrecta, la corregimos
             if (
                 data.plan_inicio &&
                 data.plan_vencimiento &&
@@ -1724,13 +1962,13 @@ import Layout from "../layouts/Layout.astro";
                 const duracionEsperada = getPlanDuration(data.plan);
 
                 if (duracionEsperada > 0) {
-                    // Calcular cul debera ser el vencimiento correcto
+                    // Calcular cuál debería ser el vencimiento correcto
                     const vencimientoCorrecto = new Date(planInicio);
                     vencimientoCorrecto.setDate(
                         vencimientoCorrecto.getDate() + duracionEsperada,
                     );
 
-                    // Calcular diferencia en das entre el vencimiento actual y el correcto
+                    // Calcular diferencia en días entre el vencimiento actual y el correcto
                     const diferenciaDias = Math.abs(
                         Math.ceil(
                             (vencimientoActual - vencimientoCorrecto) /
@@ -1738,10 +1976,10 @@ import Layout from "../layouts/Layout.astro";
                         ),
                     );
 
-                    // Si la diferencia es mayor a 5 das, corregir
+                    // Si la diferencia es mayor a 5 días, corregir
                     if (diferenciaDias > 5) {
                         console.warn(
-                            ` [PLAN] Corrigiendo duracin del plan ${data.plan}: ${duracionEsperada} das`,
+                            `⚠️ [PLAN] Corrigiendo duración del plan ${data.plan}: ${duracionEsperada} días`,
                         );
                         await updateDoc(doc(db, "profesionales", uid), {
                             plan_vencimiento: vencimientoCorrecto,
@@ -1790,7 +2028,7 @@ import Layout from "../layouts/Layout.astro";
                     .getElementById("btn-admin-panel")
                     ?.classList.remove("hidden");
 
-            //  RESTRICCIONES POR PLAN (LGICA ACTUALIZADA PARA LOS BOTONES)
+            // 🔒 RESTRICCIONES POR PLAN (LÓGICA ACTUALIZADA PARA LOS BOTONES)
             const isExperto =
                 userPlan === "experto" || userPlan === "semestral";
             const isImpulso = userPlan === "impulso" || userPlan === "mensual";
@@ -1821,7 +2059,7 @@ import Layout from "../layouts/Layout.astro";
                     .querySelectorAll(".premium-lock")
                     .forEach((lock) => (lock.style.display = "none"));
             } else if (isImpulso) {
-                // Plan Impulso: Solo Galera (6 fotos)
+                // Plan Impulso: Solo Galería (6 fotos)
                 document
                     .getElementById("premium-tools")
                     ?.classList.add("hidden");
@@ -1832,18 +2070,18 @@ import Layout from "../layouts/Layout.astro";
                     .getElementById("btn-presupuestos")
                     ?.classList.add("hidden");
 
-                // Mostrar solo Galera
+                // Mostrar solo Galería
                 document
                     .getElementById("btn-galeria")
                     ?.classList.remove("hidden");
 
-                // Quitar candado de galera para Impulso
+                // Quitar candado de galería para Impulso
                 const galleryLock = document.querySelector(
                     '[data-tab="galeria"] .premium-lock',
                 );
                 if (galleryLock) galleryLock.style.display = "none";
             } else {
-                // Plan Semilla: Solo datos bsicos
+                // Plan Semilla: Solo datos básicos
                 document
                     .getElementById("premium-tools")
                     ?.classList.add("hidden");
@@ -1923,7 +2161,6 @@ import Layout from "../layouts/Layout.astro";
             }
 
             setVal("certificados", data.certificados);
-            setVal("precio_visita", data.precio_visita);
 
             setVal("telefono", data.telefono);
             setVal("descripcion", data.descripcion);
@@ -1948,10 +2185,12 @@ import Layout from "../layouts/Layout.astro";
             }
 
             setVal("instagram", data.redes?.instagram);
-            setVal("facebook", data.redes?.facebook);
             setVal("tiktok", data.redes?.tiktok);
+            setVal("facebook", data.redes?.facebook);
+            setVal("twitter", data.redes?.twitter);
             setVal("youtube", data.redes?.youtube);
             setVal("twitch", data.redes?.twitch);
+            setVal("kick", data.redes?.kick);
             setVal("website", data.redes?.web);
             setVal("slug_custom", data.slug); // Cargar slug
             // @ts-ignore
@@ -1967,7 +2206,7 @@ import Layout from "../layouts/Layout.astro";
                 );
                 const status = document.getElementById("geo-status");
                 if (status) {
-                    status.innerText = " Ubicacin Guardada";
+                    status.innerText = "✅ Ubicación Guardada";
                     status.className = "text-xs text-green-600 font-bold";
                 }
             }
@@ -1990,7 +2229,7 @@ import Layout from "../layouts/Layout.astro";
         }
     }
 
-    // --- LGICA UI ---
+    // --- LÓGICA UI ---
     function blockPremiumTabs() {
         document
             .querySelectorAll(".premium-overlay")
@@ -2008,7 +2247,7 @@ import Layout from "../layouts/Layout.astro";
             const zona = document.getElementById("zona")?.value || "su zona";
             // @ts-ignore
             document.getElementById("descripcion").value =
-                `Hola! Soy ${nombre}, especialista en ${rubro} con experiencia brindando servicios de calidad en ${zona}. Me caracterizo por la puntualidad, el compromiso y la garanta en mis trabajos. Realizo presupuestos sin cargo y acepto diversos medios de pago. Contctame para solucionar tu problema!`;
+                `¡Hola! Soy ${nombre}, especialista en ${rubro} con experiencia brindando servicios de calidad en ${zona}. Me caracterizo por la puntualidad, el compromiso y la garantía en mis trabajos. Realizo presupuestos sin cargo y acepto diversos medios de pago. ¡Contáctame para solucionar tu problema!`;
         });
     }
 
@@ -2048,7 +2287,7 @@ import Layout from "../layouts/Layout.astro";
                                 setVal("longitud", item.lon);
                                 document.getElementById(
                                     "geo-status",
-                                ).innerText = " Listo";
+                                ).innerText = "📍 Listo";
                                 list?.classList.add("hidden");
                             };
                             list?.appendChild(li);
@@ -2065,6 +2304,20 @@ import Layout from "../layouts/Layout.astro";
 
     // --- SAVE ---
     async function saveProfile() {
+        // VALIDACIÓN CUIT
+        // @ts-ignore
+        const cuitVal = document.getElementById("cuit").value.trim();
+        if (!cuitVal) {
+            // @ts-ignore
+            Swal.fire({
+                icon: "error",
+                title: "Campo requerido",
+                text: "Debes ingresar tu CUIT/CUIL para continuar.",
+                confirmButtonColor: "#ea580c"
+            });
+            return;
+        }
+
         const btn = document.getElementById("btn-top-save");
         // @ts-ignore
         btn.innerText = "Guardando...";
@@ -2149,8 +2402,6 @@ import Layout from "../layouts/Layout.astro";
                 // @ts-ignore
                 telefono: document.getElementById("telefono").value,
                 // @ts-ignore
-                precio_visita: document.getElementById("precio_visita").value,
-                // @ts-ignore
                 descripcion: document.getElementById("descripcion").value,
                 etiquetas: userTags,
                 servicios_lista: userServices,
@@ -2161,17 +2412,13 @@ import Layout from "../layouts/Layout.astro";
                 // @ts-ignore
                 foto: document.getElementById("foto-url").value,
                 redes: {
-                    // @ts-ignore
                     instagram: document.getElementById("instagram").value,
-                    // @ts-ignore
-                    facebook: document.getElementById("facebook").value,
-                    // @ts-ignore
                     tiktok: document.getElementById("tiktok").value,
-                    // @ts-ignore
+                    facebook: document.getElementById("facebook").value,
+                    twitter: document.getElementById("twitter").value,
                     youtube: document.getElementById("youtube").value,
-                    // @ts-ignore
                     twitch: document.getElementById("twitch").value,
-                    // @ts-ignore
+                    kick: document.getElementById("kick").value,
                     web: document.getElementById("website").value,
                 },
                 // @ts-ignore
@@ -2217,7 +2464,7 @@ import Layout from "../layouts/Layout.astro";
             // @ts-ignore
             Swal.fire({
                 icon: "success",
-                title: "Guardado!",
+                title: "¡Guardado!",
                 timer: 1500,
                 showConfirmButton: false,
             });
@@ -2226,7 +2473,7 @@ import Layout from "../layouts/Layout.astro";
             console.error(e);
         } finally {
             // @ts-ignore
-            btn.innerText = " Guardar Todo";
+            btn.innerText = "💾 Guardar Todo";
             btn.disabled = false;
         }
     }
@@ -2269,7 +2516,7 @@ import Layout from "../layouts/Layout.astro";
                         // @ts-ignore
                         Swal.fire({
                             icon: "warning",
-                            text: "Mximo 5 etiquetas",
+                            text: "Máximo 5 etiquetas",
                             confirmButtonColor: "#ea580c",
                         });
                         return;
@@ -2321,7 +2568,7 @@ import Layout from "../layouts/Layout.astro";
                 }
             });
 
-        //  LOGOUT FUNCIONA
+        // 🔥 LOGOUT FUNCIONA
         document
             .getElementById("btn-logout")
             ?.addEventListener("click", async () => {
@@ -2329,19 +2576,19 @@ import Layout from "../layouts/Layout.astro";
                 window.location.href = "/";
             });
 
-        //  ELIMINAR CUENTA FUNCIONA
+        // 🔥 ELIMINAR CUENTA FUNCIONA
         document
             .getElementById("btn-delete-account")
             ?.addEventListener("click", async () => {
                 // @ts-ignore
                 const res = await Swal.fire({
-                    title: "Ests seguro?",
-                    text: "No podrs revertir esto. Tu perfil se borrar.",
+                    title: "¿Estás seguro?",
+                    text: "No podrás revertir esto. Tu perfil se borrará.",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#d33",
                     cancelButtonColor: "#3085d6",
-                    confirmButtonText: "S, eliminar",
+                    confirmButtonText: "Sí, eliminar",
                 });
                 if (res.isConfirmed) {
                     try {
@@ -2363,19 +2610,19 @@ import Layout from "../layouts/Layout.astro";
                 }
             });
 
-        //  GIFTCARD BELLA
+        // 🔥 GIFTCARD BELLA
         document
             .getElementById("btn-giftcard")
             ?.addEventListener("click", async () => {
                 // @ts-ignore
                 const { value: codigo } = await Swal.fire({
-                    title: ' <span class="text-purple-600">Canjear Beneficio</span>',
-                    html: '<p class="text-gray-500 mb-4 text-sm">Ingresa tu cdigo promocional para desbloquear funciones.</p>',
+                    title: '🎁 <span class="text-purple-600">Canjear Beneficio</span>',
+                    html: '<p class="text-gray-500 mb-4 text-sm">Ingresa tu código promocional para desbloquear funciones.</p>',
                     input: "text",
                     inputPlaceholder: "Ej: VERANO2026",
                     inputAttributes: { autocapitalize: "off" },
                     showCancelButton: true,
-                    confirmButtonText: " Activar",
+                    confirmButtonText: "✨ Activar",
                     confirmButtonColor: "#9333ea",
                     cancelButtonText: "Cancelar",
                 });
@@ -2388,7 +2635,7 @@ import Layout from "../layouts/Layout.astro";
                             didOpen: () => Swal.showLoading(),
                         });
 
-                        // Leer configuracin del giftcard desde Firestore
+                        // Leer configuración del giftcard desde Firestore
                         const giftcardDoc = await getDoc(
                             doc(db, "configuracion", "giftcard"),
                         );
@@ -2398,14 +2645,14 @@ import Layout from "../layouts/Layout.astro";
                             Swal.fire({
                                 icon: "error",
                                 title: "Error de Sistema",
-                                text: "No hay cdigos promocionales activos en este momento.",
+                                text: "No hay códigos promocionales activos en este momento.",
                             });
                             return;
                         }
 
                         const giftcardConfig = giftcardDoc.data();
 
-                        // Validar cdigo
+                        // Validar código
                         if (
                             codigo.trim().toUpperCase() !==
                                 giftcardConfig.codigo ||
@@ -2414,13 +2661,13 @@ import Layout from "../layouts/Layout.astro";
                             // @ts-ignore
                             Swal.fire({
                                 icon: "error",
-                                title: "Cdigo Invlido",
-                                text: "El cdigo ingresado no es vlido o ha expirado.",
+                                title: "Código Inválido",
+                                text: "El código ingresado no es válido o ha expirado.",
                             });
                             return;
                         }
 
-                        // Verificar lmite de usos si existe
+                        // Verificar límite de usos si existe
                         if (
                             giftcardConfig.maxUsos &&
                             giftcardConfig.usos >= giftcardConfig.maxUsos
@@ -2428,8 +2675,8 @@ import Layout from "../layouts/Layout.astro";
                             // @ts-ignore
                             Swal.fire({
                                 icon: "error",
-                                title: "Cdigo Agotado",
-                                text: "Este cdigo ya alcanz su lmite de usos.",
+                                title: "Código Agotado",
+                                text: "Este código ya alcanzó su límite de usos.",
                             });
                             return;
                         }
@@ -2461,8 +2708,8 @@ import Layout from "../layouts/Layout.astro";
                         // @ts-ignore
                         Swal.fire({
                             icon: "success",
-                            title: "Felicidades! ",
-                            text: `Plan ${giftcardConfig.planOtorgado || "Experto"} activado por ${giftcardConfig.duracionDias || 60} das.`,
+                            title: "¡Felicidades! 🦁",
+                            text: `Plan ${giftcardConfig.planOtorgado || "Experto"} activado por ${giftcardConfig.duracionDias || 60} días.`,
                             confirmButtonColor: "#9333ea",
                         }).then(() => window.location.reload());
                     } catch (e) {
@@ -2470,7 +2717,7 @@ import Layout from "../layouts/Layout.astro";
                         // @ts-ignore
                         Swal.fire(
                             "Error",
-                            "No se pudo activar el cdigo. Intenta nuevamente.",
+                            "No se pudo activar el código. Intenta nuevamente.",
                             "error",
                         );
                     }
@@ -2514,13 +2761,58 @@ import Layout from "../layouts/Layout.astro";
                         .getElementById("avatar-img")
                         ?.classList.remove("hidden");
                 } else if (type === "portfolio") {
-                    await updateDoc(doc(db, "profesionales", currentUserUid), {
-                        portfolio: arrayUnion(url),
+                    Swal.close();
+                    
+                    // @ts-ignore
+                    const { value: formValues } = await Swal.fire({
+                        title: 'Detalles del Trabajo',
+                        html:
+                            '<div class="text-left">' +
+                            '<label class="block text-xs font-bold text-gray-400 uppercase mb-1">Título del Proyecto</label>' +
+                            '<input id="swal-title" class="swal2-input !mt-0 !mb-4 !w-full" placeholder="ej: Instalación Eléctrica Completa">' +
+                            '<label class="block text-xs font-bold text-gray-400 uppercase mb-1">Categoría</label>' +
+                            '<select id="swal-category" class="swal2-input !mt-0 !mb-4 !w-full">' +
+                                '<option value="Instalaciones">Instalaciones</option>' +
+                                '<option value="Reparaciones">Reparaciones</option>' +
+                                '<option value="Mantenimiento">Mantenimiento</option>' +
+                                '<option value="Urgencias">Urgencias</option>' +
+                            '</select>' +
+                            '<label class="block text-xs font-bold text-gray-400 uppercase mb-1">Descripción</label>' +
+                            '<textarea id="swal-desc" class="swal2-textarea !mt-0 !mb-4 !w-full" placeholder="Cuéntanos un poco sobre el trabajo..."></textarea>' +
+                            '<label class="block text-xs font-bold text-gray-400 uppercase mb-1">Fecha</label>' +
+                            '<input id="swal-date" type="text" class="swal2-input !mt-0 !w-full" placeholder="ej: Octubre 2023">' +
+                            '</div>',
+                        focusConfirm: false,
+                        confirmButtonText: 'Guardar Trabajo',
+                        confirmButtonColor: '#ea580c',
+                        customClass: {
+                            input: 'text-sm'
+                        },
+                        preConfirm: () => {
+                            return {
+                                // @ts-ignore
+                                titulo: document.getElementById('swal-title').value || "Trabajo de Calidad",
+                                // @ts-ignore
+                                descripcion: document.getElementById('swal-desc').value || "",
+                                // @ts-ignore
+                                categoria: document.getElementById('swal-category').value,
+                                // @ts-ignore
+                                fecha: document.getElementById('swal-date').value || "Reciente"
+                            }
+                        }
                     });
-                    const snap = await getDoc(
-                        doc(db, "profesionales", currentUserUid),
-                    );
-                    renderGallery(snap.data().portfolio || []);
+
+                    if (formValues) {
+                        const newItem = {
+                            url: url,
+                            ...formValues,
+                            createdAt: new Date()
+                        };
+                        await updateDoc(doc(db, "profesionales", currentUserUid), {
+                            portfolio: arrayUnion(newItem),
+                        });
+                        loadUserProfile(currentUserUid);
+                    }
                 }
                 // @ts-ignore
                 Swal.close();
@@ -2577,7 +2869,7 @@ import Layout from "../layouts/Layout.astro";
                     return;
                 }
 
-                // Validar lmite de fotos por plan
+                // Validar límite de fotos por plan
                 const currentCount = userData?.portfolio?.length || 0;
                 const planLimits = {
                     gratuito: 0,
@@ -2595,8 +2887,8 @@ import Layout from "../layouts/Layout.astro";
                     // @ts-ignore
                     Swal.fire({
                         icon: "info",
-                        title: "Lmite alcanzado",
-                        text: `Has alcanzado el lmite de ${maxPhotos} fotos para tu plan ${userPlan}`,
+                        title: "Límite alcanzado",
+                        text: `Has alcanzado el límite de ${maxPhotos} fotos para tu plan ${userPlan}`,
                         confirmButtonColor: "#ea580c",
                     });
                     e.target.value = "";
@@ -2622,7 +2914,7 @@ import Layout from "../layouts/Layout.astro";
             if (!window.jspdf)
                 return Swal.fire({
                     icon: "info",
-                    text: "Cargando librera PDF...",
+                    text: "Cargando librería PDF...",
                     toast: true,
                     position: "bottom-end",
                     timer: 2000,
@@ -2676,7 +2968,7 @@ import Layout from "../layouts/Layout.astro";
 
             doc.setFontSize(8);
             doc.setTextColor(150);
-            doc.text("Vlido por 15 das. DeOficios.com.ar", 105, 280, {
+            doc.text("Válido por 15 días. DeOficios.com.ar", 105, 280, {
                 align: "center",
             });
             doc.save("presupuesto_pro.pdf");
@@ -2691,11 +2983,11 @@ import Layout from "../layouts/Layout.astro";
             // @ts-ignore
             document.getElementById("btn-top-save").disabled = false;
             if (sDni) {
-                sDni.innerText = " Listo";
+                sDni.innerText = "✅ Listo";
                 sDni.className = "text-[10px] text-green-600 font-bold";
             }
             if (sAnt) {
-                sAnt.innerText = " Listo";
+                sAnt.innerText = "✅ Listo";
                 sAnt.className = "text-[10px] text-green-600 font-bold";
             }
             return;
@@ -2712,7 +3004,7 @@ import Layout from "../layouts/Layout.astro";
     }
 
     function setupTabs() {
-        console.log(" [TABS] Setting up tabs...");
+        console.log("🔧 [TABS] Setting up tabs...");
 
         document.querySelectorAll(".tab-btn").forEach((btn) => {
             btn.addEventListener("click", (e) => {
@@ -2725,15 +3017,15 @@ import Layout from "../layouts/Layout.astro";
                 );
 
                 console.log(
-                    ` [TABS] Clicked tab: ${targetTab}`,
+                    `🔧 [TABS] Clicked tab: ${targetTab}`,
                     targetContent,
                 );
 
-                // Si ya est activo, no hacer nada
+                // Si ya está activo, no hacer nada
                 // @ts-ignore
                 if (btn.classList.contains("active")) {
                     console.log(
-                        ` [TABS] Tab ${targetTab} already active, skipping`,
+                        `🔧 [TABS] Tab ${targetTab} already active, skipping`,
                     );
                     return;
                 }
@@ -2754,7 +3046,7 @@ import Layout from "../layouts/Layout.astro";
                     c.classList.add("hidden");
                 });
 
-                // Activar el nuevo botn
+                // Activar el nuevo botón
                 // @ts-ignore
                 btn.classList.add(
                     "active",
@@ -2769,9 +3061,9 @@ import Layout from "../layouts/Layout.astro";
                     targetContent.classList.remove("hidden");
                     targetContent.classList.add("block");
 
-                    console.log(` [TABS] Tab ${targetTab} now visible`);
+                    console.log(`✅ [TABS] Tab ${targetTab} now visible`);
 
-                    // Animacin fade-in
+                    // Animación fade-in
                     targetContent.style.opacity = "0";
                     targetContent.style.transform = "translateY(10px)";
 
@@ -2783,16 +3075,16 @@ import Layout from "../layouts/Layout.astro";
                     }, 10);
                 } else {
                     console.error(
-                        ` [TABS] Tab content not found: tab-${targetTab}`,
+                        `❌ [TABS] Tab content not found: tab-${targetTab}`,
                     );
                 }
             });
         });
 
-        console.log(" [TABS] Tabs setup complete");
+        console.log("✅ [TABS] Tabs setup complete");
     }
 
-    //  MOSTRAR QR EN MI PERFIL
+    // 📱 MOSTRAR QR EN MI PERFIL
     document
         .getElementById("btn-show-qr-profile")
         ?.addEventListener("click", () => {
@@ -2800,10 +3092,10 @@ import Layout from "../layouts/Layout.astro";
 
             // @ts-ignore
             Swal.fire({
-                title: " Tu Cdigo QR",
+                title: "📱 Tu Código QR",
                 html: `
         <div class="text-center">
-          <p class="text-sm text-gray-600 mb-4">Comparte este cdigo para que vean tu perfil</p>
+          <p class="text-sm text-gray-600 mb-4">Comparte este código para que vean tu perfil</p>
           <div id="qr-container-profile" class="flex justify-center"></div>
           <p class="text-xs text-gray-500 mt-4">${profileUrl}</p>
         </div>
@@ -2824,7 +3116,7 @@ import Layout from "../layouts/Layout.astro";
             });
         });
 
-    //  DESCARGAR TARJETA DIGITAL (FIXED)
+    // 💳 DESCARGAR TARJETA DIGITAL (FIXED)
     const generateCardCanvas = async () => {
         // @ts-ignore
         Swal.fire({
@@ -2864,7 +3156,7 @@ import Layout from "../layouts/Layout.astro";
             const ubicacionRaw =
                 document.querySelector('input[placeholder*="Ej: Belgrano"]')
                     ?.value || "Argentina";
-            // Limpiar ubicacin para formato "City, ARG"
+            // Limpiar ubicación para formato "City, ARG"
             const ubicacion = ubicacionRaw.includes(",")
                 ? ubicacionRaw.split(",")[0].trim() + ", ARG"
                 : ubicacionRaw;
@@ -2875,7 +3167,7 @@ import Layout from "../layouts/Layout.astro";
             // @ts-ignore
             const exp =
                 experienciaSelect?.options[experienciaSelect.selectedIndex]
-                    ?.text || "Varios aos";
+                    ?.text || "Varios años";
 
             // Avatar
             // @ts-ignore
@@ -2889,7 +3181,7 @@ import Layout from "../layouts/Layout.astro";
                 document.getElementById("telefono")?.value ||
                 "+54 9 11 ---- ----";
 
-            // Asegurar acceso a currentUserUid (si falla, usar ubicacin actual)
+            // Asegurar acceso a currentUserUid (si falla, usar ubicación actual)
             let profileUrl;
             try {
                 // @ts-ignore
@@ -2948,7 +3240,7 @@ import Layout from "../layouts/Layout.astro";
             // @ts-ignore
             qrImg.crossOrigin = "anonymous";
 
-            // Esperar carga de imgenes
+            // Esperar carga de imágenes
             await Promise.all([
                 // @ts-ignore
                 new Promise((resolve) => {
@@ -3003,7 +3295,7 @@ import Layout from "../layouts/Layout.astro";
                 // @ts-ignore
                 Swal.fire({
                     icon: "success",
-                    title: "Descargada!",
+                    title: "¡Descargada!",
                     timer: 1500,
                     showConfirmButton: false,
                 });
@@ -3034,7 +3326,7 @@ import Layout from "../layouts/Layout.astro";
                         await navigator.share({
                             files: [file],
                             title: "Mi Tarjeta Digital",
-                            text: "Mir mi tarjeta digital de Oficios Argentina!",
+                            text: "¡Mirá mi tarjeta digital de Oficios Argentina!",
                         });
                         // @ts-ignore
                         Swal.close(); // Close loading
@@ -3059,10 +3351,49 @@ import Layout from "../layouts/Layout.astro";
                 Swal.fire("Error", "No se pudo generar.", "error");
             }
         });
+
+    // --- VERIFICACIÓN DE EMAIL BANNER ---
+    // onAuthStateChanged ya está importado en la línea 1184
+    onAuthStateChanged(authClient, (user) => {
+        const banner = document.getElementById("email-verification-banner");
+        const btnResend = document.getElementById("btn-resend-verification");
+
+        if (user && !user.emailVerified) {
+            banner?.classList.remove("hidden");
+            
+            btnResend?.addEventListener("click", async () => {
+                try {
+                    btnResend.innerText = "Enviando...";
+                    btnResend.disabled = true;
+                    await sendEmailVerification(user);
+                    Swal.fire({
+                        icon: "success",
+                        title: "Email Enviado",
+                        text: "Revisa tu casilla de correo (y spam) para verificar tu cuenta.",
+                        confirmButtonColor: "#ea580c"
+                    });
+                    btnResend.innerText = "Email Reenviado";
+                } catch (e) {
+                    console.error(e);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "No se pudo reenviar. Intenta más tarde.", // Posible rate limit
+                        confirmButtonColor: "#ea580c"
+                    });
+                    btnResend.innerText = "Reenviar Email";
+                    btnResend.disabled = false;
+                }
+            });
+        } else {
+            banner?.classList.add("hidden");
+        }
+    });
 </script>
 
 <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+></script>
 
 <!-- Template de Tarjeta (Oculto) - Matching Reference Image -->
 <div id="card-template" class="hidden">
@@ -3070,16 +3401,19 @@ import Layout from "../layouts/Layout.astro";
     <div class="flex h-[540px]">
         <!-- Left Side: Profile (Brown/Orange) -->
         <div
-            class="w-[45%] bg-[#A0522D] p-10 flex flex-col items-center justify-center text-white relative">
+            class="w-[45%] bg-[#A0522D] p-10 flex flex-col items-center justify-center text-white relative"
+        >
             <!-- Subtle pattern overlay -->
             <div
-                class="absolute inset-0 opacity-5 bg-[radial-gradient(circle,#fff_1px,transparent_1px)] [background-size:16px_16px]">
+                class="absolute inset-0 opacity-5 bg-[radial-gradient(circle,#fff_1px,transparent_1px)] [background-size:16px_16px]"
+            >
             </div>
 
             <!-- Avatar with border -->
             <div class="relative mb-6 z-10">
                 <div
-                    class="w-44 h-44 rounded-full border-[5px] border-[#D2691E] overflow-hidden shadow-2xl bg-[#2C4A52]">
+                    class="w-44 h-44 rounded-full border-[5px] border-[#D2691E] overflow-hidden shadow-2xl bg-[#2C4A52]"
+                >
                     <img
                         id="temp-card-avatar"
                         src=""
@@ -3089,36 +3423,47 @@ import Layout from "../layouts/Layout.astro";
                 </div>
                 <!-- Verified badge -->
                 <div
-                    class="absolute bottom-1 right-1 bg-white rounded-full p-1.5 shadow-lg">
+                    class="absolute bottom-1 right-1 bg-white rounded-full p-1.5 shadow-lg"
+                >
                     <span
-                        class="material-symbols-rounded text-[#A0522D] text-lg leading-none">verified</span>
+                        class="material-symbols-rounded text-[#A0522D] text-lg leading-none"
+                        >verified</span
+                    >
                 </div>
             </div>
 
             <!-- Name -->
             <h2
                 id="temp-card-name"
-                class="text-3xl font-bold mb-2 z-10 text-center">
+                class="text-3xl font-bold mb-2 z-10 text-center"
+            >
                 Juan Perez
             </h2>
 
             <!-- Role -->
             <p
                 id="temp-card-role"
-                class="text-white/90 text-base mb-8 z-10 text-center">
+                class="text-white/90 text-base mb-8 z-10 text-center"
+            >
                 Electricista Matriculado
             </p>
 
             <!-- Location -->
             <div
-                class="bg-[#8B4513]/40 border border-[#D2691E]/40 rounded-xl py-3 px-6 mb-3 flex items-center justify-center gap-2 z-10 w-full max-w-[240px]">
-                <span id="temp-card-location" class="text-sm font-medium">Buenos Aires, ARG</span>
+                class="bg-[#8B4513]/40 border border-[#D2691E]/40 rounded-xl py-3 px-6 mb-3 flex items-center justify-center gap-2 z-10 w-full max-w-[240px]"
+            >
+                <span id="temp-card-location" class="text-sm font-medium"
+                    >Buenos Aires, ARG</span
+                >
             </div>
 
             <!-- Experience -->
             <div
-                class="bg-[#8B4513]/40 border border-[#D2691E]/40 rounded-xl py-3 px-6 flex items-center justify-center gap-2 z-10 w-full max-w-[240px]">
-                <span id="temp-card-exp" class="text-sm font-medium">Exp: 10+ Aos</span>
+                class="bg-[#8B4513]/40 border border-[#D2691E]/40 rounded-xl py-3 px-6 flex items-center justify-center gap-2 z-10 w-full max-w-[240px]"
+            >
+                <span id="temp-card-exp" class="text-sm font-medium"
+                    >Exp: 10+ Años</span
+                >
             </div>
 
             <!-- Footer -->
@@ -3134,20 +3479,23 @@ import Layout from "../layouts/Layout.astro";
             <!-- Reputation Section -->
             <div class="mb-4">
                 <p
-                    class="text-[9px] font-bold tracking-widest text-slate-500 uppercase mb-1">
-                    REPUTACIN
+                    class="text-[9px] font-bold tracking-widest text-slate-500 uppercase mb-1"
+                >
+                    REPUTACIÓN
                 </p>
                 <div class="flex items-baseline gap-3">
                     <span
                         id="temp-card-rating"
-                        class="text-5xl font-bold text-slate-900">4.9</span>
+                        class="text-5xl font-bold text-slate-900">4.9</span
+                    >
                     <div class="flex flex-col">
                         <div class="flex text-[#A0522D] text-base mb-0.5">
-                            
+                            ★★★★★
                         </div>
                         <p
-                            class="text-[8px] text-slate-500 font-bold uppercase">
-                            124 RESEAS VERIFICADAS
+                            class="text-[8px] text-slate-500 font-bold uppercase"
+                        >
+                            124 RESEÑAS VERIFICADAS
                         </p>
                     </div>
                 </div>
@@ -3155,7 +3503,8 @@ import Layout from "../layouts/Layout.astro";
 
             <!-- QR Code Section -->
             <div
-                class="bg-[#EBE5DC] rounded-2xl p-6 border border-[#D4CEC0] flex flex-col items-center mb-4">
+                class="bg-[#EBE5DC] rounded-2xl p-6 border border-[#D4CEC0] flex flex-col items-center mb-4"
+            >
                 <div class="bg-white p-3 rounded-xl shadow-sm mb-3">
                     <img
                         id="temp-card-qr"
@@ -3165,23 +3514,25 @@ import Layout from "../layouts/Layout.astro";
                     />
                 </div>
                 <p class="text-sm font-bold text-slate-800 mb-1">
-                    Escane para ver mis trabajos
+                    Escaneá para ver mis trabajos
                 </p>
                 <p class="text-[10px] text-slate-600">
-                    Acceso instantneo desde el celular
+                    Acceso instantáneo desde el celular
                 </p>
             </div>
 
             <!-- WhatsApp Button with Phone -->
             <div class="flex flex-col items-center gap-2">
                 <button
-                    class="w-full bg-[#25D366] text-white py-3.5 rounded-xl font-bold text-base flex items-center justify-center gap-2 shadow-md hover:bg-[#20bd5a] transition-colors">
+                    class="w-full bg-[#25D366] text-white py-3.5 rounded-xl font-bold text-base flex items-center justify-center gap-2 shadow-md hover:bg-[#20bd5a] transition-colors"
+                >
                     <i class="fa-brands fa-whatsapp text-xl"></i>
                     <span>WhatsApp</span>
                 </button>
                 <p
                     id="temp-card-phone"
-                    class="text-slate-600 font-semibold text-sm">
+                    class="text-slate-600 font-semibold text-sm"
+                >
                     +54 9 11 1234 5678
                 </p>
             </div>
@@ -3192,19 +3543,25 @@ import Layout from "../layouts/Layout.astro";
     <div class="bg-white px-8 py-5 flex gap-4 border-t border-slate-200">
         <!-- Trabajos -->
         <div
-            class="flex-1 bg-[#FAF8F5] rounded-2xl p-4 flex items-center gap-3">
+            class="flex-1 bg-[#FAF8F5] rounded-2xl p-4 flex items-center gap-3"
+        >
             <div
-                class="bg-[#A0522D] text-white w-12 h-12 rounded-full flex items-center justify-center shrink-0">
-                <span class="material-symbols-rounded text-2xl">check_circle</span>
+                class="bg-[#A0522D] text-white w-12 h-12 rounded-full flex items-center justify-center shrink-0"
+            >
+                <span class="material-symbols-rounded text-2xl"
+                    >check_circle</span
+                >
             </div>
             <div>
                 <p
-                    class="text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">
+                    class="text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-0.5"
+                >
                     TRABAJOS
                 </p>
                 <p
                     id="temp-card-stat-jobs"
-                    class="text-2xl font-bold text-slate-900">
+                    class="text-2xl font-bold text-slate-900"
+                >
                     450+
                 </p>
             </div>
@@ -3212,105 +3569,52 @@ import Layout from "../layouts/Layout.astro";
 
         <!-- Respuesta -->
         <div
-            class="flex-1 bg-[#FAF8F5] rounded-2xl p-4 flex items-center gap-3">
+            class="flex-1 bg-[#FAF8F5] rounded-2xl p-4 flex items-center gap-3"
+        >
             <div
-                class="bg-[#A0522D] text-white w-12 h-12 rounded-full flex items-center justify-center shrink-0">
+                class="bg-[#A0522D] text-white w-12 h-12 rounded-full flex items-center justify-center shrink-0"
+            >
                 <span class="material-symbols-rounded text-2xl">bolt</span>
             </div>
             <div>
                 <p
-                    class="text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">
+                    class="text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-0.5"
+                >
                     RESPUESTA
                 </p>
                 <p
                     id="temp-card-stat-response"
-                    class="text-2xl font-bold text-slate-900">
+                    class="text-2xl font-bold text-slate-900"
+                >
                     &lt; 2hs
                 </p>
             </div>
         </div>
 
-        <!-- Garanta -->
+        <!-- Garantía -->
         <div
-            class="flex-1 bg-[#FAF8F5] rounded-2xl p-4 flex items-center gap-3">
+            class="flex-1 bg-[#FAF8F5] rounded-2xl p-4 flex items-center gap-3"
+        >
             <div
-                class="bg-[#A0522D] text-white w-12 h-12 rounded-full flex items-center justify-center shrink-0">
-                <span class="material-symbols-rounded text-2xl">verified_user</span>
+                class="bg-[#A0522D] text-white w-12 h-12 rounded-full flex items-center justify-center shrink-0"
+            >
+                <span class="material-symbols-rounded text-2xl"
+                    >verified_user</span
+                >
             </div>
             <div>
                 <p
-                    class="text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-0.5">
-                    GARANTA
+                    class="text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-0.5"
+                >
+                    GARANTÍA
                 </p>
                 <p
                     id="temp-card-stat-warranty"
-                    class="text-2xl font-bold text-slate-900">
+                    class="text-2xl font-bold text-slate-900"
+                >
                     Escrita
                 </p>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-    import { auth } from "../firebase/client";
-
-    document.addEventListener("astro:page-load", () => {
-        const btnGift = document.getElementById("btn-giftcard");
-
-        if (btnGift) {
-            // Remover listeners previos para evitar duplicados en navegaciones
-            const newBtn = btnGift.cloneNode(true);
-            if (btnGift.parentNode) {
-                btnGift.parentNode.replaceChild(newBtn, btnGift);
-            }
-
-            // @ts-ignore
-            newBtn.addEventListener("click", async () => {
-                const user = auth.currentUser;
-                if (!user) return alert("Debes iniciar sesin primero");
-
-                const code = prompt(" Ingres tu cdigo promocional:");
-                if (!code) return;
-
-                // @ts-ignore
-                newBtn.innerHTML = " Verificando...";
-                // @ts-ignore
-                newBtn.disabled = true;
-
-                try {
-                    const token = await user.getIdToken();
-
-                    const res = await fetch("/api/canjear", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                        },
-                        body: JSON.stringify({
-                            codigoUsuario: code,
-                        }),
-                    });
-
-                    const data = await res.json();
-
-                    if (res.ok) {
-                        alert(data.message);
-                        window.location.reload();
-                    } else {
-                        alert(" Error: " + data.error);
-                    }
-                } catch (e) {
-                    console.error(e);
-                    alert("Error de conexin");
-                } finally {
-                    // @ts-ignore
-                    newBtn.innerHTML = "<span></span> Canjear Giftcard";
-                    // @ts-ignore
-                    newBtn.disabled = false;
-                }
-            });
-        }
-    });
-</script>
-

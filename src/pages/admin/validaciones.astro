@@ -1,5 +1,5 @@
 ---
-//  NOTA: Como ests en la carpeta /admin/, usamos ../../ para volver a la raz src
+// 🔥 NOTA: Como estás en la carpeta /admin/, usamos ../../ para volver a la raíz src
 import Layout from "../../layouts/Layout.astro";
 ---
 
@@ -7,22 +7,26 @@ import Layout from "../../layouts/Layout.astro";
     <div class="flex h-screen bg-gray-100 font-sans">
         <aside class="w-64 bg-gray-900 text-white flex flex-col shadow-xl">
             <div
-                class="p-6 text-xl font-bold border-b border-gray-800 flex items-center gap-2">
-                 Admin Panel
+class="p-6 text-xl font-bold border-b border-gray-800 flex items-center gap-2"
+            >
+                🛡️ Admin Panel
             </div>
             <nav class="flex-1 p-4 space-y-2">
                 <a
                     href="/admin"
-                    class="block py-2.5 px-4 rounded text-gray-300 hover:bg-gray-800 hover:text-white transition">
-                     Volver al Sitio
+class="block py-2.5 px-4 rounded text-gray-300 hover:bg-gray-800 hover:text-white transition"
+                >
+                    ⬅ Volver al Sitio
                 </a>
                 <div
-                    class="block py-2.5 px-4 rounded bg-blue-600 text-white font-bold shadow-md">
+                    class="block py-2.5 px-4 rounded bg-blue-600 text-white font-bold shadow-md"
+                >
                     Validaciones
                 </div>
             </nav>
             <div
-                class="p-4 border-t border-gray-800 text-xs text-gray-500 text-center">
+class="p-4 border-t border-gray-800 text-xs text-gray-500 text-center"
+            >
                 DeOficios Admin v1.0
             </div>
         </aside>
@@ -34,45 +38,51 @@ import Layout from "../../layouts/Layout.astro";
                         Solicitudes de Blindaje
                     </h1>
                     <p class="text-gray-600 mt-1">
-                        Revisa la documentacin y otorga el Check Azul.
+Revisa la documentación y otorga el Check Azul.
                     </p>
                 </div>
                 <div
-                    class="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
+                    class="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200"
+                >
                     <span class="text-sm font-bold text-gray-500">Estado:</span>
-                    <span class="text-green-600 font-bold ml-1">Sistema Activo </span>
+                    <span class="text-green-600 font-bold ml-1"
+                        >Sistema Activo 🟢</span
+                    >
                 </div>
             </header>
 
             <div id="loading" class="text-center py-20">
                 <div
-                    class="inline-block animate-spin text-4xl text-blue-600 mb-4">
-                    
+class="inline-block animate-spin text-4xl text-blue-600 mb-4"
+                >
+                    🌀
                 </div>
                 <p class="text-gray-500">Buscando solicitudes pendientes...</p>
             </div>
 
             <div
                 id="empty-state"
-                class="hidden text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-200">
-                <div class="text-5xl mb-4"></div>
-                <h3 class="font-bold text-xl text-gray-800">Todo al da</h3>
+class="hidden text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-200"
+            >
+                <div class="text-5xl mb-4">✅</div>
+                <h3 class="font-bold text-xl text-gray-800">Todo al día</h3>
                 <p class="text-gray-500 mt-2">
-                    No hay profesionales pendientes de validacin en este
+                    No hay profesionales pendientes de validación en este
                     momento.
                 </p>
             </div>
 
             <div
                 id="cards-container"
-                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            >
             </div>
         </main>
     </div>
 </Layout>
 
 <script>
-    //  IMPORTANTE: Ajustamos las rutas aqu tambin (../../)
+// 🔥 IMPORTANTE: Ajustamos las rutas aquí también (../../)
     import { auth, db } from "../../firebase/client";
     import { onAuthStateChanged } from "firebase/auth";
     import {
@@ -86,7 +96,7 @@ import Layout from "../../layouts/Layout.astro";
     } from "firebase/firestore";
 
     document.addEventListener("astro:page-load", () => {
-        console.log(" [ADMIN-VALIDACIONES] Pgina cargada/navegada");
+console.log("🚀 [ADMIN-VALIDACIONES] Página cargada/navegada");
 
         const container = document.getElementById("cards-container");
         const loading = document.getElementById("loading");
@@ -99,7 +109,7 @@ import Layout from "../../layouts/Layout.astro";
             const docRef = doc(db, "profesionales", user.uid);
             const docSnap = await getDoc(docRef);
 
-            // AQUI DEFINES QUIN ES ADMIN (Reemplaza con tu lgica o mail si prefieres)
+// AQUI DEFINES QUIÉN ES ADMIN (Reemplaza con tu lógica o mail si prefieres)
             const data = docSnap.data();
             const isAdmin =
                 data && (data.rol === "admin" || data.rol === "moderador");
@@ -107,7 +117,7 @@ import Layout from "../../layouts/Layout.astro";
             if (isAdmin) {
                 cargarSolicitudes();
             } else {
-                alert(" Acceso Denegado: Solo personal autorizado.");
+alert("⛔ Acceso Denegado: Solo personal autorizado.");
                 window.location.href = "/";
             }
         });
@@ -157,20 +167,20 @@ import Layout from "../../layouts/Layout.astro";
             <div class="p-5 space-y-4 flex-1">
                 
                 <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                    <p class="text-xs font-bold text-blue-800 uppercase mb-1"> Documento DNI</p>
+<p class="text-xs font-bold text-blue-800 uppercase mb-1">🪪 Documento DNI</p>
                     ${
                         data.doc_dni
-                            ? `<a href="${data.doc_dni}" target="_blank" class="text-sm text-blue-600 hover:underline flex items-center gap-1"> Ver Documento</a>`
-                            : '<span class="text-red-500 text-xs font-bold"> No subido</span>'
+                            ? `<a href="${data.doc_dni}" target="_blank" class="text-sm text-blue-600 hover:underline flex items-center gap-1">👁️ Ver Documento</a>`
+                            : '<span class="text-red-500 text-xs font-bold">❌ No subido</span>'
                     }
                 </div>
 
                 <div class="bg-purple-50 p-3 rounded-lg border border-purple-100">
-                    <p class="text-xs font-bold text-purple-800 uppercase mb-1"> Antecedentes</p>
+<p class="text-xs font-bold text-purple-800 uppercase mb-1">⚖️ Antecedentes</p>
                     ${
                         data.doc_antecedentes
-                            ? `<a href="${data.doc_antecedentes}" target="_blank" class="text-sm text-purple-600 hover:underline flex items-center gap-1"> Ver Documento</a>`
-                            : '<span class="text-red-500 text-xs font-bold"> No subido</span>'
+                            ? `<a href="${data.doc_antecedentes}" target="_blank" class="text-sm text-purple-600 hover:underline flex items-center gap-1">👁️ Ver Documento</a>`
+                            : '<span class="text-red-500 text-xs font-bold">❌ No subido</span>'
                     }
                 </div>
 
@@ -181,19 +191,19 @@ import Layout from "../../layouts/Layout.astro";
                     Rechazar
                 </button>
                 <button class="btn-approve w-full py-2 bg-green-600 text-white rounded-lg font-bold text-xs hover:bg-green-700 shadow-sm transition">
-                     Aprobar
+✅ Aprobar
                 </button>
             </div>
         `;
 
-            // Lgica Botones
+// Lógica Botones
             const btnApprove = card.querySelector(".btn-approve");
             const btnReject = card.querySelector(".btn-reject");
 
             btnApprove.onclick = async () => {
                 if (
                     !confirm(
-                        `Confirmas que los documentos de ${data.nombre} son vlidos?`,
+`¿Confirmas que los documentos de ${data.nombre} son válidos?`,
                     )
                 )
                     return;
@@ -209,7 +219,7 @@ import Layout from "../../layouts/Layout.astro";
             };
 
             btnReject.onclick = async () => {
-                if (!confirm(`Rechazar documentacin de ${data.nombre}?`))
+if (!confirm(`¿Rechazar documentación de ${data.nombre}?`))
                     return;
                 try {
                     await updateDoc(doc(db, "profesionales", uid), {
@@ -236,4 +246,3 @@ import Layout from "../../layouts/Layout.astro";
         }
     }); // End of astro:page-load
 </script>
-

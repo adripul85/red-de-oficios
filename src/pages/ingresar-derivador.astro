@@ -1,0 +1,55 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Ingresar - DeOficios">
+    <div class="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Opción Cliente -->
+            <div class="bg-white rounded-3xl p-8 shadow-xl border border-blue-100 flex flex-col items-center text-center group hover:scale-[1.02] transition-all">
+                <div class="w-20 h-20 bg-blue-100 rounded-2xl flex items-center justify-center text-4xl mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    🏠
+                </div>
+                <h2 class="text-2xl font-black text-slate-900 mb-4">Soy Cliente</h2>
+                <p class="text-slate-500 mb-8 leading-relaxed">
+                    Busco profesionales para realizar un trabajo en mi hogar o empresa.
+                </p>
+                <div class="space-y-4 w-full">
+                    <a href="/ingresar-cliente" class="block w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">
+                        Ingresar como Cliente
+                    </a>
+                    <a href="/ingresar-cliente?tab=register" class="block w-full py-4 bg-white text-blue-600 font-bold border-2 border-blue-600 rounded-2xl hover:bg-blue-50 transition-all">
+                        Crear Cuenta Gratis
+                    </a>
+                </div>
+            </div>
+
+            <!-- Opción Profesional -->
+            <div class="bg-white rounded-3xl p-8 shadow-xl border border-orange-100 flex flex-col items-center text-center group hover:scale-[1.02] transition-all">
+                <div class="w-20 h-20 bg-orange-100 rounded-2xl flex items-center justify-center text-4xl mb-6 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                    🛠️
+                </div>
+                <h2 class="text-2xl font-black text-slate-900 mb-4">Soy Profesional</h2>
+                <p class="text-slate-500 mb-8 leading-relaxed">
+                    Quiero ofrecer mis servicios y conseguir nuevos clientes.
+                </p>
+                <div class="space-y-4 w-full">
+                    <a href="/ingresar" class="block w-full py-4 bg-orange-600 text-white font-bold rounded-2xl shadow-lg shadow-orange-200 hover:bg-orange-700 transition-all">
+                        Ingresar como Profesional
+                    </a>
+                    <a href="/registro-profesional" class="block w-full py-4 bg-white text-orange-600 font-bold border-2 border-orange-600 rounded-2xl hover:bg-orange-50 transition-all">
+                        Registrarme como Profesional
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</Layout>
+
+<style>
+    body {
+        background-color: #f8fafc;
+    }
+</style>

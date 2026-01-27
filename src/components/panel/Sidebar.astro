@@ -1,32 +1,19 @@
+---
 const { currentPath } = Astro.props;
-import { 
-    LayoutDashboard, 
-    Target, 
-    FileText, 
-    Wallet, 
-    HardHat, 
-    Users, 
-    Shield,
-    LogOut,
-    User,
-    Download,
-    Power,
-    Zap
-} from 'lucide-astro';
 
 const menuItems = [
-    { path: "/panel", icon: LayoutDashboard, label: "Dashboard" },
+    { path: "/panel", icon: "📊", label: "Dashboard" },
     {
         path: "/panel/oportunidades",
-        icon: Target,
+        icon: "🎯",
         label: "Oportunidades",
         badgeId: "badge-oportunidades",
     },
-    { path: "/panel/presupuestos", icon: FileText, label: "Presupuestos" },
-    { path: "/panel/finanzas", icon: Wallet, label: "Finanzas" },
-    { path: "/panel/mi-equipo", icon: HardHat, label: "Mi Equipo" },
-    { path: "/panel/clientes", icon: Users, label: "Clientes" },
-    { path: "/panel/contactos", icon: Shield, label: "Mis Contactos" },
+    { path: "/panel/presupuestos", icon: "📝", label: "Presupuestos" },
+    { path: "/panel/finanzas", icon: "💰", label: "Finanzas" },
+    { path: "/panel/mi-equipo", icon: "👷", label: "Mi Equipo" },
+    { path: "/panel/codigos", icon: "🛡️", label: "Mis Códigos" },
+    { path: "/panel/clientes", icon: "👥", label: "Clientes" },
 ];
 
 const isActive = (path) => {
@@ -36,39 +23,11 @@ const isActive = (path) => {
 };
 ---
 
-<style>
-    .toggle-checkbox:checked {
-        right: 0;
-        border-color: #22c55e;
-    }
-    .toggle-checkbox {
-        right: 50%; /* Inicialmente a la izquierda (con border width considerado en lgica visual custom) */
-        transition: all 0.3s;
-        /* Custom reset */
-        top: 0;
-        bottom: 0;
-    }
-    .toggle-checkbox:checked + .toggle-label {
-        background-color: #22c55e;
-    }
-    /* Fix para el posicionamiento correcto del toggle */
-    .toggle-checkbox {
-        position: absolute;
-        top: 0;
-        left: 0;
-        transition: all 0.3s;
-    }
-    .toggle-checkbox:checked {
-        left: 100%;
-        transform: translateX(-100%);
-    }
-</style>
-
 <aside
-    class="hidden md:flex flex-col w-64 bg-black border-r border-slate-700 h-full">
+    class="hidden md:flex flex-col w-64 bg-black border-r border-slate-700 h-full"
+>
     <div class="h-16 flex items-center px-6 border-b border-slate-700">
-        <a href="/" class="text-xl font-bold text-white flex items-center gap-2">
-            <Zap class="w-6 h-6 text-orange-500" />
+        <a href="/" class="text-xl font-bold text-white">
             DeOficios<span class="text-orange-500">Pro</span>
         </a>
     </div>
@@ -84,14 +43,16 @@ const isActive = (path) => {
                             isActive(item.path)
                                 ? "bg-orange-900/20 text-orange-500"
                                 : "text-gray-400 hover:bg-slate-800 hover:text-white",
-                        ]}>
-                        <item.icon class="w-5 h-5" />
+]}
+                    >
+                        <span class="text-xl">{item.icon}</span>
                         <span
                             class={
                                 isActive(item.path)
                                     ? "font-semibold text-sm"
                                     : "font-medium text-sm"
-                            }>
+}
+                        >
                             {item.label}
                         </span>
                         {item.badgeId && (
@@ -107,7 +68,8 @@ const isActive = (path) => {
 
         <div class="px-6 mt-8 mb-2">
             <h4
-                class="text-xs font-bold text-gray-500 uppercase tracking-wider">
+class="text-xs font-bold text-gray-500 uppercase tracking-wider"
+            >
                 Tu Nivel
             </h4>
         </div>
@@ -116,14 +78,19 @@ const isActive = (path) => {
                 <div class="flex justify-between items-center mb-2">
                     <span
                         id="level-name"
-                        class="font-bold text-sm text-indigo-400">Cargando...</span>
-                    <span id="level-number" class="text-xs text-gray-500">Lvl ?</span>
+class="font-bold text-sm text-indigo-400"
+                        >Cargando...</span
+                    >
+                    <span id="level-number" class="text-xs text-gray-500"
+                        >Lvl ?</span
+                    >
                 </div>
                 <div class="w-full bg-slate-700 rounded-full h-2 mb-2">
                     <div
                         id="level-progress"
                         class="bg-indigo-500 h-2 rounded-full transition-all duration-1000"
-                        style="width: 0%">
+style="width: 0%"
+                    >
                     </div>
                 </div>
                 <p id="level-next" class="text-xs text-gray-500">
@@ -134,132 +101,102 @@ const isActive = (path) => {
     </div>
 
     <div class="mt-auto pt-4 border-t border-slate-700 space-y-2">
-        <!-- SWITCH ONLINE -->
-        <div class="px-3">
-            <label
-                class="flex items-center justify-between p-2 bg-slate-800 rounded-lg cursor-pointer group hover:bg-slate-700 transition">
-                <div class="flex items-center gap-2">
-                    <span id="status-icon" class="text-gray-500 text-xs text-center w-5"></span>
-                    <span id="status-text" class="text-white text-xs font-bold">Offline</span>
-                </div>
-                <div
-                    class="relative inline-block w-10 h-5 align-middle select-none transition duration-200 ease-in">
-                    <input
-                        type="checkbox"
-                        name="toggle"
-                        id="online-toggle"
-                        class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-600"
-                    />
-                    <label
-                        for="online-toggle"
-                        class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-600 cursor-pointer"></label>
-                </div>
-            </label>
-        </div>
-
-        <a
+<a
             href="/mi-perfil"
-            class="flex items-center gap-3 px-3 py-2 w-full text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
-            <User class="w-5 h-5" />
+            class="flex items-center gap-3 px-3 py-2 w-full text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+        >
+            <span>👤</span>
             <span class="font-medium text-sm">Mi Perfil</span>
         </a>
 
         <button
             id="btn-logout"
-            class="flex items-center gap-3 px-3 py-2 w-full text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors text-left">
-            <LogOut class="w-5 h-5" />
-            <span class="font-medium text-sm">Cerrar Sesin</span>
+class="flex items-center gap-3 px-3 py-2 w-full text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors text-left"
+        >
+            <span>🚪</span>
+            <span class="font-medium text-sm">Cerrar Sesión</span>
         </button>
     </div>
 
     <button
         id="btn-install-pwa"
-        class="hidden flex items-center gap-3 px-3 py-2 w-full text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors mt-2">
-        <Download class="w-5 h-5" />
+class="hidden flex items-center gap-3 px-3 py-2 w-full text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:text-white dark:bg-indigo-600 dark:hover:bg-indigo-700 rounded-lg transition-colors mt-2"
+    >
+        <span>📲</span>
         <span class="font-medium text-sm">Instalar App</span>
     </button>
 </aside>
 
 <script>
-    import { auth, db } from "../../firebase/client"; // Import DB
-    import { signOut, onAuthStateChanged } from "firebase/auth";
-    import { doc, updateDoc, getDoc } from "firebase/firestore";
+    import { auth, db } from "../../firebase/client";
+    import { signOut } from "firebase/auth";
+    import { doc, onSnapshot } from "firebase/firestore";
+    import { calculateLevel, getLevelProgress } from "../../utils/gamification";
 
     function setupSidebar() {
+        console.log("🦁 [SIDEBAR] setupSidebar running...");
         const logoutBtn = document.getElementById("btn-logout");
         const installBtn = document.getElementById("btn-install-pwa");
-
-        // ONLINE SWITCH LOGIC
-        const onlineToggle = document.getElementById("online-toggle");
-        const statusText = document.getElementById("status-text");
-        const statusIcon = document.getElementById("status-icon");
-
-        if (onlineToggle) {
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    try {
-                        const userRef = doc(db, "profesionales", user.uid);
-                        const docSnap = await getDoc(userRef);
-                        if (docSnap.exists()) {
-                            const data = docSnap.data();
-                            const isOnline = data.online === true;
-
-                            // Set initial state
-                            onlineToggle.checked = isOnline;
-                            updateStatusUI(isOnline);
-
-                            // Listen for changes
-                            onlineToggle.addEventListener(
-                                "change",
-                                async (e) => {
-                                    const newValue = e.target.checked;
-                                    updateStatusUI(newValue); // Optimistic UI
-                                    try {
-                                        await updateDoc(userRef, {
-                                            online: newValue,
-                                        });
-                                        console.log(
-                                            " Estaso actualizado: ",
-                                            newValue,
-                                        );
-                                    } catch (err) {
-                                        console.error(
-                                            "Error actualizando estado:",
-                                            err,
-                                        );
-                                        // Revert if error
-                                        onlineToggle.checked = !newValue;
-                                        updateStatusUI(!newValue);
-                                        alert(
-                                            "No se pudo actualizar tu estado. Revisa tu conexin.",
-                                        );
-                                    }
-                                },
-                            );
-                        }
-                    } catch (e) {
-                        console.error("Error fetching user status:", e);
-                    }
-                }
-            });
-        }
-
-        function updateStatusUI(isOnline) {
-            if (!statusText || !statusIcon) return;
-            if (isOnline) {
-                statusText.textContent = "EN LNEA";
-                statusText.classList.remove("text-gray-400");
-                statusText.classList.add("text-green-400");
-                statusIcon.textContent = "";
-            } else {
-                statusText.textContent = "OFFLINE";
-                statusText.classList.remove("text-green-400");
-                statusText.classList.add("text-gray-400");
-                statusIcon.textContent = "";
-            }
-        }
+        
+        // Level elements
+        const levelNameEl = document.getElementById("level-name");
+        const levelNumberEl = document.getElementById("level-number");
+        const levelProgressEl = document.getElementById("level-progress");
+        const levelNextEl = document.getElementById("level-next");
 
         let deferredPrompt;
+
+        const syncLevel = (user) => {
+            if (!user) {
+                console.log("⚠️ [SIDEBAR] syncLevel: No user found");
+                return;
+            }
+            console.log("📡 [SIDEBAR] syncLevel: Starting snapshot for", user.uid);
+            
+            onSnapshot(doc(db, "profesionales", user.uid), (snap) => {
+                if (snap.exists()) {
+                    const data = snap.data();
+                    const xp = data.puntos || 0;
+                    console.log("✨ [SIDEBAR] Level data received. Points:", xp);
+                    
+                    const { current, next } = calculateLevel(xp);
+                    const progress = getLevelProgress(xp);
+
+                    if (levelNameEl) levelNameEl.innerText = current.name;
+                    if (levelNumberEl) levelNumberEl.innerText = `Lvl ${current.threshold === 0 ? 1 : Math.floor(xp / 1000) + 1}`;
+                    if (levelProgressEl) levelProgressEl.style.width = `${progress}%`;
+                    
+                    if (levelNextEl) {
+                        if (next) {
+                            const remaining = next.threshold - xp;
+                            levelNextEl.innerText = `Faltan ${remaining} pts para el próximo nivel`;
+                        } else {
+                            levelNextEl.innerText = "¡Nivel Máximo alcanzado! 👑";
+                        }
+                    }
+                } else {
+                    console.warn("❓ [SIDEBAR] syncLevel: Document does not exist for", user.uid);
+                }
+            }, (err) => {
+                console.error("💥 [SIDEBAR] syncLevel error:", err);
+            });
+        };
+
+        // Immediate check + listener
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+            console.log("✅ [SIDEBAR] User found immediately:", currentUser.uid);
+            syncLevel(currentUser);
+        } else {
+            console.log("⏳ [SIDEBAR] No immediate user, waiting for state change...");
+        }
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log("🔄 [SIDEBAR] Auth state ready:", user.uid);
+                syncLevel(user);
+            }
+        });
 
         // Logout
         if (logoutBtn) {
@@ -269,7 +206,7 @@ const isActive = (path) => {
                     await signOut(auth);
                     window.location.href = "/ingresar";
                 } catch (error) {
-                    console.error("Error al cerrar sesin:", error);
+console.error("Error al cerrar sesión:", error);
                 }
             };
         }
@@ -301,4 +238,3 @@ const isActive = (path) => {
     document.addEventListener("astro:page-load", setupSidebar);
     document.addEventListener("astro:after-swap", setupSidebar);
 </script>
-

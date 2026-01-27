@@ -1,11 +1,300 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { db } from "../firebase/client";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { LOCATIONS } from "../data/locations";
+
+// 0. CACHE (Vercel Edge Cache: 10 min)
+Astro.response.headers.set('Cache-Control', 's-maxage=600, stale-while-revalidate=300');
+
+// 1. OBTENER PROFESIONALES (TODOS PARA EL RANKING)
+const snapshot = await getDocs(collection(db, "profesionales"));
+const todos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() as any }));
+
+// 2. NORMALIZACIÓN Y MAPA DE ZONA A PROVINCIA
+const normalize = (t: string) => 
+  t ? t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+
+const zoneToGroup: Record<string, string> = {};
+const allProvinceGroups = LOCATIONS.map(g => g.group);
+
+LOCATIONS.forEach((g) => {
+  const provinceName = g.group;
+  zoneToGroup[normalize(provinceName)] = provinceName;
+  
+  g.zones.forEach((z) => {
+    zoneToGroup[normalize(z)] = provinceName;
+  });
+});
+
+// Mapeos manuales críticos para asegurar cobertura nacional
+const manualMappings: Record<string, string> = {
+    "caba": "Capital Federal (CABA)",
+    "capital federal": "Capital Federal (CABA)",
+    "buenos aires": "Buenos Aires (Interior)",
+    "bs as": "Buenos Aires (Interior)",
+    "gba": "Capital Federal (CABA)",
+    "pba": "Buenos Aires (Interior)",
+    "conurbano": "Capital Federal (CABA)"
+};
+Object.keys(manualMappings).forEach(k => zoneToGroup[normalize(k)] = manualMappings[k]);
+
+// 3. AGRUPAR POR PROVINCIA (Iniciamos con TODAS las de la lista)
+const groupedStructure: Record<string, any[]> = {};
+allProvinceGroups.forEach(p => groupedStructure[p] = []);
+
+todos.forEach((pro) => {
+  const esStaff = pro.rol === "admin" || pro.rol === "moderador" || pro.rol === "moderator";
+  if (esStaff) return; // Seguimos excluyendo staff, pero incluimos is_fake
+
+  const provinces = new Set<string>();
+  const zoneInputs = [pro.zona, ...(pro.zonas || [])].filter(Boolean);
+  
+  zoneInputs.forEach(z => {
+    const normalizedInput = normalize(z);
+    
+    for (const key in zoneToGroup) {
+      if (normalizedInput === key || normalizedInput.includes(key)) {
+        provinces.add(zoneToGroup[key]);
+        return;
+      }
+    }
+  });
+
+  provinces.forEach(province => {
+    if (groupedStructure[province]) {
+      if (!groupedStructure[province].some(p => p.id === pro.id)) {
+        groupedStructure[province].push(pro);
+      }
+    }
+  });
+});
+
+// 4. PROCESAR RANKING FINAL
+const finalRanking: any[] = [];
+// Ordenamos para que CABA y GBA estén arriba en un orden lógico, luego el resto alfabéticamente
+const sortedProvinceNames = allProvinceGroups.sort((a, b) => {
+    const priority: Record<string, number> = {
+        "Capital Federal (CABA)": 1,
+        "Zona Norte (GBA)": 2,
+        "Zona Oeste (GBA)": 3,
+        "Zona Sur (GBA)": 4,
+        "Buenos Aires (Interior)": 5
+    };
+    
+    if (priority[a] && priority[b]) return priority[a] - priority[b];
+    if (priority[a]) return -1;
+    if (priority[b]) return 1;
+    return a.localeCompare(b);
+});
+
+sortedProvinceNames.forEach(provName => {
+    const pros = groupedStructure[provName] || [];
+    pros.sort((a, b) => {
+        const promA = a.promedio || 0;
+        const promB = b.promedio || 0;
+        if (promB !== promA) return promB - promA;
+        return (b.total_votos || 0) - (a.total_votos || 0);
+    });
+    
+    // Top 5 ahora (antes era 10)
+    const top5 = pros.slice(0, 5);
+    finalRanking.push({ province: provName, top5 });
+});
 ---
 
-<Layout title="Top Profesionales - DeOficios">
-    <div class="py-20 text-center">
-        <h1 class="text-4xl font-bold">Pgina en mantenimiento</h1>
-        <p class="text-slate-500 mt-4">Estamos optimizando el ranking.</p>
-    </div>
+<Layout 
+    title="Ranking de Mejores Profesionales | DeOficios"
+    description="Descubrí el podio de los profesionales mejor calificados de cada provincia en Argentina."
+>
+    <main class="min-h-screen bg-slate-50 py-8 px-4 md:px-8">
+        <div class="max-w-6xl mx-auto">
+            
+            <!-- HEADER SECTION -->
+            <div class="text-center mb-8">
+                <span class="inline-block bg-orange-100 text-orange-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-3">
+                    Excelencia Nacional
+                </span>
+                <h1 class="text-3xl md:text-4xl font-black text-slate-900 mb-4 tracking-tight">
+                    🏆 Los Mejores <span class="text-orange-600">por Provincia</span>
+                </h1>
+                <p class="text-slate-500 text-sm max-w-2xl mx-auto font-medium leading-relaxed mb-6">
+                    El podio definitivo: conocé a los expertos mejor calificados según el voto de los vecinos.
+                </p>
+
+                <!-- PROVINCE CHIPS (GLOBITOS) -->
+                <div class="flex flex-wrap justify-center gap-2 mb-8 overflow-x-auto pb-2 no-scrollbar">
+                    <button 
+                        class="province-filter active px-4 py-2 rounded-full border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:border-orange-500 hover:text-orange-600 transition-all shadow-sm whitespace-nowrap"
+                        data-province="all"
+                    >
+                        🌎 Ver Todo
+                    </button>
+                    {sortedProvinceNames.map(p => (
+                        <button 
+                            class="province-filter px-4 py-2 rounded-full border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:border-orange-500 hover:text-orange-600 transition-all shadow-sm whitespace-nowrap"
+                            data-province={p}
+                        >
+                            {p.replace(" (CABA)", "").replace(" (Interior)", "")}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {finalRanking.length === 0 ? (
+                <div class="bg-white rounded-3xl p-12 text-center shadow-xl border border-slate-100">
+                    <span class="text-5xl mb-4 block">🏜️</span>
+                    <h3 class="text-xl font-bold text-slate-800">Aún estamos procesando el podio</h3>
+                    <p class="text-slate-500 mt-2">Pronto aparecerán aquí los mejores puntuados.</p>
+                </div>
+            ) : (
+                <div class="space-y-16" id="ranking-container">
+                    {finalRanking.map((provinceGroup) => (
+                        <section class="province-section transition-all duration-500" data-province-name={provinceGroup.province}>
+                            <div class="flex items-center gap-4 mb-8 border-b-2 border-orange-500 pb-3">
+                                <h2 class="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-tighter">
+                                    {provinceGroup.province}
+                                </h2>
+                                <div class="h-0.5 flex-1 bg-gradient-to-r from-orange-200 to-transparent"></div>
+                            </div>
+
+                            {provinceGroup.top5.length > 0 ? (
+                                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                                    {provinceGroup.top5.map((pro: any, index: number) => (
+                                        <a href={`/perfil?id=${pro.id}`} class="group relative bg-white rounded-xl p-3 shadow-sm border border-slate-100 hover:border-orange-200 hover:shadow-lg transition-all transform hover:-translate-y-0.5 overflow-hidden">
+                                            
+                                            <!-- Badge Podio -->
+                                            <div class={`absolute top-0 right-0 size-8 flex items-center justify-center font-black text-[10px] clip-path-medal
+                                                ${index === 0 ? 'bg-yellow-400 text-yellow-900' : 
+                                                  index === 1 ? 'bg-slate-300 text-slate-600' :
+                                                  index === 2 ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-400'}
+                                            `}>
+                                                {index + 1}
+                                            </div>
+
+                                            <div class="flex flex-col items-center text-center">
+                                                <!-- Image -->
+                                                <div class="size-14 md:size-16 rounded-lg overflow-hidden bg-slate-100 border border-slate-50 mb-2 group-hover:border-orange-100 transition-colors shadow-inner">
+                                                    <img 
+                                                        src={pro.foto || `https://ui-avatars.com/api/?name=${pro.nombre}&background=random`} 
+                                                        alt={pro.nombre}
+                                                        loading="lazy"
+                                                        class="w-full h-full object-cover"
+                                                    />
+                                                </div>
+
+                                                <!-- Info -->
+                                                <div class="w-full">
+                                                    <h4 class="font-black text-[10px] md:text-xs text-slate-900 truncate group-hover:text-orange-600 transition-colors mb-0.5">
+                                                        {pro.nombre}
+                                                    </h4>
+                                                    <p class="text-[8px] font-black text-orange-600 uppercase tracking-tighter mb-0.5">
+                                                        {pro.rubro_principal || "General"}
+                                                    </p>
+                                                    <p class="text-[8px] font-bold text-slate-400 uppercase truncate mb-2">
+                                                        {pro.zona}
+                                                    </p>
+
+                                                    <!-- Rating -->
+                                                    <div class="bg-slate-50 rounded-full py-1 px-2 flex items-center justify-center gap-1.5 border border-slate-100 group-hover:bg-orange-50 group-hover:border-orange-100 transition-colors">
+                                                        <div class="flex items-center text-orange-500 text-[10px]">
+                                                            <span class="font-black">{(pro.promedio || 0).toFixed(1)}</span>
+                                                            <span class="material-symbols-outlined text-[8px] fill-1 ml-0.5">star</span>
+                                                        </div>
+                                                        <div class="w-px h-2 bg-slate-200"></div>
+                                                        <span class="text-[7px] font-black text-slate-400 uppercase">
+                                                            {pro.total_votos || 0} v.
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div class="bg-white/50 rounded-2xl p-8 text-center border border-dashed border-slate-200">
+                                    <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Aún no hay profesionales destacados en esta zona</p>
+                                </div>
+                            )}
+                        </section>
+                    ))}
+                </div>
+            )}
+
+            <!-- CTA SECTION -->
+            <div class="mt-20 bg-slate-900 rounded-[2rem] p-8 md:p-12 text-center relative overflow-hidden shadow-2xl">
+                <div class="absolute inset-0 bg-gradient-to-br from-orange-600/20 to-transparent"></div>
+                <div class="relative z-10">
+                    <h2 class="text-2xl md:text-3xl font-black text-white mb-4">¿Sos el mejor en tu zona?</h2>
+                    <p class="text-slate-400 mb-8 max-w-lg mx-auto text-sm font-medium">
+                        Brindá el mejor servicio, sumá reseñas positivas y destacá en el podio nacional de excelencia.
+                    </p>
+                    <a href="/ingresar" class="inline-block bg-white text-slate-900 px-8 py-3 rounded-full font-black uppercase text-[10px] tracking-widest hover:bg-orange-600 hover:text-white transition-all transform hover:scale-105 active:scale-95 shadow-xl">
+                        Registrar mi Perfil
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </main>
 </Layout>
+
+<script is:inline>
+    // Lógica de filtrado por provincia
+    const chips = document.querySelectorAll('.province-filter');
+    const sections = document.querySelectorAll('.province-section');
+
+    chips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            const province = chip.getAttribute('data-province');
+
+            // Actualizar botones
+            chips.forEach(c => {
+                c.classList.remove('bg-orange-600', 'text-white', 'border-orange-600');
+                c.classList.add('bg-white', 'text-slate-600', 'border-slate-200');
+            });
+            chip.classList.remove('bg-white', 'text-slate-600', 'border-slate-200');
+            chip.classList.add('bg-orange-600', 'text-white', 'border-orange-600');
+
+            // Filtrar secciones
+            sections.forEach(section => {
+                if (province === 'all' || section.getAttribute('data-province-name') === province) {
+                    section.classList.remove('hidden');
+                    // Breve delay para animación si se desea
+                } else {
+                    section.classList.add('hidden');
+                }
+            });
+
+            // Scroll suave hacia arriba si se eligió alguna
+            if (province !== 'all') {
+                window.scrollTo({ top: 150, behavior: 'smooth' });
+            }
+        });
+    });
+</script>
+
+<style>
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .fill-1 {
+        font-variation-settings: 'FILL' 1;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .clip-path-medal {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+    }
+    .province-filter.active {
+        background-color: #ea580c;
+        color: white;
+        border-color: #ea580c;
+    }
+</style>
 

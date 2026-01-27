@@ -11,8 +11,8 @@ import Footer from '../components/Footer.astro';
     <div class="container">
         
         <div class="header-section">
-            <h1>Mis Favoritos </h1>
-            <p>Tus profesionales guardados para contactar rpido.</p>
+<h1>Mis Favoritos ❤️</h1>
+            <p>Tus profesionales guardados para contactar rápido.</p>
         </div>
 
         <div id="favs-grid" class="featured-grid">
@@ -23,9 +23,9 @@ import Footer from '../components/Footer.astro';
         </div>
 
         <div id="empty-state" class="hidden empty-box">
-            <div class="icon"></div>
-            <h3>An no tienes favoritos</h3>
-            <p>Navega por los perfiles y toca el corazn para guardarlos ac.</p>
+<div class="icon">💔</div>
+            <h3>Aún no tienes favoritos</h3>
+            <p>Navega por los perfiles y toca el corazón para guardarlos acá.</p>
             <a href="/resultados?q=todos" class="btn-explore">Explorar Profesionales</a>
         </div>
     </div>
@@ -74,10 +74,10 @@ import Footer from '../components/Footer.astro';
     function crearTarjetaHTML(id, pro) {
         const foto = pro.foto || '';
         const inicial = pro.nombre ? pro.nombre[0] : 'U';
-        const estrellas = ''.repeat(Math.round(pro.promedio || 0));
+const estrellas = '⭐'.repeat(Math.round(pro.promedio || 0));
         const votos = pro.total_votos || 0;
         const esPremium = (pro.plan === 'mensual' || pro.plan === 'semestral');
-        const verificado = pro.verificado ? '' : '';
+        const verificado = pro.verificado ? '✅' : '';
 
         return `
             <a href="/perfil?id=${id}" class="pro-card animate-in">
@@ -92,14 +92,14 @@ import Footer from '../components/Footer.astro';
               <div class="pro-info">
                 <h3>${pro.nombre} ${verificado}</h3>
                 <span class="category">${pro.categoria}</span>
-                <p class="zona"> ${pro.zona || 'Buenos Aires'}</p>
+<p class="zona">📍 ${pro.zona || 'Buenos Aires'}</p>
                 
                 <div class="rating">
                   ${estrellas} <span class="num">(${votos})</span>
                 </div>
                 
                 <button class="btn-remove" onclick="event.preventDefault(); window.borrarFav('${id}')">
-                     Quitar
+🗑️ Quitar
                 </button>
               </div>
             </a>
@@ -107,7 +107,7 @@ import Footer from '../components/Footer.astro';
     }
 
     window.borrarFav = (id) => {
-        if(!confirm("Quitar de favoritos?")) return;
+if(!confirm("¿Quitar de favoritos?")) return;
         let favorites = JSON.parse(localStorage.getItem('my_favorites') || '[]');
         favorites = favorites.filter(favId => favId !== id);
         localStorage.setItem('my_favorites', JSON.stringify(favorites));
@@ -190,4 +190,3 @@ import Footer from '../components/Footer.astro';
   .animate-in { animation: fadeIn 0.5s ease-out; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
-

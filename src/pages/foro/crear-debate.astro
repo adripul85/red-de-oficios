@@ -1,18 +1,41 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 
-// Mapeo de categoras display -> Firebase ID
-const CATEGORY_MAP = {
-    General: "general",
-    Electricidad: "electricidad",
-    Fontanera: "plomeria",
-    Albailera: "albanileria",
-    Jardinera: "jardineria",
-    Herramientas: "herramientas",
-    Presupuestos: "negocios",
-};
-
-const groups = Object.keys(CATEGORY_MAP);
+// Estructura del Foro
+const forumStructure = [
+    {
+        title: "🏠 El Consultorio (Público)",
+        type: "public",
+        categories: [
+            { id: "dudas", name: "Dudas Rápidas" },
+            { id: "presupuestos", name: "Solicitar Presupuesto" },
+            { id: "mantenimiento", name: "Guías y Consejos" },
+            { id: "general", name: "General / Otros" },
+        ]
+    },
+    {
+        title: "🛠️ Por Rubro (Público)",
+        type: "public",
+        categories: [
+            { id: "electricidad", name: "Electricidad" },
+            { id: "plomeria", name: "Fontanería" },
+            { id: "albanileria", name: "Albañilería" },
+            { id: "jardineria", name: "Jardinería" },
+            { id: "aire-acondicionado", name: "Climatización" },
+            { id: "herramientas", name: "Herramientas" }, 
+        ]
+    },
+    {
+        title: "👷 El Recreo (Solo Pros)",
+        type: "private",
+        categories: [
+            { id: "proveedores", name: "Proveedores" },
+            { id: "herramientas_pro", name: "Herramientas Pro" },
+            { id: "negocios", name: "Negocio y Precios" },
+            { id: "offtopic_pro", name: "La Obra (Off-Topic)" }
+        ]
+    }
+];
 ---
 
 <Layout title="Iniciar nuevo debate - Oficios">
@@ -25,12 +48,15 @@ const groups = Object.keys(CATEGORY_MAP);
 
     <div class="bg-[#F8FAFC] min-h-screen font-sans py-8">
         <div
-            class="max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-8">
+class="max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-8"
+        >
             <main class="lg:col-span-8">
                 <div class="mb-6">
                     <a
                         href="/foro"
-                        class="text-sm text-slate-400 hover:text-[#FF5A5F] mb-2 inline-block"> Volver a la comunidad</a>
+class="text-sm text-slate-400 hover:text-[#FF5A5F] mb-2 inline-block"
+                        >← Volver a la comunidad</a
+                    >
                     <h1 class="text-3xl md:text-4xl font-serif text-slate-800">
                         Iniciar un nuevo debate
                     </h1>
@@ -38,31 +64,45 @@ const groups = Object.keys(CATEGORY_MAP);
 
                 <form
                     id="create-debate-form"
-                    class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
+class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8"
+                >
                     <div class="mb-6">
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">
-                            En qu grupo quieres publicar? <span
-                                class="text-[#FF5A5F]">*</span>
+                            class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide"
+                        >
+                            ¿En qué grupo quieres publicar? <span
+                                class="text-[#FF5A5F]">*</span
+                            >
                         </label>
                         <div class="relative">
                             <select
                                 id="category"
                                 required
-                                class="w-full appearance-none bg-slate-50 border border-slate-300 text-slate-700 py-3 px-4 pr-8 rounded-lg focus:outline-none focus:border-[#FF5A5F] focus:ring-1 focus:ring-[#FF5A5F] cursor-pointer font-medium">
-                                <option value="" disabled selected>Selecciona un grupo...</option>
+class="w-full appearance-none bg-slate-50 border border-slate-300 text-slate-700 py-3 px-4 pr-8 rounded-lg focus:outline-none focus:border-[#FF5A5F] focus:ring-1 focus:ring-[#FF5A5F] cursor-pointer font-medium"
+                            >
+                                <option value="" disabled selected
+                                    >Selecciona un grupo...</option
+                                >
                                 {
-                                    groups.map((group) => (
-                                        <option value={group}>{group}</option>
+                                    forumStructure.map((group) => (
+                                        <optgroup label={group.title}>
+                                            {group.categories.map((cat) => (
+                                                <option value={cat.id}>
+                                                    {cat.name} {group.type === 'private' ? '(Privado)' : ''}
+                                                </option>
+                                            ))}
+                                        </optgroup>
                                     ))
                                 }
                             </select>
                             <div
-                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500"
+                            >
                                 <svg
                                     class="w-5 h-5"
                                     fill="currentColor"
-                                    viewBox="0 0 20 20">
+                                    viewBox="0 0 20 20"
+                                >
                                     <path
                                         fill-rule="evenodd"
                                         d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
@@ -74,8 +114,11 @@ const groups = Object.keys(CATEGORY_MAP);
 
                     <div class="mb-6">
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">
-                            Ttulo del debate <span class="text-[#FF5A5F]">*</span>
+class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide"
+                        >
+                            Título del debate <span class="text-[#FF5A5F]"
+                                >*</span
+                            >
                         </label>
                         <input
                             type="text"
@@ -83,17 +126,18 @@ const groups = Object.keys(CATEGORY_MAP);
                             required
                             minlength="10"
                             maxlength="100"
-                            placeholder="Ej: Cul es la mejor manera de impermeabilizar una terraza?"
+placeholder="Ej: ¿Cuál es la mejor manera de impermeabilizar una terraza?"
                             class="w-full bg-slate-50 border border-slate-300 text-slate-700 py-3 px-4 rounded-lg focus:outline-none focus:border-[#FF5A5F] focus:ring-1 focus:ring-[#FF5A5F] placeholder:text-slate-400"
                         />
                         <p class="text-xs text-slate-400 mt-2 text-right">
-                            Mnimo 10 caracteres
+                            Mínimo 10 caracteres
                         </p>
                     </div>
 
                     <div class="mb-6">
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">
+class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide"
+                        >
                             Tu mensaje <span class="text-[#FF5A5F]">*</span>
                         </label>
 
@@ -103,15 +147,17 @@ const groups = Object.keys(CATEGORY_MAP);
                             required
                             minlength="20"
                             class="w-full p-4 bg-slate-50 border border-slate-300 text-slate-700 rounded-lg focus:outline-none focus:border-[#FF5A5F] focus:ring-1 focus:ring-[#FF5A5F] resize-y min-h-[200px]"
-                            placeholder="Explica tu duda o comparte tu experiencia aqu. Cuantos ms detalles des, mejor te podrn ayudar..."></textarea>
+placeholder="Explica tu duda o comparte tu experiencia aquí. Cuantos más detalles des, mejor te podrán ayudar..."
+                        ></textarea>
                         <p class="text-xs text-slate-400 mt-2 text-right">
-                            Mnimo 20 caracteres
+                            Mínimo 20 caracteres
                         </p>
                     </div>
 
                     <div class="mb-8">
                         <label
-                            class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">
+class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide"
+                        >
                             Fotos (Opcional)
                         </label>
                         <input
@@ -123,24 +169,32 @@ const groups = Object.keys(CATEGORY_MAP);
                         />
                         <div
                             id="upload-area"
-                            class="border-2 border-dashed border-slate-300 rounded-lg p-6 flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-[#FF5A5F] transition-colors cursor-pointer bg-slate-50/50">
+class="border-2 border-dashed border-slate-300 rounded-lg p-6 flex flex-col items-center justify-center text-slate-400 hover:bg-slate-50 hover:border-[#FF5A5F] transition-colors cursor-pointer bg-slate-50/50"
+                        >
                             <svg
                                 class="w-8 h-8 mb-2 opacity-50"
                                 fill="none"
                                 stroke="currentColor"
-                                viewBox="0 0 24 24">
+viewBox="0 0 24 24"
+                            >
                                 <path
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     stroke-width="2"
-                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                ></path>
                             </svg>
-                            <span class="text-sm font-medium">Haz clic para subir fotos o arrstralas aqu</span>
-                            <span class="text-xs opacity-70 mt-1">JPG, PNG hasta 5MB</span>
+                            <span class="text-sm font-medium"
+                                >Haz clic para subir fotos o arrástralas aquí</span
+                            >
+                            <span class="text-xs opacity-70 mt-1"
+                                >JPG, PNG hasta 5MB</span
+                            >
                         </div>
                         <div
                             id="preview-container"
-                            class="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+                            class="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4"
+                        >
                         </div>
                     </div>
 
@@ -153,20 +207,25 @@ const groups = Object.keys(CATEGORY_MAP);
                         />
                         <label
                             for="notify"
-                            class="text-sm text-slate-600 cursor-pointer select-none">
-                            Avsame por email cuando alguien responda
+class="text-sm text-slate-600 cursor-pointer select-none"
+                        >
+                            Avísame por email cuando alguien responda
                         </label>
                     </div>
 
                     <div
-                        class="flex flex-col-reverse sm:flex-row items-center justify-end gap-4">
+class="flex flex-col-reverse sm:flex-row items-center justify-end gap-4"
+                    >
                         <a
                             href="/foro"
-                            class="text-slate-500 font-bold hover:text-slate-800 px-4 py-2 transition-colors">Cancelar</a>
+                            class="text-slate-500 font-bold hover:text-slate-800 px-4 py-2 transition-colors"
+                            >Cancelar</a
+                        >
                         <button
                             type="submit"
                             id="submit-btn"
-                            class="w-full sm:w-auto bg-[#FF5A5F] hover:bg-[#ff4146] text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-rose-100 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
+                            class="w-full sm:w-auto bg-[#FF5A5F] hover:bg-[#ff4146] text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-rose-100 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
                             Publicar debate
                         </button>
                     </div>
@@ -175,12 +234,14 @@ const groups = Object.keys(CATEGORY_MAP);
 
             <aside class="lg:col-span-4 space-y-6">
                 <div
-                    class="bg-blue-50 border border-blue-100 rounded-xl p-6 text-blue-900">
+class="bg-blue-50 border border-blue-100 rounded-xl p-6 text-blue-900"
+                >
                     <div class="flex items-center gap-2 mb-4 text-blue-600">
                         <svg
                             class="w-6 h-6"
                             fill="currentColor"
-                            viewBox="0 0 20 20">
+viewBox="0 0 20 20"
+                        >
                             <path
                                 fill-rule="evenodd"
                                 d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
@@ -192,52 +253,69 @@ const groups = Object.keys(CATEGORY_MAP);
                     </div>
                     <ul class="space-y-3 text-sm leading-relaxed opacity-90">
                         <li class="flex gap-2">
-                            <span></span>
-                            <span><strong>Busca antes de preguntar:</strong> Es posible
-                                que alguien ya haya resuelto tu duda.</span>
+<span>•</span>
+                            <span
+                                ><strong>Busca antes de preguntar:</strong> Es posible
+                                que alguien ya haya resuelto tu duda.</span
+                            >
                         </li>
                         <li class="flex gap-2">
-                            <span></span>
-                            <span><strong>S especfico:</strong> Un ttulo claro ayuda
-                                a que los expertos entren a responder.</span>
+                            <span>•</span>
+                            <span
+                                ><strong>Sé específico:</strong> Un título claro ayuda
+                                a que los expertos entren a responder.</span
+                            >
                         </li>
                         <li class="flex gap-2">
-                            <span></span>
-                            <span><strong>Elige el grupo correcto:</strong> Si es sobre
-                                cables, ponlo en "Electricidad".</span>
+                            <span>•</span>
+                            <span
+                                ><strong>Elige el grupo correcto:</strong> Si es sobre
+                                cables, ponlo en "Electricidad".</span
+                            >
                         </li>
                     </ul>
                 </div>
 
                 <div
-                    class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm"
+                >
                     <h3
-                        class="font-serif font-bold text-slate-800 mb-4 flex items-center gap-2">
-                        <span></span> Normas de la comunidad
+                        class="font-serif font-bold text-slate-800 mb-4 flex items-center gap-2"
+                    >
+                        <span>📜</span> Normas de la comunidad
                     </h3>
                     <ul
-                        class="space-y-3 text-sm text-slate-600 leading-relaxed mb-6">
+                        class="space-y-3 text-sm text-slate-600 leading-relaxed mb-6"
+                    >
                         <li class="flex gap-2">
-                            <span class="text-green-500 font-bold"></span>
-                            <span>S respetuoso y amable con todos los miembros.</span>
+                            <span class="text-green-500 font-bold">✓</span>
+                            <span
+                                >Sé respetuoso y amable con todos los miembros.</span
+                            >
                         </li>
                         <li class="flex gap-2">
-                            <span class="text-green-500 font-bold"></span>
-                            <span>Aporta valor: respuestas tiles y
-                                constructivas.</span>
+                            <span class="text-green-500 font-bold">✓</span>
+                            <span
+                                >Aporta valor: respuestas útiles y
+                                constructivas.</span
+                            >
                         </li>
                         <li class="flex gap-2">
-                            <span class="text-red-500 font-bold"></span>
-                            <span>No hagas spam ni autopromocin excesiva.</span>
+                            <span class="text-red-500 font-bold">✗</span>
+                            <span>No hagas spam ni autopromoción excesiva.</span
+                            >
                         </li>
                         <li class="flex gap-2">
-                            <span class="text-red-500 font-bold"></span>
-                            <span>Evita temas polticos o religiosos polmicos.</span>
+                            <span class="text-red-500 font-bold">✗</span>
+                            <span
+                                >Evita temas políticos o religiosos polémicos.</span
+                            >
                         </li>
                     </ul>
                     <a
                         href="/foro/reglas"
-                        class="block w-full text-center bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold py-3 rounded-lg border border-slate-200 transition-colors text-sm">
+class="block w-full text-center bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold py-3 rounded-lg border border-slate-200 transition-colors text-sm"
+                    >
                         Leer reglamento completo
                     </a>
                 </div>
@@ -293,31 +371,23 @@ const groups = Object.keys(CATEGORY_MAP);
 </style>
 
 <script>
+
     import { auth, db, storage } from "../../firebase/client";
     import { onAuthStateChanged } from "firebase/auth";
     import { collection, addDoc, serverTimestamp } from "firebase/firestore";
     import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-    const CATEGORY_MAP = {
-        General: "general",
-        Electricidad: "electricidad",
-        Fontanera: "plomeria",
-        Albailera: "albanileria",
-        Jardinera: "jardineria",
-        Herramientas: "herramientas",
-        Presupuestos: "negocios",
-    };
 
     document.addEventListener("astro:page-load", () => {
-        console.log(" [FORO-NUEVO] Pgina cargada/navegada");
+console.log("🚀 [FORO-NUEVO] Página cargada/navegada");
 
         let currentUser = null;
         let selectedFiles: File[] = [];
 
-        // Verificar autenticacin
+// Verificar autenticación
         onAuthStateChanged(auth, (user) => {
             if (!user) {
-                alert(" Debes iniciar sesin para crear debates");
+                alert("⚠️ Debes iniciar sesión para crear debates");
                 window.location.href = "/ingresar";
                 return;
             }
@@ -359,20 +429,20 @@ const groups = Object.keys(CATEGORY_MAP);
         });
 
         function handleFiles(files: File[]) {
-            // Filtrar solo imgenes y limitar a 5MB
+// Filtrar solo imágenes y limitar a 5MB
             const validFiles = files.filter((file) => {
                 if (!file.type.startsWith("image/")) {
-                    alert(`${file.name} no es una imagen vlida`);
+                    alert(`${file.name} no es una imagen válida`);
                     return false;
                 }
                 if (file.size > 5 * 1024 * 1024) {
-                    alert(`${file.name} es demasiado grande (mx 5MB)`);
+                    alert(`${file.name} es demasiado grande (máx 5MB)`);
                     return false;
                 }
                 return true;
             });
 
-            selectedFiles = [...selectedFiles, ...validFiles].slice(0, 5); // Mximo 5 fotos
+selectedFiles = [...selectedFiles, ...validFiles].slice(0, 5); // Máximo 5 fotos
             updatePreview();
         }
 
@@ -395,7 +465,7 @@ const groups = Object.keys(CATEGORY_MAP);
                 `;
                     previewContainer.appendChild(div);
 
-                    // Botn eliminar
+// Botón eliminar
                     div.querySelector("button")?.addEventListener(
                         "click",
                         () => {
@@ -420,7 +490,7 @@ const groups = Object.keys(CATEGORY_MAP);
             e.preventDefault();
 
             if (!currentUser) {
-                alert(" Debes iniciar sesin");
+alert("⚠️ Debes iniciar sesión");
                 return;
             }
 
@@ -444,7 +514,7 @@ const groups = Object.keys(CATEGORY_MAP);
             }
 
             if (title.length < 10) {
-                alert("El ttulo debe tener al menos 10 caracteres");
+alert("El título debe tener al menos 10 caracteres");
                 return;
             }
 
@@ -453,23 +523,23 @@ const groups = Object.keys(CATEGORY_MAP);
                 return;
             }
 
-            const category = CATEGORY_MAP[categoryDisplay];
+            const category = categoryDisplay;
             if (!category) {
-                alert("Categora no vlida");
+                alert("Categoría no válida");
                 return;
             }
 
-            // Deshabilitar botn
+            // Deshabilitar botón
             submitBtn.disabled = true;
             submitBtn.textContent = "Publicando...";
 
             try {
-                // Subir imgenes si hay (opcional, no bloquea si falla)
+// Subir imágenes si hay (opcional, no bloquea si falla)
                 const imageUrls: string[] = [];
 
                 if (selectedFiles.length > 0) {
                     console.log(
-                        ` Intentando subir ${selectedFiles.length} imgenes...`,
+`📸 Intentando subir ${selectedFiles.length} imágenes...`,
                     );
 
                     for (const file of selectedFiles) {
@@ -480,10 +550,10 @@ const groups = Object.keys(CATEGORY_MAP);
                             const downloadURL =
                                 await getDownloadURL(storageRef);
                             imageUrls.push(downloadURL);
-                            console.log(` Imagen subida: ${file.name}`);
+console.log(`✅ Imagen subida: ${file.name}`);
                         } catch (imgError) {
                             console.warn(
-                                ` No se pudo subir ${file.name}:`,
+                                `⚠️ No se pudo subir ${file.name}:`,
                                 imgError,
                             );
                             // Continuar sin esta imagen
@@ -492,10 +562,10 @@ const groups = Object.keys(CATEGORY_MAP);
 
                     if (imageUrls.length === 0 && selectedFiles.length > 0) {
                         console.warn(
-                            " No se pudieron subir las imgenes, continuando sin ellas",
+"⚠️ No se pudieron subir las imágenes, continuando sin ellas",
                         );
                         alert(
-                            " No se pudieron subir las imgenes (verifica permisos de Storage), pero tu debate se publicar sin fotos.",
+                            "⚠️ No se pudieron subir las imágenes (verifica permisos de Storage), pero tu debate se publicará sin fotos.",
                         );
                     }
                 }
@@ -517,16 +587,15 @@ const groups = Object.keys(CATEGORY_MAP);
                     isOfficial: false,
                 });
 
-                console.log(" Thread creado:", docRef.id);
-                alert(" Debate publicado exitosamente!");
+console.log("✅ Thread creado:", docRef.id);
+                alert("✅ ¡Debate publicado exitosamente!");
                 window.location.href = `/foro/${docRef.id}`;
             } catch (error) {
-                console.error(" Error al publicar:", error);
-                alert(" Error al publicar el debate: " + error.message);
+                console.error("❌ Error al publicar:", error);
+                alert("❌ Error al publicar el debate: " + error.message);
                 submitBtn.disabled = false;
                 submitBtn.textContent = "Publicar debate";
             }
         });
     }); // End of astro:page-load
 </script>
-

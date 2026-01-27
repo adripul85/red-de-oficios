@@ -40,7 +40,7 @@ service cloud.firestore {
       allow update: if isOwner(userId) || isStaff() || (
         isSignedIn() && 
         request.resource.data.diff(resource.data).affectedKeys()
-        .hasOnly(['promedio', 'total_votos', 'vistas_perfil', 'contactos_whatsapp', 'likes', 'portfolio', 'servicios_lista'])
+        .hasOnly(['promedio', 'total_votos', 'puntuacion', 'total_valoraciones', 'suma_puntuacion', 'vistas_perfil', 'contactos_whatsapp', 'likes', 'portfolio', 'servicios_lista'])
       );
       
       // Borrar: Solo Admin
@@ -52,6 +52,7 @@ service cloud.firestore {
         allow create: if isSignedIn();
         allow delete: if isStaff() || (isSignedIn() && request.auth.uid == resource.data.clienteId);
       }
+
 
       // Presupuestos
       match /presupuestos/{presupuestoId} {
@@ -88,11 +89,40 @@ service cloud.firestore {
       match /fcmTokens/{tokenId} {
         allow read, write: if isOwner(userId);
       }
+
+
+      // Códigos de Seguridad
+      match /codigos/{codigoId} {
+        // Get individual code: Professional or client owner
+        allow get: if isOwner(userId) || (isSignedIn() && resource.data.clienteId == request.auth.uid);
+        // List/query codes: Professional can list their own, client can list all (will filter by clienteId in query)
+        allow list: if isOwner(userId) || isSignedIn();
+        // Client can create a code when accepting a quote
+        allow create: if isSignedIn();
+        // Professional, client owner, or admin can update/delete
+        allow update, delete: if isOwner(userId) || (isSignedIn() && resource.data.clienteId == request.auth.uid) || isStaff();
+      }
     }
 
     // --- 2. CLIENTES ---
     match /clientes/{userId} {
       allow read, write: if isOwner(userId) || isStaff();
+
+      // Favoritos del cliente
+      match /favoritos/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // Notificaciones de cliente
+      match /notificaciones/{notificationId} {
+        allow read, update, delete: if isOwner(userId);
+        allow create: if isSignedIn(); // Permitir que profesionales o el sistema creen
+      }
+
+      // Tokens FCM (Push Notifications) del cliente
+      match /fcmTokens/{tokenId} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     // --- 3. FORO (COMUNIDAD) ---
@@ -131,10 +161,14 @@ service cloud.firestore {
       allow read, write: if isStaff();
     }
 
-    // --- 5. PERMITIR collectionGroup en resenas ---
+    // --- 5. PERMITIR collectionGroup en resenas y reseñas ---
     match /{path=**}/resenas/{reviewId} {
       allow read: if true;
     }
+    // match /{path=**}/reseñas/{reviewId} {
+    //   allow read: if true;
+    // }
+
 
     // --- 6. OTROS ---
     match /blog/{postId} { 
@@ -177,13 +211,13 @@ service cloud.firestore {
       // 1. El cliente que creó la solicitud
       // 2. Profesionales que están en la lista de candidatos
       // 3. Admin/Staff
-      // 4. NUEVO: Cualquier profesional logueado puede SOLO actualizar contactadosPor/descartadosPor (postulación espontánea)
+      // 4. NUEVO: Cualquier profesional logueado puede SOLO actualizar contactadosPor/descartadosPor/presupuestadosPor/eliminadosPor
       allow update: if isSignedIn() && (
         request.auth.uid == resource.data.clienteId ||
         request.auth.uid in resource.data.candidatos ||
         isStaff() ||
-        // Permitir que cualquier profesional actualice SOLO los arrays de contacto/descarte
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['contactadosPor', 'descartadosPor']))
+        // Permitir que cualquier profesional actualice SOLO los arrays de contacto/descarte/presupuesto
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['contactadosPor', 'descartadosPor', 'presupuestadosPor', 'eliminadosPor']))
       );
       
       // Eliminar: Solo el cliente o admin
@@ -191,29 +225,45 @@ service cloud.firestore {
         request.auth.uid == resource.data.clienteId ||
         isStaff()
       );
+      
+      // Subcolección de Propuestas (Presupuestos de profesionales)
+      match /propuestas/{propuestaId} {
+        // Leer: Cualquier usuario logueado puede ver propuestas
+        allow read: if isSignedIn();
+        
+        // Crear: Cualquier profesional logueado puede crear propuesta
+        allow create: if isSignedIn();
+        
+        // Actualizar: Solo el profesional que creó la propuesta o admin
+        allow update: if isSignedIn() && (
+          resource.data.proId == request.auth.uid ||
+          isStaff()
+        );
+        
+        // Eliminar: El profesional que la creó, el cliente dueño de la solicitud, o admin
+        allow delete: if isSignedIn() && (
+          resource.data.proId == request.auth.uid ||
+          get(/databases/$(database)/documents/solicitudes/$(solicitudId)).data.clienteId == request.auth.uid ||
+          isStaff()
+        );
+      }
     }
 
     // --- 8. CONTACTOS Y SEGURIDAD ---
     match /contactos/{contactoId} {
-      // 1. GET (Leer un documento específico): Si soy cliente o pro en ese doc
-      allow get: if isSignedIn() && (
+      // Permitir leer si el usuario es el cliente o el profesional
+      allow read: if isSignedIn() && (
         resource.data.clienteId == request.auth.uid || 
         resource.data.proId == request.auth.uid
       );
       
-      // 2. LIST (Queries): 
-      // Si la query filtra puramente por mi ID.
-      allow list: if isSignedIn() && (
-          resource.data.clienteId == request.auth.uid || 
-          resource.data.proId == request.auth.uid
-      );
-
-      // Crear: Cualquier usuario
-      allow create: if true;
-      // Actualizar: El profesional (para marcar como visto) o Admin
+      // Crear: Cualquier usuario puede crear (al contactar)
+      allow create: if isSignedIn();
+      
+      // Actualizar: El profesional o Admin
       allow update: if isStaff() || (isSignedIn() && request.auth.uid == resource.data.proId);
       
-      // Eliminar: Si soy participante (cliente o pro)
+      // Eliminar: Si soy participante
       allow delete: if isSignedIn() && (
         resource.data.clienteId == request.auth.uid || 
         resource.data.proId == request.auth.uid
@@ -225,10 +275,20 @@ service cloud.firestore {
       allow read: if isStaff();
     }
 
+    // --- 10. FAVORITOS ---
+    match /favoritos/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
     // --- 9. NEWSLETTER ---
     match /newsletter/{subId} {
       allow create: if true;
       allow read, delete: if isStaff();
+    }
+    
+    match /newsletter_campaigns/{campId} {
+      allow read: if isStaff();
+      allow create: if isStaff(); // Client side logic currently saves it
     }
 
     // --- ESTA LÍNEA DEBE ESTAR AL FINAL (Bloqueo por defecto) ---

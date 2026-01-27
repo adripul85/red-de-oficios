@@ -25,32 +25,39 @@ const {
     services = [],
     whatsappUrl = "#",
     bio = "",
-    experience = "Ms de 10 aos",
+experience = "Más de 10 años",
 
-    category = "Hogar & Construccin",
+    category = "Hogar & Construcción",
     tags = [],
 } = Astro.props;
 ---
 
 <div
-    class="max-w-[360px] w-full mx-auto bg-white rounded-[40px] overflow-hidden shadow-2xl font-sans relative border-slate-100 border-[1px] my-4">
-    <!-- Contenedor de Imagen con altura rgida -->
+class="max-w-[360px] w-full mx-auto bg-white rounded-[40px] overflow-hidden shadow-2xl font-sans relative border-slate-100 border-[1px] my-4"
+>
+    <!-- Contenedor de Imagen con altura rígida -->
     <div
-        class="relative w-full h-[320px] max-h-[320px] overflow-hidden bg-slate-200">
+        class="relative w-full h-[320px] max-h-[320px] overflow-hidden bg-slate-200"
+    >
         <!-- Botones Superiores -->
         <div
-            class="absolute top-6 left-6 right-6 flex justify-between z-30 pointer-events-none">
+            class="absolute top-6 left-6 right-6 flex justify-between z-30 pointer-events-none"
+        >
             <button
                 class="w-10 h-10 bg-white/60 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/40 shadow-sm hover:bg-white/80 transition-all active:scale-95 pointer-events-auto"
-                onclick="history.back()">
-                <span class="text-slate-900 font-bold text-lg"></span>
+                onclick="history.back()"
+            >
+                <span class="text-slate-900 font-bold text-lg">←</span>
             </button>
             <div class="flex gap-2">
                 <!-- Powered By Capsule -->
                 <div
-                    class="bg-slate-900/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 flex items-center shadow-sm">
+class="bg-slate-900/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 flex items-center shadow-sm"
+                >
                     <span
-                        class="text-[8px] font-bold text-white uppercase tracking-widest whitespace-nowrap">Powered by De Oficios</span>
+                        class="text-[8px] font-bold text-white uppercase tracking-widest whitespace-nowrap"
+                        >Powered by De Oficios</span
+                    >
                 </div>
             </div>
         </div>
@@ -63,53 +70,65 @@ const {
             style="height: 320px !important; min-height: 320px !important;"
         />
 
-        <!-- Overlay Gradiente Blanco (FADE) para transicin suave al contenido -->
+<!-- Overlay Gradiente Blanco (FADE) para transición suave al contenido -->
         <div
-            class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/80 to-transparent z-20 pointer-events-none">
+            class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white via-white/80 to-transparent z-20 pointer-events-none"
+        >
         </div>
 
         <!-- Overlay Gradiente Texto (Sombra para legibilidad) -->
         <div
-            class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent z-10 pointer-events-none">
+class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent z-10 pointer-events-none"
+        >
         </div>
 
-        <!-- Informacin sobre la imagen -->
+        <!-- Información sobre la imagen -->
         <div
-            class="absolute bottom-6 left-6 right-6 z-30 text-white pointer-events-none">
+            class="absolute bottom-6 left-6 right-6 z-30 text-white pointer-events-none"
+        >
             <div class="flex items-center gap-2 mb-2">
                 <span
-                    class="bg-slate-900/90 backdrop-blur-sm text-white text-[9px] px-3 py-1 rounded-full font-bold uppercase tracking-widest">
+                    class="bg-slate-900/90 backdrop-blur-sm text-white text-[9px] px-3 py-1 rounded-full font-bold uppercase tracking-widest"
+                >
                     Profesional
                 </span>
                 <span
-                    class="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-md border border-white/10">
-                     {rating}
+                    class="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-md border border-white/10"
+                >
+                    ★ {rating}
                 </span>
             </div>
             <h1
-                class="text-2xl font-black tracking-tight mb-0.5 drop-shadow-md text-white">
+                class="text-2xl font-black tracking-tight mb-0.5 drop-shadow-md text-white"
+            >
                 {name}
             </h1>
             <p class="text-white/90 font-medium text-xs">
-                {role}  <span class="text-white font-bold">{location}</span>
+                {role} • <span class="text-white font-bold">{location}</span>
             </p>
         </div>
     </div>
 
-    <!-- Seccin de contenido inferior -->
+<!-- Sección de contenido inferior -->
     <div class="bg-white relative z-30 p-6 pb-8 -mt-2">
         <!-- Detalles adicionales -->
         <div class="flex justify-center gap-4 mb-6">
             <div class="flex flex-col items-center">
                 <span
-                    class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">Categora</span>
+class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1"
+                    >Categoría</span
+                >
                 <span class="text-xs font-bold text-slate-700">{category}</span>
             </div>
             <div class="w-[1px] h-8 bg-slate-100"></div>
             <div class="flex flex-col items-center">
                 <span
-                    class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">Experiencia</span>
-                <span class="text-xs font-bold text-slate-700">{experience || "Varios aos"}</span>
+class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1"
+                    >Experiencia</span
+                >
+                <span class="text-xs font-bold text-slate-700"
+                    >{experience || "Varios años"}</span
+                >
             </div>
         </div>
 
@@ -140,7 +159,9 @@ const {
                 Servicios disponibles
             </h3>
             <span
-                class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Select</span>
+class="text-[10px] font-black text-slate-300 uppercase tracking-widest"
+                >Select</span
+            >
         </div>
 
         <!-- Grid de Servicios -->
@@ -153,7 +174,8 @@ const {
                                 index === 0
                                     ? "bg-slate-900 border-slate-900 text-white shadow-xl scale-[1.02]"
                                     : "bg-slate-50 border-slate-50 text-slate-500"
-                            }`}>
+}`}
+                        >
                             <span class="text-2xl mb-1">{service.icon}</span>
                             <span class="text-[10px] font-bold uppercase tracking-wider text-center">
                                 {service.label}
@@ -168,13 +190,14 @@ const {
             }
         </div>
 
-        <!-- Botn de Accin Principal -->
+<!-- Botón de Acción Principal -->
         <a
             href={whatsappUrl}
             target="_blank"
-            class="flex items-center justify-center w-full bg-slate-900 text-white py-5 rounded-[2rem] font-bold text-sm shadow-[0_15px_30px_rgba(0,0,0,0.2)] hover:bg-black transition-all active:scale-95 gap-3">
+            class="flex items-center justify-center w-full bg-slate-900 text-white py-5 rounded-[2rem] font-bold text-sm shadow-[0_15px_30px_rgba(0,0,0,0.2)] hover:bg-black transition-all active:scale-95 gap-3"
+        >
             Contactar por WhatsApp
-            <span class="text-xl"></span>
+            <span class="text-xl">→</span>
         </a>
 
         <!-- Footer del Card -->
@@ -182,13 +205,14 @@ const {
             <div class="flex items-center gap-3 w-full">
                 <div class="h-[1px] flex-1 bg-slate-100"></div>
                 <p
-                    class="text-[10px] text-slate-300 font-bold uppercase tracking-[0.2em]">
+class="text-[10px] text-slate-300 font-bold uppercase tracking-[0.2em]"
+                >
                     {priceInfo}
                 </p>
                 <div class="h-[1px] flex-1 bg-slate-100"></div>
             </div>
             <p class="text-[9px] text-slate-400 font-medium">
-                 2026 DeOficios Argentina
+© 2026 DeOficios Argentina
             </p>
         </div>
     </div>
@@ -211,4 +235,3 @@ const {
         display: block;
     }
 </style>
-

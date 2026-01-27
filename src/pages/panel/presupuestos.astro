@@ -1,4 +1,4 @@
----
+﻿---
 import { auth, db } from "../../firebase/client";
 import Sidebar from "../../components/panel/Sidebar.astro";
 import MobileSidebar from "../../components/panel/MobileSidebar.astro";
@@ -9,7 +9,8 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         <!-- Google tag (gtag.js) -->
         <script
             async
-            src="https://www.googletagmanager.com/gtag/js?id=G-LG6RPRWWDY"></script>
+src="https://www.googletagmanager.com/gtag/js?id=G-LG6RPRWWDY"
+        ></script>
         <script is:inline>
             window.dataLayer = window.dataLayer || [];
             function gtag() {
@@ -29,9 +30,11 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
             rel="stylesheet"
         />
         <script
-            src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        ></script>
         <script
-            src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+            src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        ></script>
         <style>
             body {
                 font-family: "Inter", sans-serif;
@@ -71,7 +74,8 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         (handled
         by
         component)
-        -->
+--
+    >
         <div class="flex h-screen overflow-hidden">
             <!-- SIDEBARS -->
             <Sidebar currentPath={Astro.url.pathname} />
@@ -79,17 +83,22 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
             <!-- MAIN CONTENT -->
             <main
-                class="flex-1 flex flex-col h-screen overflow-hidden relative">
+class="flex-1 flex flex-col h-screen overflow-hidden relative"
+            >
                 <header
-                    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10">
-                    <button id="open-sidebar" class="md:hidden text-2xl mr-4"></button>
+                    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10"
+                >
+                    <button id="open-sidebar" class="md:hidden text-2xl mr-4"
+                        >☰</button
+                    >
                     <h2 class="text-lg font-bold text-slate-800">
                         Gestor de Presupuestos
                     </h2>
                     <div class="flex items-center gap-4">
                         <button
                             id="btn-nuevo"
-                            class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2">
+class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2"
+                        >
                             <span>+</span> Nuevo Presupuesto
                         </button>
                     </div>
@@ -99,25 +108,29 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     <!-- LOADING STATE -->
                     <div
                         id="loading-state"
-                        class="flex justify-center items-center h-64">
+class="flex justify-center items-center h-64"
+                    >
                         <div
-                            class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600">
+                            class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"
+                        >
                         </div>
                     </div>
 
                     <!-- EMPTY STATE -->
                     <div
                         id="empty-state"
-                        class="hidden flex flex-col items-center justify-center h-64 text-center">
+class="hidden flex flex-col items-center justify-center h-64 text-center"
+                    >
                         <div
-                            class="bg-orange-100 p-4 rounded-full mb-4 text-4xl">
-                            
+                            class="bg-orange-100 p-4 rounded-full mb-4 text-4xl"
+                        >
+                            📝
                         </div>
                         <h3 class="text-lg font-bold text-slate-800">
-                            No tienes presupuestos an
+                            No tienes presupuestos aún
                         </h3>
                         <p class="text-slate-500 text-sm max-w-xs mx-auto mt-2">
-                            Crea presupuestos profesionales y envalos a tus
+                            Crea presupuestos profesionales y envíalos a tus
                             clientes en minutos.
                         </p>
                     </div>
@@ -125,22 +138,28 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     <!-- TABLE -->
                     <div
                         id="content-table"
-                        class="hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+class="hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
+                    >
                         <table class="w-full text-left text-sm text-slate-600">
                             <thead
-                                class="bg-slate-50 text-slate-500 uppercase font-bold text-xs">
+                                class="bg-slate-50 text-slate-500 uppercase font-bold text-xs"
+                            >
                                 <tr>
                                     <th class="px-6 py-3">Cliente</th>
                                     <th class="px-6 py-3">Trabajo</th>
                                     <th class="px-6 py-3">Fecha</th>
                                     <th class="px-6 py-3 text-right">Total</th>
-                                    <th class="px-6 py-3 text-center">Estado</th>
-                                    <th class="px-6 py-3 text-right">Acciones</th>
+<th class="px-6 py-3 text-center">Estado</th
+                                    >
+                                    <th class="px-6 py-3 text-right"
+                                        >Acciones</th
+                                    >
                                 </tr>
                             </thead>
                             <tbody
                                 id="presupuestos-list"
-                                class="divide-y divide-slate-100">
+class="divide-y divide-slate-100"
+                            >
                                 <!-- Rendered internally -->
                             </tbody>
                         </table>
@@ -152,30 +171,38 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         <!-- MODAL NUEVO/EDITAR -->
         <div
             id="modal-presupuesto"
-            class="fixed inset-0 z-50 hidden opacity-0 pointer-events-none transition-opacity duration-300">
+class="fixed inset-0 z-50 hidden opacity-0 pointer-events-none transition-opacity duration-300"
+        >
             <div
                 class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                id="modal-overlay">
+                id="modal-overlay"
+            >
             </div>
             <div class="absolute inset-0 flex items-center justify-center p-4">
                 <div
                     class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300"
-                    id="modal-content">
+id="modal-content"
+                >
                     <div
-                        class="p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10">
+                        class="p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10"
+                    >
                         <h3 class="text-xl font-bold text-slate-800">
                             Nuevo Presupuesto
                         </h3>
                         <button
                             id="btn-close-modal"
-                            class="text-slate-400 hover:text-slate-600"></button>
+class="text-slate-400 hover:text-slate-600"
+                            >✕</button
+                        >
                     </div>
 
                     <form id="form-presupuesto" class="p-6 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label
-                                    class="block text-sm font-bold text-slate-700 mb-1">Cliente</label>
+class="block text-sm font-bold text-slate-700 mb-1"
+                                    >Cliente</label
+                                >
                                 <input
                                     type="text"
                                     name="cliente"
@@ -186,7 +213,9 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             </div>
                             <div>
                                 <label
-                                    class="block text-sm font-bold text-slate-700 mb-1">Telfono (Opcional)</label>
+class="block text-sm font-bold text-slate-700 mb-1"
+                                    >Teléfono (Opcional)</label
+                                >
                                 <input
                                     type="tel"
                                     name="telefono"
@@ -198,48 +227,61 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                         <div>
                             <label
-                                class="block text-sm font-bold text-slate-700 mb-1">Ttulo del Trabajo</label>
+class="block text-sm font-bold text-slate-700 mb-1"
+                                >Título del Trabajo</label
+                            >
                             <input
                                 type="text"
                                 name="titulo"
                                 required
                                 class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-orange-500 transition-colors"
-                                placeholder="Ej: Instalacin de Aire Acondicionado"
+placeholder="Ej: Instalación de Aire Acondicionado"
                             />
                         </div>
 
                         <div>
                             <div class="flex justify-between items-end mb-2">
                                 <label
-                                    class="block text-sm font-bold text-slate-700">Items</label>
+class="block text-sm font-bold text-slate-700"
+                                    >Items</label
+                                >
                                 <button
                                     type="button"
                                     id="btn-add-item"
-                                    class="text-xs font-bold text-orange-600 hover:underline">+ Agregar Item</button>
+                                    class="text-xs font-bold text-orange-600 hover:underline"
+                                    >+ Agregar Item</button
+                                >
                             </div>
                             <div
                                 id="items-container"
-                                class="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-200">
-                                <!-- Items dinmicos -->
+                                class="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-200"
+                            >
+                                <!-- Items dinámicos -->
                             </div>
                         </div>
 
                         <div
-                            class="flex justify-end items-center gap-4 text-lg font-bold border-t border-slate-100 pt-4">
+class="flex justify-end items-center gap-4 text-lg font-bold border-t border-slate-100 pt-4"
+                        >
                             <span>Total:</span>
                             <span
                                 id="total-display"
-                                class="text-orange-600 text-2xl">$0</span>
+                                class="text-orange-600 text-2xl">$0</span
+                            >
                         </div>
 
                         <div class="pt-4 flex gap-3">
                             <button
                                 type="button"
                                 id="btn-cancel"
-                                class="flex-1 py-3 border border-slate-300 rounded-xl text-slate-600 font-bold hover:bg-slate-50 transition-colors">Cancelar</button>
+class="flex-1 py-3 border border-slate-300 rounded-xl text-slate-600 font-bold hover:bg-slate-50 transition-colors"
+                                >Cancelar</button
+                            >
                             <button
                                 type="submit"
-                                class="flex-1 py-3 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 shadow-lg shadow-orange-200 transition-all transform hover:-translate-y-1">Guardar Presupuesto</button>
+                                class="flex-1 py-3 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 shadow-lg shadow-orange-200 transition-all transform hover:-translate-y-1"
+                                >Guardar Presupuesto</button
+                            >
                         </div>
                     </form>
                 </div>
@@ -249,17 +291,21 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         <!-- ALERT MODAL -->
         <div
             id="alert-modal"
-            class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4">
+class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4"
+        >
             <div
                 class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                id="alert-overlay">
+                id="alert-overlay"
+            >
             </div>
             <div
-                class="bg-white rounded-2xl shadow-2xl w-full max-w-sm transform scale-95 transition-all relative z-10 overflow-hidden">
+                class="bg-white rounded-2xl shadow-2xl w-full max-w-sm transform scale-95 transition-all relative z-10 overflow-hidden"
+            >
                 <div
                     id="alert-header"
-                    class="p-4 border-b border-slate-100 flex items-center gap-3">
-                    <div id="alert-icon" class="text-2xl"></div>
+                    class="p-4 border-b border-slate-100 flex items-center gap-3"
+                >
+                    <div id="alert-icon" class="text-2xl">⚠️</div>
                     <h3 id="alert-title" class="font-bold text-slate-800">
                         Alerta
                     </h3>
@@ -272,10 +318,14 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 <div class="p-4 bg-slate-50 flex gap-3 justify-end">
                     <button
                         id="alert-cancel"
-                        class="hidden px-4 py-2 text-slate-500 font-bold hover:bg-slate-200 rounded-lg transition">Cancelar</button>
+class="hidden px-4 py-2 text-slate-500 font-bold hover:bg-slate-200 rounded-lg transition"
+                        >Cancelar</button
+                    >
                     <button
                         id="alert-ok"
-                        class="flex-1 bg-slate-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-slate-900 transition shadow-lg shadow-slate-200">Aceptar</button>
+                        class="flex-1 bg-slate-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-slate-900 transition shadow-lg shadow-slate-200"
+                        >Aceptar</button
+                    >
                 </div>
             </div>
         </div>
@@ -317,7 +367,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
             // Execute immediately - IIFE pattern
             (function () {
-                console.log(" [PRESUPUESTOS] Pgina cargada/navegada");
+console.log("🚀 [PRESUPUESTOS] Página cargada/navegada");
 
                 const loadingState = document.getElementById("loading-state");
                 const emptyState = document.getElementById("empty-state");
@@ -346,7 +396,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                 // LOAD DATA
                 function loadPresupuestos(uid: string) {
-                    // UPDATE: Usar subcoleccin profesionales/{uid}/presupuestos para cumplir reglas de seguridad
+// UPDATE: Usar subcolección profesionales/{uid}/presupuestos para cumplir reglas de seguridad
                     const q = query(
                         collection(db, "profesionales", uid, "presupuestos"),
                     );
@@ -386,7 +436,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                                 error,
                             );
                             loadingState.innerHTML =
-                                '<p class="text-red-500">Error cargando datos. Verifica tu conexin.</p>';
+'<p class="text-red-500">Error cargando datos. Verifica tu conexión.</p>';
                         },
                     );
                 }
@@ -427,16 +477,16 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         <td class="px-6 py-4 text-right">
                             <div class="flex justify-end gap-2">
                                 <button onclick="printPDF('${doc.id}')" class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Descargar PDF">
-                                    
+📄
                                 </button>
                                 <button onclick="shareWhatsApp('${doc.id}')" class="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Enviar por WhatsApp">
-                                    
+                                    📱
                                 </button>
                                 <button onclick="shareWhatsApp('${doc.id}')" class="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Enviar por WhatsApp">
-                                    
+                                    📱
                                 </button>
                                 <button onclick="deleteBudget('${doc.id}')" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
-                                    
+                                    🗑️
                                 </button>
                             </div>
                         </td>
@@ -511,10 +561,10 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         const div = document.createElement("div");
                         div.className = "flex gap-2 items-start";
                         div.innerHTML = `
-                        <input type="text" placeholder="Descripcin" value="${item.desc}" oninput="updateItem(${index}, 'desc', this.value)" class="flex-1 border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-orange-500">
+<input type="text" placeholder="Descripción" value="${item.desc}" oninput="updateItem(${index}, 'desc', this.value)" class="flex-1 border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-orange-500">
                         <input type="number" placeholder="Cant." value="${item.cant}" oninput="updateItem(${index}, 'cant', this.value)" class="w-16 border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-orange-500">
                         <input type="number" placeholder="Precio" value="${item.precio}" oninput="updateItem(${index}, 'precio', this.value)" class="w-24 border border-slate-300 rounded px-2 py-1 text-sm outline-none focus:border-orange-500">
-                        <button type="button" onclick="removeItem(${index})" class="text-red-400 hover:text-red-600 px-1"></button>
+                        <button type="button" onclick="removeItem(${index})" class="text-red-400 hover:text-red-600 px-1">✕</button>
                     `;
                         container.appendChild(div);
                     });
@@ -563,12 +613,12 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                     try {
                         if (!db) {
                             throw new Error(
-                                "La conexin a la base de datos no est inicializada",
+"La conexión a la base de datos no está inicializada",
                             );
                         }
 
                         console.log(
-                            " Guardando presupuesto para UID:",
+"💾 Guardando presupuesto para UID:",
                             currentUser.uid,
                         );
 
@@ -582,7 +632,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                             newBudget,
                         );
                         await showAlert(
-                            "xito!",
+"¡Éxito!",
                             "El presupuesto se ha guardado correctamente",
                             "success",
                         );
@@ -600,7 +650,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 // ACTIONS
                 window.updateStatus = async (id: string, newStatus: string) => {
                     try {
-                        // UPDATE: Referencia a subcoleccin
+// UPDATE: Referencia a subcolección
                         const ref = doc(
                             db,
                             "profesionales",
@@ -610,7 +660,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         );
                         await updateDoc(ref, { estado: newStatus });
 
-                        // Si se marca como cobrado, podra integrarse con Finanzas (opcional)
+// Si se marca como cobrado, podría integrarse con Finanzas (opcional)
                     } catch (error) {
                         console.error("Error updating status:", error);
                     }
@@ -619,14 +669,14 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                 window.deleteBudget = async (id: string) => {
                     const confirmed = await showConfirm(
                         "Eliminar Presupuesto",
-                        "Ests seguro de que quieres eliminar este presupuesto? Esta accin no se puede deshacer.",
+"¿Estás seguro de que quieres eliminar este presupuesto? Esta acción no se puede deshacer.",
                         "Eliminar",
                         "bg-red-600",
                     );
 
                     if (confirmed) {
                         try {
-                            // UPDATE: Referencia a subcoleccin
+// UPDATE: Referencia a subcolección
                             await deleteDoc(
                                 doc(
                                     db,
@@ -680,7 +730,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         doc.setFontSize(10);
                         doc.text(`Cliente: ${p.cliente}`, 14, 50);
                         if (p.telefono)
-                            doc.text(`Telfono: ${p.telefono}`, 14, 56);
+doc.text(`Teléfono: ${p.telefono}`, 14, 56);
 
                         const fecha = p.fecha
                             ? new Date(
@@ -704,7 +754,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         doc.setFillColor(245, 245, 245);
                         doc.rect(14, y - 5, 180, 8, "F");
                         doc.setFontSize(10);
-                        doc.text("Descripcin", 16, y);
+doc.text("Descripción", 16, y);
                         doc.text("Cant.", 130, y);
                         doc.text("Precio", 150, y);
                         doc.text("Total", 180, y);
@@ -737,7 +787,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         doc.setFontSize(8);
                         doc.setTextColor(100);
                         doc.text(
-                            "Presupuesto vlido por 15 das. Documento generado con DeOficios.net",
+"Presupuesto válido por 15 días. Documento generado con DeOficios.net",
                             105,
                             280,
                             { align: "center" },
@@ -750,7 +800,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         console.error("PDF Error", e);
                         showAlert(
                             "Error PDF",
-                            "Hubo un error generando el PDF. Asegrate de tener conexin para cargar las libreras.",
+"Hubo un error generando el PDF. Asegúrate de tener conexión para cargar las librerías.",
                             "error",
                         );
                     }
@@ -786,15 +836,15 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 
                         // Styles
                         if (type === "success") {
-                            iconEl.innerText = "";
+iconEl.innerText = "✅";
                             okBtn.className =
                                 "flex-1 bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition shadow-lg shadow-green-200";
                         } else if (type === "error") {
-                            iconEl.innerText = "";
+                            iconEl.innerText = "❌";
                             okBtn.className =
                                 "flex-1 bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition shadow-lg shadow-red-200";
                         } else {
-                            iconEl.innerText = "";
+                            iconEl.innerText = "ℹ️";
                             okBtn.className =
                                 "flex-1 bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition shadow-lg shadow-indigo-200";
                         }
@@ -823,7 +873,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
                         // Config
                         titleEl.innerText = title;
                         msgEl.innerText = message;
-                        iconEl.innerText = "";
+iconEl.innerText = "🤔";
 
                         cancelBtn.classList.remove("hidden");
                         cancelBtn.onclick = () => {
@@ -854,4 +904,3 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         </script>
     </body>
 </html>
-

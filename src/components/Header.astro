@@ -1,5 +1,5 @@
 ---
-import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
+import { Briefcase, BookOpen, CircleHelp, Menu, MessageSquare } from "lucide-astro";
 ---
 
 <div id="global-announcement" class="global-announcement hidden">
@@ -17,15 +17,22 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
         <a
           href="/planes"
           id="btn-planes-desktop"
+        <a
+          href="/planes"
+          id="btn-planes-desktop"
           class="nav-link destacados hidden flex items-center gap-1">
           <Briefcase class="w-4 h-4" /> Planes
         </a>
         <a href="/blog" class="nav-link flex items-center gap-1">
           <BookOpen class="w-4 h-4" /> Blog
         </a>
+        <a href="/foro" class="nav-link flex items-center gap-1">
+          <MessageSquare class="w-4 h-4" /> Comunidad / Foro
+        </a>
         <a href="/faq" class="nav-link flex items-center gap-1">
           <CircleHelp class="w-4 h-4" /> Ayuda
         </a>
+
       </nav>
 
       <div class="separator hidden-mobile"></div>
@@ -34,8 +41,9 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
         <div id="user-area" class="auth-buttons">
           <div class="spinner-small"></div>
         </div>
-        <button id="menu-toggle" class="menu-toggle" aria-label="Abrir men">
+        <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">
           <Menu class="w-8 h-8 text-gray-700" />
+
         </button>
       </div>
     </div>
@@ -43,9 +51,13 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
 </header>
 
 <div id="mobile-menu" class="mobile-menu hidden">
-  <!-- Redundant links removed - Moved to BottomNav -->
+  <a href="/" class="mobile-link">🔍 Buscar</a>
+  <a href="/planes" id="btn-planes-mobile" class="mobile-link hidden">🚀 Planes</a>
+  <a href="/blog" class="mobile-link">📰 Blog</a>
+  <a href="/foro" class="mobile-link">💬 Comunidad / Foro</a>
   <div id="mobile-auth-area" class="p-4 flex flex-col gap-2"></div>
 </div>
+
 
 <script>
   import { auth, db } from "../firebase/client";
@@ -66,12 +78,13 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
       } else {
         announcement?.classList.add("hidden");
       }
-    } else {
-      announcement?.classList.add("hidden");
     }
+  }, (error) => {
+      console.warn("[Header] Error en listener aviso global:", error);
   });
 
-  // Funcin principal de renderizado con CACH
+  // Función principal de renderizado con CACHÉ
+
   async function updateHeaderUI() {
     const userArea = document.getElementById("user-area");
     const mobileAuth = document.getElementById("mobile-auth-area");
@@ -86,13 +99,14 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
       let userType = null;
 
       try {
-        //  OPTIMIZACIN 1: Verificar cach primero
+        // 🚀 OPTIMIZACIÓN 1: Verificar caché primero
         const cachedType = localStorage.getItem(`userType_${currentUser.uid}`);
 
         if (cachedType === "profesional" || cachedType === "cliente") {
-          console.log(" [HEADER] Usando cach:", cachedType);
+          console.log("⚡ [HEADER] Usando caché:", cachedType);
 
-          // Usar cach para query directa
+          // Usar caché para query directa
+
           const collection =
             cachedType === "profesional" ? "profesionales" : "clientes";
           const docRef = doc(db, collection, currentUser.uid);
@@ -113,14 +127,16 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
               avatarHTML = `<div class="avatar-placeholder" style="width:32px;height:32px;border-radius:50%;background:${bgColor};color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;">${data.nombre[0].toUpperCase()}</div>`;
             }
           } else {
-            // Cach invlido, limpiar
+            // Caché inválido, limpiar
+
             localStorage.removeItem(`userType_${currentUser.uid}`);
           }
         }
 
-        //  OPTIMIZACIN 2: Si no hay cach, queries EN PARALELO
+        // 🚀 OPTIMIZACIÓN 2: Si no hay caché, queries EN PARALELO
         if (!userType) {
-          console.log(" [HEADER] Sin cach, buscando en paralelo...");
+          console.log("⚡ [HEADER] Sin caché, buscando en paralelo...");
+
 
           const [profSnap, clientSnap] = await Promise.all([
             getDoc(doc(db, "profesionales", currentUser.uid)),
@@ -140,7 +156,8 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
               avatarHTML = `<div class="avatar-placeholder" style="width:32px;height:32px;border-radius:50%;background:#ea580c;color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;">${data.nombre[0].toUpperCase()}</div>`;
             }
 
-            // Mostrar botn Planes para profesionales (query sin cach)
+            // Mostrar botón Planes para profesionales (query sin caché)
+
             document
               .getElementById("btn-planes-desktop")
               ?.classList.remove("hidden");
@@ -148,10 +165,11 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
               .getElementById("btn-planes-mobile")
               ?.classList.remove("hidden");
 
-            // Guardar en cach
+            // Guardar en caché
             localStorage.setItem(`userType_${currentUser.uid}`, "profesional");
 
-            // Mostrar botn Planes para profesionales
+            // Mostrar botón Planes para profesionales
+
             document
               .getElementById("btn-planes-desktop")
               ?.classList.remove("hidden");
@@ -171,7 +189,8 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
               avatarHTML = `<div class="avatar-placeholder" style="width:32px;height:32px;border-radius:50%;background:#4f46e5;color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;">${data.nombre[0].toUpperCase()}</div>`;
             }
 
-            // Guardar en cach
+            // Guardar en caché
+
             localStorage.setItem(`userType_${currentUser.uid}`, "cliente");
           }
         }
@@ -182,13 +201,13 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
       const iconUser = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
       const iconHeart = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
       const iconLogOut = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>`;
-
       const htmlUser = `
         <div class="user-dropdown-container relative group">
             <button class="flex items-center gap-2 text-gray-700 hover:text-orange-600 font-medium transition py-4 focus:outline-none">
                 ${avatarHTML}
                 <span>${nombre}</span>
-                <span class="text-xs"></span>
+                <span class="text-xs">▼</span>
+
             </button>
             
             <div class="absolute right-0 top-full pt-2 w-48 hidden group-hover:block z-50">
@@ -196,7 +215,8 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
                     <a href="${profileLink}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition flex items-center">${iconUser} Mi Perfil</a>
                     ${userType === "cliente" ? `<a href="/mi-cuenta" class="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition flex items-center">${iconHeart} Favoritos</a>` : ""}
                     <hr class="my-1 border-gray-100">
-                    <button id="btn-logout-header" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition flex items-center">${iconLogOut} Cerrar Sesin</button>
+                    <button id="btn-logout-header" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition flex items-center">${iconLogOut} Cerrar Sesión</button>
+
                 </div>
             </div>
         </div>
@@ -210,25 +230,28 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
              ${avatarHTML}
              <div>
                 <p class="font-bold text-gray-800">${nombre}</p>
-                <p class="text-xs text-green-600">Sesin activa</p>
+                <p class="text-xs text-green-600">Sesión activa</p>
              </div>
           </div>
           <a href="${profileLink}" class="block text-center w-full bg-gray-100 py-2 rounded-lg font-bold text-gray-700 flex items-center justify-center gap-2">${iconUser} Ir a mi Perfil</a>
-          <button id="btn-logout-mobile" class="block w-full text-center text-red-500 py-2 mt-2 flex items-center justify-center gap-2">${iconLogOut} Cerrar Sesin</button>
+          <a href="/ingresar-derivador" class="block text-center w-full bg-white border border-gray-200 py-2 mt-2 rounded-lg font-bold text-gray-600 flex items-center justify-center gap-2">🔄 Cambiar Perfil</a>
+          <button id="btn-logout-mobile" class="block w-full text-center text-red-500 py-2 mt-2 flex items-center justify-center gap-2">${iconLogOut} Cerrar Sesión</button>
       `;
 
-      // Event listeners para cerrar sesin
+      // Event listeners para cerrar sesión
       const btnLogoutHeader = document.getElementById("btn-logout-header");
       const btnLogoutMobile = document.getElementById("btn-logout-mobile");
 
       [btnLogoutHeader, btnLogoutMobile].forEach((btn) => {
         btn?.addEventListener("click", async () => {
-          // Limpiar cach al cerrar sesin
+          // Limpiar caché al cerrar sesión
+
           if (currentUser) {
             localStorage.removeItem(`userType_${currentUser.uid}`);
           }
           await signOut(auth);
-          window.location.href = "/"; // Redirigir a la pgina principal
+          window.location.href = "/"; // Redirigir a la página principal
+
         });
       });
     } else {
@@ -249,26 +272,28 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
     }
   }
 
-  // Listener de autenticacin (SOLO UNA VEZ)
+  // Listener de autenticación (SOLO UNA VEZ)
+
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;
     await updateHeaderUI();
   });
 
-  // Listener de navegacin en Astro (re-render UI en cada navegacin)
+  // Listener de navegación en Astro (re-render UI en cada navegación)
   document.addEventListener("astro:page-load", async () => {
-    // 1. Activar men mvil INMEDIATAMENTE (no esperar a auth)
+    // 1. Activar menú móvil INMEDIATAMENTE (no esperar a auth)
     const menuBtn = document.getElementById("menu-toggle");
     const mobileMenu = document.getElementById("mobile-menu");
 
-    // Remover listeners anteriores para evitar duplicados si astro:page-load dispara mltiple
+    // Remover listeners anteriores para evitar duplicados si astro:page-load dispara múltiple
     const newMenuBtn = menuBtn?.cloneNode(true);
     if (menuBtn && newMenuBtn && menuBtn.parentNode) {
       menuBtn.parentNode.replaceChild(newMenuBtn, menuBtn);
       (newMenuBtn as HTMLElement).addEventListener("click", () => {
-        console.log(" Toggle men");
+        console.log("🍔 Toggle menú");
         mobileMenu?.classList.toggle("hidden");
         (newMenuBtn as HTMLElement).classList.toggle("active");
+
         mobileMenu?.classList.toggle("active");
       });
     }
@@ -310,6 +335,7 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
     z-index: 50;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
   }
   .container {
@@ -328,6 +354,7 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
     font-weight: 800;
     font-size: 1.5rem;
     @apply text-gray-800;
+
     text-decoration: none;
   }
   .dot {
@@ -345,6 +372,7 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
   .nav-link {
     text-decoration: none;
     @apply text-gray-600;
+
     font-weight: 600;
     font-size: 0.95rem;
     transition: 0.2s;
@@ -358,7 +386,8 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
     background-color: #e5e7eb;
   }
 
-  /* ESTO ARREGLA EL MEN */
+  /* ESTO ARREGLA EL MENÚ */
+
   .group:hover .group-hover\:block {
     display: block;
   }
@@ -395,6 +424,7 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
     max-height: calc(100vh - 70px);
     overflow-y: auto;
+
   }
   .mobile-link {
     display: block;
@@ -402,6 +432,7 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
     text-decoration: none;
     @apply text-gray-700 border-b border-gray-50;
     font-weight: 600;
+
   }
   .hidden {
     display: none !important;
@@ -425,6 +456,7 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
+
       z-index: 60;
     }
 
@@ -440,6 +472,7 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
     /* Hamburger Config - SVG Style */
     .menu-toggle {
       display: none !important; /* User requested to hide it */
+
       font-size: 1.8rem;
       color: #374151;
       padding: 5px;
@@ -489,7 +522,6 @@ import { Briefcase, BookOpen, CircleHelp, Menu } from "lucide-astro";
       display: block !important;
       visibility: hidden;
       opacity: 0;
-      pointer-events: none;
     }
   }
 </style>

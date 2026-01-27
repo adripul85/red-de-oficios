@@ -92,7 +92,7 @@ Esta es una **actualizacin importante**..."></textarea>
                             <button
                                 id="btn-send-mass"
                                 class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-bold transition shadow-lg hover:shadow-indigo-500/30 flex items-center gap-2 transform active:scale-95">
-                                <span>Enviar Campaa</span>
+                                <span>Enviar Campaña</span>
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 20 20"
@@ -108,6 +108,34 @@ Esta es una **actualizacin importante**..."></textarea>
                 <!-- Decorative Blob -->
                 <div
                     class="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-orange-50 rounded-full blur-3xl opacity-50 pointer-events-none">
+                </div>
+            </section>
+
+            <!-- CAMPAIGN HISTORY -->
+            <section class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-8 overflow-hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <span class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-sm">📜</span>
+                        Historial de Campañas
+                    </h2>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-slate-500 font-bold uppercase text-xs">
+                            <tr>
+                                <th class="p-4">Asunto</th>
+                                <th class="p-4">Fecha</th>
+                                <th class="p-4">Enviados</th>
+                                <th class="p-4 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="campaigns-list" class="divide-y divide-slate-50">
+                            <tr>
+                                <td colspan="4" class="p-8 text-center text-slate-400">Cargando historial...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </section>
 
@@ -158,21 +186,26 @@ Esta es una **actualizacin importante**..."></textarea>
         query,
         orderBy,
         deleteDoc,
+        addDoc,
         doc,
         where,
+        serverTimestamp
     } from "firebase/firestore";
     import { onAuthStateChanged } from "firebase/auth";
     import { marked } from "marked";
 
     let subscribers = [];
+    let campaigns = [];
 
     document.addEventListener("astro:page-load", () => {
         const list = document.getElementById("subscribers-list");
+        const campaignsList = document.getElementById("campaigns-list");
         const btnSend = document.getElementById("btn-send-mass");
         const statusText = document.getElementById("send-status");
 
         // MARKDOWN PREVIEW LOGIC
         const textArea = document.getElementById("mass-body");
+        const subjectInput = document.getElementById("mass-subject");
         const previewArea = document.getElementById("preview-area");
 
         if (textArea && previewArea) {
@@ -189,16 +222,17 @@ Esta es una **actualizacin importante**..."></textarea>
                 return;
             }
             loadSubscribers();
+            loadCampaigns();
         });
 
         async function loadSubscribers() {
             try {
-                // Temporarily removing orderBy to avoid Index/Permission issues
+                // Temporarily removing orderBy to avoid Index/Permission issues if not indexed
                 const q = query(collection(db, "newsletter"));
                 const snap = await getDocs(q);
 
                 if (snap.empty) {
-                    list.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">No hay suscriptores an.</td></tr>`;
+                    list.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">No hay suscriptores aún.</td></tr>`;
                     return;
                 }
 
@@ -238,8 +272,78 @@ Esta es una **actualizacin importante**..."></textarea>
             }
         }
 
+        async function loadCampaigns() {
+             try {
+                const q = query(collection(db, "newsletter_campaigns"), orderBy("fecha", "desc"));
+                const snap = await getDocs(q);
+
+                if (snap.empty) {
+                    campaignsList.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">No hay campañas enviadas.</td></tr>`;
+                    return;
+                }
+
+                campaigns = [];
+                campaignsList.innerHTML = "";
+
+                snap.forEach((d) => {
+                    const data = d.data();
+                    campaigns.push({ id: d.id, ...data });
+
+                    const tr = document.createElement("tr");
+                    tr.className = "border-b hover:bg-slate-50 transition";
+                    // Using encodeURIComponent to safely store data in attribute is risky for large body, usually better to look up by ID
+                    // We will look up by ID from the campaigns array
+                    tr.innerHTML = `
+                        <td class="p-4 font-bold text-gray-800">${data.asunto}</td>
+                        <td class="p-4 text-gray-500 text-xs">${data.fecha ? new Date(data.fecha.seconds * 1000).toLocaleString() : "-"}</td>
+                        <td class="p-4">
+                             <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">${data.enviados || 0} Emails</span>
+                        </td>
+                        <td class="p-4 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <button class="reuse-camp p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition" title="Editar / Reutilizar" data-id="${d.id}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                </button>
+                                <button class="resend-camp p-2 text-green-600 hover:bg-green-50 rounded-lg transition" title="Reenviar Ahora" data-id="${d.id}">
+                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                </button>
+                                <button class="delete-camp p-2 text-red-500 hover:bg-red-50 rounded-lg transition" title="Borrar Historial" data-id="${d.id}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    campaignsList.appendChild(tr);
+                });
+
+                // Attach events
+                document.querySelectorAll(".reuse-camp").forEach((btn) => {
+                    btn.addEventListener("click", (e) => {
+                        const id = e.target.closest('button').dataset.id;
+                        reuseCampaign(id);
+                    });
+                });
+                document.querySelectorAll(".resend-camp").forEach((btn) => {
+                    btn.addEventListener("click", (e) => {
+                        const id = e.target.closest('button').dataset.id;
+                        resendCampaign(id);
+                    });
+                });
+                document.querySelectorAll(".delete-camp").forEach((btn) => {
+                    btn.addEventListener("click", (e) => {
+                        const id = e.target.closest('button').dataset.id;
+                        deleteCampaign(id);
+                    });
+                });
+
+             } catch (e) {
+                console.error("Error loading campaigns:", e);
+                // Fail silently or show error in table
+             }
+        }
+
         async function deleteSubscriber(id) {
-            if (!confirm("Seguro que quers eliminar a este suscriptor?"))
+            if (!confirm("¿Seguro que querés eliminar a este suscriptor?"))
                 return;
             try {
                 await deleteDoc(doc(db, "newsletter", id));
@@ -249,65 +353,118 @@ Esta es una **actualizacin importante**..."></textarea>
             }
         }
 
+         async function deleteCampaign(id) {
+             if (!confirm("Se borrará este registro del historial. ¿Continuar?")) return;
+             try {
+                 const res = await fetch("/api/delete-campaign", {
+                     method: "DELETE",
+                     headers: { "Content-Type": "application/json" },
+                     body: JSON.stringify({ campaignId: id })
+                 });
+                 
+                 const data = await res.json();
+                 
+                 if (!res.ok) {
+                     throw new Error(data.error || "Error al borrar");
+                 }
+                 
+                 loadCampaigns();
+             } catch(e) {
+                 console.error("Delete error:", e);
+                 alert("Error al borrar campaña: " + e.message);
+             }
+         }
+
+         function reuseCampaign(id) {
+             const camp = campaigns.find(c => c.id === id);
+             if(!camp) return;
+
+             subjectInput.value = camp.asunto;
+             textArea.value = camp.cuerpoOriginal || ""; // Assuming we save original markdown
+             // Trigger preview
+             textArea.dispatchEvent(new Event('input'));
+             
+             window.scrollTo({ top: 0, behavior: 'smooth'});
+             alert("Contenido cargado en el editor.");
+         }
+
+         async function resendCampaign(id) {
+             const camp = campaigns.find(c => c.id === id);
+             if(!camp) return;
+
+             if(!confirm(`¿Reenviar la campaña "${camp.asunto}" a TODOS los ${subscribers.length} suscriptores?`)) return;
+
+             // Call send logic with existing content
+             await sendEmails(camp.asunto, camp.cuerpoOriginal);
+         }
+
         // MASS EMAIL LOGIC
         btnSend?.addEventListener("click", async () => {
-            const subject = document.getElementById("mass-subject").value;
-            const bodyMD = document.getElementById("mass-body").value;
+            const subject = subjectInput.value;
+            const bodyMD = textArea.value;
 
-            if (!subject || !bodyMD) return alert("Complet asunto y mensaje.");
+            if (!subject || !bodyMD) return alert("Completá asunto y mensaje.");
+            
             if (subscribers.length === 0) return alert("No hay suscriptores.");
 
             if (
                 !confirm(
-                    `Ests seguro de enviar este email a ${subscribers.length} personas?`,
+                    `¿Estás seguro de enviar este email a ${subscribers.length} personas?`,
                 )
             )
                 return;
 
+            await sendEmails(subject, bodyMD);
+        });
+
+        async function sendEmails(subject, bodyMD) {
             btnSend.disabled = true;
             btnSend.innerText = "Enviando...";
             statusText.classList.remove("hidden");
-            statusText.innerText = "Enviando mensajes... por favor esper.";
+            statusText.innerText = "Iniciando envío masivo...";
 
-            // Convert Markdown to HTML
-            const bodyHTML = marked.parse(bodyMD);
+            try {
+                // Call the new Batch API
+                const resp = await fetch("/api/send-newsletter", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        subject,
+                        markdownBody: bodyMD
+                    })
+                });
 
-            let sentCount = 0;
-            let errorCount = 0;
+                const result = await resp.json();
 
-            for (const sub of subscribers) {
-                try {
-                    await fetch("/api/send-email", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            to: sub.email,
-                            subject: subject,
-                            html: `
-                                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #333;">
-                                    ${bodyHTML}
-                                    <hr style="margin-top: 40px; border: 0; border-top: 1px solid #eee;">
-                                    <p style="text-align: center; font-size: 11px; color: #999;">
-                                        Recibiste esto por estar suscrito al Newsletter de DeOficios.com.ar
-                                    </p>
-                                </div>
-                            `,
-                        }),
-                    });
-                    sentCount++;
-                } catch (e) {
-                    errorCount++;
-                }
-                statusText.innerText = `Enviando... (${sentCount}/${subscribers.length})`;
+                if (!resp.ok) throw new Error(result.error || "Error en el servidor");
+
+                // Save to Campaign History (Client side or move to server? Server didn't do it in my code, preserving client logic for now or adding to server?)
+                // My server code didn't save the campaign to 'newsletter_campaigns'. 
+                // It's better if I do it here for now to keep it consistent with the existing UI logic, 
+                // OR I should have added it to the API. 
+                // Use client side save for now as the API responsiblity was sending.
+                
+                await addDoc(collection(db, "newsletter_campaigns"), {
+                    asunto: subject,
+                    cuerpoOriginal: bodyMD,
+                    fecha: serverTimestamp(),
+                    enviados: result.sent,
+                    errores: result.errors
+                });
+                
+                loadCampaigns();
+
+                alert(`Campaña finalizada.\nEnviados: ${result.sent}\nErrores: ${result.errors}`);
+                statusText.innerText = "Envío exitoso.";
+            } catch (e) {
+                console.error(e);
+                alert("Hubo un error al procesar el envío: " + e.message);
+                statusText.innerText = "Error en el envío.";
+            } finally {
+                btnSend.disabled = false;
+                btnSend.innerText = "Enviar Campaña";
             }
-
-            alert(
-                `Proceso finalizado.\nEnviados: ${sentCount}\nErrores: ${errorCount}`,
-            );
-            btnSend.disabled = false;
-            btnSend.innerText = " Enviar a Todos los Suscriptores";
-            statusText.innerText = "Envo completado.";
-        });
+        }
     });
 </script>
 

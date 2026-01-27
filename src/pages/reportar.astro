@@ -8,7 +8,7 @@ const nombre = searchParams.get('nombre');
 <Layout title="Reportar Usuario">
     <main style="max-width:500px; margin:50px auto; padding:20px; font-family:sans-serif;">
         <h1>Reportar a {nombre}</h1>
-        <p>Tu reporte es annimo para el profesional.</p>
+<p>Tu reporte es anónimo para el profesional.</p>
         
         <form id="report-form">
             <label style="display:block; margin-top:10px;">Motivo:</label>
@@ -22,7 +22,7 @@ const nombre = searchParams.get('nombre');
             <label style="display:block; margin-top:10px;">Detalles:</label>
             <textarea id="desc" rows="4" style="width:100%; padding:8px;" required></textarea>
 
-            <button type="submit" style="margin-top:20px; width:100%; padding:10px; background:#ef4444; color:white; border:none; font-weight:bold;">Enviar Reporte </button>
+<button type="submit" style="margin-top:20px; width:100%; padding:10px; background:#ef4444; color:white; border:none; font-weight:bold;">Enviar Reporte 🚨</button>
         </form>
     </main>
 </Layout>
@@ -49,4 +49,3 @@ const nombre = searchParams.get('nombre');
         } catch (err) { alert("Error al enviar."); }
     });
 </script>
-

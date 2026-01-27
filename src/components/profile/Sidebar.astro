@@ -4,7 +4,8 @@
 
 <aside class="lg:col-span-1 space-y-6" data-component="sidebar" data-plan="">
     <div
-        class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-center sticky top-24">
+class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 text-center sticky top-24"
+    >
         <div class="relative w-32 h-32 mx-auto mb-4 group cursor-pointer">
             <img
                 id="avatar-img"
@@ -13,78 +14,95 @@
             />
             <div
                 class="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-white text-xs font-bold"
-                onclick="document.getElementById('file-foto').click()">
-                 Cambiar
+onclick="document.getElementById('file-foto').click()"
+            >
+                📸 Cambiar
             </div>
             <input type="file" id="file-foto" class="hidden" accept="image/*" />
         </div>
 
         <h3
             id="sidebar-name"
-            class="text-xl font-bold text-gray-900 leading-tight">
+class="text-xl font-bold text-gray-900 leading-tight"
+        >
             Cargando...
         </h3>
 
         <div
             id="badges-container"
-            class="flex flex-wrap justify-center gap-2 mt-3 mb-4 min-h-[20px]">
+class="flex flex-wrap justify-center gap-2 mt-3 mb-4 min-h-[20px]"
+        >
         </div>
 
         <div
-            class="bg-orange-50 rounded-xl p-5 border border-orange-200 text-left relative overflow-hidden shadow-sm">
+            class="bg-orange-50 rounded-xl p-5 border border-orange-200 text-left relative overflow-hidden shadow-sm"
+        >
             <div class="text-center mb-3">
                 <span
-                    class="text-[10px] text-orange-600 font-bold uppercase tracking-widest block mb-1">TU PLAN ACTUAL</span>
+                    class="text-[10px] text-orange-600 font-bold uppercase tracking-widest block mb-1"
+                    >TU PLAN ACTUAL</span
+                >
                 <div id="plan-display" class="font-black text-gray-900 text-xl">
                     ...
                 </div>
             </div>
             <ul
                 id="plan-benefits"
-                class="space-y-2 text-xs text-gray-700 mt-4 mb-4 border-t border-orange-200 pt-3">
+class="space-y-2 text-xs text-gray-700 mt-4 mb-4 border-t border-orange-200 pt-3"
+            >
             </ul>
 
             <!-- Contact Click Counter (FREE users only) -->
             <div
                 id="click-counter"
-                class="hidden bg-gradient-to-br from-blue-50 to-orange-50 rounded-xl p-4 border-2 border-blue-200 mb-3">
+class="hidden bg-gradient-to-br from-blue-50 to-orange-50 rounded-xl p-4 border-2 border-blue-200 mb-3"
+            >
                 <p class="text-xs font-bold text-gray-700 mb-2">
-                     Contactos este mes
+                    📞 Contactos este mes
                 </p>
                 <div class="flex justify-between items-baseline mb-1">
                     <span
                         id="clicks-current"
-                        class="text-3xl font-bold text-blue-600">0</span>
+class="text-3xl font-bold text-blue-600">0</span
+                    >
                     <span class="text-sm text-gray-500">de 20</span>
                 </div>
                 <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div
                         id="clicks-progress"
                         class="h-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500"
-                        style="width: 0%">
+style="width: 0%"
+                    >
                     </div>
                 </div>
                 <p
                     id="clicks-warning"
-                    class="text-xs text-gray-600 mt-2 hidden">
-                     <strong>Solo quedan <span id="clicks-remaining">20</span>!</strong> Actualiza para ilimitado
+class="text-xs text-gray-600 mt-2 hidden"
+                >
+                    ⚠️ <strong
+                        >¡Solo quedan <span id="clicks-remaining">20</span
+                        >!</strong
+                    > Actualiza para ilimitado
                 </p>
             </div>
 
             <a
                 href="/planes"
-                class="block w-full py-2.5 bg-orange-600 text-white text-sm font-bold rounded-lg text-center hover:bg-orange-700 transition shadow-md transform active:scale-95">
-                 Mejorar Plan
+class="block w-full py-2.5 bg-orange-600 text-white text-sm font-bold rounded-lg text-center hover:bg-orange-700 transition shadow-md transform active:scale-95"
+            >
+                ⭐ Mejorar Plan
             </a>
         </div>
 
         <!-- QR y Tarjeta Digital -->
         <div
-            class="bg-gray-50 rounded-xl p-4 border border-gray-200 text-center">
+class="bg-gray-50 rounded-xl p-4 border border-gray-200 text-center"
+        >
             <div
                 id="qr-container"
-                class="mx-auto w-24 h-24 bg-white p-2 rounded-lg shadow-sm mb-3 flex items-center justify-center">
-                <!-- QR Placeholder - Se generar con JS -->
+                class="mx-auto w-24 h-24 bg-white p-2 rounded-lg shadow-sm mb-3 flex items-center justify-center"
+            >
+                <!-- QR Placeholder - Se generará con JS -->
                 <img
                     src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://deoficios.com.ar"
                     alt="Tu QR"
@@ -94,8 +112,9 @@
             </div>
             <button
                 id="btn-download-card"
-                class="w-full py-2 bg-gray-800 text-white text-xs font-bold rounded-lg hover:bg-black transition flex items-center justify-center gap-2">
-                <span></span> Descargar Tarjeta PDF
+class="w-full py-2 bg-gray-800 text-white text-xs font-bold rounded-lg hover:bg-black transition flex items-center justify-center gap-2"
+            >
+                <span>📇</span> Descargar Tarjeta PDF
             </button>
         </div>
 
@@ -104,43 +123,48 @@
                 href="#"
                 id="btn-ver-perfil"
                 target="_blank"
-                class="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl transition text-sm font-bold shadow-sm">
-                <span></span> Ver cmo qued mi perfil
+class="flex items-center gap-3 px-4 py-3 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl transition text-sm font-bold shadow-sm"
+            >
+                <span>👀</span> Ver cómo quedó mi perfil
             </a>
 
             <a
                 href="/admin/"
                 id="btn-admin-panel"
-                class="hidden flex items-center gap-3 px-4 py-3 bg-gray-900 text-white rounded-xl transition text-sm font-bold shadow-md hover:bg-black">
-                <span></span> Panel Admin
+class="hidden flex items-center gap-3 px-4 py-3 bg-gray-900 text-white rounded-xl transition text-sm font-bold shadow-md hover:bg-black"
+            >
+                <span>🛡️</span> Panel Admin
             </a>
 
             <button
                 id="btn-giftcard"
-                class="w-full flex items-center gap-3 px-4 py-3 bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 rounded-xl transition text-sm font-bold">
-                <span></span> Canjear Giftcard
+class="w-full flex items-center gap-3 px-4 py-3 bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200 rounded-xl transition text-sm font-bold"
+            >
+                <span>🎁</span> Canjear Giftcard
             </button>
 
             <a
                 href="/foro"
-                class="flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-xl transition text-sm font-bold">
-                <span></span> Foro Comunidad
+class="flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-xl transition text-sm font-bold"
+            >
+                <span>💬</span> Foro Comunidad
             </a>
 
             <hr class="border-gray-200 my-4" />
 
             <button
                 id="btn-logout"
-                class="w-full flex items-center justify-center gap-2 px-4 py-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition text-sm font-medium">
-                <span></span> Cerrar Sesin
+class="w-full flex items-center justify-center gap-2 px-4 py-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition text-sm font-medium"
+            >
+                <span>🚪</span> Cerrar Sesión
             </button>
 
             <button
                 id="btn-delete-account"
-                class="w-full text-center text-[10px] text-red-300 hover:text-red-500 mt-2 uppercase font-bold tracking-wide">
+class="w-full text-center text-[10px] text-red-300 hover:text-red-500 mt-2 uppercase font-bold tracking-wide"
+            >
                 Eliminar Cuenta
             </button>
         </div>
     </div>
 </aside>
-

@@ -4,7 +4,7 @@ import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 
 const { proId } = Astro.props; // Recibimos el ID del profesional
 
-// 1. TRAER RESEAS
+// 1. TRAER RESEÑAS
 let opiniones = [];
 try {
   const q = query(
@@ -15,37 +15,27 @@ try {
   const snapshot = await getDocs(q);
   opiniones = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 } catch (e) {
-  // Si falla es porque no hay coleccin, no pasa nada
+// Si falla es porque no hay colección, no pasa nada
 }
 ---
 
 <div class="reviews-section-wrapper" id="reviews-wrapper" data-pro-id={proId}>
-  <h3> Opiniones de clientes ({opiniones.length})</h3>
+<h3>⭐ Opiniones de clientes ({opiniones.length})</h3>
 
   <div class="reviews-list">
     {
       opiniones.length === 0 ? (
         <div class="empty-state">
-          <p>An no hay opiniones. S el primero en contar tu experiencia!</p>
+<p>Aún no hay opiniones. ¡Sé el primero en contar tu experiencia!</p>
         </div>
       ) : (
         opiniones.map((op) => (
           <div class="review-card">
             <div class="review-header">
               <strong>{op.clienteNombre}</strong>
-              <span class="stars">{"".repeat(op.puntuacion)}</span>
+<span class="stars">{"⭐".repeat(op.puntuacion)}</span>
             </div>
             <p class="comment">"{op.comentario}"</p>
-            {op.fotoTrabajo && (
-              <div class="review-photo mt-3">
-                <img
-                  src={op.fotoTrabajo}
-                  alt="Evidencia de trabajo"
-                  class="rounded-lg max-h-48 object-cover cursor-zoom-in"
-                  onclick={`window.open('${op.fotoTrabajo}', '_blank')`}
-                />
-              </div>
-            )}
             <small class="date">
               {op.fecha?.seconds
                 ? new Date(op.fecha.seconds * 1000).toLocaleDateString()
@@ -61,25 +51,35 @@ try {
 
   <div id="interaction-area">
     <div id="guest-msg" class="guest-box">
-      <p>Lo contrataste? Inicia sesin para opinar.</p>
-      <a href="/ingresar-cliente" class="btn-login-review"> Soy Cliente</a>
+<p>¿Lo contrataste? Inicia sesión para opinar.</p>
+      <a href="/ingresar-cliente" class="btn-login-review">🔑 Soy Cliente</a>
     </div>
 
     <form id="form-resena" class="review-form hidden">
-      <h4>Dejar una opinin</h4>
+      <h4>Dejar una opinión</h4>
       <div class="star-rating">
-        <input type="radio" name="rating" id="s5" value="5" /><label for="s5"></label>
-        <input type="radio" name="rating" id="s4" value="4" /><label for="s4"></label>
-        <input type="radio" name="rating" id="s3" value="3" /><label for="s3"></label>
-        <input type="radio" name="rating" id="s2" value="2" /><label for="s2"></label>
-        <input type="radio" name="rating" id="s1" value="1" /><label for="s1"></label>
+        <input type="radio" name="rating" id="s5" value="5" /><label for="s5"
+          >★</label
+        >
+        <input type="radio" name="rating" id="s4" value="4" /><label for="s4"
+          >★</label
+        >
+        <input type="radio" name="rating" id="s3" value="3" /><label for="s3"
+          >★</label
+        >
+        <input type="radio" name="rating" id="s2" value="2" /><label for="s2"
+          >★</label
+        >
+        <input type="radio" name="rating" id="s1" value="1" /><label for="s1"
+          >★</label
+        >
       </div>
       <textarea
         id="comment-input"
-        placeholder="Cmo fue el servicio?"
+        placeholder="¿Cómo fue el servicio?"
         required
         rows="3"></textarea>
-      <button type="submit" id="btn-submit">Publicar Opinin </button>
+      <button type="submit" id="btn-submit">Publicar Opinión 🚀</button>
       <p id="feedback-msg"></p>
     </form>
   </div>
@@ -107,7 +107,7 @@ try {
 
   let currentUser = null;
 
-  // 1. DETECTAR SI EST LOGUEADO
+// 1. DETECTAR SI ESTÁ LOGUEADO
   onAuthStateChanged(auth, (user) => {
     if (user) {
       currentUser = user;
@@ -119,7 +119,7 @@ try {
     }
   });
 
-  // 2. ENVIAR RESEA
+// 2. ENVIAR RESEÑA
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!currentUser || !proId) return;
@@ -132,7 +132,7 @@ try {
     const comment = document.getElementById("comment-input").value;
 
     if (rating === 0) {
-      alert("Faltan las estrellas! ");
+alert("¡Faltan las estrellas! ⭐");
       return;
     }
 
@@ -143,7 +143,7 @@ try {
     }
 
     try {
-      // A. Guardar el documento de la resea
+// A. Guardar el documento de la reseña
       await addDoc(collection(db, "profesionales", proId, "resenas"), {
         clienteId: currentUser.uid,
         clienteNombre: currentUser.displayName || "Cliente",
@@ -158,12 +158,12 @@ try {
 
       if (profSnap.exists()) {
         const d = profSnap.data();
-        // Aseguramos que existan valores base para no romper la matemtica
+// Aseguramos que existan valores base para no romper la matemática
         const votosPrevios = d.total_votos || 0;
         const promPrevio = d.promedio || 0;
 
         const nuevoTotal = votosPrevios + 1;
-        // Frmula matemtica de promedio acumulado
+// Fórmula matemática de promedio acumulado
         const nuevoProm = (promPrevio * votosPrevios + rating) / nuevoTotal;
 
         await updateDoc(profRef, {
@@ -173,21 +173,21 @@ try {
       }
 
       if (feedback) {
-        feedback.textContent = " Gracias por opinar!";
+feedback.textContent = "✅ ¡Gracias por opinar!";
         feedback.style.color = "green";
       }
 
-      // Recargar pgina para ver la nueva resea
+      // Recargar página para ver la nueva reseña
       setTimeout(() => window.location.reload(), 1500);
     } catch (err) {
       console.error(err);
       if (feedback) {
-        feedback.textContent = " Error (Revisa permisos en Firebase)";
+feedback.textContent = "❌ Error (Revisa permisos en Firebase)";
         feedback.style.color = "red";
       }
       if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.textContent = "Publicar Opinin ";
+submitBtn.textContent = "Publicar Opinión 🚀";
       }
     }
   });
@@ -289,4 +289,3 @@ try {
     cursor: not-allowed;
   }
 </style>
-

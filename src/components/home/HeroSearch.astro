@@ -3,6 +3,7 @@
 const { trends } = Astro.props;
 import { Mic } from "lucide-astro";
 
+
 // --- TENDENCIAS ---
 let trendingTags = trends || [];
 
@@ -13,14 +14,17 @@ if (!trendingTags || trendingTags.length === 0) {
     { term: "Electricista", link: "electricista" },
     { term: "Pintor", link: "pintor" },
     { term: "Gasista", link: "gasista" },
-    { term: "Albail", link: "albail" },
+    { term: "Albañil", link: "albañil" },
+
   ];
 }
 ---
 
 <!-- Hero Search Premium -->
 <div
-  class="relative w-full min-h-[85vh] md:min-h-[90vh] bg-white flex flex-col md:flex-row overflow-hidden font-sans">
+  class="relative w-full min-h-[85vh] md:min-h-[90vh] bg-white flex flex-col md:flex-row overflow-hidden font-sans"
+>
+
   <!-- Mobile: Imagen arriba con onda -->
   <div class="md:hidden relative h-[250px] w-full">
     <div class="w-full h-full bg-gradient-to-r from-orange-100 to-orange-50">
@@ -30,23 +34,29 @@ if (!trendingTags || trendingTags.length === 0) {
       <svg
         viewBox="0 0 1200 120"
         preserveAspectRatio="none"
-        class="w-full h-10">
-        <path d="M0,120 L0,30 Q600,120 1200,30 L1200,120 Z" fill="#ffffff" />
+        class="w-full h-10"
+      >
+        <path d="M0,120 L0,30 Q600,120 1200,30 L1200,120 Z" fill="#ffffff"
+        ></path>
+
       </svg>
     </div>
   </div>
 
   <!-- Contenido izquierdo -->
   <div
-    class="w-full md:w-1/2 flex flex-col justify-center items-center px-6 md:px-20 py-8 md:py-12 z-10 bg-white -mt-12 md:-mt-20">
+    class="w-full md:w-1/2 flex flex-col justify-center items-center px-6 md:px-20 py-8 md:py-12 z-10 bg-white -mt-12 md:-mt-20"
+  >
     <div class="w-full max-w-xl">
       <h1
-        class="text-4xl md:text-6xl font-extrabold text-slate-900 mb-4 leading-tight">
-        Encontr al <span class="text-orange-600">experto</span>
-        <br /> que necesits.
+        class="text-4xl md:text-6xl font-extrabold text-slate-900 mb-4 leading-tight"
+      >
+        Encontrá al <span class="text-orange-600">experto</span>
+        <br /> que necesitás.
       </h1>
       <p class="text-slate-500 text-lg mb-8">
-        Plomeros, electricistas y ms de <strong>62.000 profesionales</strong> verificados.
+        Plomeros, electricistas y más de <strong>62.000 profesionales</strong> verificados.
+
       </p>
 
       <!-- Buscador Premium simplificado - Solo Servicio -->
@@ -54,56 +64,68 @@ if (!trendingTags || trendingTags.length === 0) {
         id="hero-search-form"
         action="/resultados"
         method="GET"
-        class="bg-white border border-slate-200 rounded-full shadow-2xl p-2 flex items-center relative z-20 mb-6">
+        class="bg-white border border-slate-200 rounded-full shadow-2xl p-2 flex items-center relative z-20 mb-6"
+      >
         <!-- Input: Servicio -->
         <div class="flex-1 w-full px-6 py-3 relative flex items-center">
-         <div class="w-full">
+          <div class="w-full">
             <label
-                class="block text-xs font-bold text-slate-800 uppercase tracking-wide mb-1">
-                Qu servicio necesits?
+              class="block text-xs font-bold text-slate-800 uppercase tracking-wide mb-1"
+            >
+              ¿Qué servicio necesitás?
             </label>
             <input
-                type="text"
-                name="q"
-                id="input-servicio"
-                placeholder="Ej: Souvenirs, Electricista, Plomero..."
-                class="w-full outline-none text-slate-700 placeholder-slate-400 bg-transparent text-lg pr-10"
-                autocomplete="off"
+              type="text"
+              name="q"
+              id="input-servicio"
+              placeholder="Ej: Gasista, Plomero, Electricista..."
+              class="w-full outline-none text-slate-700 placeholder-slate-400 bg-transparent text-lg pr-10"
+              autocomplete="off"
             />
-         </div>
-          <button type="button" id="btn-mic" class="hidden absolute right-4 bottom-4 text-slate-400 hover:text-orange-500 transition-colors p-2" aria-label="Busqueda por voz">
+          </div>
+          <button
+            type="button"
+            id="btn-mic"
+            class="hidden absolute right-4 bottom-4 text-slate-400 hover:text-orange-500 transition-colors p-2"
+            aria-label="Busqueda por voz"
+          >
             <Mic class="w-5 h-5" />
           </button>
         </div>
 
-        <!-- Botn Buscar -->
+        <!-- Botón Buscar -->
         <button
           type="submit"
-          class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full p-4 md:p-3 transition-all active:scale-95 shadow-xl shadow-orange-200 flex items-center justify-center gap-2">
-          <span class="text-2xl"></span>
+          class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full p-4 md:p-3 transition-all active:scale-95 shadow-xl shadow-orange-200 flex items-center justify-center gap-2"
+        >
+          <span class="text-2xl">🔍</span>
+
           <span class="hidden md:inline font-bold text-lg">Buscar</span>
         </button>
       </form>
 
       <!-- Toggle 24hs + Tendencias -->
       <div class="flex flex-col md:flex-row md:items-center gap-6">
-        <!-- Botn de Emergencia Real -->
-        <a
-          href="/solicitar?urgencia=true"
-          class="group flex items-center gap-3 bg-red-50 hover:bg-red-100 border border-red-200 px-4 py-2 rounded-full transition-all cursor-pointer shadow-sm hover:shadow-red-100">
+        <!-- Toggle 24hs moderno -->
+        <label class="flex items-center gap-3 cursor-pointer group">
           <div class="relative">
+            <input type="checkbox" id="check-24hs" class="sr-only peer" />
             <div
-              class="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-20">
+              class="w-14 h-8 bg-slate-200 rounded-full peer-checked:bg-orange-500 transition-all duration-300 shadow-inner"
+            >
             </div>
-            <span class="relative block text-2xl"></span>
+            <div
+              class="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-all duration-300 peer-checked:translate-x-6 shadow-md"
+            >
+            </div>
           </div>
-          <div class="flex flex-col">
-            <span
-              class="text-red-700 font-bold leading-none text-sm group-hover:text-red-800">BOTN DE EMERGENCIAS</span>
-            <span
-              class="text-[10px] text-red-500 font-semibold uppercase tracking-wider">Servicio 24hs</span>
-          </div>
-        </a>
+          <span
+            class="text-sm font-bold text-slate-700 group-hover:text-orange-600 transition flex items-center gap-1"
+          >
+            🚨 Urgencias 24hs
+          </span>
+        </label>
+
 
         <!-- Tendencias -->
         <div class="flex items-center gap-2 flex-wrap">
@@ -112,7 +134,9 @@ if (!trendingTags || trendingTags.length === 0) {
             trendingTags.map((tag) => (
               <a
                 href={`/resultados?q=${tag.link}`}
-                class="px-3 py-1 bg-slate-100 hover:bg-orange-100 text-slate-700 hover:text-orange-700 text-sm font-medium rounded-full transition-all shadow-sm hover:shadow-md">
+                class="px-3 py-1 bg-slate-100 hover:bg-orange-100 text-slate-700 hover:text-orange-700 text-sm font-medium rounded-full transition-all shadow-sm hover:shadow-md"
+              >
+
                 {tag.term}
               </a>
             ))
@@ -131,7 +155,9 @@ if (!trendingTags || trendingTags.length === 0) {
     />
     <!-- Degradado sutil desde blanco -->
     <div
-      class="absolute inset-0 bg-gradient-to-r from-white via-transparent to-transparent">
+      class="absolute inset-0 bg-gradient-to-r from-white via-transparent to-transparent"
+    >
+
     </div>
   </div>
 
@@ -140,6 +166,49 @@ if (!trendingTags || trendingTags.length === 0) {
       const form = document.getElementById("hero-search-form");
       const inputServicio = document.getElementById("input-servicio");
       const btnMic = document.getElementById("btn-mic");
+      const check24hs = document.getElementById("check-24hs");
+
+      if (form) {
+        form.addEventListener("submit", (e) => {
+          // @ts-ignore
+          const servicio = inputServicio?.value?.trim() || "";
+
+          // VALIDACIÓN: Si está vacío, redirigir a /resultados
+          if (!servicio) {
+            e.preventDefault();
+            window.location.href = "/resultados";
+            return;
+          }
+
+          // Agregar parámetro 24hs si está marcado
+          // @ts-ignore
+          if (check24hs?.checked) {
+            const hidden = document.createElement("input");
+            hidden.type = "hidden";
+            hidden.name = "urgencia";
+            hidden.value = "24hs";
+            // @ts-ignore
+            form.appendChild(hidden);
+          }
+
+          // Logging de búsqueda para tendencias
+          if (servicio.length > 2) {
+            const data = JSON.stringify({ term: servicio });
+
+            if (navigator.sendBeacon) {
+              const blob = new Blob([data], { type: "application/json" });
+              navigator.sendBeacon("/api/log-search", blob);
+            } else {
+              fetch("/api/log-search", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: data,
+                keepalive: true,
+              }).catch(() => {});
+            }
+          }
+        });
+      }
 
       if (btnMic && inputServicio) {
         // @ts-ignore
@@ -195,6 +264,7 @@ if (!trendingTags || trendingTags.length === 0) {
     // Init
     initHeroSearch();
     document.addEventListener("astro:page-load", initHeroSearch);
+
   </script>
 
   <style>
