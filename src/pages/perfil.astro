@@ -443,10 +443,10 @@ for (let i = 0; i < levels.length; i++) {
         )
     }
 
-    <ProfileLightbox client:load images={profesional.portfolio || []} />
+    <ProfileLightbox client:idle images={profesional.portfolio || []} />
 
     <ProfileBudgetModal
-        client:load
+        client:idle
         services={profesional.servicios_lista}
         proName={profesional.nombre}
         proRubro={profesional.rubro_principal}
