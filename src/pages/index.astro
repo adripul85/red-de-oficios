@@ -33,9 +33,10 @@ const qDestacados = query(
 // Top Rated (Podio)
 const qTop = query(
   collection(db, "profesionales"),
+  where("promedio", ">", 0),
   orderBy("promedio", "desc"),
   orderBy("total_votos", "desc"),
-  limit(10),
+  limit(4),
 );
 
 // Trends (Bsquedas)

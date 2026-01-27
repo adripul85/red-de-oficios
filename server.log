@@ -1,0 +1,18 @@
+
+> reddeoficio@0.0.1 dev
+> astro dev
+
+11:12:01 [types] Generated 1ms
+11:12:02 [content] Syncing content
+11:12:02 [content] Synced content
+
+ astro  v5.16.15 ready in 1195 ms
+
+┃ Local    http://localhost:4321/
+┃ Network  use --host to expose
+
+11:12:02 watching for file changes...
+11:12:30 [ERROR] Expected ")" but found "}"
+  Stack trace:
+    at /app/src/pages/index.astro
+    [...] See full stack trace in the browser, or rerun with --verbose.
