@@ -1075,7 +1075,7 @@ import Layout from "../layouts/Layout.astro";
                 const q = query(
                     collection(db, "solicitudes"),
                     where("clienteId", "==", userId),
-                    // orderBy("fecha", "desc"), // TODO: Check composite index requirement
+                    orderBy("fecha", "desc"),
                 );
 
                 // USAR onSnapshot EN LUGAR DE getDocs PARA TIEMPO REAL
@@ -1204,11 +1204,22 @@ import Layout from "../layouts/Layout.astro";
                         }
                     },
                     (error: any) => {
-                        console.error(
-                            " Error en listener solicitudes:",
-                            error,
-                        );
+                        console.error(" Error en listener solicitudes:", error);
                         loading?.classList.add("hidden");
+
+                        if (error.code === "failed-precondition") {
+                            console.warn(
+                                " FALTA ÍNDICE COMPUESTO. Haz clic en el enlace de la consola para crearlo.",
+                            );
+                            if (list) {
+                                list.innerHTML = `
+                                <div class="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-amber-800 text-sm">
+                                    <p class="font-bold mb-1"> Falta un índice en Firestore</p>
+                                    <p>Para ver tus solicitudes ordenadas, debes crear un índice compuesto en la consola de Firebase. Revisa la consola del navegador (F12) para encontrar el enlace de creación automática.</p>
+                                </div>`;
+                                empty?.classList.add("hidden");
+                            }
+                        }
                     },
                 );
             } catch (e) {
