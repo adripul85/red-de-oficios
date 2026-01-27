@@ -47,7 +47,10 @@ const qTrends = query(
 
 // 2. EJECUCIN PARALELA (Optimizacin clave)
 const [snapDest, snapTop, snapTrends] = await Promise.all([
-  getDocs(qDestacados),
+  getDocs(qDestacados).catch((e) => {
+    console.warn("Error Destacados", e);
+    return { docs: [] };
+  }),
   getDocs(qTop).catch((e) => {
     console.warn("Error TopRated", e);
     return { docs: [] };
@@ -187,6 +190,7 @@ if (trendingTags.length === 0) {
                   <div class="rating">
                     {"*".repeat(Math.round(pro.promedio || 5))} <span class="num">({pro.total_votos || 0})</span>
                   </div>
+                </div>
               </a>
             ))}
           </div>
@@ -220,31 +224,35 @@ if (trendingTags.length === 0) {
 </Layout>
 
 <script>
-  const form = document.getElementById("main-search-form");
-  const input = document.getElementById("search-input") as HTMLInputElement;
+  function setupSearchLogger() {
+    const form = document.getElementById("hero-search-form");
+    const input = document.getElementById("input-servicio") as HTMLInputElement;
 
-  if (form && input) {
-    form.addEventListener("submit", () => {
-      const term = input.value;
-      // Enviamos el dato al backend sin detener el formulario (Fire & Forget)
-      // Usamos navigator.sendBeacon si est disponible para asegurar el envo aunque cambie la pgina
-      if (term.length > 2) {
-        const data = JSON.stringify({ term });
-        if (navigator.sendBeacon) {
-          const blob = new Blob([data], { type: "application/json" });
-          navigator.sendBeacon("/api/log-search", blob);
-        } else {
-          // Fallback para navegadores viejos
-          fetch("/api/log-search", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: data,
-            keepalive: true,
-          });
+    if (form && input) {
+      form.addEventListener("submit", () => {
+        const term = input.value;
+        // Enviamos el dato al backend sin detener el formulario (Fire & Forget)
+        // Usamos navigator.sendBeacon si est disponible para asegurar el envo aunque cambie la pgina
+        if (term.length > 2) {
+          const data = JSON.stringify({ term });
+          if (navigator.sendBeacon) {
+            const blob = new Blob([data], { type: "application/json" });
+            navigator.sendBeacon("/api/log-search", blob);
+          } else {
+            // Fallback para navegadores viejos
+            fetch("/api/log-search", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: data,
+              keepalive: true,
+            });
+          }
         }
-      }
-    });
+      });
+    }
   }
+
+  document.addEventListener("astro:page-load", setupSearchLogger);
 </script>
 
 <style>
