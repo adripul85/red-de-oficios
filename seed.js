@@ -221,7 +221,9 @@ async function crearPerfiles() {
     const batchSize = 500; // Cantidad de perfiles a crear
     console.log(`🚀 Iniciando creación de ${batchSize} perfiles con NUEVA estructura (Ubicaciones y Rubros)...`);
 
-    const promesas = [];
+    const batches = [];
+    let batch = db.batch();
+    let count = 0;
 
     for (let i = 0; i < batchSize; i++) {
         // 1. Datos Personales
@@ -315,10 +317,22 @@ async function crearPerfiles() {
             createdAt: new Date()
         };
 
-        promesas.push(db.collection('profesionales').add(nuevoPerfil));
+        const ref = db.collection('profesionales').doc();
+        batch.set(ref, nuevoPerfil);
+        count++;
+
+        if (count === 500) {
+            batches.push(batch.commit());
+            batch = db.batch();
+            count = 0;
+        }
     }
 
-    await Promise.all(promesas);
+    if (count > 0) {
+        batches.push(batch.commit());
+    }
+
+    await Promise.all(batches);
     console.log(`✅ ¡Éxito! ${batchSize} perfiles creados.`);
     console.log(`🗺️ Distribuidos en: CABA, GBA (Norte, Sur, Oeste) y Provincias.`);
     console.log(`💼 Rubros actualizados con sub-categorías reales.`);
