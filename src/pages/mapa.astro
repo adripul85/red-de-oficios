@@ -60,7 +60,14 @@ const profesionales = snapshot.docs
   })
   .filter((p) => p !== null && p.coords.lat !== null); // Filtramos nulos y sin coords
 
-const prosJson = JSON.stringify(profesionales);
+const mapData = profesionales.map(p => ({
+  i: p.id,
+  n: p.nombre,
+  c: p.categoria,
+  f: p.foto,
+  l: p.nivel,
+  g: [p.coords.lat, p.coords.lng]
+}));
 ---
 
 <Layout title="Mapa de Profesionales - DeOficios" hideFooter={true}>
@@ -142,65 +149,55 @@ const prosJson = JSON.stringify(profesionales);
   rel="stylesheet"
   href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 />
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"
+/>
 <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script is:inline src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
 
 
-<script is:inline define:vars={{ prosJson }}>
+<script is:inline id="map-data" type="application/json" set:html={JSON.stringify(mapData)}></script>
+
+<script is:inline>
   // Variable global para limpiar el mapa anterior
   let mapInstance = null;
 
   document.addEventListener("astro:page-load", () => {
-    console.log("🗺️ [MAPA] Inicializando mapa...");
+    console.log("🗺️ [MAPA] Inicializando mapa optimizado...");
 
     const mapContainer = document.getElementById("map");
-    if (!mapContainer) {
-      console.error("❌ [MAPA] Contenedor #map no encontrado");
-
-      return;
-    }
+    if (!mapContainer) return;
 
     // Limpiar mapa anterior si existe
     if (mapInstance) {
-      console.log("🧹 [MAPA] Limpiando mapa anterior...");
-
       try {
         mapInstance.off();
         mapInstance.remove();
-      } catch (e) {
-        console.warn("⚠️ [MAPA] Error limpiando mapa:", e);
-
-      }
+      } catch (e) {}
       mapInstance = null;
     }
 
-    // Limpiar completamente el contenedor HTML
     mapContainer.innerHTML = "";
-    // Remover el ID interno de Leaflet para permitir reinicialización
     delete mapContainer._leaflet_id;
 
-    // Esperar a que Leaflet esté disponible
-    if (typeof L === "undefined") {
-      console.error("❌ [MAPA] Leaflet no está cargado");
-
-      setTimeout(() => {
-        if (typeof L !== "undefined") {
-          initMap();
-        }
-      }, 500);
+    if (typeof L === "undefined" || typeof L.markerClusterGroup === "undefined") {
+      console.warn("⏳ [MAPA] Esperando librerías...");
+      setTimeout(initMap, 500);
       return;
     }
 
     initMap();
 
     function initMap() {
-      console.log("✅ [MAPA] Creando instancia de mapa...");
-
-
-      // Iniciar Mapa (Centro Buenos Aires por defecto)
       mapInstance = L.map("map", { zoomControl: false }).setView(
         [-34.6037, -58.3816],
         6,
-      ); // Zoom 6 para ver el país
+      );
 
       L.control.zoom({ position: "bottomright" }).addTo(mapInstance);
 
@@ -208,74 +205,78 @@ const prosJson = JSON.stringify(profesionales);
         "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
         {
           attribution: "© OpenStreetMap",
-
           maxZoom: 19,
         },
       ).addTo(mapInstance);
 
-      // Definir Iconos
       const IconFactory = (color) =>
         L.icon({
           iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png`,
-          shadowUrl:
-            "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+          shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
           iconSize: [25, 41],
           iconAnchor: [12, 41],
           popupAnchor: [1, -34],
           shadowSize: [41, 41],
         });
 
-      const redIcon = IconFactory("red"); // EXPERTO
-      const goldIcon = IconFactory("gold"); // PRO
-      const blueIcon = IconFactory("blue"); // BASIC
+      const redIcon = IconFactory("red");
+      const goldIcon = IconFactory("gold");
+      const blueIcon = IconFactory("blue");
 
-      const pros = JSON.parse(prosJson);
-      console.log(`📍 [MAPA] Agregando ${pros.length} marcadores...`);
+      const dataEl = document.getElementById("map-data");
+      const pros = dataEl ? JSON.parse(dataEl.textContent) : [];
+      console.log(`📍 [MAPA] Agregando ${pros.length} marcadores con Clustering...`);
 
-      const markers = [];
+      // ⚡ OPTIMIZACIÓN: Cluster Group
+      const markerCluster = L.markerClusterGroup({
+        chunkedLoading: true, // Carga por trozos para no congelar el UI
+        maxClusterRadius: 50,
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false
+      });
 
-      // Agregar Marcadores
       pros.forEach((p) => {
         let iconToUse = blueIcon;
         let zIndex = 100;
 
-        if (p.nivel === "experto") {
+        if (p.l === "experto") {
           iconToUse = redIcon;
           zIndex = 1000;
-        } else if (p.nivel === "pro") {
+        } else if (p.l === "pro") {
           iconToUse = goldIcon;
           zIndex = 500;
         }
 
-        const fotoHtml = p.foto
-          ? `<img src="${p.foto}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid white;box-shadow:0 2px 5px rgba(0,0,0,0.2);display:block;margin:0 auto;">`
-          : `<div style="width:40px;height:40px;border-radius:50%;background:#ccc;display:flex;align-items:center;justify-content:center;font-weight:bold;color:white;margin:0 auto;">${p.nombre[0]}</div>`;
+        const fotoHtml = p.f
+          ? `<img src="${p.f}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid white;box-shadow:0 2px 5px rgba(0,0,0,0.2);display:block;margin:0 auto;">`
+          : `<div style="width:40px;height:40px;border-radius:50%;background:#ccc;display:flex;align-items:center;justify-content:center;font-weight:bold;color:white;margin:0 auto;">${p.n[0]}</div>`;
 
         const popupContent = `
           <div style="text-align:center; font-family:sans-serif; min-width:160px; padding:5px;">
             <div style="margin-bottom:8px;">${fotoHtml}</div>
-            <strong style="font-size:1rem; color:#111827; display:block; line-height:1.2;">${p.nombre}</strong>
-            <span style="color:#ea580c; font-size:0.75rem; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">${p.categoria}</span>
-            <a href="/perfil?id=${p.id}" target="_blank" style="display:block; margin-top:10px; background:#111827; color:white; text-decoration:none; padding:6px 0; border-radius:6px; font-size:0.8rem; font-weight:bold;">Ver Perfil</a>
+            <strong style="font-size:1rem; color:#111827; display:block; line-height:1.2;">${p.n}</strong>
+            <span style="color:#ea580c; font-size:0.75rem; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">${p.c}</span>
+            <a href="/perfil?id=${p.i}" target="_blank" style="display:block; margin-top:10px; background:#111827; color:white; text-decoration:none; padding:6px 0; border-radius:6px; font-size:0.8rem; font-weight:bold;">Ver Perfil</a>
           </div>
         `;
 
-        const marker = L.marker([p.coords.lat, p.coords.lng], {
+        const marker = L.marker([p.g[0], p.g[1]], {
           icon: iconToUse,
           zIndexOffset: zIndex,
         }).bindPopup(popupContent);
-        markers.push(marker);
+        
+        markerCluster.addLayer(marker);
       });
 
-      if (markers.length > 0) {
-        const group = L.featureGroup(markers).addTo(mapInstance);
-        mapInstance.fitBounds(group.getBounds(), {
-          padding: [50, 50],
-          maxZoom: 15,
-        });
-console.log("✅ [MAPA] Mapa inicializado correctamente");
-      } else {
-        console.warn("⚠️ [MAPA] No hay marcadores para mostrar");
+      mapInstance.addLayer(markerCluster);
+
+      if (pros.length > 0) {
+        try {
+            mapInstance.fitBounds(markerCluster.getBounds(), {
+                padding: [50, 50],
+                maxZoom: 15,
+            });
+        } catch(e) {}
       }
     }
 
@@ -350,6 +351,5 @@ console.log("✅ [MAPA] Mapa inicializado correctamente");
       gap: 10px;
     }
   }
-</style>
 </style>
 

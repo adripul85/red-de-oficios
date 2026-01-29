@@ -2,107 +2,91 @@
 import { auth, db } from "../../firebase/client";
 import Sidebar from "../../components/panel/Sidebar.astro";
 import MobileSidebar from "../../components/panel/MobileSidebar.astro";
+import Layout from "../../layouts/Layout.astro";
 ---
 
-<html lang="es">
-    <head>
-        <!-- Google tag (gtag.js) -->
-        <script
-            async
-src="https://www.googletagmanager.com/gtag/js?id=G-LG6RPRWWDY"
-        ></script>
-        <script is:inline>
-            window.dataLayer = window.dataLayer || [];
-            function gtag() {
-                dataLayer.push(arguments);
-            }
-            gtag("js", new Date());
+<Layout title="Presupuestos - DeOficios Pro" hideHeader={true} hideBottomNav={true} hideIA={true}>
+    
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-            gtag("config", "G-LG6RPRWWDY");
-        </script>
+    <style>
+        .modal {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal-content {
+            transition: transform 0.3s ease-in-out;
+        }
 
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Presupuestos - DeOficios Pro</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-            rel="stylesheet"
-        />
-        <script
-src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
-        ></script>
-        <script
-            src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
-        ></script>
-        <style>
-            body {
-                font-family: "Inter", sans-serif;
-                background-color: #f8fafc;
+        /* Page Transitions */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
             }
-            .modal {
-                transition: opacity 0.3s ease-in-out;
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
-            .modal-content {
-                transition: transform 0.3s ease-in-out;
-            }
+        }
 
-            /* Page Transitions */
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                    transform: translateY(10px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            .fade-in {
-                animation: fadeIn 0.3s ease-out;
-            }
-        </style>
-    </head>
-    <body
-        class="text-slate-800"
-        <!--
-        Mobile
-        Sidebar
-        Overlay
-        Removed
-        (handled
-        by
-        component)
---
-    >
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
         <div class="flex h-screen overflow-hidden">
             <!-- SIDEBARS -->
             <Sidebar currentPath={Astro.url.pathname} />
             <MobileSidebar currentPath={Astro.url.pathname} />
 
-            <!-- MAIN CONTENT -->
-            <main
-class="flex-1 flex flex-col h-screen overflow-hidden relative"
-            >
-                <header
-                    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10"
-                >
-                    <button id="open-sidebar" class="md:hidden text-2xl mr-4"
-                        >☰</button
-                    >
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 flex flex-col h-screen overflow-hidden relative bg-slate-50">
+            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10">
+                <div class="flex items-center gap-4">
+                    <button id="open-sidebar" class="md:hidden text-2xl mr-2">☰</button>
                     <h2 class="text-lg font-bold text-slate-800">
                         Gestor de Presupuestos
                     </h2>
-                    <div class="flex items-center gap-4">
-                        <button
-                            id="btn-nuevo"
-class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2"
-                        >
-                            <span>+</span> Nuevo Presupuesto
-                        </button>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <button id="btn-notifications" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 relative transition-colors">
+                        🔔
+                        <span id="badge-bell" class="hidden absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
+                    </button>
+                    <button
+                        id="btn-nuevo"
+                        class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2"
+                    >
+                        <span>+</span> Nuevo Directo
+                    </button>
+                </div>
+
+                <!-- Notification Dropdown -->
+                <div id="notification-dropdown" class="hidden absolute top-16 right-6 w-80 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden">
+                    <div class="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-bold text-sm text-slate-800">Notificaciones</h3>
+                        <button id="mark-all-read" class="text-xs text-orange-600 hover:text-orange-700 font-medium">Marcar leídas</button>
                     </div>
-                </header>
+                    <div id="notification-list" class="max-h-64 overflow-y-auto">
+                        <div class="p-4 text-center text-slate-400 text-xs">No tienes notificaciones</div>
+                    </div>
+                    <div class="p-2 border-t border-slate-100 text-center">
+                        <a href="/panel/oportunidades" class="text-xs text-indigo-600 font-medium hover:underline">Ver todas las oportunidades</a>
+                    </div>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-6">
+                <!-- TABS -->
+                <div class="flex gap-4 mb-6 border-b border-slate-200">
+                    <button id="tab-directos" class="pb-3 px-2 text-sm font-bold border-b-2 border-orange-600 text-orange-600 transition-all">
+                        Presupuestos Directos
+                    </button>
+                    <button id="tab-oportunidades" class="pb-3 px-2 text-sm font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all">
+                        Propuestas Enviadas
+                    </button>
+                </div>
 
                 <div class="flex-1 overflow-y-auto p-6 bg-slate-50">
                     <!-- LOADING STATE -->
@@ -116,219 +100,63 @@ class="flex justify-center items-center h-64"
                         </div>
                     </div>
 
-                    <!-- EMPTY STATE -->
-                    <div
-                        id="empty-state"
-class="hidden flex flex-col items-center justify-center h-64 text-center"
-                    >
-                        <div
-                            class="bg-orange-100 p-4 rounded-full mb-4 text-4xl"
-                        >
-                            📝
-                        </div>
-                        <h3 class="text-lg font-bold text-slate-800">
-                            No tienes presupuestos aún
-                        </h3>
+                <!-- EMPTY STATE -->
+                <div id="empty-state" class="hidden">
+                    <div class="flex flex-col items-center justify-center h-64 text-center">
+                        <div class="bg-orange-100 p-4 rounded-full mb-4 text-4xl">📝</div>
+                        <h3 class="text-lg font-bold text-slate-800">No hay presupuestos aún</h3>
                         <p class="text-slate-500 text-sm max-w-xs mx-auto mt-2">
-                            Crea presupuestos profesionales y envíalos a tus
-                            clientes en minutos.
+                            Crea presupuestos profesionales y envíalos a tus clientes en minutos.
                         </p>
                     </div>
+                </div>
 
-                    <!-- TABLE -->
-                    <div
-                        id="content-table"
-class="hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
-                    >
-                        <table class="w-full text-left text-sm text-slate-600">
-                            <thead
-                                class="bg-slate-50 text-slate-500 uppercase font-bold text-xs"
-                            >
-                                <tr>
-                                    <th class="px-6 py-3">Cliente</th>
-                                    <th class="px-6 py-3">Trabajo</th>
-                                    <th class="px-6 py-3">Fecha</th>
-                                    <th class="px-6 py-3 text-right">Total</th>
-<th class="px-6 py-3 text-center">Estado</th
-                                    >
-                                    <th class="px-6 py-3 text-right"
-                                        >Acciones</th
-                                    >
-                                </tr>
-                            </thead>
-                            <tbody
-                                id="presupuestos-list"
-class="divide-y divide-slate-100"
-                            >
-                                <!-- Rendered internally -->
-                            </tbody>
-                        </table>
+                <!-- TABLE DIRECTOS -->
+                <div id="content-table" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <table class="w-full text-left text-sm text-slate-600">
+                        <thead class="bg-slate-50 text-slate-500 uppercase font-bold text-xs">
+                            <tr>
+                                <th class="px-6 py-3">Cliente</th>
+                                <th class="px-6 py-3">Trabajo</th>
+                                <th class="px-6 py-3">Fecha</th>
+                                <th class="px-6 py-3 text-right">Total</th>
+                                <th class="px-6 py-3 text-center">Estado</th>
+                                <th class="px-6 py-3 text-right">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="presupuestos-list" class="divide-y divide-slate-100">
+                            <!-- Rendered internally -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- VIEW OPORTUNIDADES -->
+                <div id="content-oportunidades" class="hidden space-y-4">
+                    <!-- Cards will be here -->
+                </div>
+            </div>
+        </main>
+    </div>
+</Layout>
+
+                    <div id="alert-modal" class="fixed inset-0 z-[60] hidden">
+                        <div class="flex items-center justify-center p-4 h-full w-full">
+                            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="alert-overlay"></div>
+                            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm transform scale-95 transition-all relative z-10 overflow-hidden">
+                                <div id="alert-header" class="p-4 border-b border-slate-100 flex items-center gap-3">
+                                    <div id="alert-icon" class="text-2xl">⚠️</div>
+                                    <h3 id="alert-title" class="font-bold text-slate-800">Alerta</h3>
+                                </div>
+                                <div class="p-6">
+                                    <p id="alert-message" class="text-slate-600 text-sm">Mensaje de alerta</p>
+                                </div>
+                                <div class="p-4 bg-slate-50 flex gap-3 justify-end">
+                                    <button id="alert-cancel" class="hidden px-4 py-2 text-slate-500 font-bold hover:bg-slate-200 rounded-lg transition">Cancelar</button>
+                                    <button id="alert-ok" class="flex-1 bg-slate-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-slate-900 transition shadow-lg shadow-slate-200">Aceptar</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </main>
-        </div>
-
-        <!-- MODAL NUEVO/EDITAR -->
-        <div
-            id="modal-presupuesto"
-class="fixed inset-0 z-50 hidden opacity-0 pointer-events-none transition-opacity duration-300"
-        >
-            <div
-                class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                id="modal-overlay"
-            >
-            </div>
-            <div class="absolute inset-0 flex items-center justify-center p-4">
-                <div
-                    class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300"
-id="modal-content"
-                >
-                    <div
-                        class="p-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10"
-                    >
-                        <h3 class="text-xl font-bold text-slate-800">
-                            Nuevo Presupuesto
-                        </h3>
-                        <button
-                            id="btn-close-modal"
-class="text-slate-400 hover:text-slate-600"
-                            >✕</button
-                        >
-                    </div>
-
-                    <form id="form-presupuesto" class="p-6 space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label
-class="block text-sm font-bold text-slate-700 mb-1"
-                                    >Cliente</label
-                                >
-                                <input
-                                    type="text"
-                                    name="cliente"
-                                    required
-                                    class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-orange-500 transition-colors"
-                                    placeholder="Nombre del cliente"
-                                />
-                            </div>
-                            <div>
-                                <label
-class="block text-sm font-bold text-slate-700 mb-1"
-                                    >Teléfono (Opcional)</label
-                                >
-                                <input
-                                    type="tel"
-                                    name="telefono"
-                                    class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-orange-500 transition-colors"
-                                    placeholder="+54 11..."
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label
-class="block text-sm font-bold text-slate-700 mb-1"
-                                >Título del Trabajo</label
-                            >
-                            <input
-                                type="text"
-                                name="titulo"
-                                required
-                                class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-orange-500 transition-colors"
-placeholder="Ej: Instalación de Aire Acondicionado"
-                            />
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between items-end mb-2">
-                                <label
-class="block text-sm font-bold text-slate-700"
-                                    >Items</label
-                                >
-                                <button
-                                    type="button"
-                                    id="btn-add-item"
-                                    class="text-xs font-bold text-orange-600 hover:underline"
-                                    >+ Agregar Item</button
-                                >
-                            </div>
-                            <div
-                                id="items-container"
-                                class="space-y-3 bg-slate-50 p-4 rounded-lg border border-slate-200"
-                            >
-                                <!-- Items dinámicos -->
-                            </div>
-                        </div>
-
-                        <div
-class="flex justify-end items-center gap-4 text-lg font-bold border-t border-slate-100 pt-4"
-                        >
-                            <span>Total:</span>
-                            <span
-                                id="total-display"
-                                class="text-orange-600 text-2xl">$0</span
-                            >
-                        </div>
-
-                        <div class="pt-4 flex gap-3">
-                            <button
-                                type="button"
-                                id="btn-cancel"
-class="flex-1 py-3 border border-slate-300 rounded-xl text-slate-600 font-bold hover:bg-slate-50 transition-colors"
-                                >Cancelar</button
-                            >
-                            <button
-                                type="submit"
-                                class="flex-1 py-3 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 shadow-lg shadow-orange-200 transition-all transform hover:-translate-y-1"
-                                >Guardar Presupuesto</button
-                            >
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- ALERT MODAL -->
-        <div
-            id="alert-modal"
-class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4"
-        >
-            <div
-                class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                id="alert-overlay"
-            >
-            </div>
-            <div
-                class="bg-white rounded-2xl shadow-2xl w-full max-w-sm transform scale-95 transition-all relative z-10 overflow-hidden"
-            >
-                <div
-                    id="alert-header"
-                    class="p-4 border-b border-slate-100 flex items-center gap-3"
-                >
-                    <div id="alert-icon" class="text-2xl">⚠️</div>
-                    <h3 id="alert-title" class="font-bold text-slate-800">
-                        Alerta
-                    </h3>
-                </div>
-                <div class="p-6">
-                    <p id="alert-message" class="text-slate-600 text-sm">
-                        Mensaje de alerta
-                    </p>
-                </div>
-                <div class="p-4 bg-slate-50 flex gap-3 justify-end">
-                    <button
-                        id="alert-cancel"
-class="hidden px-4 py-2 text-slate-500 font-bold hover:bg-slate-200 rounded-lg transition"
-                        >Cancelar</button
-                    >
-                    <button
-                        id="alert-ok"
-                        class="flex-1 bg-slate-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-slate-900 transition shadow-lg shadow-slate-200"
-                        >Aceptar</button
-                    >
-                </div>
-            </div>
-        </div>
 
         <script>
             import { onAuthStateChanged } from "firebase/auth";
@@ -343,6 +171,8 @@ class="hidden px-4 py-2 text-slate-500 font-bold hover:bg-slate-200 rounded-lg t
                 deleteDoc,
                 orderBy,
                 onSnapshot,
+                collectionGroup,
+                limit,
             } from "firebase/firestore";
             import { auth, db } from "../../firebase/client";
 
@@ -362,6 +192,8 @@ class="hidden px-4 py-2 text-slate-500 font-bold hover:bg-slate-200 rounded-lg t
                         value: string,
                     ) => void;
                     removeItem: (index: number) => void;
+                    verNotificacion: (id: string, link: string, leido: boolean) => Promise<void>;
+                    borrarNotificacion: (id: string) => Promise<void>;
                 }
             }
 
@@ -383,11 +215,14 @@ console.log("🚀 [PRESUPUESTOS] Página cargada/navegada");
                 let currentUser: any = null;
                 let items = [{ desc: "", cant: 1, precio: 0 }];
                 let allPresupuestos: any = {}; // Store fetched data by ID
+                let notificationsUnsub: any = null;
+                let activeTab = "directos";
 
                 // AUTH CHECK
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         currentUser = user;
+                        loadNotifications(user.uid);
                         loadPresupuestos(user.uid);
                     } else {
                         window.location.href = "/";
@@ -465,9 +300,9 @@ console.log("🚀 [PRESUPUESTOS] Página cargada/navegada");
                         <td class="px-6 py-4 font-medium text-slate-800">${data.cliente}</td>
                         <td class="px-6 py-4">${data.titulo}</td>
                         <td class="px-6 py-4 text-slate-500">${date}</td>
-                        <td class="px-6 py-4 text-right font-bold">$${parseInt(data.total).toLocaleString()}</td>
+                        <td class="px-6 py-4 text-right font-bold">$${(data.total || 0).toLocaleString()}</td>
                         <td class="px-6 py-4 text-center">
-                            <select onchange="updateStatus('${doc.id}', this.value)" class="${statusColors[data.estado] || "bg-slate-100"} text-xs font-bold px-2 py-1 rounded-full outline-none cursor-pointer border-none appearance-none text-center">
+                            <select onchange="updateStatus('${doc.id}', this.value)" class="${statusColors[data.estado] || "bg-slate-100"} text-[10px] font-bold px-2 py-1 rounded-full outline-none cursor-pointer border-none appearance-none text-center">
                                 <option value="Pendiente" ${data.estado === "Pendiente" ? "selected" : ""}>Pendiente</option>
                                 <option value="Aprobado" ${data.estado === "Aprobado" ? "selected" : ""}>Aprobado</option>
                                 <option value="Cobrado" ${data.estado === "Cobrado" ? "selected" : ""}>Cobrado</option>
@@ -475,17 +310,17 @@ console.log("🚀 [PRESUPUESTOS] Página cargada/navegada");
                             </select>
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <div class="flex justify-end gap-2">
-                                <button onclick="printPDF('${doc.id}')" class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Descargar PDF">
-📄
+                            <div class="flex justify-end gap-1">
+                                <button onclick="printPDF('${doc.id}')" class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="Descargar PDF">
+                                    📄
                                 </button>
-                                <button onclick="shareWhatsApp('${doc.id}')" class="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Enviar por WhatsApp">
+                                <button onclick="window.vincularSolicitud('${doc.id}')" class="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors" title="Vincular a oportunidad">
+                                    🔗
+                                </button>
+                                <button onclick="window.shareWhatsAppDirect('${doc.id}')" class="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors" title="Enviar por WhatsApp">
                                     📱
                                 </button>
-                                <button onclick="shareWhatsApp('${doc.id}')" class="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Enviar por WhatsApp">
-                                    📱
-                                </button>
-                                <button onclick="deleteBudget('${doc.id}')" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
+                                <button onclick="deleteBudget('${doc.id}')" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" title="Eliminar">
                                     🗑️
                                 </button>
                             </div>
@@ -494,6 +329,323 @@ console.log("🚀 [PRESUPUESTOS] Página cargada/navegada");
                         listContainer.appendChild(tr);
                     });
                 }
+
+                // === NOTIFICATIONS LOGIC (Consistent with index.astro) ===
+                async function loadNotifications(uid) {
+                    if (notificationsUnsub) notificationsUnsub();
+                    
+                    const q = query(
+                        collection(db, "profesionales", uid, "notificaciones"),
+                        orderBy("fecha", "desc"),
+                        limit(10)
+                    );
+
+                    let isInitialLoad = true;
+                    notificationsUnsub = onSnapshot(q, (snapshot) => {
+                        const notifs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        
+                        // Toasts for new notifications
+                        if (!isInitialLoad) {
+                            snapshot.docChanges().forEach((change) => {
+                                if (change.type === "added") {
+                                    const n = change.doc.data();
+                                    if (!n.leido) {
+                                        // @ts-ignore
+                                        Swal.fire({
+                                            title: n.titulo || "Nueva Notificación",
+                                            text: n.mensaje || "",
+                                            icon: "info",
+                                            toast: true,
+                                            position: "top-end",
+                                            showConfirmButton: false,
+                                            timer: 5000,
+                                            timerProgressBar: true,
+                                            didOpen: (toast) => {
+                                                toast.addEventListener('mouseenter', Swal.stopTimer)
+                                                toast.addEventListener('mouseleave', Swal.resumeTimer)
+                                                toast.addEventListener('click', () => {
+                                                    window.verNotificacion(change.doc.id, n.link || '#', false);
+                                                })
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                        }
+                        isInitialLoad = false;
+
+                        // Render dropdown
+                        const list = document.getElementById("notification-list");
+                        const badge = document.getElementById("badge-bell");
+                        
+                        if (list) {
+                            if (notifs.length === 0) {
+                                list.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs">No hay notificaciones</div>`;
+                            } else {
+                                list.innerHTML = notifs.map(n => {
+                                    // Escapar comillas para el objeto JSON
+                                    const notifJson = JSON.stringify(n).replace(/'/g, "\\'");
+                                    return `
+                                        <div class="p-3 border-b border-slate-50 hover:bg-slate-50 transition cursor-pointer ${n.leido ? 'opacity-60' : ''}" 
+                                             onclick='window.verNotificacion("${n.id}", "${n.link || "#"}", ${n.leido}, ${notifJson})'>
+                                            <p class="font-bold text-[11px] text-slate-700 leading-tight">${n.titulo || 'Notificación'}</p>
+                                            <p class="text-[10px] text-slate-500 line-clamp-2">${n.mensaje || ''}</p>
+                                        </div>
+                                    `;
+                                }).join('');
+                            }
+                        }
+
+                        if (badge) {
+                            const unread = notifs.filter(n => !n.leido).length;
+                            unread > 0 ? badge.classList.remove("hidden") : badge.classList.add("hidden");
+                        }
+                    });
+                }
+
+                window.verNotificacion = async (id, link, leido, notifData) => {
+                    if (!currentUser) return;
+                    
+                    if (!leido) {
+                        try {
+                            const docRef = doc(db, "profesionales", currentUser.uid, "notificaciones", id);
+                            await updateDoc(docRef, { leido: true });
+                        } catch (e) {
+                            console.error("Error marking as read:", e);
+                        }
+                    }
+
+                    // Handle special notification types
+                    if (notifData && notifData.tipo === "presupuesto_aceptado") {
+                        // @ts-ignore
+                        Swal.fire({
+                            title: "✅ ¡Presupuesto Aceptado!",
+                            html: `
+                                <div class="text-left space-y-4 pt-2">
+                                    <div class="flex items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
+                                        <img src="${notifData.clienteFoto || '/default-avatar.png'}" alt="${notifData.clienteNombre}" class="w-16 h-16 rounded-full object-cover border-2 border-green-500 shadow-sm" />
+                                        <div>
+                                            <h3 class="font-bold text-lg text-slate-900 leading-tight">${notifData.clienteNombre || "Cliente"}</h3>
+                                            <p class="text-xs text-slate-500 uppercase font-black tracking-widest mt-1">CLIENTE</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-5 shadow-sm text-center relative overflow-hidden">
+                                        <div class="absolute top-0 right-0 p-2 opacity-10">
+                                            <svg class="w-12 h-12 text-green-900" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                        </div>
+                                        <p class="text-xs uppercase font-black text-green-800 mb-3 tracking-widest">Código de Seguridad</p>
+                                        <p class="text-4xl font-black text-green-600 tracking-[0.2em] drop-shadow-sm">${notifData.codigoSeguridad || '------'}</p>
+                                        <p class="text-[10px] text-green-700 mt-3 font-medium">Este código confirma la validez del trabajo. Pídelo al llegar.</p>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 gap-2 text-sm px-1">
+                                        ${notifData.clienteTelefono ? `
+                                            <div class="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl">
+                                                <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600">📱</div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-[10px] text-slate-400 font-bold uppercase">Teléfono</p>
+                                                    <a href="https://wa.me/${notifData.clienteTelefono.replace(/\D/g, '')}" target="_blank" class="font-bold text-slate-700 hover:text-green-600 transition truncate block">${notifData.clienteTelefono}</a>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                        ${notifData.clienteEmail ? `
+                                            <div class="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl">
+                                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">📧</div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-[10px] text-slate-400 font-bold uppercase">Email</p>
+                                                    <span class="font-bold text-slate-700 truncate block">${notifData.clienteEmail}</span>
+                                                </div>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+
+                                    ${notifData.clienteTelefono ? `
+                                        <a href="https://wa.me/${notifData.clienteTelefono.replace(/\D/g, '')}" target="_blank" class="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-black py-4 px-6 rounded-2xl transition-all shadow-lg shadow-green-100 transform active:scale-95">
+                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.588-5.946 0-6.556 5.332-11.888 11.888-11.888 3.176 0 6.161 1.237 8.404 3.483 2.247 2.248 3.481 5.234 3.481 8.406 0 6.556-5.332 11.888-11.888 11.888-2.01 0-3.988-.511-5.741-1.483l-6.243 1.692zm6.205-4.008l.445.265c1.404.835 3.028 1.277 4.693 1.277 5.175 0 9.387-4.212 9.387-9.387 0-2.506-.975-4.861-2.744-6.632-1.771-1.77-4.125-2.745-6.631-2.745-5.176 0-9.387 4.212-9.387 9.387 0 1.954.59 3.86 1.706 5.466l.29.418-.992 3.623 3.712-.998zm11.239-5.918c-.31-.155-1.838-.906-2.119-1.008-.281-.102-.486-.155-.69.155-.205.31-.79.998-.968 1.205-.178.207-.356.233-.666.078-.31-.155-1.31-.483-2.496-1.542-.922-.822-1.544-1.838-1.724-2.148-.181-.31-.019-.478.136-.632.14-.138.31-.359.466-.539.15-.181.2-.31.3-.517.102-.207.051-.389-.026-.544-.076-.155-.69-1.662-.946-2.278-.249-.6-.503-.518-.69-.527-.179-.009-.384-.011-.59-.011-.205 0-.539.077-.82.384-.282.311-1.077 1.053-1.077 2.568 0 1.516 1.102 2.977 1.256 3.184.154.207 2.169 3.328 5.253 4.653.733.315 1.306.503 1.751.644.737.234 1.406.201 1.936.121.591-.088 1.838-.751 2.094-1.477.256-.725.256-1.346.179-1.477-.077-.13-.282-.207-.591-.362z"></path></svg>
+                                            CONTACTAR POR WHATSAPP
+                                        </a>
+                                    ` : ''}
+                                </div>
+                            `,
+                            width: "450px",
+                            confirmButtonText: "Entendido",
+                            confirmButtonColor: "#1e293b",
+                            customClass: {
+                                container: 'budget-notif-container',
+                                popup: 'rounded-3xl shadow-2xl border border-slate-100',
+                                confirmButton: 'rounded-xl font-black px-8 py-3 uppercase tracking-widest text-sm'
+                            }
+                        });
+                    } else if (notifData && notifData.tipo === "presupuesto_rechazado") {
+                        // @ts-ignore
+                        Swal.fire({
+                            title: "Presupuesto Rechazado",
+                            text: notifData.mensaje,
+                            icon: "info",
+                            confirmButtonText: "Cerrar",
+                            confirmButtonColor: "#64748b"
+                        });
+                    } else {
+                        // Fallback: original logic
+                        if (link && link !== '#') {
+                            window.location.href = link;
+                        }
+                    }
+                };
+
+                // === TABS LOGIC ===
+                const tabDirectos = document.getElementById("tab-directos");
+                const tabOportunidades = document.getElementById("tab-oportunidades");
+                const contentDirectos = document.getElementById("content-table");
+                const contentOportunidades = document.getElementById("content-oportunidades");
+
+                tabDirectos?.addEventListener("click", () => switchTab("directos"));
+                tabOportunidades?.addEventListener("click", () => switchTab("oportunidades"));
+
+                async function switchTab(tab) {
+                    activeTab = tab;
+                    
+                    // Reset UI
+                    [tabDirectos, tabOportunidades].forEach(el => el?.classList.remove("border-orange-600", "text-orange-600"));
+                    [tabDirectos, tabOportunidades].forEach(el => el?.classList.add("border-transparent", "text-slate-400"));
+                    [contentDirectos, contentOportunidades].forEach(el => el?.classList.add("hidden"));
+
+                    if (tab === "directos") {
+                        tabDirectos?.classList.add("border-orange-600", "text-orange-600");
+                        tabDirectos?.classList.remove("border-transparent", "text-slate-400");
+                        contentDirectos?.classList.remove("hidden");
+                        loadPresupuestos(currentUser.uid);
+                    } else {
+                        tabOportunidades?.classList.add("border-orange-600", "text-orange-600");
+                        tabOportunidades?.classList.remove("border-transparent", "text-slate-400");
+                        contentOportunidades?.classList.remove("hidden");
+                        loadSentProposals();
+                    }
+                }
+
+                async function loadSentProposals() {
+                    if (!currentUser) return;
+                    loadingState?.classList.remove("hidden");
+                    emptyState?.classList.add("hidden");
+                    contentOportunidades.innerHTML = "";
+
+                    try {
+                        console.log("🔍 [TABS] Buscando propuestas enviadas...");
+                        const q = query(
+                            collectionGroup(db, "propuestas"),
+                            where("proId", "==", currentUser.uid),
+                            orderBy("fecha", "desc")
+                        );
+                        
+                        const snap = await getDocs(q);
+                        loadingState?.classList.add("hidden");
+
+                        if (snap.empty) {
+                            emptyState?.classList.remove("hidden");
+                            return;
+                        }
+
+                        // We have proposals. Note: they are in subcollections solicitudes/{solId}/propuestas
+                        // We need the parent request data for context (rubro, cliente, etc.)
+                        const cardsHtml = await Promise.all(snap.docs.map(async (pDoc) => {
+                            const pData = pDoc.data();
+                            const solId = pDoc.ref.parent.parent?.id;
+                            
+                            // Get request data (optional cache would be better)
+                            let solData: any = {};
+                            if (solId) {
+                                const solSnap = await getDocs(query(collection(db, "solicitudes"), where("__name__", "==", solId)));
+                                if (!solSnap.empty) solData = solSnap.docs[0].data();
+                            }
+
+                            const fecha = pData.fecha?.toDate ? pData.fecha.toDate().toLocaleDateString() : "Sin fecha";
+                            const statusColor = pData.estado === "aceptada" ? "bg-green-100 text-green-700" : (pData.estado === "rechazada" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700");
+
+                            return `
+                                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">${solData.rubro || 'Trabajo'}</span>
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${statusColor}">${pData.estado?.toUpperCase() || 'ENVIADO'}</span>
+                                        </div>
+                                        <h4 class="font-bold text-slate-800">${solData.clienteNombre || 'Cliente'}</h4>
+                                        <p class="text-xs text-slate-500 line-clamp-1">${pData.mensaje || 'Sin mensaje'}</p>
+                                    </div>
+                                    <div class="text-right flex flex-col items-end shrink-0">
+                                        <span class="text-xl font-bold text-orange-600">$${(pData.precio || 0).toLocaleString()}</span>
+                                        <span class="text-[10px] text-slate-400">${fecha}</span>
+                                        <div class="mt-2 flex gap-2">
+                                            <a href="/panel/oportunidades" class="text-[10px] font-bold text-indigo-600 hover:underline">Ver oportunidad</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }));
+
+                        contentOportunidades.innerHTML = cardsHtml.join("");
+
+                    } catch (err) {
+                        console.error("Error loading proposals:", err);
+                        loadingState?.classList.add("hidden");
+                        contentOportunidades.innerHTML = `<p class="text-red-500 text-center text-sm">Error cargando propuestas.</p>`;
+                    }
+                }
+
+                // === VINCULAR LOGIC ===
+                window.vincularSolicitud = async (budgetId) => {
+                    if (!currentUser) return;
+                    
+                    try {
+                        // 1. Get accepted opportunities
+                        const q = query(
+                            collection(db, "solicitudes"),
+                            where("profesionalId", "==", currentUser.uid),
+                            limit(10)
+                        );
+                        const snap = await getDocs(q);
+                        
+                        if (snap.empty) {
+                            return showAlert("No tienes oportunidades", "Primero debes contactar a un cliente desde el panel de Oportunidades.", "info");
+                        }
+
+                        const options = {};
+                        snap.docs.forEach(doc => {
+                            const data = doc.data();
+                            options[doc.id] = `${data.rubro} - ${data.clienteNombre || 'Sin nombre'}`;
+                        });
+
+                        // @ts-ignore
+                        const { value: solId } = await Swal.fire({
+                            title: 'Vincular Presupuesto',
+                            input: 'select',
+                            inputOptions: options,
+                            inputPlaceholder: 'Selecciona una oportunidad',
+                            showCancelButton: true,
+                            confirmButtonColor: '#ea580c',
+                        });
+
+                        if (solId) {
+                            // Update budget with solicitudId
+                            const budgetRef = doc(db, "profesionales", currentUser.uid, "presupuestos", budgetId);
+                            await updateDoc(budgetRef, { solicitudId: solId });
+                            
+                            showAlert("¡Vinculado!", "El presupuesto se ha vinculado correctamente a la oportunidad seleccionada.", "success");
+                        }
+                    } catch (err) {
+                        console.error("Error linking:", err);
+                        showAlert("Error", "No se pudo vincular el presupuesto.", "error");
+                    }
+                };
+
+                window.shareWhatsAppDirect = (id) => {
+                    const p = allPresupuestos[id];
+                    if (!p) return;
+                    
+                    const text = `Hola ${p.cliente}, te envío el presupuesto para "${p.titulo}". Total: $${p.total.toLocaleString()}. Puedes verlo en detalle aquí: (Próximamente link público)`;
+                    const url = `https://wa.me/${p.telefono?.replace(/\D/g, '') || ''}?text=${encodeURIComponent(text)}`;
+                    window.open(url, '_blank');
+                };
 
                 // MODAL LOGIC
                 document

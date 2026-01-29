@@ -768,11 +768,42 @@ import Layout from "../../layouts/Layout.astro";
                 limit(20)
             );
 
+            let isInitialLoad = true;
             notificationsUnsub = onSnapshot(q, (snapshot) => {
                 const notifs = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }));
+
+                // Real-time Toast for new notifications
+                if (!isInitialLoad) {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === "added") {
+                            const n = change.doc.data();
+                            if (!n.leido) {
+                                // @ts-ignore
+                                Swal.fire({
+                                    title: n.titulo || "Nueva Notificación",
+                                    text: n.mensaje || "",
+                                    icon: "info",
+                                    toast: true,
+                                    position: "top-end",
+                                    showConfirmButton: false,
+                                    timer: 5000,
+                                    timerProgressBar: true,
+                                    didOpen: (toast) => {
+                                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                                        toast.addEventListener('click', () => {
+                                            window.verNotificacion(change.doc.id, n.link || '#', false);
+                                        })
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+                isInitialLoad = false;
 
                 console.log(`📥 [DASHBOARD] Recibidas ${notifs.length} notificaciones`);
 
@@ -788,9 +819,11 @@ import Layout from "../../layouts/Layout.astro";
                         notificationListEl.innerHTML = notifs.map(n => {
                             const fecha = n.fecha?.toDate ? n.fecha.toDate() : new Date();
                             const timeStr = formatDate(fecha);
+                            // Escapar comillas para el objeto JSON
+                            const notifJson = JSON.stringify(n).replace(/'/g, "\\'");
                             return `
                                 <div class="p-3 border-b border-slate-50 hover:bg-slate-50 transition cursor-pointer group flex items-start gap-2 ${n.leido ? 'opacity-60' : ''}" 
-                                     onclick="window.verNotificacion('${n.id}', '${n.link || '#'}', ${n.leido})">
+                                     onclick='window.verNotificacion("${n.id}", "${n.link || "#"}", ${n.leido}, ${notifJson})'>
                                     <div class="flex-1 min-w-0">
                                         <div class="flex justify-between mb-1">
                                             <span class="font-bold text-[11px] text-slate-700 leading-tight truncate">${n.titulo || 'Notificación'}</span>
@@ -829,7 +862,7 @@ import Layout from "../../layouts/Layout.astro";
         }
 
         // Action when clicking a notification
-        window.verNotificacion = async (id, link, leido) => {
+        window.verNotificacion = async (id, link, leido, notifData) => {
             if (!currentUser) return;
             
             // Mark as read if it wasn't
@@ -842,9 +875,82 @@ import Layout from "../../layouts/Layout.astro";
                 }
             }
 
-            // Navigate
-            if (link && link !== '#') {
-                window.location.href = link;
+            // Handle special notification types
+            if (notifData && notifData.tipo === "presupuesto_aceptado") {
+                // @ts-ignore
+                Swal.fire({
+                    title: "✅ ¡Presupuesto Aceptado!",
+                    html: `
+                        <div class="text-left space-y-4 pt-2">
+                            <div class="flex items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
+                                <img src="${notifData.clienteFoto || '/default-avatar.png'}" alt="${notifData.clienteNombre}" class="w-16 h-16 rounded-full object-cover border-2 border-green-500 shadow-sm" />
+                                <div>
+                                    <h3 class="font-bold text-lg text-slate-900 leading-tight">${notifData.clienteNombre || "Cliente"}</h3>
+                                    <p class="text-xs text-slate-500 uppercase font-black tracking-widest mt-1">CLIENTE</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-5 shadow-sm text-center relative overflow-hidden">
+                                <div class="absolute top-0 right-0 p-2 opacity-10">
+                                    <svg class="w-12 h-12 text-green-900" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                </div>
+                                <p class="text-xs uppercase font-black text-green-800 mb-3 tracking-widest">Código de Seguridad</p>
+                                <p class="text-4xl font-black text-green-600 tracking-[0.2em] drop-shadow-sm">${notifData.codigoSeguridad || '------'}</p>
+                                <p class="text-[10px] text-green-700 mt-3 font-medium">Este código confirma la validez del trabajo. Pídelo al llegar.</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-2 text-sm px-1">
+                                ${notifData.clienteTelefono ? `
+                                    <div class="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl">
+                                        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600">📱</div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-[10px] text-slate-400 font-bold uppercase">Teléfono</p>
+                                            <a href="https://wa.me/${notifData.clienteTelefono.replace(/\D/g, '')}" target="_blank" class="font-bold text-slate-700 hover:text-green-600 transition truncate block">${notifData.clienteTelefono}</a>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                ${notifData.clienteEmail ? `
+                                    <div class="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl">
+                                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">📧</div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-[10px] text-slate-400 font-bold uppercase">Email</p>
+                                            <span class="font-bold text-slate-700 truncate block">${notifData.clienteEmail}</span>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            ${notifData.clienteTelefono ? `
+                                <a href="https://wa.me/${notifData.clienteTelefono.replace(/\D/g, '')}" target="_blank" class="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-black py-4 px-6 rounded-2xl transition-all shadow-lg shadow-green-100 transform active:scale-95">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.588-5.946 0-6.556 5.332-11.888 11.888-11.888 3.176 0 6.161 1.237 8.404 3.483 2.247 2.248 3.481 5.234 3.481 8.406 0 6.556-5.332 11.888-11.888 11.888-2.01 0-3.988-.511-5.741-1.483l-6.243 1.692zm6.205-4.008l.445.265c1.404.835 3.028 1.277 4.693 1.277 5.175 0 9.387-4.212 9.387-9.387 0-2.506-.975-4.861-2.744-6.632-1.771-1.77-4.125-2.745-6.631-2.745-5.176 0-9.387 4.212-9.387 9.387 0 1.954.59 3.86 1.706 5.466l.29.418-.992 3.623 3.712-.998zm11.239-5.918c-.31-.155-1.838-.906-2.119-1.008-.281-.102-.486-.155-.69.155-.205.31-.79.998-.968 1.205-.178.207-.356.233-.666.078-.31-.155-1.31-.483-2.496-1.542-.922-.822-1.544-1.838-1.724-2.148-.181-.31-.019-.478.136-.632.14-.138.31-.359.466-.539.15-.181.2-.31.3-.517.102-.207.051-.389-.026-.544-.076-.155-.69-1.662-.946-2.278-.249-.6-.503-.518-.69-.527-.179-.009-.384-.011-.59-.011-.205 0-.539.077-.82.384-.282.311-1.077 1.053-1.077 2.568 0 1.516 1.102 2.977 1.256 3.184.154.207 2.169 3.328 5.253 4.653.733.315 1.306.503 1.751.644.737.234 1.406.201 1.936.121.591-.088 1.838-.751 2.094-1.477.256-.725.256-1.346.179-1.477-.077-.13-.282-.207-.591-.362z"></path></svg>
+                                    CONTACTAR POR WHATSAPP
+                                </a>
+                            ` : ''}
+                        </div>
+                    `,
+                    width: "450px",
+                    confirmButtonText: "Entendido",
+                    confirmButtonColor: "#1e293b", // slate-800
+                    customClass: {
+                        container: 'budget-notif-container',
+                        popup: 'rounded-3xl shadow-2xl border border-slate-100',
+                        confirmButton: 'rounded-xl font-black px-8 py-3 uppercase tracking-widest text-sm'
+                    }
+                });
+            } else if (notifData && notifData.tipo === "presupuesto_rechazado") {
+                // @ts-ignore
+                Swal.fire({
+                    title: "Presupuesto Rechazado",
+                    text: notifData.mensaje,
+                    icon: "info",
+                    confirmButtonText: "Cerrar",
+                    confirmButtonColor: "#64748b"
+                });
+            } else {
+                // Fallback: original logic
+                if (link && link !== '#') {
+                    window.location.href = link;
+                }
             }
         };
 
