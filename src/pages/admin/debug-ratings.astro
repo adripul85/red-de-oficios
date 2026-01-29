@@ -1,0 +1,130 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { dbAdmin } from "../../firebase/admin";
+---
+
+<Layout title="Debug Ratings - Admin">
+    <div class="min-h-screen bg-slate-50 py-8 px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-2xl shadow-lg p-8">
+                <h1 class="text-3xl font-black text-slate-800 mb-4">
+                    🔍 Debug: Verificar Calificaciones
+                </h1>
+                
+                <div class="mb-6">
+                    <label class="block font-medium text-gray-700 mb-2">
+                        ID del Profesional:
+                    </label>
+                    <input 
+                        type="text" 
+                        id="pro-id" 
+                        placeholder="Ej: 2QZVanbWFLbHUdISHKHtTb6aoFX2"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
+                </div>
+
+                <button
+                    id="btn-check"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                >
+                    Verificar Datos
+                </button>
+
+                <div id="results" class="mt-8 hidden">
+                    <h3 class="font-bold text-xl mb-4">Resultados:</h3>
+                    <div id="output" class="bg-gray-900 text-green-400 p-6 rounded-lg font-mono text-sm whitespace-pre-wrap max-h-96 overflow-y-auto">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { db } from "../../firebase/client";
+    import { doc, getDoc, collection, getDocs } from "firebase/firestore";
+
+    document.addEventListener("astro:page-load", () => {
+        const btnCheck = document.getElementById("btn-check");
+        const proIdInput = document.getElementById("pro-id") as HTMLInputElement;
+        const results = document.getElementById("results");
+        const output = document.getElementById("output");
+
+        btnCheck?.addEventListener("click", async () => {
+            const proId = proIdInput.value.trim();
+            
+            if (!proId) {
+                alert("Por favor ingresa un ID de profesional");
+                return;
+            }
+
+            results.classList.remove("hidden");
+            output.innerHTML = "Cargando...\n";
+
+            try {
+                // 1. Obtener datos del profesional
+                const proRef = doc(db, "profesionales", proId);
+                const proSnap = await getDoc(proRef);
+
+                if (!proSnap.exists()) {
+                    output.innerHTML = "❌ Profesional no encontrado";
+                    return;
+                }
+
+                const proData = proSnap.data();
+                
+                output.innerHTML = `📊 DATOS DEL PROFESIONAL:\n`;
+                output.innerHTML += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                output.innerHTML += `Nombre: ${proData.nombre}\n`;
+                output.innerHTML += `Email: ${proData.email || "N/A"}\n`;
+                output.innerHTML += `\n🎯 CAMPOS DE CALIFICACIÓN:\n`;
+                output.innerHTML += `  • puntuacion: ${proData.puntuacion || "NO EXISTE"}\n`;
+                output.innerHTML += `  • total_valoraciones: ${proData.total_valoraciones || "NO EXISTE"}\n`;
+                output.innerHTML += `  • suma_puntuacion: ${proData.suma_puntuacion || "NO EXISTE"}\n`;
+                output.innerHTML += `  • promedio: ${proData.promedio || "NO EXISTE"}\n`;
+                output.innerHTML += `  • total_votos: ${proData.total_votos || "NO EXISTE"}\n`;
+                output.innerHTML += `\n`;
+
+                // 2. Obtener reseñas
+                const resenasRef = collection(db, `profesionales/${proId}/resenas`);
+                const resenasSnap = await getDocs(resenasRef);
+
+                output.innerHTML += `📝 RESEÑAS (${resenasSnap.size} encontradas):\n`;
+                output.innerHTML += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+
+                if (resenasSnap.empty) {
+                    output.innerHTML += `  ⚠️ No hay reseñas en la subcolección "resenas"\n`;
+                } else {
+                    let sumaEstrellas = 0;
+                    resenasSnap.forEach((doc, index) => {
+                        const resena = doc.data();
+                        sumaEstrellas += resena.estrellas || 0;
+                        output.innerHTML += `\n  Reseña #${index + 1}:\n`;
+                        output.innerHTML += `    ID: ${doc.id}\n`;
+                        output.innerHTML += `    Cliente: ${resena.clienteNombre}\n`;
+                        output.innerHTML += `    Estrellas: ${resena.estrellas} ⭐\n`;
+                        output.innerHTML += `    Comentario: ${resena.comentario}\n`;
+                        output.innerHTML += `    Fecha: ${resena.fecha?.toDate?.() || "N/A"}\n`;
+                    });
+
+                    const promedioReal = sumaEstrellas / resenasSnap.size;
+                    output.innerHTML += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                    output.innerHTML += `✅ CÁLCULO CORRECTO:\n`;
+                    output.innerHTML += `  Suma total: ${sumaEstrellas}\n`;
+                    output.innerHTML += `  Total reseñas: ${resenasSnap.size}\n`;
+                    output.innerHTML += `  Promedio: ${promedioReal.toFixed(2)}\n`;
+                    
+                    if (proData.puntuacion !== promedioReal) {
+                        output.innerHTML += `\n⚠️ DISCREPANCIA DETECTADA:\n`;
+                        output.innerHTML += `  El campo "puntuacion" (${proData.puntuacion || 0}) no coincide\n`;
+                        output.innerHTML += `  con el promedio real (${promedioReal.toFixed(2)})\n`;
+                    }
+                }
+
+            } catch (error) {
+                output.innerHTML += `\n❌ ERROR: ${error.message}\n`;
+                console.error(error);
+            }
+        });
+    });
+</script>

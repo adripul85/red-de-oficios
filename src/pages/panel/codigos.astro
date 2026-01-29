@@ -1,0 +1,155 @@
+﻿---
+import Layout from "../../layouts/Layout.astro";
+import Sidebar from "../../components/panel/Sidebar.astro";
+import MobileSidebar from "../../components/panel/MobileSidebar.astro";
+---
+
+<Layout title="Mis Códigos - Panel Profesional" hideIA={true} hideHeader={true} hideBottomNav={true}>
+
+    <div class="flex h-screen overflow-hidden bg-slate-50">
+        <Sidebar currentPath={Astro.url.pathname} />
+        <MobileSidebar currentPath={Astro.url.pathname} />
+
+        <main class="flex-1 flex flex-col h-screen relative overflow-hidden">
+            <!-- Header Panel -->
+            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-30 relative shrink-0">
+                <div class="flex items-center gap-4">
+                    <button id="open-sidebar" class="md:hidden text-2xl mr-2">☰</button>
+                    <h2 class="text-lg font-bold text-slate-800">Mis Códigos</h2>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto">
+                <div class="max-w-4xl mx-auto px-4 py-8">
+                    <!-- Header -->
+                    <div class="mb-8">
+                        <h1 class="text-2xl font-bold text-slate-800">Mis Códigos de Seguridad</h1>
+                        <p class="text-slate-500 mt-1">
+                            Historial de códigos generados para visitas a clientes.
+                        </p>
+                    </div>
+
+                <!-- Codes List -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 min-h-[400px]">
+                    
+                    <div id="loading-codes" class="flex flex-col items-center justify-center py-12">
+                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mb-4"></div>
+                         <p class="text-slate-400">Cargando códigos...</p>
+                    </div>
+
+                    <div id="empty-codes" class="hidden flex flex-col items-center justify-center py-12 text-center">
+                        <span class="text-4xl mb-4">🛡️</span>
+                        <h3 class="text-lg font-bold text-slate-700">No tienes códigos activos</h3>
+                        <p class="text-slate-500 max-w-sm mt-2">
+                            Los códigos se generan automáticamente cuando contactas a un cliente para un servicio presencial.
+                        </p>
+                    </div>
+
+                    <div id="codes-grid" class="hidden grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                        <!-- Code Cards will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</Layout>
+
+<script>
+    import { auth, db } from "../../firebase/client";
+    import { onAuthStateChanged } from "firebase/auth";
+    import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
+
+    let currentUser = null;
+
+    document.addEventListener("astro:page-load", () => {
+         const user = window.currentUser || auth.currentUser;
+         if(user) {
+             initCodes(user);
+         } else {
+             onAuthStateChanged(auth, u => {
+                 if(u) initCodes(u);
+                 else window.location.href = "/ingresar-profesional";
+             });
+         }
+    });
+
+    async function initCodes(user) {
+        currentUser = user;
+        const loading = document.getElementById("loading-codes");
+        const empty = document.getElementById("empty-codes");
+        const grid = document.getElementById("codes-grid");
+
+        try {
+            // Load codes from profesionales/{uid}/codigos subcollection
+            const q = query(
+                collection(db, "profesionales", user.uid, "codigos"),
+                orderBy("fecha", "desc"),
+                limit(20)
+            );
+
+            const snapshot = await getDocs(q);
+            
+            if(loading) loading.classList.add("hidden");
+
+            if (snapshot.empty) {
+                if(empty) empty.classList.remove("hidden");
+                return;
+            }
+
+            if(grid) {
+                grid.classList.remove("hidden");
+                grid.innerHTML = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    if(!data.codigo) return ''; // Skip if no code
+                    
+                    const date = data.fecha?.toDate ? data.fecha.toDate().toLocaleDateString('es-AR') : 'Reciente';
+                    const usadoClass = data.usado ? 'opacity-50' : '';
+                    const usadoBadge = data.usado ? '<span class="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded-full font-bold">USADO</span>' : '';
+
+                    return `
+                        <div class="border border-slate-200 rounded-xl p-4 hover:border-orange-200 transition bg-slate-50 ${usadoClass}">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-xs font-bold text-slate-500">Cliente ${data.clienteId ? data.clienteId.substring(0, 8) : ''}</span>
+                                <div class="flex flex-col items-end gap-1">
+                                    <span class="text-[10px] text-slate-400">${date}</span>
+                                    ${usadoBadge}
+                                </div>
+                            </div>
+                            <div class="text-center py-3 bg-white rounded-lg border border-dashed border-slate-300 my-2">
+                                <span class="block text-xs uppercase text-slate-400 font-bold mb-1">Código de Seguridad</span>
+                                <span class="text-2xl font-black text-slate-800 tracking-widest">${data.codigo}</span>
+                            </div>
+                            ${data.solicitudId ? `<p class="text-xs text-slate-500 text-center">Solicitud: ${data.solicitudId.substring(0, 8)}...</p>` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                // Check if all were skipped
+                if(grid.innerHTML.trim() === '') {
+                     if(empty) empty.classList.remove("hidden");
+                     grid.classList.add("hidden");
+                }
+            }
+
+        } catch (error) {
+            console.error("Error loading codes:", error);
+            if(loading) loading.classList.add("hidden");
+            // Show error state
+        }
+    }
+</script>
+
+<script>
+    // Sidebar Mobile Toggle
+    const btnOpenSidebar = document.getElementById("open-sidebar");
+    
+    btnOpenSidebar?.addEventListener("click", () => {
+        document.dispatchEvent(new CustomEvent("toggle-sidebar"));
+    });
+</script>
+
+                    </div> <!-- max-w-4xl -->
+                </div> <!-- flex-1 overflow-y-auto -->
+            </main>
+        </div> <!-- flex h-screen -->
+</Layout>

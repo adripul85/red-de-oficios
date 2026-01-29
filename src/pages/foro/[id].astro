@@ -152,10 +152,12 @@ const isPrivate = thread && PRIVATE_IDS.includes(thread.category);
                             <h2 class="text-2xl font-bold text-slate-800 mb-2">Contenido Exclusivo</h2>
                             <p class="text-slate-500 max-w-md mx-auto mb-6">Esta sección es exclusiva para profesionales de la comunidad.</p>
                             
-                            <div id="access-loading" class="hidden flex flex-col items-center gap-2 mb-6">
+                        <div id="access-loading" class="hidden mb-6">
+                            <div class="flex flex-col items-center gap-2">
                                 <div class="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
                                 <span class="text-indigo-600 font-bold text-sm">Verificando tu acceso...</span>
                             </div>
+                        </div>
 
                             <div class="flex gap-4 justify-center">
                                 <a href={`/ingresar?redirect=/foro/${id}`} class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
@@ -247,7 +249,7 @@ const isPrivate = thread && PRIVATE_IDS.includes(thread.category);
                                     {replies.length} Respuestas
                                 </h3>
                                 {replies.map((reply) => (
-                                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex gap-4">
+                                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex gap-4 relative group">
                                         <img
                                             src={reply.authorPhoto}
                                             class="w-10 h-10 rounded-full border border-slate-100 flex-shrink-0"
@@ -270,6 +272,20 @@ const isPrivate = thread && PRIVATE_IDS.includes(thread.category);
                                                     👷 Ver perfil de {reply.authorName} y contactar
                                                 </a>
                                             )}
+                                        </div>
+
+                                        {/* CONTROLES DE RESPUESTA (Solo autor) */}
+                                        <div
+                                            class="owner-controls hidden absolute top-4 right-4 flex gap-2"
+                                            data-author-id={reply.authorId}
+                                            data-reply-id={reply.id}
+                                        >
+                                            <button
+                                                class="btn-delete-reply text-slate-400 hover:text-red-600 p-1 transition text-xs"
+                                                title="Eliminar Respuesta"
+                                            >
+                                                🗑️
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
@@ -458,6 +474,26 @@ const isPrivate = thread && PRIVATE_IDS.includes(thread.category);
                 }
             });
 
+        document.querySelectorAll(".btn-delete-reply").forEach((btn) => {
+            btn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (confirm("¿Eliminar esta respuesta?")) {
+                    try {
+                        // @ts-ignore
+                        const replyId = e.target.closest(".owner-controls").dataset.replyId;
+                        await deleteDoc(doc(db, "foro_posts", replyId));
+                        // @ts-ignore
+                        await updateDoc(doc(db, "foro_threads", currentThreadId), {
+                            replyCount: increment(-1),
+                        });
+                        window.location.reload();
+                    } catch (e) {
+                        alert("Error al eliminar la respuesta");
+                    }
+                }
+            });
+        });
         document.querySelectorAll(".btn-delete").forEach((btn) => {
             btn.addEventListener("click", async (e) => {
                 // @ts-ignore

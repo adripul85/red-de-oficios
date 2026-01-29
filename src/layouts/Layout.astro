@@ -6,6 +6,7 @@ import GlobalBanner from "../components/GlobalBanner.astro";
 import PWAInstallPrompt from "../components/PWAInstallPrompt.astro";
 import BottomNav from "../components/BottomNav.astro";
 import AiAssistant from "../components/AiAssistant.astro";
+import NotificationToast from "../components/NotificationToast.astro";
 import { ClientRouter } from "astro:transitions";
 
 interface Props {
@@ -78,7 +79,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
 			rel="stylesheet"
 			media="print" 
 			onload="this.media='all'"
@@ -187,6 +188,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
             });
         </script>
 
+        <NotificationToast />
 	</body>
 </html>
 

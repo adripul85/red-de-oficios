@@ -1544,6 +1544,11 @@ title: "¿Quitar de favoritos?",
             if (!result.isConfirmed) return;
 
             try {
+                // Load solicitud data to get client phone
+                const solRef = doc(db, "solicitudes", solicitudId);
+                const solSnap = await getDoc(solRef);
+                const solData = solSnap.data();
+
                 // Load professional data
                 const proDoc = await getDoc(doc(db, "profesionales", proId));
                 if (!proDoc.exists()) {
@@ -1556,7 +1561,7 @@ title: "¿Quitar de favoritos?",
                 const codigoSeguridad = Math.floor(100000 + Math.random() * 900000).toString();
 
                 // Update solicitud
-                await updateDoc(doc(db, "solicitudes", solicitudId), {
+                await updateDoc(solRef, {
                     status: "aceptada",
                     profesionalId: proId,
                     profesionalNombre: proData.nombre || "Profesional",
@@ -1579,10 +1584,10 @@ title: "¿Quitar de favoritos?",
                 try {
                     await addDoc(collection(db, "profesionales", proId, "notificaciones"), {
                         titulo: "¡Presupuesto Aceptado! 🚀",
-                        mensaje: `¡Felicidades! ${currentUser.displayName || 'El cliente'} ha aceptado tu presupuesto. Ponte en contacto ahora.`,
+                        mensaje: `¡Felicidades! ${currentUser.displayName || 'El cliente'} ha aceptado tu presupuesto. Su teléfono es ${solData?.telefono || 'Consultar en el panel'}. Ponte en contacto ahora.`,
                         fecha: serverTimestamp(),
                         leido: false,
-                        link: "/panel/presupuestos"
+                        link: "/panel/oportunidades" // Redirect to opportunities where they can see contact info
                     });
                 } catch (notifError) {
                     console.error("Error enviando notificación de aceptación:", notifError);

@@ -1,0 +1,228 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Migración de Calificaciones - Admin">
+    <div class="min-h-screen bg-slate-50 py-8 px-4">
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-white rounded-2xl shadow-lg p-8">
+                <h1 class="text-3xl font-black text-slate-800 mb-4">
+                    🔧 Migración de Calificaciones
+                </h1>
+                <p class="text-gray-600 mb-6">
+                    Este script recalcula las calificaciones de todos los profesionales basándose en sus reseñas reales.
+                </p>
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                    <p class="text-yellow-800 text-sm font-semibold">
+                        ⚠️ Advertencia: Esta operación modificará la base de datos. Asegúrate de tener un backup.
+                    </p>
+                </div>
+
+                <div class="mb-6 space-y-4">
+                    <div>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="exclude-no-email" checked class="w-4 h-4 text-blue-600 rounded">
+                            <span class="text-sm font-medium text-gray-700">
+                                Excluir profesionales sin email (usuarios de prueba)
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <div>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="exclude-test-users" class="w-4 h-4 text-blue-600 rounded">
+                            <span class="text-sm font-medium text-gray-700">
+                                Excluir usuarios de prueba (rol = "admin", "moderador", "staff")
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Excluir profesionales por nombre (separados por coma):
+                        </label>
+                        <input 
+                            type="text" 
+                            id="exclude-names" 
+                            placeholder="Ej: Test User, Demo Pro, Fake Account"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                        >
+                        <p class="text-xs text-gray-500 mt-1">Deja vacío para no excluir por nombre</p>
+                    </div>
+                </div>
+
+                <button
+                    id="btn-migrate"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                >
+                    Iniciar Migración
+                </button>
+
+                <div id="log-container" class="mt-6 space-y-2 hidden">
+                    <h3 class="font-bold text-gray-700">Log de Migración:</h3>
+                    <div id="log-output" class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm max-h-96 overflow-y-auto">
+                    </div>
+                </div>
+
+                <div id="results" class="mt-6 hidden">
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <p class="text-green-800 font-semibold">
+                            ✅ Migración completada exitosamente
+                        </p>
+                        <p id="stats" class="text-green-700 text-sm mt-2"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { db } from "../../firebase/client";
+    import { collection, getDocs, doc, updateDoc, query, orderBy } from "firebase/firestore";
+
+    document.addEventListener("astro:page-load", () => {
+        const btnMigrate = document.getElementById("btn-migrate");
+        const logContainer = document.getElementById("log-container");
+        const logOutput = document.getElementById("log-output");
+        const results = document.getElementById("results");
+        const stats = document.getElementById("stats");
+
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logOutput.innerHTML += `[${timestamp}] ${message}\n`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+
+        btnMigrate?.addEventListener("click", async () => {
+            if (!confirm("¿Estás seguro de iniciar la migración? Esto recalculará todas las calificaciones.")) {
+                return;
+            }
+
+            btnMigrate.disabled = true;
+            btnMigrate.innerText = "Migrando...";
+            logContainer.classList.remove("hidden");
+            logOutput.innerHTML = "";
+
+            // Obtener opciones de filtro
+            const excludeNoEmail = document.getElementById("exclude-no-email").checked;
+            const excludeTestUsers = document.getElementById("exclude-test-users").checked;
+            const excludeNamesInput = document.getElementById("exclude-names").value;
+            const excludeNames = excludeNamesInput
+                .split(",")
+                .map(name => name.trim().toLowerCase())
+                .filter(name => name.length > 0);
+
+            try {
+                log("🚀 Iniciando migración de calificaciones...");
+                
+                if (excludeNoEmail) {
+                    log("🔒 Filtro activo: Excluyendo profesionales sin email");
+                }
+                if (excludeTestUsers) {
+                    log("🔒 Filtro activo: Excluyendo usuarios con rol admin/moderador/staff");
+                }
+                if (excludeNames.length > 0) {
+                    log(`🔒 Filtro activo: Excluyendo nombres: ${excludeNames.join(", ")}`);
+                }
+
+                // 1. Obtener todos los profesionales
+                const prosSnapshot = await getDocs(collection(db, "profesionales"));
+                log(`📊 Encontrados ${prosSnapshot.size} profesionales`);
+
+                let updated = 0;
+                let errors = 0;
+                let skipped = 0;
+
+                // 2. Para cada profesional, recalcular su promedio
+                for (const proDoc of prosSnapshot.docs) {
+                    const proId = proDoc.id;
+                    const proData = proDoc.data();
+                    
+                    // Aplicar filtros
+                    const email = (proData.email || "").trim();
+                    const rol = (proData.rol || "").toLowerCase();
+                    const nombre = (proData.nombre || "").toLowerCase();
+                    
+                    // Filtro por email (usuarios falsos)
+                    if (excludeNoEmail && !email) {
+                        log(`⏭️ Saltando ${proData.nombre} (sin email)`);
+                        skipped++;
+                        continue;
+                    }
+                    
+                    // Filtro por rol
+                    if (excludeTestUsers && (rol === "admin" || rol === "moderador" || rol === "moderator" || rol === "staff")) {
+                        log(`⏭️ Saltando ${proData.nombre} (rol: ${rol})`);
+                        skipped++;
+                        continue;
+                    }
+                    
+                    // Filtro por nombre
+                    if (excludeNames.length > 0 && excludeNames.some(excludeName => nombre.includes(excludeName))) {
+                        log(`⏭️ Saltando ${proData.nombre} (nombre en lista de exclusión)`);
+                        skipped++;
+                        continue;
+                    }
+                    
+                    try {
+                        // Obtener todas las reseñas de este profesional
+                        const resenasSnapshot = await getDocs(
+                            collection(db, `profesionales/${proId}/resenas`)
+                        );
+
+                        const totalReviews = resenasSnapshot.size;
+                        
+                        if (totalReviews === 0) {
+                            // Sin reseñas, resetear a 0
+                            await updateDoc(doc(db, "profesionales", proId), {
+                                total_valoraciones: 0,
+                                suma_puntuacion: 0,
+                                puntuacion: 0
+                            });
+                            log(`✅ ${proData.nombre}: Sin reseñas (reseteado a 0)`);
+                        } else {
+                            // Calcular suma de estrellas
+                            let sumaEstrellas = 0;
+                            resenasSnapshot.forEach((reseñaDoc) => {
+                                const reseña = reseñaDoc.data();
+                                sumaEstrellas += reseña.estrellas || 0;
+                            });
+
+                            const promedio = sumaEstrellas / totalReviews;
+
+                            // Actualizar profesional
+                            await updateDoc(doc(db, "profesionales", proId), {
+                                total_valoraciones: totalReviews,
+                                suma_puntuacion: sumaEstrellas,
+                                puntuacion: promedio
+                            });
+
+                            log(`✅ ${proData.nombre}: ${totalReviews} reseñas → Promedio: ${promedio.toFixed(2)}/5.0`);
+                        }
+
+                        updated++;
+                    } catch (error) {
+                        log(`❌ Error en ${proData.nombre}: ${error.message}`);
+                        errors++;
+                    }
+                }
+
+                log(`\n🎉 Migración completada!`);
+                log(`   - Actualizados: ${updated}`);
+                log(`   - Saltados: ${skipped}`);
+                log(`   - Errores: ${errors}`);
+
+                results.classList.remove("hidden");
+                stats.innerText = `${updated} profesionales actualizados, ${skipped} saltados, ${errors} errores`;
+                
+                btnMigrate.innerText = "Migración Completada ✅";
+            } catch (error) {
+                log(`\n💥 Error fatal: ${error.message}`);
+                btnMigrate.disabled = false;
+                btnMigrate.innerText = "Reintentar Migración";
+            }
+        });
+    });
+</script>
