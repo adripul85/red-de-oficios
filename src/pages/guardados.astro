@@ -78,7 +78,7 @@ import Footer from '../components/Footer.astro';
         </div>
 
         <div class="flex gap-2 mt-2">
-           <a href="https://wa.me/549${pro.telefono}" target="_blank" class="flex-1 bg-green-500 hover:bg-green-600 text-white text-center py-2 rounded-lg font-bold text-sm shadow-sm transition-colors">
+           <a href="https://wa.me/549${pro.telefono.replace(/\D/g, "")}" target="_blank" class="flex-1 bg-green-500 hover:bg-green-600 text-white text-center py-2 rounded-lg font-bold text-sm shadow-sm transition-colors">
 WhatsApp 💬
            </a>
            <a href="/perfil?id=${pro.id}" class="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg font-bold text-sm hover:bg-gray-50 transition-colors">

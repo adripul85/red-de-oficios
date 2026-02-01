@@ -271,23 +271,17 @@ import Layout from "../../layouts/Layout.astro";
     </div>
 
     <script>
-        import { db, auth } from "../../firebase/client";
-        import {
-            collection,
-            query,
-            where,
-            getDocs,
-            orderBy,
-            limit,
-            doc,
-            updateDoc,
-            arrayUnion,
-            getDoc,
-            deleteField,
-            addDoc,
-            increment,
+        import { auth, app, db } from "../../firebase/client";
+        import { 
+            getFirestore, collection, query, where, getDocs, orderBy, limit, 
+            doc, updateDoc, arrayUnion, getDoc, deleteField, 
+            onSnapshot, addDoc, increment 
         } from "firebase/firestore";
         import { onAuthStateChanged } from "firebase/auth";
+        import Swal from 'sweetalert2';
+
+        // const db = getFirestore(app); // Standardized to use singleton from client.js
+        console.log("🔥 [DEBUG] Global db from client.js:", db?.constructor?.name);
 
         let currentUser: any = null;
         let todasSolicitudes: any[] = [];
@@ -363,6 +357,7 @@ import Layout from "../../layouts/Layout.astro";
                 console.log(
                     "🚀 [OPORTUNIDADES] Iniciando carga en tiempo real...",
                 );
+                console.log("📡 [OPORTUNIDADES] db instance:", db?.constructor?.name);
 
                 // Limpiar listeners anteriores si existen
                 unsubscribers.forEach((unsub) => unsub());
@@ -418,16 +413,11 @@ import Layout from "../../layouts/Layout.astro";
                               : [];
 
                     // 2. CONFIGURAR LISTENERS EN TIEMPO REAL
-                    // Usamos onSnapshot en lugar de getDocs
-                    const { onSnapshot } =
-                        await import("firebase/firestore");
-
                     const updateUI = async () => {
                         // Convertir Map a Array and sort
                         const arr = Array.from(allSolicitudes.values());
                         
                         // Resolver nombres
-                        const { doc, getDoc } = await import("firebase/firestore");
                         const namePromises = arr.map(async (sol: any) => {
                             if (sol.clienteId && !clientNames.has(sol.clienteId)) {
                                 const isGeneric = !sol.clienteNombre || sol.clienteNombre.toLowerCase().includes('cliente') || sol.clienteNombre.includes('@');
@@ -482,18 +472,20 @@ import Layout from "../../layouts/Layout.astro";
                         limit(50),
                     );
 
+                    console.log("📡 [OPORTUNIDADES] Iniciando Listener 1 (Candidato)...");
                     const unsub1 = onSnapshot(qCandidato, (snapshot) => {
-                        snapshot.docs.forEach((doc) => {
-                            const data = doc.data();
-                            if (
-                                !data.eliminadosPor?.includes(
-                                    currentUser.uid,
-                                )
-                            ) {
-                                allSolicitudes.set(doc.id, {
-                                    id: doc.id,
-                                    ...data,
-                                });
+                        console.log("📥 [OPORTUNIDADES] Listener 1 recibió datos:", snapshot.size);
+                        snapshot.docChanges().forEach((change) => {
+                            if (change.type === "removed") {
+                                allSolicitudes.delete(change.doc.id);
+                            } else {
+                                const data = change.doc.data();
+                                if (!data.eliminadosPor?.includes(currentUser.uid)) {
+                                    allSolicitudes.set(change.doc.id, {
+                                        id: change.doc.id,
+                                        ...data,
+                                    });
+                                }
                             }
                         });
                         updateUI();
@@ -513,21 +505,17 @@ import Layout from "../../layouts/Layout.astro";
                         const unsub2 = onSnapshot(
                             qRubros,
                             (snapshot) => {
-                                snapshot.docs.forEach((doc) => {
-                                    if (!allSolicitudes.has(doc.id)) {
-                                        const data = doc.data();
-                                        // FILTRADO CLIENT-SIDE POR ZONA Y ELIMINADOS
-                                        const zonaMatch =
-                                            misZonas.length === 0 ||
-                                            misZonas.includes(data.zona);
-                                        const notDeleted =
-                                            !data.eliminadosPor?.includes(
-                                                currentUser.uid,
-                                            );
+                                snapshot.docChanges().forEach((change) => {
+                                    if (change.type === "removed") {
+                                        allSolicitudes.delete(change.doc.id);
+                                    } else if (!allSolicitudes.has(change.doc.id)) {
+                                        const data = change.doc.data();
+                                        const zonaMatch = misZonas.length === 0 || misZonas.includes(data.zona);
+                                        const notDeleted = !data.eliminadosPor?.includes(currentUser.uid);
 
                                         if (zonaMatch && notDeleted) {
-                                            allSolicitudes.set(doc.id, {
-                                                id: doc.id,
+                                            allSolicitudes.set(change.doc.id, {
+                                                id: change.doc.id,
                                                 ...data,
                                             });
                                         }
@@ -553,11 +541,15 @@ import Layout from "../../layouts/Layout.astro";
                     );
 
                     const unsub3 = onSnapshot(qAceptados, (snapshot) => {
-                        snapshot.docs.forEach((doc) => {
-                            allSolicitudes.set(doc.id, {
-                                id: doc.id,
-                                ...doc.data(),
-                            });
+                        snapshot.docChanges().forEach((change) => {
+                            if (change.type === "removed") {
+                                allSolicitudes.delete(change.doc.id);
+                            } else {
+                                allSolicitudes.set(change.doc.id, {
+                                    id: change.doc.id,
+                                    ...change.doc.data(),
+                                });
+                            }
                         });
                         updateUI();
                     });
@@ -570,155 +562,97 @@ import Layout from "../../layouts/Layout.astro";
                         limit(20)
                     );
 
-                    let previousNotifications = new Map();
                     let isFirstNotifLoad = true;
                     
                     const unsub4 = onSnapshot(qNotifications, async (snapshot) => {
-                        console.log("🔔 [NOTIFICATIONS] Snapshot received, changes:", snapshot.docChanges().length);
+                        console.log("🔔 [NOTIFICATIONS] Snapshot received");
                         
                         for (const change of snapshot.docChanges()) {
+                            if (isFirstNotifLoad) continue;
+                            if (change.type !== "added") continue;
+
                             const notif = change.doc.data();
-                            const notifId = change.doc.id;
                             
-                            console.log(`📋 [NOTIFICATIONS] Change type: ${change.type}, Notif ID: ${notifId}, Tipo: ${notif.tipo}`);
+                            // 1. Budget Accepted
+                            if (notif.tipo === "presupuesto_aceptado") {
+                                const nombre = notif.clienteNombre || "Cliente";
+                                const foto = notif.clienteFoto || "/default-avatar.png";
+                                const tel = notif.clienteTelefono || "";
+                                const email = notif.clienteEmail || "";
+                                 const rubro = notif.mensaje?.match(/para "([^"]+)"/)?.[1] || "el trabajo";
+                                 const codigo = notif.codigoSeguridad || "000000";
 
-                            // On first load, just populate the map
-                            if (isFirstNotifLoad) {
-                                previousNotifications.set(notifId, notif);
-                                continue;
-                            }
+                                 // Swal.fire call
+                                 Swal.fire({
+                                     title: "✅ ¡Presupuesto Aceptado!",
+                                     html: `
+                                         <div class="text-left space-y-4 pt-2">
+                                             <div class="bg-indigo-600 text-white p-5 rounded-2xl shadow-lg text-center mb-6 relative overflow-hidden group">
+                                                 <div class="absolute top-0 left-0 w-full h-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                                 <p class="text-[10px] uppercase font-black tracking-[0.2em] mb-2 opacity-80">Código de Seguridad</p>
+                                                 <p class="text-4xl font-black tracking-widest">${codigo}</p>
+                                                 <p class="text-[10px] mt-2 opacity-60">Proporciónalo al finalizar el trabajo</p>
+                                             </div>
 
-                            // Check for new budget acceptance notifications
-                            if (change.type === "added" && notif.tipo === "presupuesto_aceptado") {
-                                console.log("✅ [NOTIFICATIONS] Budget accepted notification detected!");
-                                
-                                // Show the premium modal with client data
-                                try {
-                                    const clienteData = {
-                                        nombre: notif.clienteNombre || "Cliente",
-                                        foto: notif.clienteFoto || "/default-avatar.png",
-                                        email: notif.clienteEmail || "",
-                                    };
-                                    
-                                    const telefono = notif.clienteTelefono || "";
-                                    const codigoSeguridad = notif.codigoSeguridad || "------";
-                                    const rubro = notif.mensaje?.match(/para "([^"]+)"/)?.[1] || "el trabajo";
-                                    
-                                    console.log("👤 [NOTIFICATIONS] Client data:", clienteData.nombre, "Phone:", telefono);
+                                             <div class="flex items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
+                                                 <img src="${foto}" class="w-16 h-16 rounded-full object-cover border-2 border-green-500 shadow-sm" />
+                                                 <div>
+                                                     <h3 class="font-bold text-lg text-slate-900 leading-tight">${nombre}</h3>
+                                                     <p class="text-xs text-slate-500 uppercase font-black tracking-widest mt-1">${rubro}</p>
+                                                 </div>
+                                             </div>
 
-                                    // @ts-ignore
-                                    Swal.fire({
-                                        title: "✅ ¡Presupuesto Aceptado!",
-                                        html: `
-                                            <div class="text-left space-y-4 pt-2">
-                                                <div class="flex items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
-                                                    <img src="${clienteData.foto}" alt="${clienteData.nombre}" class="w-16 h-16 rounded-full object-cover border-2 border-green-500 shadow-sm" />
-                                                    <div>
-                                                        <h3 class="font-bold text-lg text-slate-900 leading-tight">${clienteData.nombre}</h3>
-                                                        <p class="text-xs text-slate-500 uppercase font-black tracking-widest mt-1">${rubro}</p>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-5 shadow-sm text-center relative overflow-hidden">
-                                                    <p class="text-xs uppercase font-black text-green-800 mb-3 tracking-widest">Código de Seguridad</p>
-                                                    <p class="text-4xl font-black text-green-600 tracking-[0.2em] drop-shadow-sm">${codigoSeguridad}</p>
-                                                    <p class="text-[10px] text-green-700 mt-3 font-medium">Muéstrale este código al cliente cuando llegue.</p>
-                                                </div>
-
-                                                <div class="grid grid-cols-1 gap-2 text-sm px-1">
-                                                    ${telefono ? `
-                                                        <div class="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl">
-                                                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600">📱</div>
-                                                            <div class="flex-1 min-w-0">
-                                                                <p class="text-[10px] text-slate-400 font-bold uppercase">Teléfono</p>
-                                                                <a href="https://wa.me/${telefono.replace(/\D/g, '')}" target="_blank" class="font-bold text-slate-700 hover:text-green-600 transition truncate block">${telefono}</a>
-                                                            </div>
-                                                        </div>
-                                                    ` : ''}
-                                                    ${clienteData.email ? `
-                                                        <div class="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl">
-                                                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">📧</div>
-                                                            <div class="flex-1 min-w-0">
-                                                                <p class="text-[10px] text-slate-400 font-bold uppercase">Email</p>
-                                                                <span class="font-bold text-slate-700 truncate block">${clienteData.email}</span>
-                                                            </div>
-                                                        </div>
-                                                    ` : ''}
-                                                </div>
-
-                                                ${telefono ? `
-                                                    <a href="https://wa.me/${telefono.replace(/\D/g, '')}" target="_blank" class="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-black py-4 px-6 rounded-2xl transition-all shadow-lg shadow-green-100 transform active:scale-95">
-                                                        💬 Contactar por WhatsApp
-                                                    </a>
-                                                ` : ''}
-                                            </div>
-                                        `,
-                                        width: "450px",
-                                        confirmButtonText: "Entendido",
-                                        confirmButtonColor: "#16a34a",
-                                        customClass: {
-                                            popup: 'rounded-3xl shadow-2xl border border-slate-100',
-                                            confirmButton: 'rounded-xl font-black px-8 py-3 uppercase tracking-widest text-sm'
-                                        }
-                                    });
-                                } catch (err) {
-                                    console.error("❌ [NOTIFICATIONS] Error showing modal:", err);
-                                }
-                            }
-                            
-                            // Check for budget rejection notifications
-                            if (change.type === "added" && notif.tipo === "presupuesto_rechazado") {
-                                console.log("❌ [NOTIFICATIONS] Budget rejected notification detected!");
-                                
-                                const rubro = notif.mensaje?.match(/para "([^"]+)"/)?.[1] || "esta oportunidad";
-                                
-                                // @ts-ignore
-                                Swal.fire({
-                                    title: "Presupuesto No Seleccionado",
-                                    html: `
-                                        <div class="text-center py-4">
-                                            <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                                <span class="text-4xl">😔</span>
-                                            </div>
-                                            <p class="text-slate-700 mb-2">
-                                                Tu presupuesto para <strong>${rubro}</strong> no fue seleccionado por el cliente.
-                                            </p>
-                                            <p class="text-sm text-slate-500">
-                                                No te desanimes, sigue enviando propuestas. ¡La próxima será!
-                                            </p>
-                                        </div>
-                                    `,
-                                    icon: "info",
+                                             <div class="grid grid-cols-1 gap-2 text-sm px-1">
+                                                 ${tel ? `<div class="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl">
+                                                     <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600">📱</div>
+                                                     <div class="flex-1 min-w-0">
+                                                         <p class="text-[10px] text-slate-400 font-bold uppercase">Teléfono</p>
+                                                         <span class="font-bold text-slate-700 truncate block">${tel}</span>
+                                                     </div>
+                                                 </div>` : ''}
+                                                 ${email ? `<div class="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl">
+                                                     <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">📧</div>
+                                                     <div class="flex-1 min-w-0">
+                                                         <p class="text-[10px] text-slate-400 font-bold uppercase">Email</p>
+                                                         <span class="font-bold text-slate-700 truncate block">${email}</span>
+                                                     </div>
+                                                 </div>` : ''}
+                                             </div>
+                                             ${tel ? `<a href="https://wa.me/549${tel.replace(/[^0-9]/g, '')}" target="_blank" class="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white font-black py-4 px-6 rounded-2xl transition-all shadow-lg active:scale-95">💬 Contactar por WhatsApp</a>` : ''}
+                                         </div>`,
+                                    width: "450px",
                                     confirmButtonText: "Entendido",
-                                    confirmButtonColor: "#64748b",
+                                    confirmButtonColor: "#16a34a",
                                     customClass: {
                                         popup: 'rounded-3xl shadow-2xl border border-slate-100',
                                         confirmButton: 'rounded-xl font-black px-8 py-3 uppercase tracking-widest text-sm'
                                     }
                                 });
                             }
-
-                            // Update the previous state
-                            previousNotifications.set(notifId, notif);
+                            
+                            // 2. Budget Rejected
+                            if (notif.tipo === "presupuesto_rechazado") {
+                                const rubro = notif.mensaje?.match(/para "([^"]+)"/)?.[1] || "esta oportunidad";
+                                // Swal.fire call
+                                Swal.fire({
+                                    title: "Presupuesto No Seleccionado",
+                                    html: `<div class="text-center py-4"><span class="text-4xl block mb-4">😔</span><p class="text-slate-700 mb-2">Tu presupuesto para <strong>${rubro}</strong> no fue seleccionado.</p><p class="text-sm text-slate-500">No te desanimes, ¡la próxima será!</p></div>`,
+                                    icon: "info",
+                                    confirmButtonText: "Entendido",
+                                    confirmButtonColor: "#64748b",
+                                    customClass: { popup: 'rounded-3xl shadow-2xl border border-slate-100' }
+                                });
+                            }
                         }
-                        
-                        // After first load, set flag to false
-                        if (isFirstNotifLoad) {
-                            isFirstNotifLoad = false;
-                            console.log("✅ [NOTIFICATIONS] Initial state loaded, listener ready");
-                        }
+                        isFirstNotifLoad = false;
                     }, (error) => {
-                        console.error("❌ [NOTIFICATIONS] Error in notifications listener:", error);
+                        console.error("❌ [NOTIFICATIONS] Error:", error);
                     });
                     unsubscribers.push(unsub4);
                 } catch (error) {
-                    console.error(
-                        "❌ [OPORTUNIDADES] Error configurando listeners:",
-                        error,
-                    );
+                    console.error("❌ [OPORTUNIDADES] Error configurando listeners:", error);
                     if (errorState) errorState.style.display = "block";
                     if (errorState) errorState.classList.remove("hidden");
-                    if (loading) loading.style.display = "none";
                 }
             }
 
@@ -886,11 +820,6 @@ import Layout from "../../layouts/Layout.astro";
                                         ${nuevoBadge}
                                         ${acceptedBadge}
                                         ${cotizadoBadge}
-                                        ${
-                                            sol.presupuesto
-                                                ? `<span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">💰 Presupuesto: $${sol.presupuesto}</span>`
-                                                : ""
-                                        }
                                     </div>
                                     <span class="text-xs text-slate-400 flex items-center gap-1 whitespace-nowrap">
                                         🕐 ${fechaStr}
@@ -914,6 +843,17 @@ import Layout from "../../layouts/Layout.astro";
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-500"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                                     <span class="font-bold text-sm text-slate-700">${sol.zona}</span>
                                 </div>
+
+                                ${
+                                    sol.presupuesto
+                                        ? `
+                                <div class="mb-4 bg-green-50 border border-green-100 p-3 rounded-xl flex items-center justify-between">
+                                    <span class="text-[10px] font-black text-green-600 uppercase tracking-widest">Presupuesto del Cliente</span>
+                                    <span class="text-lg font-black text-green-700">$${sol.presupuesto}</span>
+                                </div>
+                                `
+                                        : ""
+                                }
 
                                 <p class="text-slate-600 mb-4 line-clamp-3 md:line-clamp-none bg-white p-3 rounded-lg border border-slate-50 text-sm italic">
                                     "${sol.detalle}"
@@ -952,6 +892,15 @@ import Layout from "../../layouts/Layout.astro";
                                         disabled
                                         class="w-full bg-indigo-50 border border-indigo-100 text-indigo-400 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 cursor-not-allowed opacity-80">
                                         <span>✔️</span> Ya Cotizaste
+                                    </button>
+                                    `
+                                            : sol.presupuestadosPor?.length >= 3
+                                            ? `
+                                    <button
+                                        disabled
+                                        class="w-full bg-slate-100 text-slate-400 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 cursor-not-allowed border border-slate-200">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                        Cupo de presupuestos lleno
                                     </button>
                                     `
                                             : `
@@ -1006,12 +955,12 @@ import Layout from "../../layouts/Layout.astro";
                                         
                                         <!-- Security Code -->
                                         ${sol.codigoSeguridad ? `
-                                        <div class="bg-green-600 text-white rounded-xl p-4 text-center mb-3 shadow-md">
-                                            <p class="text-xs uppercase font-black opacity-90 mb-1">Código de Seguridad</p>
-                                            <p class="text-3xl font-black tracking-widest">${sol.codigoSeguridad}</p>
-                                            <p class="text-[10px] opacity-80 mt-1">Pídele este código al cliente</p>
+                                        <div class="bg-black text-white p-3 rounded-xl mb-3 border border-slate-700 shadow-inner">
+                                            <p class="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] mb-1">Cód. Seguridad</p>
+                                            <p class="text-2xl font-black font-mono tracking-widest text-center">${sol.codigoSeguridad}</p>
                                         </div>
                                         ` : ''}
+                                        
                                         
                                         <!-- Contact Button -->
                                         ${sol.telefono ? `
@@ -1040,7 +989,14 @@ import Layout from "../../layouts/Layout.astro";
                                     <div class="text-center py-4 bg-green-50 rounded-lg border border-green-100">
                                         <span class="block text-2xl mb-1">✅</span>
                                         <p class="text-green-800 font-bold text-sm">Conversación Iniciada</p>
-                                        <a href="https://wa.me/549${sol.telefono?.replace(/\\D/g, "")}" target="_blank" class="text-xs text-green-600 hover:underline mt-1 block">Abrir WhatsApp de nuevo</a>
+                                        <a href="https://wa.me/549${sol.telefono?.replace(/\D/g, "")}" target="_blank" class="text-xs text-green-600 hover:underline mt-1 block">Abrir WhatsApp de nuevo</a>
+                                        
+                                        ${sol.token ? `
+                                        <div class="mt-3 pt-3 border-t border-green-200">
+                                            <p class="text-[9px] font-bold text-green-600 uppercase tracking-widest">Cód. Seguridad</p>
+                                            <p class="text-xl font-black font-mono text-slate-900">${sol.token}</p>
+                                        </div>
+                                        ` : ''}
                                     </div>
                                     `
                                     }
@@ -1173,11 +1129,6 @@ import Layout from "../../layouts/Layout.astro";
                                 html: `
                                         <h2>Buenas noticias, ${nombre}!</h2>
                                         <p>El profesional <strong>${currentUser.displayName || "DeOficios Pro"}</strong> ha visto tu solicitud para <strong>${solData.rubro}</strong> y quiere contactarte.</p>
-                                        <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
-                                            <p style="margin: 0; font-size: 12px; color: #6b7280; text-transform: uppercase; font-weight: bold;">Tu Código de Seguridad</p>
-                                            <p style="margin: 5px 0 0 0; font-size: 24px; font-weight: 900; letter-spacing: 5px; color: #ea580c;">${token}</p>
-                                            <p style="margin: 10px 0 0 0; font-size: 11px; color: #6b7280;">Pídele este código al profesional cuando llegue a tu domicilio.</p>
-                                        </div>
                                         <p>Te escribirá por WhatsApp a la brevedad.</p>
                                     `,
                                 type: "Solicitud Aceptada",
@@ -1188,7 +1139,7 @@ import Layout from "../../layouts/Layout.astro";
                     }
 
                     // 4. Abrir WhatsApp
-                    const mensaje = `Hola ${nombre}, soy ${currentUser.displayName || "profesional"} de DeOficios. Vi tu pedido de ${solData?.rubro || "trabajo"} y mi código de seguridad es ${token}. Me interesa pasarte un presupuesto.`;
+                    const mensaje = `Hola ${nombre}, soy ${currentUser.displayName || "profesional"} de DeOficios. Vi tu pedido de ${solData?.rubro || "trabajo"}. Me interesa pasarte un presupuesto.`;
                     const url = `https://wa.me/549${telefono}?text=${encodeURIComponent(mensaje)}`;
                     window.open(url, "_blank");
                 } catch (e) {

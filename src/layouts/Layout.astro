@@ -8,6 +8,7 @@ import BottomNav from "../components/BottomNav.astro";
 import AiAssistant from "../components/AiAssistant.astro";
 import NotificationToast from "../components/NotificationToast.astro";
 import { ClientRouter } from "astro:transitions";
+import PWAHead from "../components/PWAHead.astro";
 
 interface Props {
 	title: string;
@@ -57,9 +58,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		/>
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonicalURL} />
-		<link rel="icon" type="image/png" href="/icon-192.png" />
-		<link rel="manifest" href="/manifest.json" />
-		<meta name="theme-color" content="#ea580c" />
+		<link rel="canonical" href={canonicalURL} />
+		<PWAHead />
 
 		<!-- Open Graph / Facebook -->
 		<meta property="og:type" content="website" />
@@ -176,10 +176,31 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
             import { onAuthStateChanged } from "firebase/auth";
 
             document.addEventListener("astro:page-load", () => {
-                onAuthStateChanged(auth, (user) => {
+                onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         window.currentUser = user;
                         document.dispatchEvent(new CustomEvent("auth-state-ready", { detail: user }));
+
+                        // Update Last Activity
+                        try {
+                            const { doc, updateDoc, serverTimestamp, getDoc } = await import("firebase/firestore");
+                            const { db } = await import("../firebase/client");
+                            
+                            // Check both collections (profesionales and clientes)
+                            // In a real app, you might know the role from the token, but here we can try-catch or check exists
+                            const proRef = doc(db, "profesionales", user.uid);
+                            const cliRef = doc(db, "clientes", user.uid);
+                            
+                            const [proSnap, cliSnap] = await Promise.all([getDoc(proRef), getDoc(cliRef)]);
+                            
+                            if (proSnap.exists()) {
+                                updateDoc(proRef, { lastActivity: serverTimestamp() }).catch(() => {});
+                            } else if (cliSnap.exists()) {
+                                updateDoc(cliRef, { lastActivity: serverTimestamp() }).catch(() => {});
+                            }
+                        } catch (e) {
+                            console.warn("Could not update lastActivity:", e);
+                        }
                     } else {
                          window.currentUser = null;
                          document.dispatchEvent(new CustomEvent("auth-state-ready", { detail: null }));

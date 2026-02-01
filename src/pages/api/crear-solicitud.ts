@@ -13,7 +13,6 @@ export async function POST({ request }: { request: Request }) {
             rubro,
             zona,
             telefono,
-            presupuesto,
             detalle,
             urgente,
         } = body;
@@ -73,7 +72,6 @@ export async function POST({ request }: { request: Request }) {
             rubro,
             zona,
             telefono,
-            presupuesto,
             detalle,
             urgente,
             fecha: FieldValue.serverTimestamp(),
@@ -97,7 +95,7 @@ export async function POST({ request }: { request: Request }) {
                     titulo: urgente
                         ? "🚨 ¡URGENTE: Nueva solicitud!"
                         : "¡Nueva oportunidad de trabajo! 🤑",
-                    mensaje: `Un cliente busca ${rubro} en ${zona}. Presupuesto: $${presupuesto || "A convenir"}`,
+                    mensaje: `Un cliente busca ${rubro} en ${zona}.`,
                     link: `/panel/oportunidades?id=${docRef.id}`,
                     leido: false,
                     fecha: FieldValue.serverTimestamp(),

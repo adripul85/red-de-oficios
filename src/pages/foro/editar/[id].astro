@@ -186,7 +186,6 @@ const groups = Object.keys(CATEGORY_MAP);
     );
 
     document.addEventListener("astro:page-load", async () => {
-        console.log("🚀 [FORO-EDITAR] Página cargada");
 
         const form = document.getElementById(
             "edit-debate-form",
@@ -252,7 +251,7 @@ const groups = Object.keys(CATEGORY_MAP);
                     window.location.href = "/foro";
                 }
             } catch (error) {
-                console.error("Error cargando debate:", error);
+                // Error
                 alert("Error cargando los datos.");
             }
         }
@@ -290,7 +289,7 @@ const groups = Object.keys(CATEGORY_MAP);
                 alert("✅ Debate actualizado");
                 window.location.href = `/foro/${threadId}`;
             } catch (error) {
-                console.error("Error actualizando:", error);
+                // Error
                 alert("Error al guardar cambios.");
                 submitBtn.disabled = false;
                 submitBtn.textContent = "Guardar Cambios";

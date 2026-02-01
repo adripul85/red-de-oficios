@@ -128,13 +128,15 @@ class="hidden flex items-center gap-3 px-3 py-2 w-full text-indigo-600 bg-indigo
 </aside>
 
 <script>
-    import { auth, db } from "../../firebase/client";
+    import { auth, app, db } from "../../firebase/client";
     import { signOut } from "firebase/auth";
-    import { doc, onSnapshot } from "firebase/firestore";
+    import { getFirestore, doc, onSnapshot } from "firebase/firestore";
     import { calculateLevel, getLevelProgress } from "../../utils/gamification";
+    
+    // const db = getFirestore(app); // Standardized to use singleton from client.js
+    console.log("🔥 [SIDEBAR DEBUG] Global db from client.js:", db?.constructor?.name);
 
     function setupSidebar() {
-        console.log("🦁 [SIDEBAR] setupSidebar running...");
         const logoutBtn = document.getElementById("btn-logout");
         const installBtn = document.getElementById("btn-install-pwa");
         
@@ -151,9 +153,11 @@ class="hidden flex items-center gap-3 px-3 py-2 w-full text-indigo-600 bg-indigo
                 console.log("⚠️ [SIDEBAR] syncLevel: No user found");
                 return;
             }
-            console.log("📡 [SIDEBAR] syncLevel: Starting snapshot for", user.uid);
-            
-            onSnapshot(doc(db, "profesionales", user.uid), (snap) => {
+            if (!db) {
+                console.error("❌ [SIDEBAR] Firestore 'db' is not initialized");
+                return;
+            }
+            onSnapshot(doc(db, `profesionales/${user.uid}`), (snap) => {
                 if (snap.exists()) {
                     const data = snap.data();
                     const xp = data.puntos || 0;

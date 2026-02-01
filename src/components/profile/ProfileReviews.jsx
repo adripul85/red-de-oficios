@@ -52,12 +52,10 @@ export default function ProfileReviews({ idProfesional }) {
 
     const loadReviews = async () => {
         if (!idProfesional) {
-            console.warn("loadReviews: idProfesional es null o undefined");
             setLoading(false);
             return;
         }
 
-        console.log(`Intentando cargar reseñas desde: profesionales/${idProfesional}/resenas`);
         try {
             const q = query(
                 collection(db, `profesionales/${idProfesional}/resenas`),
@@ -65,7 +63,6 @@ export default function ProfileReviews({ idProfesional }) {
             );
             const snapshot = await getDocs(q);
             const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            console.log(`Cargadas ${list.length} reseñas (resenas)`);
 
             // Si no hay en 'resenas', intentar 'reseñas' como fallback (por migración)
             if (list.length === 0) {
@@ -76,7 +73,6 @@ export default function ProfileReviews({ idProfesional }) {
                 const snapshot2 = await getDocs(q2);
                 const list2 = snapshot2.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 if (list2.length > 0) {
-                    console.log(`Cargadas ${list2.length} reseñas (reseñas - fallback)`);
                     setReviews(list2);
                 } else {
                     setReviews([]);
@@ -85,7 +81,7 @@ export default function ProfileReviews({ idProfesional }) {
                 setReviews(list);
             }
         } catch (error) {
-            console.error("Error cargando reseñas:", error);
+            // Error
         } finally {
             setLoading(false);
         }
@@ -150,7 +146,7 @@ export default function ProfileReviews({ idProfesional }) {
             // Forzar recarga completa sin caché para mostrar la nueva calificación
             window.location.href = window.location.href.split('?')[0] + '?t=' + Date.now();
         } catch (error) {
-            console.error(error);
+            // Error
             alert("Error al publicar. Intenta de nuevo.");
         } finally {
             setIsSubmitting(false);

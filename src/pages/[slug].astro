@@ -1001,11 +1001,9 @@ import ModernProfileCard from "../components/ModernProfileCard.astro";
             try {
                 // @ts-ignore
                 if (typeof L === "undefined") {
-                    console.error("❌ [DEBUG] Leaflet L is undefined");
                 } else {
                     const lat = mapDiv.dataset.lat;
                     const lng = mapDiv.dataset.lng;
-                    console.log("🚀 [DEBUG] Map found, lat:", lat, "lng:", lng);
                     // @ts-ignore
                     const map = L.map("mini-map", {
                         zoomControl: false,
@@ -1025,10 +1023,9 @@ import ModernProfileCard from "../components/ModernProfileCard.astro";
                     }).addTo(map);
                 }
             } catch (e) {
-                console.error("❌ [DEBUG] Map Error:", e);
             }
         } else {
-            console.warn("⚠️ [DEBUG] #mini-map not found in DOM");
+            // No Map
         }
     });
 </script>

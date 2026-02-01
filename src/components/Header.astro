@@ -79,8 +79,6 @@ import { Briefcase, BookOpen, CircleHelp, Menu, MessageSquare } from "lucide-ast
         announcement?.classList.add("hidden");
       }
     }
-  }, (error) => {
-      console.warn("[Header] Error en listener aviso global:", error);
   });
 
   // Función principal de renderizado con CACHÉ
@@ -103,7 +101,6 @@ import { Briefcase, BookOpen, CircleHelp, Menu, MessageSquare } from "lucide-ast
         const cachedType = localStorage.getItem(`userType_${currentUser.uid}`);
 
         if (cachedType === "profesional" || cachedType === "cliente") {
-          console.log("⚡ [HEADER] Usando caché:", cachedType);
 
           // Usar caché para query directa
 
@@ -135,7 +132,6 @@ import { Briefcase, BookOpen, CircleHelp, Menu, MessageSquare } from "lucide-ast
 
         // 🚀 OPTIMIZACIÓN 2: Si no hay caché, queries EN PARALELO
         if (!userType) {
-          console.log("⚡ [HEADER] Sin caché, buscando en paralelo...");
 
 
           const [profSnap, clientSnap] = await Promise.all([
@@ -290,7 +286,6 @@ import { Briefcase, BookOpen, CircleHelp, Menu, MessageSquare } from "lucide-ast
     if (menuBtn && newMenuBtn && menuBtn.parentNode) {
       menuBtn.parentNode.replaceChild(newMenuBtn, menuBtn);
       (newMenuBtn as HTMLElement).addEventListener("click", () => {
-        console.log("🍔 Toggle menú");
         mobileMenu?.classList.toggle("hidden");
         (newMenuBtn as HTMLElement).classList.toggle("active");
 

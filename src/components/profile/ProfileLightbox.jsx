@@ -10,7 +10,6 @@ export default function ProfileLightbox({ images = [] }) {
         const target = e.target.closest('.open-lightbox');
         if (target) {
             const index = parseInt(target.dataset.index || '0');
-            console.log('📸 Lightbox opening at index:', index);
             setCurrentIndex(index);
             setIsOpen(true);
         }
@@ -18,7 +17,6 @@ export default function ProfileLightbox({ images = [] }) {
 
     // Effect for click listener
     useEffect(() => {
-        console.log('🖼️ ProfileLightbox initialized with', images.length, 'images');
         document.addEventListener('click', handleImageClick);
         return () => document.removeEventListener('click', handleImageClick);
     }, [handleImageClick, images.length]);

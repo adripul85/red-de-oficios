@@ -157,10 +157,62 @@ class="flex justify-center items-center h-64"
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- MODAL PRESUPUESTO -->
+                    <div id="modal-presupuesto" class="fixed inset-0 z-50 hidden transition-opacity duration-300 opacity-0 pointer-events-none">
+                        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" id="modal-overlay"></div>
+                        <div class="flex min-h-screen items-center justify-center p-4">
+                            <div id="modal-content" class="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl transform transition-transform duration-300 scale-95 overflow-hidden">
+                                <header class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                                    <h3 class="text-xl font-bold text-slate-800">Nuevo Presupuesto</h3>
+                                    <button id="btn-cancel" class="text-slate-400 hover:text-slate-600 transition-colors">✕</button>
+                                </header>
+                                
+                                <form id="form-presupuesto" class="p-6 space-y-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5">Cliente</label>
+                                            <input type="text" name="cliente" required placeholder="Nombre del cliente" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5">WhatsApp / Cel</label>
+                                            <input type="tel" name="telefono" required placeholder="Ej: 1122334455" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-1.5">Título del Trabajo</label>
+                                        <input type="text" name="titulo" required placeholder="Ej: Pintura de Living" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all">
+                                    </div>
+
+                                    <div class="space-y-3">
+                                        <div class="flex justify-between items-center">
+                                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest">Items / Detalle</label>
+                                            <button type="button" id="btn-add-item" class="text-xs font-bold text-orange-600 hover:text-orange-700">+ Agregar fila</button>
+                                        </div>
+                                        <div id="items-container" class="space-y-2 max-h-48 overflow-y-auto pr-2">
+                                            <!-- Items dyamic -->
+                                        </div>
+                                    </div>
+
+                                    <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+                                        <div class="text-slate-500">
+                                            <p class="text-[10px] font-bold uppercase tracking-widest">Total Estimado</p>
+                                            <p id="total-display" class="text-2xl font-black text-slate-900 leading-none">$0</p>
+                                        </div>
+                                        <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-8 rounded-2xl transition-all shadow-lg shadow-orange-100 active:scale-95">
+                                            Guardar
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
 
         <script>
             import { onAuthStateChanged } from "firebase/auth";
             import {
+                getFirestore,
                 collection,
                 query,
                 where,
@@ -174,7 +226,8 @@ class="flex justify-center items-center h-64"
                 collectionGroup,
                 limit,
             } from "firebase/firestore";
-            import { auth, db } from "../../firebase/client";
+            import { auth, app, db } from "../../firebase/client";
+
 
             // Add jsPDF type definition to window
             declare global {
@@ -430,14 +483,6 @@ console.log("🚀 [PRESUPUESTOS] Página cargada/navegada");
                                         </div>
                                     </div>
                                     
-                                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-5 shadow-sm text-center relative overflow-hidden">
-                                        <div class="absolute top-0 right-0 p-2 opacity-10">
-                                            <svg class="w-12 h-12 text-green-900" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                                        </div>
-                                        <p class="text-xs uppercase font-black text-green-800 mb-3 tracking-widest">Código de Seguridad</p>
-                                        <p class="text-4xl font-black text-green-600 tracking-[0.2em] drop-shadow-sm">${notifData.codigoSeguridad || '------'}</p>
-                                        <p class="text-[10px] text-green-700 mt-3 font-medium">Este código confirma la validez del trabajo. Pídelo al llegar.</p>
-                                    </div>
 
                                     <div class="grid grid-cols-1 gap-2 text-sm px-1">
                                         ${notifData.clienteTelefono ? `
@@ -445,7 +490,7 @@ console.log("🚀 [PRESUPUESTOS] Página cargada/navegada");
                                                 <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600">📱</div>
                                                 <div class="flex-1 min-w-0">
                                                     <p class="text-[10px] text-slate-400 font-bold uppercase">Teléfono</p>
-                                                    <a href="https://wa.me/${notifData.clienteTelefono.replace(/\D/g, '')}" target="_blank" class="font-bold text-slate-700 hover:text-green-600 transition truncate block">${notifData.clienteTelefono}</a>
+                                                    <a href="https://wa.me/549${notifData.clienteTelefono.replace(/\D/g, '')}" target="_blank" class="font-bold text-slate-700 hover:text-green-600 transition truncate block">${notifData.clienteTelefono}</a>
                                                 </div>
                                             </div>
                                         ` : ''}
@@ -461,7 +506,7 @@ console.log("🚀 [PRESUPUESTOS] Página cargada/navegada");
                                     </div>
 
                                     ${notifData.clienteTelefono ? `
-                                        <a href="https://wa.me/${notifData.clienteTelefono.replace(/\D/g, '')}" target="_blank" class="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-black py-4 px-6 rounded-2xl transition-all shadow-lg shadow-green-100 transform active:scale-95">
+                                        <a href="https://wa.me/549${notifData.clienteTelefono.replace(/\D/g, '')}" target="_blank" class="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-black py-4 px-6 rounded-2xl transition-all shadow-lg shadow-green-100 transform active:scale-95">
                                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.588-5.946 0-6.556 5.332-11.888 11.888-11.888 3.176 0 6.161 1.237 8.404 3.483 2.247 2.248 3.481 5.234 3.481 8.406 0 6.556-5.332 11.888-11.888 11.888-2.01 0-3.988-.511-5.741-1.483l-6.243 1.692zm6.205-4.008l.445.265c1.404.835 3.028 1.277 4.693 1.277 5.175 0 9.387-4.212 9.387-9.387 0-2.506-.975-4.861-2.744-6.632-1.771-1.77-4.125-2.745-6.631-2.745-5.176 0-9.387 4.212-9.387 9.387 0 1.954.59 3.86 1.706 5.466l.29.418-.992 3.623 3.712-.998zm11.239-5.918c-.31-.155-1.838-.906-2.119-1.008-.281-.102-.486-.155-.69.155-.205.31-.79.998-.968 1.205-.178.207-.356.233-.666.078-.31-.155-1.31-.483-2.496-1.542-.922-.822-1.544-1.838-1.724-2.148-.181-.31-.019-.478.136-.632.14-.138.31-.359.466-.539.15-.181.2-.31.3-.517.102-.207.051-.389-.026-.544-.076-.155-.69-1.662-.946-2.278-.249-.6-.503-.518-.69-.527-.179-.009-.384-.011-.59-.011-.205 0-.539.077-.82.384-.282.311-1.077 1.053-1.077 2.568 0 1.516 1.102 2.977 1.256 3.184.154.207 2.169 3.328 5.253 4.653.733.315 1.306.503 1.751.644.737.234 1.406.201 1.936.121.591-.088 1.838-.751 2.094-1.477.256-.725.256-1.346.179-1.477-.077-.13-.282-.207-.591-.362z"></path></svg>
                                             CONTACTAR POR WHATSAPP
                                         </a>
@@ -643,7 +688,7 @@ console.log("🚀 [PRESUPUESTOS] Página cargada/navegada");
                     if (!p) return;
                     
                     const text = `Hola ${p.cliente}, te envío el presupuesto para "${p.titulo}". Total: $${p.total.toLocaleString()}. Puedes verlo en detalle aquí: (Próximamente link público)`;
-                    const url = `https://wa.me/${p.telefono?.replace(/\D/g, '') || ''}?text=${encodeURIComponent(text)}`;
+                    const url = `https://wa.me/549${p.telefono?.replace(/\D/g, '') || ''}?text=${encodeURIComponent(text)}`;
                     window.open(url, '_blank');
                 };
 

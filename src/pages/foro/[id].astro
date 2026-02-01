@@ -99,17 +99,14 @@ try {
                 };
             });
         } catch (replyError) {
-            console.error(
-                "Error cargando respuestas (no bloqueante):",
-                replyError,
-            );
+            // Error
             replies = []; // Si falla, mostramos 0 respuestas pero cargamos el post
         }
     } else {
         error = "El debate no existe.";
     }
 } catch (e) {
-    console.error("❌ Error CRÍTICO renderizando [id].astro:", e);
+    // Error
     error = `Error técnico: ${e.message}`;
 }
 

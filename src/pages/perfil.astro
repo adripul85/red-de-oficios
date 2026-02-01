@@ -550,75 +550,59 @@ for (let i = 0; i < levels.length; i++) {
     />
 
     <script>
-        document.addEventListener("astro:page-load", () => {
-            const btnContact = document.getElementById("btn-whatsapp-contact");
-            if (!btnContact) return;
+        import { auth, db } from "../firebase/client";
+        import { doc, getDoc, updateDoc, arrayUnion, setDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
+        import { onAuthStateChanged } from "firebase/auth";
 
-            btnContact.addEventListener("click", async (e) => {
-                e.preventDefault();
-                
-                // Intentar obtener idProfesional desde el atributo data si no está disponible directamente
-                const proId = btnContact.getAttribute("data-pro-id");
-                const proName = btnContact.getAttribute("data-pro-name");
-                const whatsapp = btnContact.getAttribute("data-whatsapp");
+        document.addEventListener("astro:page-load", async () => {
+            const contactButtons = document.querySelectorAll("#btn-whatsapp-contact");
+            const profileDiv = document.getElementById("profile-directory");
+            
+            let idProfesional = null;
+            let profesionalJson = {};
 
-                if (!proId || !proName || !whatsapp) {
-                    console.error("Faltan datos para el contacto:", { proId, proName, whatsapp });
-                    return;
-                }
+            if (profileDiv) {
+                idProfesional = profileDiv.dataset.id;
+                try {
+                    profesionalJson = JSON.parse(profileDiv.dataset.profesionalJson || "{}");
+                } catch(e) {}
+            }
 
-                // Generar token de 4 dígitos
-                const safetyToken = Math.floor(1000 + Math.random() * 9000).toString();
+            // WhatsApp Contact Logic
+            if (contactButtons.length > 0) {
+                contactButtons.forEach(btnContact => {
+                    btnContact.addEventListener("click", async (e) => {
+                        e.preventDefault();
+                        
+                        const proId = btnContact.getAttribute("data-pro-id");
+                        const proName = btnContact.getAttribute("data-pro-name");
+                        const whatsapp = btnContact.getAttribute("data-whatsapp");
 
-                if (typeof Swal === 'undefined') {
-                    // Fallback si SweetAlert no cargó
-                    window.open(`https://wa.me/549${whatsapp}?text=Hola ${proName}, te contacto desde DeOficios. Mi código es ${safetyToken}`, "_blank");
-                    return;
-                }
+                        if (!proId || !proName || !whatsapp) return;
 
-                Swal.fire({
-                    title: "🔐 Código de Seguridad",
-                    html: `
-                        <p class="mb-4 text-gray-600">Tu código de verificación para <strong>${proName}</strong> es:</p>
-                        <div class="text-4xl font-black tracking-widest text-orange-600 bg-orange-50 py-4 rounded-xl border-2 border-orange-200 mb-4 shadow-inner">
-                            ${safetyToken}
-                        </div>
-                        <p class="text-xs text-gray-500 uppercase font-black tracking-tight">Mostrale este código al profesional al llegar</p>
-                    `,
-                    confirmButtonText: "Ir a WhatsApp 💬",
-                    confirmButtonColor: "#16a34a",
-                    showCancelButton: true,
-                    cancelButtonText: "Cancelar",
-                    reverseButtons: true,
-                    customClass: {
-                        popup: 'rounded-3xl'
-                    }
-                }).then(async (result) => {
-                    if (result.isConfirmed) {
+                        // @ts-ignore
+                        const Swal = window.Swal;
+
                         try {
-                            // Import dinámico para no cargar firebase si no es necesario al inicio
                             const { addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
                             const { db, auth } = await import("/src/firebase/client.js");
                             
                             const user = auth.currentUser;
 
-                            // Registrar el contacto en la DB
                             await addDoc(collection(db, "contactos"), {
                                 proId: proId,
                                 proNombre: proName,
                                 clienteId: user?.uid || "anonimo",
                                 clienteNombre: user?.displayName || "Anonimo",
-                                token: safetyToken,
                                 fecha: serverTimestamp(),
                                 visto: false,
                             });
 
-                            // Abrir WhatsApp
-                            const waUrl = `https://wa.me/549${whatsapp}?text=${encodeURIComponent(`Hola ${proName}, te contacto desde DeOficios. Mi código de seguridad es ${safetyToken}`)}`;
+                            const waUrl = `https://wa.me/549${whatsapp}?text=${encodeURIComponent(`Hola ${proName}, te contacto desde DeOficios.`)}`;
                             window.open(waUrl, "_blank");
 
-                            // Feedback prompt después de unos segundos
                             setTimeout(() => {
+                                if (!Swal) return;
                                 Swal.fire({
                                     title: "¿Pudiste contactarlo? 🤔",
                                     text: "Tu feedback nos ayuda a mejorar.",
@@ -645,44 +629,24 @@ for (let i = 0; i < levels.length; i++) {
                                         });
                                     }
                                 });
-                            }, 5000);
+                            }, 8000);
 
                         } catch (err) {
-                            console.error("Error en contacto:", err);
-                            // Fallback de emergencia
-                            window.open(`https://wa.me/549${whatsapp}`, "_blank");
+                            window.open(`https://wa.me/549${whatsapp}?text=${encodeURIComponent(`Hola ${proName}, te contacto desde DeOficios.`)}`, "_blank");
                         }
-                    }
+                    });
                 });
-            });
-        });
+            }
 
+            // Report Profile Logic
+            const btnReport = document.getElementById("btn-report-profile");
+            if(btnReport && idProfesional) {
+                btnReport.addEventListener("click", () => {
+                    // @ts-ignore
+                    const Swal = window.Swal;
+                    if (!Swal) return;
 
-        // CONSOLIDATED CLIENT LOGIC (Bundled)
-        import { auth, db } from "../firebase/client";
-        import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, setDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
-        import { onAuthStateChanged } from "firebase/auth";
-
-        document.addEventListener("astro:page-load", async () => {
-             console.log("🚀 Profile page loaded - checking elements");
-
-             // 1. REPORT PROFILE LOGIC
-             const btnReport = document.getElementById("btn-report-profile");
-             const profileDiv = document.getElementById("profile-directory");
-             
-             console.log("Report Btn:", btnReport, "Profile Div:", profileDiv);
-
-             if(btnReport && profileDiv) {
-                 btnReport.addEventListener("click", () => {
-                     // @ts-ignore
-                     const Swal = window.Swal;
-
-                     if (!Swal) {
-                         alert("Error: Librería de alertas no cargada.");
-                         return;
-                     }
-
-                     Swal.fire({
+                    Swal.fire({
                         title: '🚩 Reportar Perfil',
                         text: '¿Por qué quieres reportar a este profesional?',
                         input: 'select',
@@ -703,113 +667,88 @@ for (let i = 0; i < levels.length; i++) {
                         }
                     }).then(async (result) => {
                         if (result.isConfirmed) {
-                             try {
+                            try {
                                 await addDoc(collection(db, "reportes"), {
-                                    idProfesional: profileDiv.dataset.id,
+                                    idProfesional: idProfesional,
                                     motivo: result.value,
                                     fecha: serverTimestamp(),
                                     reportadoPor: auth.currentUser ? auth.currentUser.uid : 'anonimo'
                                 });
-
                                 Swal.fire('Reporte Enviado', 'Nuestro equipo revisará el caso.', 'success');
-                             } catch(e) {
-                                 console.error("Error al enviar reporte:", e);
-                                 Swal.fire('Error', 'No se pudo enviar el reporte', 'error');
-                             }
+                            } catch(e) {}
                         }
                     });
-                 });
-             }
+                });
+            }
 
-             // 2. FAVORITES LOGIC
-             const btnFav = document.getElementById("btn-toggle-fav");
-             if(btnFav && profileDiv) {
-                 const idProfesional = profileDiv.dataset.id;
-                 let profesionalJson = {};
-                 try {
-                    profesionalJson = JSON.parse(profileDiv.dataset.profesionalJson);
-                 } catch(e) { console.error("Error parsing pro json", e); }
+            // Favorites Logic
+            const btnFav = document.getElementById("btn-toggle-fav");
+            if(btnFav && idProfesional) {
+                onAuthStateChanged(auth, async (user) => {
+                    if(!user) return; 
 
-                 onAuthStateChanged(auth, async (user) => {
-                     if(!user) return; 
+                    const favRef = doc(db, "favoritos", user.uid);
+                    let isFav = false;
 
-                     const favRef = doc(db, "favoritos", user.uid);
-                     let isFav = false;
-
-                     try {
+                    try {
                         const favSnap = await getDoc(favRef);
                         if(favSnap.exists()) {
-                            const data = favSnap.data();
-                            const list = data.profesionales || [];
+                            const list = favSnap.data().profesionales || [];
                             isFav = list.some(p => p.id === idProfesional);
                         }
-                     } catch(e) { console.error("Error fetching favs", e); }
+                    } catch(e) {}
 
-                     updateFavIcon(isFav);
+                    updateFavIcon(isFav);
 
-                     btnFav.addEventListener("click", async () => {
-                         // @ts-ignore
-                          const Swal = window.Swal;
-                          
-                          if(!user) {
-                              if(Swal) Swal.fire('Inicia Sesión', 'Debes iniciar sesión para guardar favoritos', 'info');
-                              else alert('Debes iniciar sesión');
-                              return;
-                          }
-                          
-                          // Toggle state immediately for UI responsiveness
-                          isFav = !isFav;
-                          updateFavIcon(isFav);
+                    btnFav.addEventListener("click", async () => {
+                        // @ts-ignore
+                        const Swal = window.Swal;
+                        
+                        isFav = !isFav;
+                        updateFavIcon(isFav);
 
-                          try {
-                              if (isFav) {
-                                  // Add
-                                  await setDoc(favRef, {
-                                      profesionales: arrayUnion({
-                                          id: idProfesional,
-                                          nombre: profesionalJson.nombre || "Profesional",
-                                          rubro: profesionalJson.rubro_principal || "",
-                                          foto: profesionalJson.foto || "",
-                                          zona: profesionalJson.zona || ""
-                                      })
-                                  }, { merge: true });
-                              } else {
-                                  // Remove - Read-Modify-Write strategy for object arrays
-                                   const currentSnap = await getDoc(favRef);
-                                   if(currentSnap.exists()) {
-                                       const currentList = currentSnap.data().profesionales || [];
-                                       const newList = currentList.filter(p => p.id !== idProfesional);
-                                       await updateDoc(favRef, { profesionales: newList });
-                                   }
-                              }
-                          } catch(e) {
-                              console.error("Error updating fav:", e);
-                              // Revert if error
-                              isFav = !isFav;
-                              updateFavIcon(isFav);
-                              if(Swal) Swal.fire('Error', 'No se pudo actualizar favoritos', 'error');
-                          }
-                     });
-                 });
+                        try {
+                            if (isFav) {
+                                await setDoc(favRef, {
+                                    profesionales: arrayUnion({
+                                        id: idProfesional,
+                                        nombre: profesionalJson.nombre || "Profesional",
+                                        rubro: profesionalJson.rubro_principal || "",
+                                        foto: profesionalJson.foto || "",
+                                        zona: profesionalJson.zona || ""
+                                    })
+                                }, { merge: true });
+                            } else {
+                                const currentSnap = await getDoc(favRef);
+                                if(currentSnap.exists()) {
+                                    const currentList = currentSnap.data().profesionales || [];
+                                    const newList = currentList.filter(p => p.id !== idProfesional);
+                                    await updateDoc(favRef, { profesionales: newList });
+                                }
+                            }
+                        } catch(e) {
+                            isFav = !isFav;
+                            updateFavIcon(isFav);
+                        }
+                    });
+                });
 
-                 function updateFavIcon(fav) {
-                     const icon = btnFav.querySelector(".material-symbols-outlined");
-                     if(!icon) return;
-                     
-                     if(fav) {
-                         icon.style.fontVariationSettings = "'FILL' 1";
-                         btnFav.classList.add("text-red-500", "bg-red-50");
-                         btnFav.classList.remove("text-slate-400", "bg-slate-50");
-                     } else {
-                         icon.style.fontVariationSettings = "'FILL' 0";
-                         btnFav.classList.remove("text-red-500", "bg-red-50");
-                         btnFav.classList.add("text-slate-400", "bg-slate-50");
-                     }
-                 }
-             }
+                function updateFavIcon(fav) {
+                    const icon = btnFav.querySelector(".material-symbols-outlined");
+                    if(!icon) return;
+                    if(fav) {
+                        icon.style.fontVariationSettings = "'FILL' 1";
+                        btnFav.classList.add("text-red-500", "bg-red-50");
+                        btnFav.classList.remove("text-slate-400", "bg-slate-50");
+                    } else {
+                        icon.style.fontVariationSettings = "'FILL' 0";
+                        btnFav.classList.remove("text-red-500", "bg-red-50");
+                        btnFav.classList.add("text-slate-400", "bg-slate-50");
+                    }
+                }
+            }
         });
     </script>
-    <ProfileLightbox client:load images={profesional.portfolio || []} />
 
     <style>
         /* Fix map */

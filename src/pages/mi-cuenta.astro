@@ -1166,8 +1166,14 @@ console.error("DEBUG - Error cargando reseñas:", e);
                                 // Enhanced card for accepted budgets with professional info
                                 securityCodeHTML = `
                                     <div class="mt-4 bg-gradient-to-br from-green-50 to-emerald-50 border-4 border-green-500 rounded-2xl p-4 shadow-lg">
-                                        <div class="bg-green-600 text-white rounded-xl px-4 py-2 text-center mb-4">
+                                        <div class="bg-green-600 text-white rounded-xl px-4 py-2 text-center mb-3">
                                             <span class="text-lg font-black">🚀 PRESUPUESTO ACEPTADO</span>
+                                        </div>
+
+                                        <div class="bg-white border-2 border-green-200 rounded-xl p-3 mb-4 text-center shadow-inner">
+                                            <p class="text-[10px] uppercase font-black tracking-widest text-green-600 mb-1">Tu Código de Seguridad</p>
+                                            <p class="text-3xl font-black text-slate-900 tracking-widest">${s.codigoSeguridad}</p>
+                                            <p class="text-[10px] text-slate-400 mt-1">Dáselo al profesional solo cuando termine el trabajo</p>
                                         </div>
                                         
                                         <!-- Professional Info -->
@@ -1184,16 +1190,10 @@ console.error("DEBUG - Error cargando reseñas:", e);
                                         </div>
                                         ` : ''}
                                         
-                                        <!-- Security Code -->
-                                        <div class="bg-green-600 text-white rounded-xl p-4 text-center mb-3 shadow-md">
-                                            <p class="text-xs uppercase font-black opacity-90 mb-1">Código de Seguridad</p>
-                                            <p class="text-3xl font-black tracking-widest">${s.codigoSeguridad}</p>
-                                            <p class="text-[10px] opacity-80 mt-1">Muéstrale este código al profesional</p>
-                                        </div>
                                         
                                         <!-- Contact Info -->
                                         ${s.profesionalTelefono ? `
-                                        <a href="https://wa.me/${s.profesionalTelefono.replace(/\D/g, "")}" target="_blank" 
+                                        <a href="https://wa.me/549${s.profesionalTelefono.replace(/\D/g, "")}" target="_blank" 
                                            class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition shadow-md active:scale-95 mb-2">
                                             💬 Contactar Profesional
                                         </a>
@@ -1226,7 +1226,7 @@ console.error("DEBUG - Error cargando reseñas:", e);
                                                 <p class="text-sm text-slate-600 mb-3">${p.mensaje || 'Sin mensaje'}</p>
                                                 <div class="flex justify-between items-center gap-2 mb-2">
                                                     <span class="text-xs text-slate-400">${p.fecha?.toDate ? p.fecha.toDate().toLocaleDateString('es-AR') : 'Reciente'}</span>
-                                                    ${p.telefono ? `<a href="https://wa.me/${p.telefono}" target="_blank" class="bg-green-500 text-white px-2 py-1 rounded-lg text-xs font-bold hover:bg-green-600 transition">💬 WhatsApp</a>` : ''}
+                                                    ${p.telefono ? `<a href="https://wa.me/549${p.telefono.replace(/\D/g, "")}" target="_blank" class="bg-green-500 text-white px-2 py-1 rounded-lg text-xs font-bold hover:bg-green-600 transition">💬 WhatsApp</a>` : ''}
                                                 </div>
                                                 ${isAccepted ? `
                                                     <div class="bg-green-100 border border-green-300 rounded-lg p-2 text-center">
@@ -1677,17 +1677,12 @@ title: "¿Quitar de favoritos?",
                                 </div>
                             </div>
                             
-                            <div class="bg-green-50 border border-green-200 rounded-xl p-4">
-                                <p class="text-xs uppercase font-bold text-green-800 mb-2">Código de Seguridad</p>
-                                <p class="text-3xl font-black text-green-600 text-center tracking-widest">${codigoSeguridad}</p>
-                                <p class="text-xs text-green-700 mt-2">Muéstrale este código al profesional cuando llegue.</p>
-                            </div>
 
                             <div class="space-y-2 text-sm">
                                 ${proData.telefono ? `
                                     <div class="flex items-center gap-2">
                                         <span class="font-bold">📱 Teléfono:</span>
-                                        <a href="https://wa.me/${proData.telefono}" target="_blank" class="text-green-600 hover:underline">${proData.telefono}</a>
+                                        <a href="https://wa.me/549${proData.telefono.replace(/\D/g, "")}" target="_blank" class="text-green-600 hover:underline">${proData.telefono}</a>
                                     </div>
                                 ` : ''}
                                 ${proData.email ? `
@@ -1705,7 +1700,7 @@ title: "¿Quitar de favoritos?",
                             </div>
 
                             ${proData.telefono ? `
-                                <a href="https://wa.me/${proData.telefono}" target="_blank" class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl transition text-center">
+                                <a href="https://wa.me/549${proData.telefono.replace(/\D/g, "")}" target="_blank" class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl transition text-center">
                                     💬 Contactar por WhatsApp
                                 </a>
                             ` : ''}
@@ -1746,6 +1741,8 @@ title: "¿Quitar de favoritos?",
         };
         
         // --- NOTIFICACIONES ---
+        let isFirstNotifLoadClient = true;
+
         async function loadClientNotifications(userId: string) {
             const badge = document.getElementById("notif-badge-pedidos");
             if (unsubNotifs) unsubNotifs();
@@ -1759,12 +1756,39 @@ title: "¿Quitar de favoritos?",
 
                 unsubNotifs = onSnapshot(q, (snap) => {
                     const counts = new Map();
+                    
                     snap.docs.forEach(d => {
                         const solId = d.data().solicitudId;
                         if (solId) {
                             counts.set(solId, (counts.get(solId) || 0) + 1);
                         }
                     });
+
+                    // Toast logic for new notifications
+                    if (!isFirstNotifLoadClient) {
+                        snap.docChanges().forEach(change => {
+                            if (change.type === "added") {
+                                const notif = change.doc.data();
+                                if (notif.tipo === "presupuesto" || notif.tipo === "presupuesto_aceptado") {
+                                    Swal.fire({
+                                        title: notif.titulo || "¡Nueva notificación!",
+                                        text: notif.mensaje,
+                                        icon: "info",
+                                        toast: true,
+                                        position: "top-end",
+                                        showConfirmButton: false,
+                                        timer: 5000,
+                                        timerProgressBar: true,
+                                        background: "#fff",
+                                        color: "#1e293b",
+                                        iconColor: "#3b82f6"
+                                    });
+                                }
+                            }
+                        });
+                    }
+                    isFirstNotifLoadClient = false;
+
                     unreadSolicitudes = counts;
                     
                     if (badge) {

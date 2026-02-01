@@ -3,30 +3,34 @@
   "short_name": "DeOficios",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f8fafc",
+  "background_color": "#ffffff",
   "theme_color": "#ea580c",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "type": "image/svg+xml",
-      "sizes": "192x192 512x512"
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
     },
     {
       "src": "/icon-192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "maskable"
     },
     {
       "src": "/icon-512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any"
     },
     {
-      "src": "/icon-1024.png",
+      "src": "/icon-512.png",
       "type": "image/png",
-      "sizes": "1024x1024"
+      "sizes": "512x512",
+      "purpose": "maskable"
     }
   ],
-  "description": "Encontrá al experto que necesitás."
+  "description": "Encontrá al experto que necesitás o ofrecé tus servicios de forma profesional."
 }
