@@ -17,6 +17,7 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         const data = doc.data();
+        const plan = data?.plan || "semilla";
 
         // Verificar si necesita reset mensual
         const ahora = new Date();
@@ -24,23 +25,50 @@ export const POST: APIRoute = async ({ request }) => {
         const mesActual = ahora.getMonth();
         const mesReset = ultimoReset.getMonth();
 
-        let clicksMes = data?.clicks_mes || 0;
+        let clicksMes = data?.contactos_whatsapp_mes || 0;
 
         if (mesActual !== mesReset) {
             // Nuevo mes, resetear contador
             clicksMes = 0;
         }
 
-        // Incrementar contadores
-        await profRef.update({
-            clicks_contacto: (data?.clicks_contacto || 0) + 1,
-            clicks_mes: clicksMes + 1,
+        const nuevosClicks = clicksMes + 1;
+
+        // Actualizar contadores
+        const updateData: any = {
+            contacto_clicks: (data?.contacto_clicks || 0) + 1,
             ultimo_reset_clicks: ahora,
-        });
+        };
+
+        if (plan === "semilla") {
+            updateData.contactos_whatsapp_mes = nuevosClicks;
+        }
+
+        await profRef.update(updateData);
+
+        // Lógica de respuesta basada en límites
+        if (plan === "semilla") {
+            if (nuevosClicks >= 60) {
+                return new Response(JSON.stringify({
+                    status: 'bloqueado',
+                    clicks_mes: nuevosClicks,
+                    message: 'Límite mensual alcanzado (60/60). Pásate a Premium para seguir recibiendo clientes.'
+                }), { status: 403 });
+            }
+
+            if (nuevosClicks >= 50) {
+                return new Response(JSON.stringify({
+                    status: 'aviso',
+                    clicks_mes: nuevosClicks,
+                    quedan: 60 - nuevosClicks
+                }), { status: 200 });
+            }
+        }
 
         return new Response(JSON.stringify({
             ok: true,
-            clicks_mes: clicksMes + 1
+            status: 'ok',
+            clicks_mes: nuevosClicks
         }), { status: 200 });
 
     } catch (error: any) {

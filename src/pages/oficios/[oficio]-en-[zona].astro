@@ -1,0 +1,89 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { db } from "../../firebase/client";
+import { collection, query, where, getDocs, limit } from "firebase/firestore";
+
+export const prerender = false;
+
+const { oficio, zona } = Astro.params;
+
+// Normalizar para búsqueda
+const oficioClean = oficio?.replace(/-/g, ' ');
+const zonaClean = zona?.replace(/-/g, ' ');
+
+// SEO Metadata
+const title = `${oficioClean} en ${zonaClean} | Profesionales Recomendados - DeOficios`;
+const description = `Encuentra los mejores expertos en ${oficioClean} en ${zonaClean}. Pide presupuesto gratis, revisa opiniones y contrata con total seguridad en DeOficios.com.ar.`;
+
+// Buscar profesionales destacados para esta zona y rubro
+let profesionales: any[] = [];
+try {
+    const q = query(
+        collection(db, "profesionales"),
+        where("rubro_principal", "==", oficioClean),
+        where("zona", "==", zonaClean),
+        limit(12)
+    );
+    const snap = await getDocs(q);
+    profesionales = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+} catch (e) {
+    console.error("Error fetching SEO pros:", e);
+}
+---
+
+<Layout title={title} description={description}>
+    <main class="bg-gray-50 min-h-screen pt-24 pb-20">
+        <div class="container mx-auto px-4">
+            <!-- Hero SEO -->
+            <div class="text-center mb-16">
+                <h1 class="text-4xl md:text-5xl font-black text-slate-900 mb-6 leading-tight">
+                    Los Mejores Expertos en <span class="text-orange-600 capitalize">${oficioClean}</span> en <span class="text-orange-600 capitalize">${zonaClean}</span>
+                </h1>
+                <p class="text-xl text-slate-600 max-w-2xl mx-auto">
+                    Compara presupuestos, revisa perfiles verificados y contrata profesionales de confianza en tu localidad.
+                </p>
+            </div>
+
+            {profesionales.length > 0 ? (
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {profesionales.map((pro) => (
+                        <a href={`/perfil/${pro.uid}`} class="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 hover:shadow-xl transition-all group overflow-hidden relative">
+                            <div class="flex items-center gap-4">
+                                <img src={pro.foto || '/default-avatar.png'} alt={pro.nombre} class="w-16 h-16 rounded-full object-cover border-2 border-orange-500" />
+                                <div>
+                                    <h3 class="font-bold text-lg text-slate-900 group-hover:text-orange-600 transition-colors">{pro.nombre}</h3>
+                                    <p class="text-xs text-slate-500 font-bold uppercase tracking-widest">{pro.rubro_principal}</p>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-slate-50 flex justify-between items-center text-sm font-bold text-slate-600">
+                                <span>{pro.zona}</span>
+                                <span class="text-orange-600">Ver Perfil →</span>
+                            </div>
+                        </a>
+                    ))}
+                </div>
+            ) : (
+                <div class="bg-white rounded-[3rem] p-12 text-center border-2 border-dashed border-slate-200">
+                    <span class="text-6xl block mb-6">🔍</span>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Buscando más profesionales en {zonaClean}</h2>
+                    <p class="text-slate-500 mb-8">Estamos verificando nuevos expertos en esta zona. ¿Quieres recibir un aviso cuando los tengamos?</p>
+                    <a href="/resultados" class="bg-orange-600 text-white font-black py-4 px-8 rounded-2xl shadow-lg hover:bg-orange-700 transition">Ver en Localidades Cercanas</a>
+                </div>
+            )}
+            
+            <!-- SEO Footer Text -->
+            <section class="mt-20 prose prose-slate max-w-4xl mx-auto">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4">Servicio profesional de {oficioClean} en {zonaClean}</h2>
+                <p>
+                    ¿Necesitas un experto en ${oficioClean} en ${zonaClean}? En DeOficios.com.ar conectamos a los vecinos con los mejores trabajadores independientes y empresas de servicios. Nuestra plataforma garantiza perfiles verificados, opiniones reales de otros clientes y un sistema de presupuestos rápido y gratuito.
+                </p>
+                <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 list-none p-0">
+                    <li class="bg-white p-4 rounded-xl border border-slate-100 flex items-center gap-3">✅ Perfiles con DNI Verificado</li>
+                    <li class="bg-white p-4 rounded-xl border border-slate-100 flex items-center gap-3">⭐ Opiniones Honestos</li>
+                    <li class="bg-white p-4 rounded-xl border border-slate-100 flex items-center gap-3">💰 Presupuestos sin compromiso</li>
+                    <li class="bg-white p-4 rounded-xl border border-slate-100 flex items-center gap-3">🚀 Respuesta rápida</li>
+                </ul>
+            </section>
+        </div>
+    </main>
+</Layout>

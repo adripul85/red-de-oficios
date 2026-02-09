@@ -210,8 +210,8 @@ const Step2Specialty: React.FC<Step2Props> = ({ data, onChange, onNext, onBack }
                             <option value="">-- Seleccioná tu zona --</option>
                             {LOCATIONS.map(l => (
                                 <optgroup key={l.group} label={l.group}>
-                                    {l.zones.map(z => (
-                                        <option key={z} value={z}>{z}</option>
+                                    {l.zones.map((z, idx) => (
+                                        <option key={`${l.group}-${z}-${idx}`} value={z}>{z}</option>
                                     ))}
                                 </optgroup>
                             ))}

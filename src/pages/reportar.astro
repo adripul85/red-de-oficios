@@ -3,49 +3,131 @@ import Layout from '../layouts/Layout.astro';
 const { searchParams } = Astro.url;
 const id = searchParams.get('id');
 const nombre = searchParams.get('nombre');
+
+if (!id) {
+    if (typeof window !== 'undefined') window.location.href = "/";
+}
 ---
 
-<Layout title="Reportar Usuario">
-    <main style="max-width:500px; margin:50px auto; padding:20px; font-family:sans-serif;">
-        <h1>Reportar a {nombre}</h1>
-<p>Tu reporte es anónimo para el profesional.</p>
-        
-        <form id="report-form">
-            <label style="display:block; margin-top:10px;">Motivo:</label>
-            <select id="motivo" style="width:100%; padding:8px;">
-                <option>Datos Falsos</option>
-                <option>Estafa / Cobro indebido</option>
-                <option>Mal trato / Acoso</option>
-                <option>Spam</option>
-            </select>
+<Layout title={`Reportar a ${nombre || 'Usuario'}`}>
+    <main class="min-h-screen bg-slate-50 py-16 px-4">
+        <div class="max-w-md mx-auto">
+            <div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 relative overflow-hidden">
+                <!-- Decorative element -->
+                <div class="absolute top-0 right-0 w-24 h-24 bg-red-50 rounded-full -mr-8 -mt-8 blur-2xl"></div>
+                
+                <header class="relative z-10 mb-8 text-center text-slate-900 font-black">
+                    <div class="w-16 h-16 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-inner">
+                        🚨
+                    </div>
+                    <h1 class="text-2xl font-black text-slate-900 tracking-tight">Reportar Usuario</h1>
+                    <p class="text-slate-500 text-sm font-medium mt-2">
+                        Estás reportando a <span class="text-red-600 font-bold">{nombre || 'este profesional'}</span>
+                    </p>
+                </header>
 
-            <label style="display:block; margin-top:10px;">Detalles:</label>
-            <textarea id="desc" rows="4" style="width:100%; padding:8px;" required></textarea>
+                <div class="bg-amber-50 border border-amber-100 rounded-2xl p-4 mb-8 flex items-start gap-3">
+                    <span class="text-xl">🛡️</span>
+                    <p class="text-[11px] text-amber-800 font-bold leading-relaxed">
+                        Tu reporte es estrictamente confidencial. El profesional no sabrá quién lo realizó. Ayúdanos a mantener la comunidad segura.
+                    </p>
+                </div>
 
-<button type="submit" style="margin-top:20px; width:100%; padding:10px; background:#ef4444; color:white; border:none; font-weight:bold;">Enviar Reporte 🚨</button>
-        </form>
-    </main>
+                <form id="report-form" class="space-y-6 relative z-10">
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Motivo del Reporte</label>
+                        <select 
+                            id="motivo" 
+                            class="w-100 p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-bold focus:ring-2 focus:ring-red-500 outline-none transition-all"
+                            style="width:100%"
+                        >
+                            <option>Datos de contacto falsos</option>
+                            <option>Estafa o cobro indebido</option>
+                            <option>Mal trato, discriminación o acoso</option>
+                            <option>Trabajo mal realizado</option>
+                            <option>El profesional no se presentó</option>
+                            <option>Spam o contenido inapropiado</option>
+                            <option>Otro motivo</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Detalles del caso</label>
+                        <textarea 
+                            id="desc" 
+                            rows="5" 
+                            class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-bold focus:ring-2 focus:ring-red-500 outline-none transition-all placeholder:text-slate-300"
+                            style="width:100%"
+                            placeholder="Describe lo sucedido con el mayor detalle posible..."
+                            required
+                        ></textarea>
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        class="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-red-200 hover:bg-red-700 hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-3"
+                        style="width:100%"
+                    >
+                        Enviar Reporte 🚨
+                    </button>
+                    
+                    <button 
+                        type="button"
+                        onclick="history.back()"
+                        class="w-full py-3 text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors"
+                        style="width:100%"
+                    >
+                        Cancelar
+                    </button>
+                </form>
+            </div>
+            
+            <p class="text-center text-slate-400 text-[10px] font-bold mt-8 uppercase tracking-widest">
+                Red de Oficios &copy; {new Date().getFullYear()} Moderación
+            </p>
+        </div>
+    </div>
 </Layout>
 
 <script>
-    import { db } from '../firebase/client';
-    import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+    import { auth } from '../firebase/client';
 
     const id = new URLSearchParams(window.location.search).get('id');
     const nombre = new URLSearchParams(window.location.search).get('nombre');
 
-    document.getElementById('report-form').addEventListener('submit', async (e) => {
+    document.getElementById('report-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.textContent = "ENVIANDO...";
+
         try {
-            await addDoc(collection(db, "denuncias"), {
+            const body = {
                 profesionalId: id,
                 profesionalNombre: nombre,
-                motivo: document.getElementById('motivo').value,
-                descripcion: document.getElementById('desc').value,
-                fecha: serverTimestamp()
+                motivo: (document.getElementById('motivo') as HTMLSelectElement).value,
+                descripcion: (document.getElementById('desc') as HTMLTextAreaElement).value,
+                denuncianteUid: auth.currentUser?.uid || null,
+                denuncianteEmail: auth.currentUser?.email || null
+            };
+
+            const response = await fetch('/api/reportar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
             });
-            alert("Reporte enviado. Revisaremos el caso.");
-            window.location.href = "/";
-        } catch (err) { alert("Error al enviar."); }
+
+            const result = await response.json();
+
+            if (!response.ok) throw new Error(result.error);
+            
+            alert("✅ Reporte enviado con éxito. Nuestro equipo de moderación lo revisará a la brevedad.");
+            window.location.href = "/"; // O cerrar modal si fuera modal.
+        } catch (err) { 
+            console.error(err);
+            alert("❌ Hubo un error al enviar el reporte. Por favor, intenta de nuevo."); 
+            btn.disabled = false;
+            btn.textContent = "Enviar Reporte 🚨";
+        }
     });
 </script>

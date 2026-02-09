@@ -49,12 +49,18 @@ import Layout from "../../layouts/Layout.astro";
     <script>
         import { auth, db } from "../../firebase/client";
         import { onAuthStateChanged } from "firebase/auth";
+        import { getAuthRedirect } from "../../utils/auth-redirects";
         import { collection, query, where, onSnapshot, getDocs, collectionGroup, orderBy, limit } from "firebase/firestore";
 
         let currentUser = null;
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
+                const redirectUrl = await getAuthRedirect(user);
+                if (redirectUrl !== "/panel") {
+                    window.location.href = redirectUrl;
+                    return;
+                }
                 currentUser = user;
                 loadCodigos();
             } else {

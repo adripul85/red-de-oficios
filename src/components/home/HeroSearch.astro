@@ -67,40 +67,55 @@ if (!trendingTags || trendingTags.length === 0) {
         class="bg-white border border-slate-200 rounded-full shadow-2xl p-2 flex items-center relative z-20 mb-6"
       >
         <!-- Input: Servicio -->
-        <div class="flex-1 w-full px-6 py-3 relative flex items-center">
+        <div class="flex-1 w-full px-6 py-3 relative flex items-center group/input">
           <div class="w-full">
             <label
-              class="block text-xs font-bold text-slate-800 uppercase tracking-wide mb-1"
+              for="input-servicio"
+              class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-1 group-focus-within/input:text-orange-500 transition-colors"
             >
               ¿Qué servicio necesitás?
             </label>
-            <input
-              type="text"
-              name="q"
-              id="input-servicio"
-              placeholder="Ej: Gasista, Plomero, Electricista..."
-              class="w-full outline-none text-slate-700 placeholder-slate-400 bg-transparent text-lg pr-10"
-              autocomplete="off"
-            />
+            <div class="relative flex items-center">
+              <input
+                type="text"
+                name="q"
+                id="input-servicio"
+                placeholder="Ej: Gasista, Plomero, Electricista..."
+                class="w-full outline-none text-slate-800 placeholder-slate-400 bg-transparent text-lg pr-12 font-medium"
+                autocomplete="off"
+              />
+              <!-- Botón Limpiar (Hidden by default) -->
+              <button 
+                type="button" 
+                id="btn-clear-search" 
+                class="absolute right-10 text-slate-300 hover:text-slate-500 hidden transition-colors"
+              >
+                <span class="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
           </div>
           <button
             type="button"
             id="btn-mic"
-            class="hidden absolute right-4 bottom-4 text-slate-400 hover:text-orange-500 transition-colors p-2"
+            class="hidden absolute right-4 text-slate-400 hover:text-orange-500 transition-all p-2 rounded-full hover:bg-orange-50"
             aria-label="Busqueda por voz"
           >
-            <Mic class="w-5 h-5" />
+            <Mic class="w-5 h-5 mic-icon" aria-hidden="true" />
+            <div class="mic-ripple absolute inset-0 rounded-full bg-orange-500/20 scale-0 opacity-0"></div>
           </button>
         </div>
 
         <!-- Botón Buscar -->
         <button
           type="submit"
-          class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full p-4 md:p-3 transition-all active:scale-95 shadow-xl shadow-orange-200 flex items-center justify-center gap-2"
+          id="btn-search-submit"
+          class="bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-full p-4 md:px-8 md:py-4 transition-all active:scale-95 shadow-xl shadow-orange-200 flex items-center justify-center gap-2 group/btn h-14"
         >
-          <span class="text-2xl">🔍</span>
-
+          <span class="text-xl group-hover/btn:rotate-12 transition-transform search-icon">🔍</span>
           <span class="hidden md:inline font-bold text-lg">Buscar</span>
+          <div class="loading-spinner hidden">
+              <span class="animate-spin material-symbols-outlined">progress_activity</span>
+          </div>
         </button>
       </form>
 
@@ -229,35 +244,79 @@ if (!trendingTags || trendingTags.length === 0) {
 
           newBtn.addEventListener("click", (e) => {
             e.preventDefault();
-            recognition.start();
-            (newBtn as HTMLElement).classList.add(
-              "text-orange-600",
-              "animate-pulse",
-            );
+            try {
+                recognition.start();
+                const micIcon = newBtn.querySelector('.mic-icon');
+                const micRipple = newBtn.querySelector('.mic-ripple');
+                newBtn.classList.add("text-orange-600", "scale-110");
+                micRipple?.classList.add("animate-ping-slow", "opacity-100", "scale-100");
+                
+                // Opción visual extra en el input
+                // @ts-ignore
+                inputServicio.placeholder = "Escuchando...";
+            } catch(err) {
+                console.warn("Mic already active or error:", err);
+            }
           });
 
           recognition.onresult = (event) => {
             const transcript = event.results[0][0].transcript;
+            if (inputServicio) (inputServicio as HTMLInputElement).value = transcript;
+            form?.dispatchEvent(new Event('submit'));
+          };
+
+          const stopEffect = () => {
+            newBtn.classList.remove("text-orange-600", "scale-110");
+            const micRipple = newBtn.querySelector('.mic-ripple');
+            micRipple?.classList.remove("animate-ping-slow", "opacity-100", "scale-100");
             // @ts-ignore
-            inputServicio.value = transcript;
-            setTimeout(() => form?.submit(), 400);
+            if (inputServicio) inputServicio.placeholder = "Ej: Gasista, Plomero, Electricista...";
           };
 
           recognition.onspeechend = () => {
             recognition.stop();
-            (newBtn as HTMLElement).classList.remove(
-              "text-orange-600",
-              "animate-pulse",
-            );
+            stopEffect();
           };
 
           recognition.onerror = () => {
-            (newBtn as HTMLElement).classList.remove(
-              "text-orange-600",
-              "animate-pulse",
-            );
+            stopEffect();
           };
         }
+      }
+
+      // Logic for Clear Button
+      const btnClear = document.getElementById("btn-clear-search");
+      if (btnClear && inputServicio) {
+        inputServicio.addEventListener("input", () => {
+          // @ts-ignore
+          if (inputServicio.value.length > 0) btnClear.classList.remove("hidden");
+          else btnClear.classList.add("hidden");
+        });
+
+        btnClear.addEventListener("click", () => {
+          // @ts-ignore
+          inputServicio.value = "";
+          btnClear.classList.add("hidden");
+          inputServicio.focus();
+        });
+      }
+
+      // Visual feedback on submit
+      if (form) {
+        form.addEventListener("submit", () => {
+            const btnSubmit = document.getElementById("btn-search-submit");
+            const searchIcon = btnSubmit?.querySelector(".search-icon");
+            const spinner = btnSubmit?.querySelector(".loading-spinner");
+            const btnText = btnSubmit?.querySelector("span:not(.search-icon)");
+            
+            if (btnSubmit) {
+                searchIcon?.classList.add("hidden");
+                btnText?.classList.add("hidden");
+                spinner?.classList.remove("hidden");
+                // @ts-ignore
+                btnSubmit.disabled = true;
+            }
+        });
       }
     }
 
@@ -279,6 +338,17 @@ if (!trendingTags || trendingTags.length === 0) {
       clip: rect(0, 0, 0, 0);
       white-space: nowrap;
       border-width: 0;
+    }
+
+    .animate-ping-slow {
+        animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+
+    @keyframes ping {
+        75%, 100% {
+            transform: scale(2);
+            opacity: 0;
+        }
     }
   </style>
 </div>

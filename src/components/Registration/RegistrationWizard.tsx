@@ -117,11 +117,25 @@ export default function RegistrationWizard() {
             profileData.celular = rawPhone;
             profileData.telefono = rawPhone;
 
+            // Map specialties to servicios_lista for profile display
+            const secondaryServices = profileData.especialidades_secundarias || [];
+            const otherServices = profileData.otras_especialidades ? [profileData.otras_especialidades] : [];
+            profileData.servicios_lista = [profileData.rubro_principal, ...secondaryServices, ...otherServices].filter(Boolean);
+
+            // Map specialties to etiquetas (tags) for profile display
+            // Limit to 5 tags as per mi-perfil.astro limits
+            profileData.etiquetas = [...secondaryServices, ...otherServices].filter(Boolean).slice(0, 5);
+
             // Add metadata
             profileData.uid = user.uid;
             profileData.createdAt = new Date();
             profileData.plan = 'gratuito'; // Default
             profileData.rol = 'profesional';
+
+            // Initial score and usage limits
+            profileData.promedio = 3.0; // Request: start at 3.0
+            profileData.total_votos = 0;
+            profileData.whatsapp_restantes = 20; // Seed plan limit
 
             // 3. Save to Firestore
             console.log("💾 [FIRESTORE] Guardando perfil...");
@@ -136,10 +150,26 @@ export default function RegistrationWizard() {
             await setDoc(doc(db, "profesionales", user.uid), profileData);
             console.log("✅ [FIRESTORE] Perfil guardado exitosamente");
 
+            // 3.5 SEND WELCOME EMAIL (Background)
+            try {
+                fetch("/api/send-welcome", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: profileData.email,
+                        name: profileData.nombre,
+                        role: "profesional"
+                    })
+                }).then(res => res.json()).then(data => console.log("📧 [WELCOME] Email response:", data));
+            } catch (emailErr) {
+                console.warn("⚠️ [WELCOME] No se pudo disparar el email de bienvenida:", emailErr);
+            }
+
             // 4. Success / Redirect
             localStorage.removeItem('reg_wizard_data'); // Clear draft
-            console.log("🎉 [REGISTRO] Registro completo - Redirigiendo a mi-perfil");
-            window.location.href = '/mi-perfil'; // Redirect to dashboard
+            console.log("🎉 [REGISTRO] Registro completo - Redirigiendo...");
+
+            window.location.href = '/mi-perfil'; // Redicción por defecto al perfil
 
         } catch (err: any) {
             console.error(err);

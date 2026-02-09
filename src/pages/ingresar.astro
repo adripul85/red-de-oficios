@@ -23,12 +23,7 @@ import Layout from "../layouts/Layout.astro";
 
       <div class="auth-tabs">
         <button class="tab-btn active" id="tab-login">Ingresar</button>
-        <a
-          href="/registro-profesional"
-          class="tab-btn"
-          style="text-decoration: none; text-align: center; display: block;"
-          >Crear Cuenta</a
-        >
+        <button class="tab-btn" id="tab-register">Crear Cuenta</button>
       </div>
 
       <form id="form-login" class="auth-form active">
@@ -100,12 +95,10 @@ import Layout from "../layouts/Layout.astro";
 
         <div class="input-group">
           <label>Contraseña</label>
-          <input
-            type="password"
-            placeholder="Crea una contraseña segura"
-            required
           />
         </div>
+
+
 
         <button type="submit" class="btn-primary">Registrarme</button>
 
@@ -152,6 +145,7 @@ import { auth, db } from "../firebase/client"; // 👈 Importamos db también
     signInWithPopup,
   } from "firebase/auth";
   import { doc, setDoc, getDoc } from "firebase/firestore"; // 👈 Herramientas para guardar datos
+  import { getAuthRedirect } from "../utils/auth-redirects";
 
   // --- LÓGICA VISUAL (PESTAÑAS) ---
   const tabLogin = document.getElementById("tab-login");
@@ -161,16 +155,16 @@ import { auth, db } from "../firebase/client"; // 👈 Importamos db también
 
   tabLogin?.addEventListener("click", () => {
     tabLogin.classList.add("active");
-    tabRegister.classList.remove("active");
-    formLogin.classList.add("active");
-    formRegister.classList.remove("active");
+    tabRegister?.classList.remove("active");
+    formLogin?.classList.add("active");
+    formRegister?.classList.remove("active");
   });
 
   tabRegister?.addEventListener("click", () => {
     tabRegister.classList.add("active");
-    tabLogin.classList.remove("active");
-    formRegister.classList.add("active");
-    formLogin.classList.remove("active");
+    tabLogin?.classList.remove("active");
+    formRegister?.classList.add("active");
+    formLogin?.classList.remove("active");
   });
 
   // --- REGISTRO (CREAR USUARIO + PERFIL) ---
@@ -207,27 +201,30 @@ const user = userCredential.user;
       // Le sumamos 10 días a la fecha de hoy
       fechaVencimiento.setDate(fechaRegistro.getDate() + 10);
 
-      // 2. Crear ficha en Base de Datos (La Casa)
-      // Usamos el MISMO ID (uid) para que sean pareja
-      await setDoc(doc(db, "profesionales", user.uid), {
-        nombre: nombre,
-        email: email,
-        categoria: "Sin categoría", // Datos por defecto
-        zona: "Sin zona",
-        descripcion: "¡Hola! Soy nuevo en DeOficios.",
-        verificado: false,
-        es_24hs: false,
+        // 2. Crear ficha en Base de Datos (La Casa)
+        // Usamos el MISMO ID (uid) para que sean pareja
+        await setDoc(doc(db, "profesionales", user.uid), {
+          nombre: nombre,
+          email: email,
+          categoria: "Sin categoría", // Datos por defecto
+          zona: "Sin zona",
+          descripcion: "¡Hola! Soy nuevo en DeOficios.",
+          verificado: false,
+          es_24hs: false,
 
-        // 👇 DATOS NUEVOS DE SUSCRIPCIÓN 👇
-        plan: "prueba_gratis", // 'prueba_gratis', 'mensual', 'semestral'
-        vencimiento: fechaVencimiento,
-        estado: "activo", // 'activo', 'vencido'
+          // 👇 DATOS NUEVOS DE SUSCRIPCIÓN 👇
+          plan: "prueba_gratis", // 'prueba_gratis', 'mensual', 'semestral'
+          vencimiento: fechaVencimiento,
+          estado: "activo", // 'activo', 'vencido'
 
-        contactos_gratis_usados: 0,
-        votos: 0,
-        fecha_registro: fechaRegistro,
-        rol: "profesional",
-      });
+          contactos_gratis_usados: 0,
+          whatsapp_restantes: 20, // Seed/Free plan limit
+          promedio: 3.0, // Request: start at 3.0
+          total_votos: 0,
+          votos: 0,
+          fecha_registro: fechaRegistro,
+          rol: "profesional",
+        });
 
       console.log("Perfil creado en DB para:", user.uid);
       
@@ -246,8 +243,9 @@ const user = userCredential.user;
 
       alert("¡Cuenta creada! Revisa tu email para verificarla.");
 
-      // 3. Redirigir a la página de edición (La crearemos luego)
-      window.location.href = "/mi-perfil";
+      // 3. Redirigir según rol y plan
+      const redirectUrl = await getAuthRedirect(user);
+      window.location.href = redirectUrl;
     } catch (error) {
       console.error(error);
       let mensaje = "Error al registrarse." + error.message;
@@ -277,10 +275,9 @@ const user = userCredential.user;
       btn.textContent = "Ingresando...";
       (btn as HTMLButtonElement).disabled = true;
 
-      await signInWithEmailAndPassword(auth, email, password);
-
-      // Al entrar, lo mandamos a su panel
-      window.location.href = "/mi-perfil";
+      const user = (await signInWithEmailAndPassword(auth, email, password)).user;
+      const redirectUrl = await getAuthRedirect(user);
+      window.location.href = redirectUrl;
     } catch (error) {
       console.error(error);
       alert("Datos incorrectos. Intenta de nuevo.");
@@ -327,7 +324,8 @@ const user = userCredential.user;
           });
         }
 
-        window.location.href = "/mi-perfil";
+        const redirectUrl = await getAuthRedirect(user);
+        window.location.href = redirectUrl;
       } catch (error) {
         console.error("Google Auth Error:", error);
         // Avoid alerting if popup closed by user

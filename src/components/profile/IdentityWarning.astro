@@ -1,0 +1,49 @@
+---
+// IdentityWarning.astro
+---
+
+<div id="identity-warning-container" class="hidden">
+    <div id="identity-warning-banner" class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 rounded-2xl shadow-xl mb-8 relative overflow-hidden group">
+        <!-- Decoración de fondo -->
+        <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-700"></div>
+        
+        <div class="flex flex-col md:flex-row items-center gap-6 relative z-10">
+            <div id="warning-icon" class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-4xl shadow-inner border border-white/30">
+                🛡️
+            </div>
+            
+            <div class="flex-1 text-center md:text-left">
+                <h3 class="text-xl font-bold mb-1 flex items-center justify-center md:justify-start gap-2">
+                    <span id="warning-title">Protege tu Identidad</span>
+                    <span class="bg-blue-400/30 text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full border border-white/20">Seguridad DeOficios</span>
+                </h3>
+                <p id="warning-desc" class="text-blue-100 text-sm max-w-2xl">
+                    Sube tu DNI y Antecedentes Penales para obtener el sello de confianza y mejorar tu posición en el mapa.
+                </p>
+                
+                <div id="warning-tags" class="flex flex-wrap gap-3 mt-4 justify-center md:justify-start">
+                    <!-- Dynamic tags will be inserted here -->
+                </div>
+            </div>
+            
+            <div id="warning-action-container">
+                <button 
+                    onclick="document.querySelector('[data-tab=datos]').click(); window.scrollTo({top: 400, behavior: 'smooth'});"
+                    class="bg-white text-blue-700 px-6 py-3 rounded-xl font-bold hover:bg-blue-50 transition shadow-lg active:scale-95 flex items-center gap-2 whitespace-nowrap"
+                >
+                    Subir Documentos 📤
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #identity-warning-banner {
+        animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes slideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+</style>

@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import { auth as authClient } from "../firebase/client";
 import { sendEmailVerification } from "firebase/auth";
+import IdentityWarning from "../components/profile/IdentityWarning.astro";
 ---
 
 <Layout title="Mi Perfil Profesional - DeOficios" hideBottomNav={true} hideIA={true}>
@@ -72,12 +73,12 @@ import { sendEmailVerification } from "firebase/auth";
                             />
                         </div>
 
-                        <h3
-                            id="sidebar-name"
-                            class="text-xl font-bold text-gray-900 leading-tight"
-                        >
-                            ...
                         </h3>
+                        <p
+                            id="sidebar-cuit"
+                            class="text-[10px] text-gray-400 font-bold mt-1 uppercase tracking-tighter"
+                        >
+                        </p>
                         <div
                             id="badges-container"
                             class="flex flex-wrap justify-center gap-2 mt-2 mb-4"
@@ -112,7 +113,7 @@ import { sendEmailVerification } from "firebase/auth";
                                     >
                                     <span class="text-orange-600"
                                         ><span id="clicks-current">0</span
-                                        >/20</span
+                                        >/60</span
                                     >
                                 </div>
                                 <div
@@ -127,11 +128,27 @@ import { sendEmailVerification } from "firebase/auth";
                                 </div>
                             </div>
 
+                            <!-- Banner de Aviso (Te quedan X) -->
+                            <div id="clicks-warning-banner" class="hidden mt-3 bg-amber-50 border-l-4 border-amber-400 p-3 rounded-r-lg">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-amber-600">⚠️</span>
+                                    <p class="text-[10px] text-amber-800 font-bold leading-tight">
+                                        ¡Atención! Te quedan pocos contactos gratuitos este mes. No pierdas clientes, pásate a Premium.
+                                    </p>
+                                </div>
+                            </div>
+
                             <ul
                                 id="plan-benefits"
                                 class="space-y-2 text-sm text-gray-700 mt-4 mb-4"
                             >
                             </ul>
+                            <!-- Tarjeta de Invitación a Mejora -->
+                            <div id="upgrade-invite-card" class="hidden mt-4 mb-4 bg-orange-600 p-4 rounded-xl border border-orange-400 shadow-lg animate-bounce">
+                                <p class="text-white text-[11px] font-black uppercase tracking-widest mb-1 text-center">¡Límite Alcanzado!</p>
+                                <p class="text-white text-xs text-center font-medium opacity-90 leading-tight">Tu plan actual ya no permite nuevos contactos para los resultados de búsqueda. ¡Subí de nivel!</p>
+                            </div>
+
                             <a
                                 href="/planes"
                                 class="block w-full py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-bold rounded-lg text-center hover:shadow-lg transition text-shadow"
@@ -220,6 +237,7 @@ import { sendEmailVerification } from "firebase/auth";
                 </aside>
 
                 <div class="lg:col-span-3 space-y-6">
+                    <IdentityWarning />
                     <!-- Blindaje de Identidad Premium -->
                     <div
                         class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden"
@@ -844,6 +862,55 @@ import { sendEmailVerification } from "firebase/auth";
                             />
                         </form>
 
+                        </form>
+                        
+                        <!-- Verification Card -->
+                        <div class="mt-6 bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                            <h3 class="font-bold text-gray-800 text-lg mb-2 flex items-center gap-2">
+                                🛡️ Identidad Verificada
+                            </h3>
+                            <div class="flex items-start gap-4">
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-600 mb-4">
+                                        Valida tu identidad para obtener la insignia <span class="bg-blue-100 text-blue-700 text-[10px] font-black px-2 py-0.5 rounded-full border border-blue-200 inline-flex items-center gap-1">🛡️ VERIFICADO</span>. Esto genera más confianza en tus clientes.
+                                    </p>
+                                    
+                                    <!-- STATUS: VERIFICADO -->
+                                    <div id="verif-status-verified" class="hidden bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-3">
+                                        <div class="bg-green-100 p-2 rounded-full text-green-600 text-xl">✅</div>
+                                        <div>
+                                            <p class="font-bold text-green-800 text-sm">¡Tu perfil está verificado!</p>
+                                            <p class="text-xs text-green-600">Ya disfrutas de todos los beneficios de confianza.</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- STATUS: PENDIENTE -->
+                                    <div id="verif-status-pending" class="hidden bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-center gap-3">
+                                        <div class="bg-yellow-100 p-2 rounded-full text-yellow-600 text-xl">⏳</div>
+                                        <div>
+                                            <p class="font-bold text-yellow-800 text-sm">En Revisión</p>
+                                            <p class="text-xs text-yellow-600">Estamos validando tu documentación. Te avisaremos pronto.</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- STATUS: SIN VERIFICAR (FORM) -->
+                                    <div id="verif-upload-form" class="hidden">
+                                        <button 
+                                            type="button"
+                                            id="btn-upload-verif"
+                                            class="w-full bg-slate-800 text-white font-bold py-3 rounded-lg text-sm hover:bg-slate-900 transition flex items-center justify-center gap-2"
+                                        >
+                                            <span>📤</span> Subir DNI o Matrícula
+                                        </button>
+                                        <input type="file" id="file-upload-verif" accept="image/*,.pdf" class="hidden" />
+                                        <p class="text-[10px] text-gray-400 mt-2 text-center">
+                                            Tus documentos son privados y solo se usan para validación.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div id="tab-seo" class="tab-content hidden">
                             <div
                                 class="premium-overlay hidden absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center"
@@ -1016,16 +1083,17 @@ import { sendEmailVerification } from "firebase/auth";
                                         </p>
                                     </div>
                                     <label
-                                        for="input-portfolio"
+                                        for="file-upload-portfolio"
                                         class="bg-orange-600 text-white px-6 py-3 rounded-xl text-sm font-bold cursor-pointer hover:bg-orange-700 shadow-md transition-all flex items-center justify-center gap-2"
                                     >
                                         <span class="text-lg">⊕</span> Subir Nuevo Trabajo
                                     </label>
                                     <input
                                         type="file"
-                                        id="input-portfolio"
-                                        class="hidden"
+                                        id="file-upload-portfolio"
                                         accept="image/*"
+                                        multiple
+                                        class="hidden"
                                     />
                                 </div>
 
@@ -1181,9 +1249,12 @@ import { sendEmailVerification } from "firebase/auth";
 
 <script>
     import { auth, db, storage } from "../firebase/client";
-    import { onAuthStateChanged, signOut, deleteUser } from "firebase/auth";
+    import { onAuthStateChanged, signOut, deleteUser, sendEmailVerification } from "firebase/auth";
+    import { getAuthRedirect, validateCUIT } from "../utils/auth-redirects";
+    import Swal from "sweetalert2";
+    import { jsPDF } from "jspdf";
     import {
-        doc,
+        doc as fireDoc,
         getDoc,
         updateDoc,
         arrayUnion,
@@ -1321,7 +1392,7 @@ import { sendEmailVerification } from "firebase/auth";
                 if (result.isConfirmed) {
                     const newPortfolio = [...portfolio];
                     newPortfolio.splice(idx, 1);
-                    await updateDoc(doc(db, "profesionales", currentUserUid), {
+                    await updateDoc(fireDoc(db, "profesionales", currentUserUid), {
                         portfolio: newPortfolio,
                     });
                     loadUserProfile(currentUserUid); // Recargar
@@ -1388,7 +1459,7 @@ import { sendEmailVerification } from "firebase/auth";
             // @ts-ignore
             Swal.fire({ title: 'Guardando...', didOpen: () => Swal.showLoading() });
             
-            await updateDoc(doc(db, "profesionales", currentUserUid), {
+            await updateDoc(fireDoc(db, "profesionales", currentUserUid), {
                 portfolio: newPortfolio
             });
 
@@ -1429,11 +1500,16 @@ import { sendEmailVerification } from "firebase/auth";
                 );
 
                 if (diasRestantes > 0) {
+                    // Check for existing badge to prevent duplicates
+                    const existingBadge = document.getElementById("plan-expiration-badge");
+                    if (existingBadge) existingBadge.remove();
+
                     const badgeColor =
                         diasRestantes <= 10
                             ? "text-orange-600 bg-orange-50"
                             : "text-gray-500 bg-gray-100";
                     const badge = document.createElement("div");
+                    badge.id = "plan-expiration-badge"; // Unique ID
                     badge.className = `mt-2 text-xs text-center font-bold px-2 py-1 rounded ${badgeColor}`;
                     badge.innerHTML = `⏰ ${diasRestantes} día${diasRestantes > 1 ? "s" : ""} restante${diasRestantes > 1 ? "s" : ""}`;
                     container.parentElement?.appendChild(badge);
@@ -1453,22 +1529,90 @@ import { sendEmailVerification } from "firebase/auth";
         const c = document.getElementById("badges-container");
         if (!c) return;
         c.innerHTML = "";
-        if (data.verificado)
-            c.innerHTML += `<span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded">✅ Verificado</span>`;
-        if ((data.promedio || 0) > 4.5)
-            c.innerHTML += `<span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-1 rounded">⭐ Top</span>`;
+        
+        const addBadge = (text, color, icon, meaning) => {
+            const badge = document.createElement("span");
+            badge.className = `bg-${color}-100 text-${color}-700 text-[10px] font-black px-2.5 py-1 rounded-full border border-${color}-200 flex items-center gap-1 shadow-sm cursor-help active:scale-95 transition-transform select-none`;
+            badge.innerHTML = `<span class="text-xs">${icon}</span> ${text}`;
+            badge.title = meaning;
+            
+            badge.addEventListener("click", () => {
+                // @ts-ignore
+                Swal.fire({
+                    toast: true,
+                    position: 'top',
+                    showConfirmButton: false,
+                    timer: 2500,
+                    iconHtml: `<span style="font-size: 20px">${icon}</span>`,
+                    title: `<span style="font-size: 14px; font-weight: bold; color: #1e293b">${text}</span>`,
+                    html: `<p style="font-size: 12px; color: #64748b; margin-top: 5px">${meaning}</p>`,
+                    background: '#ffffff',
+                    customClass: {
+                        popup: 'rounded-2xl border border-slate-100 shadow-xl'
+                    }
+                });
+            });
+            c.appendChild(badge);
+        };
+
+        if (data.verificado || data.is_verified) {
+            addBadge("VERIFICADO", "blue", "🛡️", "Este profesional ha validado su identidad y documentación con nuestro equipo.");
+        }
+        if ((data.promedio || 0) >= 4.5) {
+            addBadge("TOP PRO", "yellow", "⭐", "Profesional con un promedio de calificaciones superior a 4.5 estrellas.");
+        }
+        
+        const plan = data.plan || "semilla";
+        const isExperto = plan === 'experto' || plan === 'semestral';
+        const isImpulso = plan === 'impulso' || plan === 'mensual' || plan === 'basico';
+        
+        const planColor = isExperto ? 'orange' : (isImpulso ? 'purple' : 'slate');
+        const planLabel = isExperto ? 'EXPERTO' : (isImpulso ? 'IMPULSO' : 'SEMILLA');
+        
+        addBadge(`PLAN ${planLabel}`, planColor, "🏆", `Suscripción actual: ${planLabel}. Define tus beneficios en la plataforma.`);
     }
 
     function updateClickCounter(clicks) {
         const counter = document.getElementById("click-counter");
+        if (!counter) return; 
+        
         if (userPlan !== "semilla") {
             counter.classList.add("hidden");
             return;
         }
+        
         counter.classList.remove("hidden");
         document.getElementById("clicks-current").innerText = clicks;
-        const pct = Math.min((clicks / 20) * 100, 100);
-        document.getElementById("clicks-progress").style.width = `${pct}%`;
+        const pct = Math.min((clicks / 60) * 100, 100);
+        const progressEl = document.getElementById("clicks-progress");
+        if (progressEl) {
+            progressEl.style.width = `${pct}%`;
+            // Cambiar color si llega al final
+            if (clicks >= 60) {
+                progressEl.classList.remove("bg-orange-500");
+                progressEl.classList.add("bg-red-500");
+            } else if (clicks >= 50) {
+                progressEl.classList.remove("bg-orange-500");
+                progressEl.classList.add("bg-amber-500");
+            } else {
+                progressEl.classList.add("bg-orange-500");
+                progressEl.classList.remove("bg-red-500", "bg-amber-500");
+            }
+        }
+
+        // Mostrar warning banner si llega a 50+
+        const warningBanner = document.getElementById("clicks-warning-banner");
+        if (warningBanner) {
+            if (clicks >= 50 && clicks < 60) warningBanner.classList.remove("hidden");
+            else warningBanner.classList.add("hidden");
+        }
+
+        // Mostrar invitación de mejora si llega a 60+
+        const upgradeInvite = document.getElementById("upgrade-invite-card");
+        if (upgradeInvite) {
+            if (clicks >= 60) upgradeInvite.classList.remove("hidden");
+            else upgradeInvite.classList.add("hidden");
+        }
     }
 
     // --- 2. CONFIGURACIÓN ---
@@ -1656,8 +1800,7 @@ import { sendEmailVerification } from "firebase/auth";
     let selectedZonas = [];
     /** @type {string[]} */
     let userTags = [];
-    /** @type {any} */
-    let userData = {};
+    let userData = null;
     let docDniUrl = null;
     let docAntUrl = null;
     let isVerified = false;
@@ -1710,41 +1853,57 @@ import { sendEmailVerification } from "firebase/auth";
 
         onAuthStateChanged(auth, async (user) => {
             try {
+                const banner = document.getElementById("email-verification-banner");
+                const btnResend = document.getElementById("btn-resend-verification");
+
                 if (user) {
                     console.log("✅ [AUTH] Usuario autenticado:", user.uid);
-                    currentUserUid = user.uid;
-
-                    // Email Verification Banner
-                    const banner = document.getElementById("email-verification-banner");
-                    if (banner) {
-                        if (!user.emailVerified) banner.classList.remove("hidden");
-                        else banner.classList.add("hidden");
+                    
+                    // Role Guard: Ensure user should be here
+                    const redirectUrl = await getAuthRedirect(user);
+                    if (redirectUrl !== "/mi-perfil" && redirectUrl !== "/panel") {
+                        window.location.href = redirectUrl;
+                        return;
                     }
 
-                    document.getElementById("btn-resend-verification")?.addEventListener("click", async () => {
-                        try {
-                            await sendEmailVerification(user);
-                            // @ts-ignore
-                            Swal.fire("Enviado", "Revisa tu casilla de correo", "success");
-                        } catch (e) {
-                             // @ts-ignore
-                            Swal.fire("Error", "Intenta de nuevo más tarde", "error");
+                    currentUserUid = user.uid;
+                    
+                    // Email Verification Banner Logic
+                    if (banner) {
+                        if (!user.emailVerified) {
+                            banner.classList.remove("hidden");
+                            banner.classList.add("flex");
+                        } else {
+                            banner.classList.add("hidden");
                         }
-                    });
+                    }
 
+                    if (btnResend) {
+                        btnResend.onclick = async () => {
+                            try {
+                                await sendEmailVerification(user);
+                                btnResend.innerText = "Email Reenviado";
+                                btnResend.classList.add("bg-green-600");
+                                Swal.fire("¡Enviado!", "Revisa tu bandeja de entrada o spam.", "success");
+                            } catch (e) {
+                                console.error("Error reenviando verificación:", e);
+                                Swal.fire("Error", "Intenta de nuevo más tarde.", "error");
+                            }
+                        };
+                    }
+
+                    // Load Profile Data
                     console.log("📥 [DATA] Cargando perfil desde Firestore...");
                     await loadUserProfile(user.uid);
                     console.log("✅ [DATA] Perfil cargado exitosamente");
                     hideLoadingOverlay();
+                    
                 } else {
-                    console.warn(
-                        "⚠️ [AUTH] No hay usuario - Redirigiendo a /ingresar",
-                    );
-                    window.location.href = "/ingresar";
+                    console.warn("⚠️ [AUTH] Sin sesión activa - Redirigiendo");
+                    window.location.href = "/ingresar?redirect=/mi-perfil";
                 }
             } catch (error) {
-                console.error("❌ [ERROR] Error cargando perfil:", error);
-                console.error("❌ [ERROR] Stack:", error.stack);
+                console.error("❌ [AUTH] Error en el flujo de autenticación:", error);
                 hideLoadingOverlay();
                 // @ts-ignore
                 Swal.fire({
@@ -1866,7 +2025,7 @@ import { sendEmailVerification } from "firebase/auth";
         }
         try {
             console.log("📡 [FIRESTORE] Consultando documento:", uid);
-            const docRef = doc(db, "profesionales", uid);
+            const docRef = fireDoc(db, "profesionales", uid);
             const snap = await getDoc(docRef);
             if (!snap.exists()) {
                 console.error(
@@ -1900,7 +2059,7 @@ import { sendEmailVerification } from "firebase/auth";
                     console.warn(
                         "⚠️ [PLAN] Plan expirado, haciendo downgrade...",
                     );
-                    await updateDoc(doc(db, "profesionales", uid), {
+                    await updateDoc(fireDoc(db, "profesionales", uid), {
                         plan: "semilla",
                         plan_anterior: data.plan,
                         fecha_downgrade: new Date(),
@@ -1981,12 +2140,12 @@ import { sendEmailVerification } from "firebase/auth";
                         console.warn(
                             `⚠️ [PLAN] Corrigiendo duración del plan ${data.plan}: ${duracionEsperada} días`,
                         );
-                        await updateDoc(doc(db, "profesionales", uid), {
+                        await updateDoc(fireDoc(db, "profesionales", uid), {
                             plan_vencimiento: vencimientoCorrecto,
                         });
                         // Recargar datos
                         const updatedSnap = await getDoc(
-                            doc(db, "profesionales", uid),
+                            fireDoc(db, "profesionales", uid),
                         );
                         if (updatedSnap.exists()) {
                             userData = updatedSnap.data();
@@ -2006,6 +2165,18 @@ import { sendEmailVerification } from "firebase/auth";
 
             userServices = data.servicios_lista || [];
             userTags = data.etiquetas || [];
+
+            // Auto-populate tags from registration data if empty
+            if (userTags.length === 0 && (data.especialidades_secundarias?.length > 0 || data.otras_especialidades)) {
+                const fallbackTags = [...(data.especialidades_secundarias || []), data.otras_especialidades]
+                    .filter(Boolean)
+                    .map(t => t.trim())
+                    .slice(0, 5);
+                if (fallbackTags.length > 0) {
+                    userTags = fallbackTags;
+                }
+            }
+
             renderTags(); // Renderizar etiquetas al cargar
             isVerified = data.verificado || false;
             docDniUrl = data.doc_dni;
@@ -2013,6 +2184,7 @@ import { sendEmailVerification } from "firebase/auth";
 
             // SIDEBAR
             setText("sidebar-name", data.nombre);
+            setText("sidebar-cuit", data.cuit ? `CUIT/CUIL: ${data.cuit}` : "");
             setSrc(
                 "avatar-img",
                 data.foto || `https://ui-avatars.com/api/?name=${data.nombre}`,
@@ -2021,7 +2193,28 @@ import { sendEmailVerification } from "firebase/auth";
 
             renderPlanInfo(userPlan);
             renderBadges(data);
-            updateClickCounter(data.contacto_clicks || 0);
+            
+            // VERIFICATION UI UPDATE
+            const vVerified = document.getElementById("verif-status-verified");
+            const vPending = document.getElementById("verif-status-pending");
+            const vForm = document.getElementById("verif-upload-form");
+            
+            if (vVerified && vPending && vForm) {
+                // Reset all to hidden
+                vVerified.classList.add("hidden");
+                vPending.classList.add("hidden");
+                vForm.classList.add("hidden");
+                
+                if (data.verificado) {
+                    vVerified.classList.remove("hidden");
+                } else if (data.verificacion_pendiente) {
+                    vPending.classList.remove("hidden");
+                } else {
+                    vForm.classList.remove("hidden");
+                }
+            }
+
+            updateClickCounter(data.contactos_whatsapp_mes || 0);
 
             if (data.rol === "admin")
                 document
@@ -2223,9 +2416,68 @@ import { sendEmailVerification } from "firebase/auth";
             const btnVer = document.getElementById("btn-ver-perfil");
             if (btnVer) btnVer.setAttribute("href", `/perfil?id=${uid}`);
 
-            if (userPlan === "semilla") blockPremiumTabs();
+            if (userPlan === "semilla") {
+                blockPremiumTabs();
+            } else {
+                unblockPremiumTabs();
+            }
+            
+            renderIdentityWarning(data);
         } catch (e) {
             console.error("Error cargando:", e);
+        }
+    }
+
+    function renderIdentityWarning(data) {
+        const container = document.getElementById("identity-warning-container");
+        const title = document.getElementById("warning-title");
+        const desc = document.getElementById("warning-desc");
+        const icon = document.getElementById("warning-icon");
+        const tags = document.getElementById("warning-tags");
+        const actionBtn = document.getElementById("warning-action-container");
+
+        if (!container) return;
+
+        const isApproved = data.validacion_estado === "aprobado" || data.verificado;
+        const isPending = data.validacion_estado === "pendiente";
+
+        if (isApproved) {
+            container.classList.add("hidden");
+            return;
+        }
+
+        container.classList.remove("hidden");
+
+        if (isPending) {
+            if (title) title.innerText = "Validación en Proceso";
+            if (desc) desc.innerText = "Estamos revisando tu documentación. En las próximas 24-48hs recibirás tu insignia de verificado.";
+            if (icon) icon.innerText = "⏳";
+            
+            if (tags) {
+                const hasDni = !!data.doc_dni;
+                const hasAnt = !!data.doc_antecedentes;
+                tags.innerHTML = `
+                    ${hasDni ? `<div class="flex items-center gap-1.5 bg-blue-400/20 px-3 py-1.5 rounded-lg text-xs font-medium border border-blue-400/30"><span class="text-blue-300">⏳</span> DNI en revisión</div>` : `<div class="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg text-xs font-medium border border-white/10"><span class="text-red-300">❌</span> Falta DNI</div>`}
+                    ${hasAnt ? `<div class="flex items-center gap-1.5 bg-blue-400/20 px-3 py-1.5 rounded-lg text-xs font-medium border border-blue-400/30"><span class="text-blue-300">⏳</span> Antecedentes en revisión</div>` : `<div class="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg text-xs font-medium border border-white/10"><span class="text-red-300">❌</span> Falta Antecedentes</div>`}
+                `;
+            }
+            if (actionBtn) actionBtn.classList.add("hidden");
+        } else {
+            if (title) title.innerText = "Protege tu Identidad";
+            if (desc) desc.innerText = "Sube tu DNI y Antecedentes Penales para obtener el sello de confianza y mejorar tu posición en el mapa.";
+            if (icon) icon.innerText = "🛡️";
+            if (actionBtn) actionBtn.classList.remove("hidden");
+
+            if (tags) {
+                const hasDni = !!data.doc_dni;
+                const hasAnt = !!data.doc_antecedentes;
+                
+                tags.innerHTML = `
+                    ${!hasDni ? `<div class="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg text-xs font-medium border border-white/10"><span class="text-red-300">❌</span> Falta DNI</div>` : ""}
+                    ${!hasAnt ? `<div class="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg text-xs font-medium border border-white/10"><span class="text-red-300">❌</span> Falta Antecedentes</div>` : ""}
+                    ${hasDni && hasAnt ? `<div class="flex items-center gap-1.5 bg-green-400/20 px-3 py-1.5 rounded-lg text-xs font-medium border border-green-400/30"><span class="text-green-300">✅</span> Documentos listos para revisión</div>` : ""}
+                `;
+            }
         }
     }
 
@@ -2234,6 +2486,12 @@ import { sendEmailVerification } from "firebase/auth";
         document
             .querySelectorAll(".premium-overlay")
             .forEach((el) => el.classList.remove("hidden"));
+    }
+
+    function unblockPremiumTabs() {
+        document
+            .querySelectorAll(".premium-overlay")
+            .forEach((el) => el.classList.add("hidden"));
     }
 
     // --- IA ---
@@ -2313,6 +2571,17 @@ import { sendEmailVerification } from "firebase/auth";
                 icon: "error",
                 title: "Campo requerido",
                 text: "Debes ingresar tu CUIT/CUIL para continuar.",
+                confirmButtonColor: "#ea580c"
+            });
+            return;
+        }
+
+        if (!validateCUIT(cuitVal)) {
+            // @ts-ignore
+            Swal.fire({
+                icon: "error",
+                title: "CUIT Inválido",
+                text: "El número de CUIT/CUIL ingresado no es válido. Por favor, revísalo.",
                 confirmButtonColor: "#ea580c"
             });
             return;
@@ -2460,7 +2729,7 @@ import { sendEmailVerification } from "firebase/auth";
                     .replace(/^-|-$/g, "");
             }
 
-            await updateDoc(doc(db, "profesionales", currentUserUid), updates);
+            await updateDoc(fireDoc(db, "profesionales", currentUserUid), updates);
             // @ts-ignore
             Swal.fire({
                 icon: "success",
@@ -2485,13 +2754,48 @@ import { sendEmailVerification } from "firebase/auth";
             const checkbox = document.getElementById(checkId);
             const container = document.getElementById(containerId);
             if (checkbox && container) {
-                // Listener
                 checkbox.addEventListener("change", (e) => {
+                    // @ts-ignore
                     if (e.target.checked) container.classList.remove("hidden");
                     else container.classList.add("hidden");
                 });
             }
         };
+
+        toggleVisibility("tiene_equipo", "equipo-options");
+        toggleVisibility("matriculado", "matricula-options");
+        toggleVisibility("garantia_asegurada", "garantia-options");
+        
+        // --- VERIFICATION LISTENERS ---
+        const btnVerif = document.getElementById("btn-upload-verif");
+        const fileVerif = document.getElementById("file-upload-verif");
+        const fileDni = document.getElementById("file-dni");
+        const fileAnt = document.getElementById("file-ant");
+        
+        if (btnVerif && fileVerif) {
+            btnVerif.addEventListener("click", () => fileVerif.click());
+            fileVerif.addEventListener("change", (e) => {
+                // @ts-ignore
+                const file = e.target.files?.[0];
+                if (file) handleVerificationUpload(file);
+            });
+        }
+
+        if (fileDni) {
+            fileDni.addEventListener("change", (e) => {
+                // @ts-ignore
+                const file = e.target.files?.[0];
+                if (file) handleVerificationUpload(file, "dni");
+            });
+        }
+
+        if (fileAnt) {
+            fileAnt.addEventListener("change", (e) => {
+                // @ts-ignore
+                const file = e.target.files?.[0];
+                if (file) handleVerificationUpload(file, "ant");
+            });
+        }
 
         toggleVisibility("tiene_equipo", "equipo-options");
         toggleVisibility("matriculado", "matricula-options");
@@ -2557,7 +2861,7 @@ import { sendEmailVerification } from "firebase/auth";
                     });
                     renderServices();
                     // Auto-guardar servicios
-                    await updateDoc(doc(db, "profesionales", currentUserUid), {
+                    await updateDoc(fireDoc(db, "profesionales", currentUserUid), {
                         "presupuestos_config.servicios": userServices,
                     });
                     // @ts-ignore
@@ -2593,7 +2897,7 @@ import { sendEmailVerification } from "firebase/auth";
                 if (res.isConfirmed) {
                     try {
                         await deleteDoc(
-                            doc(db, "profesionales", currentUserUid),
+                            fireDoc(db, "profesionales", currentUserUid),
                         );
                         await deleteUser(auth.currentUser);
                         window.location.href = "/";
@@ -2625,6 +2929,9 @@ import { sendEmailVerification } from "firebase/auth";
                     confirmButtonText: "✨ Activar",
                     confirmButtonColor: "#9333ea",
                     cancelButtonText: "Cancelar",
+                    customClass: {
+                        popup: 'rounded-[2rem] shadow-xl border border-slate-100 pb-10 max-h-[90vh] overflow-y-auto'
+                    }
                 });
 
                 if (codigo) {
@@ -2637,7 +2944,7 @@ import { sendEmailVerification } from "firebase/auth";
 
                         // Leer configuración del giftcard desde Firestore
                         const giftcardDoc = await getDoc(
-                            doc(db, "configuracion", "giftcard"),
+                            fireDoc(db, "configuracion", "giftcard"),
                         );
 
                         if (!giftcardDoc.exists()) {
@@ -2690,7 +2997,7 @@ import { sendEmailVerification } from "firebase/auth";
 
                         // Actualizar plan del usuario
                         await updateDoc(
-                            doc(db, "profesionales", currentUserUid),
+                            fireDoc(db, "profesionales", currentUserUid),
                             {
                                 plan: giftcardConfig.planOtorgado || "experto",
                                 plan_inicio: new Date(),
@@ -2701,7 +3008,7 @@ import { sendEmailVerification } from "firebase/auth";
                         );
 
                         // Incrementar contador de usos
-                        await updateDoc(doc(db, "configuracion", "giftcard"), {
+                        await updateDoc(fireDoc(db, "configuracion", "giftcard"), {
                             usos: (giftcardConfig.usos || 0) + 1,
                         });
 
@@ -2741,19 +3048,12 @@ import { sendEmailVerification } from "firebase/auth";
                 const refS = ref(storage, path);
                 await uploadBytes(refS, file);
                 const url = await getDownloadURL(refS);
-                if (type === "dni")
-                    await updateDoc(doc(db, "profesionales", currentUserUid), {
-                        doc_dni: url,
-                        validacion_estado: "pendiente",
-                        verificado: false,
-                    });
-                else if (type === "ant")
-                    await updateDoc(doc(db, "profesionales", currentUserUid), {
-                        doc_antecedentes: url,
-                        validacion_estado: "pendiente",
-                        verificado: false,
-                    });
-                else if (type === "avatar") {
+                if (type === "dni" || type === "ant") {
+                    await handleVerificationUpload(file, type);
+                    return;
+                }
+                
+                if (type === "avatar") {
                     // @ts-ignore
                     document.getElementById("foto-url").value = url;
                     document.getElementById("avatar-img").src = url;
@@ -2808,7 +3108,7 @@ import { sendEmailVerification } from "firebase/auth";
                             ...formValues,
                             createdAt: new Date()
                         };
-                        await updateDoc(doc(db, "profesionales", currentUserUid), {
+                        await updateDoc(fireDoc(db, "profesionales", currentUserUid), {
                             portfolio: arrayUnion(newItem),
                         });
                         loadUserProfile(currentUserUid);
@@ -2817,7 +3117,7 @@ import { sendEmailVerification } from "firebase/auth";
                 // @ts-ignore
                 Swal.close();
                 const freshSnap = await getDoc(
-                    doc(db, "profesionales", currentUserUid),
+                    fireDoc(db, "profesionales", currentUserUid),
                 );
                 docDniUrl = freshSnap.data().doc_dni;
                 docAntUrl = freshSnap.data().doc_antecedentes;
@@ -2852,54 +3152,135 @@ import { sendEmailVerification } from "firebase/auth";
             );
         // @ts-ignore
         document
-            .getElementById("input-portfolio")
-            ?.addEventListener("change", (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
+            .getElementById("file-upload-portfolio")
+            ?.addEventListener("change", (e: any) => {
+                if (!e.target.files || e.target.files.length === 0) return;
 
-                // Validar 5MB
-                if (file.size > 5 * 1024 * 1024) {
-                    // @ts-ignore
-                    Swal.fire({
-                        icon: "warning",
-                        text: "La imagen no puede superar 5MB",
-                        confirmButtonColor: "#ea580c",
-                    });
-                    e.target.value = ""; // Reset input
-                    return;
-                }
-
-                // Validar límite de fotos por plan
+                const files = Array.from(e.target.files);
                 const currentCount = userData?.portfolio?.length || 0;
+                
+                // Limites por plan
                 const planLimits = {
                     gratuito: 0,
                     semilla: 0,
                     basico: 3,
-                    mensual: 6, // Plan Impulso/Mensual
+                    mensual: 6,
                     impulso: 6,
                     experto: 12,
                     semestral: 12,
                 };
-                const userPlan = userData?.plan || "gratuito";
                 const maxPhotos = planLimits[userPlan] || 0;
 
-                if (currentCount >= maxPhotos) {
-                    // @ts-ignore
+                // Validación de cantidad total
+                if (currentCount + files.length > maxPhotos) {
+                     // @ts-ignore
                     Swal.fire({
                         icon: "info",
-                        title: "Límite alcanzado",
-                        text: `Has alcanzado el límite de ${maxPhotos} fotos para tu plan ${userPlan}`,
+                        title: "Límite excedido",
+                        text: `Tu plan permite ${maxPhotos} fotos. Tienes ${currentCount} y elegiste ${files.length}. Selecciona menos.`,
                         confirmButtonColor: "#ea580c",
                     });
                     e.target.value = "";
                     return;
                 }
 
-                handleUpload(file, "portfolio");
+                // Procesar cada archivo
+                files.forEach(file => {
+                    // Validar 5MB
+                    if (file.size > 5 * 1024 * 1024) {
+                         // @ts-ignore
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'warning',
+                            title: `Omitido ${file.name}: > 5MB`,
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                        return;
+                    }
+                    handleUpload(file, "portfolio");
+                });
+                
+                // Limpiar input al final para permitir re-selección
+                e.target.value = "";
             });
     }
 
-    // --- PDF GENERATOR ---
+    // --- VERIFICATION UPLOAD ---
+    const handleVerificationUpload = async (file, type = null) => {
+        if (!userData || !userData.uid) return;
+
+        // Validar tamaño < 5MB
+        if (file.size > 10 * 1024 * 1024) { // Aumentamos a 10MB para mayor flexibilidad
+            // @ts-ignore
+            Swal.fire({
+                icon: "warning",
+                text: "El documento debe pesar menos de 10MB",
+                confirmButtonColor: "#ea580c",
+            });
+            return;
+        }
+
+        try {
+            // @ts-ignore
+            Swal.fire({
+                title: 'Subiendo documento...',
+                text: 'Por favor espera',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            // Subir a Storage
+            const storagePath = `profesionales/${userData.uid}/documentacion/${Date.now()}_${file.name}`;
+            const storageRef = ref(storage, storagePath);
+            await uploadBytes(storageRef, file);
+            const url = await getDownloadURL(storageRef);
+
+            // Actualizar Firestore
+            const userRef = fireDoc(db, "profesionales", userData.uid);
+            
+            // Determinar qué campo actualizar
+            let fieldToUpdate = "doc_dni"; // default
+            if (type === "ant") {
+                fieldToUpdate = "doc_antecedentes";
+            } else if (type === "dni") {
+                fieldToUpdate = "doc_dni";
+            } else {
+                // Auto-detectar si no se pasó tipo (desde el botón general)
+                fieldToUpdate = userData.doc_dni ? "doc_antecedentes" : "doc_dni";
+            }
+            
+            await updateDoc(userRef, {
+                [fieldToUpdate]: url,
+                validacion_estado: "pendiente",
+                verificacion_pendiente: true,
+                fecha_solicitud_verificacion: new Date().toISOString()
+            });
+
+            // @ts-ignore
+            Swal.fire({
+                icon: "success",
+                title: "Solicitud enviada",
+                text: "Tu documentación está en revisión. Te avisaremos cuando tu perfil sea verificado.",
+                confirmButtonColor: "#ea580c",
+            }).then(() => {
+                window.location.reload();
+            });
+
+        } catch (error) {
+            console.error("Error upload verificacion:", error);
+            // @ts-ignore
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "No se pudo subir el documento. Intenta nuevamente.",
+                confirmButtonColor: "#d33",
+            });
+        }
+    };
+
+    // --- MANEJO DE IMAGENES PORTFOLIO ---
     document
         .getElementById("btn-generate-pdf")
         ?.addEventListener("click", () => {
@@ -2978,20 +3359,53 @@ import { sendEmailVerification } from "firebase/auth";
     function checkLockStatus() {
         const sDni = document.getElementById("status-dni");
         const sAnt = document.getElementById("status-ant");
-        if (isVerified) {
+        
+        const isApproved = userData.validacion_estado === "aprobado" || isVerified;
+        const isPending = userData.validacion_estado === "pendiente";
+
+        if (isApproved) {
             document.getElementById("overlay-lock")?.classList.add("hidden");
             // @ts-ignore
             document.getElementById("btn-top-save").disabled = false;
             if (sDni) {
-                sDni.innerText = "✅ Listo";
-                sDni.className = "text-[10px] text-green-600 font-bold";
+                sDni.innerText = "✅ Verificado";
+                sDni.className = "text-[10px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-full mt-1 inline-block";
             }
             if (sAnt) {
-                sAnt.innerText = "✅ Listo";
-                sAnt.className = "text-[10px] text-green-600 font-bold";
+                sAnt.innerText = "✅ Verificado";
+                sAnt.className = "text-[10px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-full mt-1 inline-block";
             }
             return;
         }
+
+        if (isPending) {
+             if (sDni) {
+                sDni.innerText = docDniUrl ? "⏳ Validando" : "❌ Falta subir";
+                sDni.className = docDniUrl 
+                    ? "text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-full mt-1 inline-block"
+                    : "text-[10px] text-red-500 font-bold bg-red-50 px-2 py-0.5 rounded-full mt-1 inline-block";
+            }
+            if (sAnt) {
+                sAnt.innerText = docAntUrl ? "⏳ Validando" : "❌ Falta subir";
+                sAnt.className = docAntUrl 
+                    ? "text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-full mt-1 inline-block"
+                    : "text-[10px] text-red-500 font-bold bg-red-50 px-2 py-0.5 rounded-full mt-1 inline-block";
+            }
+        } else {
+            if (sDni) {
+                sDni.innerText = docDniUrl ? "📂 Subido" : "❌ Pendiente";
+                sDni.className = docDniUrl 
+                    ? "text-[10px] text-blue-500 font-bold bg-blue-50 px-2 py-0.5 rounded-full mt-1 inline-block"
+                    : "text-[10px] text-orange-500 font-bold bg-orange-50 px-2 py-0.5 rounded-full mt-1 inline-block";
+            }
+            if (sAnt) {
+                sAnt.innerText = docAntUrl ? "📂 Subido" : "❌ Pendiente";
+                sAnt.className = docAntUrl 
+                    ? "text-[10px] text-blue-500 font-bold bg-blue-50 px-2 py-0.5 rounded-full mt-1 inline-block"
+                    : "text-[10px] text-orange-500 font-bold bg-orange-50 px-2 py-0.5 rounded-full mt-1 inline-block";
+            }
+        }
+
         if (docDniUrl && docAntUrl) {
             document.getElementById("overlay-lock")?.classList.add("hidden");
             // @ts-ignore
@@ -3001,6 +3415,9 @@ import { sendEmailVerification } from "firebase/auth";
             // @ts-ignore
             document.getElementById("btn-top-save").disabled = true;
         }
+
+        // Llamar también a la actualización del banner
+        renderIdentityWarning(userData);
     }
 
     function setupTabs() {
@@ -3084,34 +3501,88 @@ import { sendEmailVerification } from "firebase/auth";
         console.log("✅ [TABS] Tabs setup complete");
     }
 
+
+    // --- HELPERS FOR CARD GENERATION ---
+    const toDataURL = async (url) => {
+        // Use proxy to avoid CORS
+        const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(url)}`;
+        
+        try {
+            const response = await fetch(proxyUrl);
+            if (!response.ok) throw new Error(`Proxy error: ${response.status}`);
+            
+            const blob = await response.blob();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        } catch (e) {
+            console.error("Error converting image (proxy):", e);
+            // Fallback: try original URL (will likely fail CORS in canvas but worth a try)
+            return url; 
+        }
+    };
+
     // 📱 MOSTRAR QR EN MI PERFIL
     document
         .getElementById("btn-show-qr-profile")
         ?.addEventListener("click", () => {
-            const profileUrl = `${window.location.origin}/perfil?id=${currentUserUid}`;
+            const slug = (document.getElementById("slug_custom") as HTMLInputElement)?.value;
+            const profileUrl = slug 
+                ? `${window.location.origin}/${slug}`
+                : `${window.location.origin}/perfil?id=${currentUserUid}`;
 
             // @ts-ignore
             Swal.fire({
-                title: "📱 Tu Código QR",
+                title: "📱 Tu Código QR Profesional",
                 html: `
-        <div class="text-center">
-          <p class="text-sm text-gray-600 mb-4">Comparte este código para que vean tu perfil</p>
-          <div id="qr-container-profile" class="flex justify-center"></div>
-          <p class="text-xs text-gray-500 mt-4">${profileUrl}</p>
+        <div class="text-center p-2">
+          <p class="text-sm text-slate-500 mb-6 font-medium">Escaneá para ver tu perfil o compartí el enlace</p>
+          
+          <div class="bg-slate-50 p-8 rounded-[2.5rem] border-2 border-slate-100 shadow-inner mb-6 relative group">
+            <div id="qr-container-profile" class="flex justify-center transition-transform group-hover:scale-105 duration-500"></div>
+          </div>
+
+          <div class="bg-indigo-50 p-4 rounded-2xl border border-indigo-100 mb-6 group cursor-pointer active:scale-95 transition-all" onclick="navigator.clipboard.writeText('${profileUrl}'); Swal.showValidationMessage('¡Copiado al portapapeles!')">
+            <p class="text-[10px] text-indigo-400 font-black uppercase tracking-widest mb-1">Tu Enlace</p>
+            <p class="text-sm font-bold text-indigo-700 truncate">${profileUrl}</p>
+          </div>
+
+          <button 
+            id="download-qr-btn"
+            class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-widest"
+          >
+            📥 Descargar Código QR
+          </button>
         </div>
       `,
-                width: 400,
+                width: '95%',
+                maxWidth: '450px',
                 showConfirmButton: false,
                 showCloseButton: true,
+                customClass: {
+                    popup: 'rounded-[2rem] shadow-2xl border border-slate-100',
+                    closeButton: 'rounded-full border-none focus:ring-0'
+                },
                 didOpen: () => {
-                    const qrContainer = document.getElementById(
-                        "qr-container-profile",
-                    );
+                    const qrContainer = document.getElementById("qr-container-profile");
                     const qrImg = document.createElement("img");
-                    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(profileUrl)}`;
-                    qrImg.className = "mx-auto rounded-lg shadow-md";
+                    const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(profileUrl)}&margin=10`;
+                    qrImg.src = qrSrc;
+                    qrImg.className = "mx-auto rounded-3xl shadow-xl border-4 border-white";
                     // @ts-ignore
                     qrContainer.appendChild(qrImg);
+
+                    document.getElementById("download-qr-btn")?.addEventListener("click", () => {
+                        const link = document.createElement("a");
+                        link.href = qrSrc;
+                        link.download = `QR-DeOficios-${slug || currentUserUid}.png`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    });
                 },
             });
         });
@@ -3123,6 +3594,11 @@ import { sendEmailVerification } from "firebase/auth";
             title: "Generando Tarjeta...",
             text: "Esto puede tomar unos segundos",
             allowOutsideClick: false,
+            width: '90%',
+            maxWidth: '400px',
+            customClass: {
+                popup: 'rounded-[2rem] shadow-xl border border-slate-100'
+            },
             didOpen: () => {
                 // @ts-ignore
                 Swal.showLoading();
@@ -3135,11 +3611,14 @@ import { sendEmailVerification } from "firebase/auth";
             // @ts-ignore
             const clone = template.cloneNode(true);
             clone.classList.remove("hidden");
+            // Move to bottom of page (but visible) to handle rendering
             Object.assign(clone.style, {
                 position: "fixed",
-                top: "0",
+                top: "150vh", // Below viewport
                 left: "0",
-                zIndex: "-9999",
+                zIndex: "-50",
+                visibility: "visible",
+                display: "block"
             });
             document.body.appendChild(clone);
 
@@ -3184,9 +3663,10 @@ import { sendEmailVerification } from "firebase/auth";
             // Asegurar acceso a currentUserUid (si falla, usar ubicación actual)
             let profileUrl;
             try {
-                // @ts-ignore
-                if (currentUserUid) {
-                    // @ts-ignore
+                const slug = (document.getElementById("slug_custom") as HTMLInputElement)?.value;
+                if (slug) {
+                    profileUrl = `${window.location.origin}/${slug}`;
+                } else if (currentUserUid) {
                     profileUrl = `${window.location.origin}/perfil?id=${currentUserUid}`;
                 } else {
                     throw new Error("No UID");
@@ -3224,15 +3704,31 @@ import { sendEmailVerification } from "firebase/auth";
             const warrantyEl = clone.querySelector("#temp-card-stat-warranty");
             if (warrantyEl) warrantyEl.innerText = "Escrita";
 
+            // CUIT if available
+            // @ts-ignore
+            const cuitVal = document.getElementById("cuit")?.value || "";
+            if (cuitVal) {
+                 const cardRoleEl = clone.querySelector("#temp-card-role");
+                 if (cardRoleEl) cardRoleEl.innerHTML += `<br/><span style="font-size: 10px; opacity: 0.7">CUIT: ${cuitVal}</span>`;
+            }
+
             const avatarImg = clone.querySelector("#temp-card-avatar");
-            // @ts-ignore
-            avatarImg.src =
-                avatarSrc +
-                (avatarSrc.includes("?") ? "&" : "?") +
-                "t=" +
-                new Date().getTime();
-            // @ts-ignore
-            avatarImg.crossOrigin = "anonymous";
+            
+            // Convertir avatar a base64 para evitar problemas de CORS
+            if (avatarSrc && !avatarSrc.startsWith("data:")) {
+                try {
+                     // @ts-ignore
+                    const base64Avatar = await toDataURL(avatarSrc);
+                     // @ts-ignore
+                    avatarImg.src = base64Avatar;
+                } catch (e) {
+                     // @ts-ignore
+                    avatarImg.src = avatarSrc;
+                }
+            } else {
+                 // @ts-ignore
+                avatarImg.src = avatarSrc;
+            }
 
             const qrImg = clone.querySelector("#temp-card-qr");
             // @ts-ignore
@@ -3259,17 +3755,17 @@ import { sendEmailVerification } from "firebase/auth";
                         qrImg.onerror = resolve;
                     }
                 }),
-                new Promise((resolve) => setTimeout(resolve, 800)), // Fallback wait
+                new Promise((resolve) => setTimeout(resolve, 1500)), // More time for images to settle
             ]);
 
             // 4. Renderizar
             // @ts-ignore
             const canvas = await html2canvas(clone.firstElementChild, {
-                scale: 3,
+                scale: 2,
                 useCORS: true,
-                backgroundColor: null,
-                logging: false,
-                allowTaint: true,
+                backgroundColor: "#ffffff",
+                logging: true,
+                allowTaint: false,
             });
 
             // Limpieza
@@ -3298,6 +3794,10 @@ import { sendEmailVerification } from "firebase/auth";
                     title: "¡Descargada!",
                     timer: 1500,
                     showConfirmButton: false,
+                    width: '300px',
+                    customClass: {
+                        popup: 'rounded-[2rem] shadow-xl border border-slate-100'
+                    }
                 });
             } catch (error) {
                 // @ts-ignore
@@ -3337,8 +3837,13 @@ import { sendEmailVerification } from "firebase/auth";
                             title: "Tu navegador no soporta compartir directo",
                             text: "La descargaremos en su lugar.",
                             icon: "info",
-                            timer: 2000,
+                            timer: 2500,
                             showConfirmButton: false,
+                            width: '90%',
+                            maxWidth: '400px',
+                            customClass: {
+                                popup: 'rounded-[2rem] shadow-xl border border-slate-100'
+                            }
                         });
                         const link = document.createElement("a");
                         link.download = file.name;
@@ -3351,43 +3856,6 @@ import { sendEmailVerification } from "firebase/auth";
                 Swal.fire("Error", "No se pudo generar.", "error");
             }
         });
-
-    // --- VERIFICACIÓN DE EMAIL BANNER ---
-    // onAuthStateChanged ya está importado en la línea 1184
-    onAuthStateChanged(authClient, (user) => {
-        const banner = document.getElementById("email-verification-banner");
-        const btnResend = document.getElementById("btn-resend-verification");
-
-        if (user && !user.emailVerified) {
-            banner?.classList.remove("hidden");
-            
-            btnResend?.addEventListener("click", async () => {
-                try {
-                    btnResend.innerText = "Enviando...";
-                    btnResend.disabled = true;
-                    await sendEmailVerification(user);
-                    Swal.fire({
-                        icon: "success",
-                        title: "Email Enviado",
-                        text: "Revisa tu casilla de correo (y spam) para verificar tu cuenta.",
-                        confirmButtonColor: "#ea580c"
-                    });
-                    btnResend.innerText = "Email Reenviado";
-                } catch (e) {
-                    console.error(e);
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: "No se pudo reenviar. Intenta más tarde.", // Posible rate limit
-                        confirmButtonColor: "#ea580c"
-                    });
-                    btnResend.innerText = "Reenviar Email";
-                    btnResend.disabled = false;
-                }
-            });
-        } else {
-            banner?.classList.add("hidden");
-        }
     });
 </script>
 
@@ -3401,7 +3869,8 @@ import { sendEmailVerification } from "firebase/auth";
     <div class="flex h-[540px]">
         <!-- Left Side: Profile (Brown/Orange) -->
         <div
-            class="w-[45%] bg-[#A0522D] p-10 flex flex-col items-center justify-center text-white relative"
+            class="w-[45%] p-10 flex flex-col items-center justify-center text-white relative"
+            style="background-color: #A0522D !important;"
         >
             <!-- Subtle pattern overlay -->
             <div
@@ -3412,7 +3881,8 @@ import { sendEmailVerification } from "firebase/auth";
             <!-- Avatar with border -->
             <div class="relative mb-6 z-10">
                 <div
-                    class="w-44 h-44 rounded-full border-[5px] border-[#D2691E] overflow-hidden shadow-2xl bg-[#2C4A52]"
+                    class="w-44 h-44 rounded-full border-[5px] border-[#D2691E] overflow-hidden shadow-2xl"
+                    style="background-color: #2C4A52 !important;"
                 >
                     <img
                         id="temp-card-avatar"
@@ -3475,7 +3945,7 @@ import { sendEmailVerification } from "firebase/auth";
         </div>
 
         <!-- Right Side: Info & Contact -->
-        <div class="w-[55%] bg-[#FAFAFA] p-8 flex flex-col justify-between">
+        <div class="w-[55%] p-8 flex flex-col justify-between" style="background-color: #FAFAFA !important;">
             <!-- Reputation Section -->
             <div class="mb-4">
                 <p

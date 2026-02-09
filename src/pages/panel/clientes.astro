@@ -462,6 +462,7 @@ class="flex-1 bg-slate-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-sl
         <script>
             import { auth, db } from "../../firebase/client";
             import { onAuthStateChanged, signOut } from "firebase/auth";
+            import { getAuthRedirect } from "../../utils/auth-redirects";
             import {
                 collection,
                 addDoc,
@@ -492,8 +493,13 @@ console.log("🚀 [CLIENTES] Página cargada/navegada");
                 let filteredClients = [];
 
                 // AUTH
-                onAuthStateChanged(auth, (user) => {
+                onAuthStateChanged(auth, async (user) => {
                     if (user) {
+                        const redirectUrl = await getAuthRedirect(user);
+                        if (redirectUrl !== "/panel") {
+                            window.location.href = redirectUrl;
+                            return;
+                        }
                         currentUser = user;
                         loadClients(user.uid);
                     } else {

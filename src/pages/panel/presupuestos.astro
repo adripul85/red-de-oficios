@@ -211,6 +211,7 @@ class="flex justify-center items-center h-64"
 
         <script>
             import { onAuthStateChanged } from "firebase/auth";
+            import { getAuthRedirect } from "../../utils/auth-redirects";
             import {
                 getFirestore,
                 collection,
@@ -274,6 +275,11 @@ console.log("🚀 [PRESUPUESTOS] Página cargada/navegada");
                 // AUTH CHECK
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
+                        const redirectUrl = await getAuthRedirect(user);
+                        if (redirectUrl !== "/panel") {
+                            window.location.href = redirectUrl;
+                            return;
+                        }
                         currentUser = user;
                         loadNotifications(user.uid);
                         loadPresupuestos(user.uid);

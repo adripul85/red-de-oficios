@@ -39,7 +39,7 @@ if (profesional.slug && profesional.web_propia) {
 const esExperto =
     profesional.plan === "experto" || profesional.plan === "semestral";
 const mostrarComoLanding = esExperto && profesional.web_propia;
-const promedio = profesional.puntuacion || profesional.promedio || 0;
+const promedio = profesional.puntuacion || profesional.promedio || 3.0; // Standardized fallback to 3.0
 const votos = profesional.total_valoraciones || profesional.total_votos || 0;
 const ubicacion = profesional.zona || "Argentina";
 
@@ -48,10 +48,15 @@ const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
 const profesionalJson = JSON.stringify(profesional);
 
 
-const seoTitle = profesional.seo_nombre || `${profesional.nombre} | DeOficios`;
+const seoTitle = profesional.seo_nombre || `${profesional.nombre} | ${profesional.rubro_principal} en ${ubicacion} | DeOficios`;
 const seoDescription =
     profesional.seo_profesion ||
-    `Contacta a ${profesional.nombre}, ${profesional.rubro_principal} en ${ubicacion}. Ver perfil, fotos y opiniones.`;
+    `Contactá a ${profesional.nombre}, experto en ${profesional.rubro_principal} en ${ubicacion}. ⭐️ ${promedio.toFixed(1)}/5 (${votos} opiniones). Encontrá el mejor servicio en Red de Oficios.`;
+
+const seoImage = profesional.foto && !profesional.foto.includes("ui-avatars") 
+    ? profesional.foto 
+    : "https://reddeoficio.com/icon-512.png";
+
 const serviceIcons: Record<string, string> = {
     "Aire Acondicionado": "❄️",
     Electricidad: "⚡",
@@ -87,12 +92,14 @@ const getServiceIcon = (serviceName: any) => {
     return "🛠️"; // Icono por defecto
 };
 
-const mappedServices = (profesional.servicios_lista || [])
-    .filter((s: any) => s)
-    .slice(0, 4)
-    .map((s: any) => {
+const allServices = Array.from(new Set([
+    ...(profesional.servicios_lista || []).map((s: any) => typeof s === 'object' ? (s.nombre || s.label || s.servicio || "Servicio") : s),
+    ...(profesional.etiquetas || [])
+])).filter(Boolean);
 
-        const name = typeof s === 'string' ? s : (s.nombre || s.label || s.servicio || "Servicio");
+const mappedServices = allServices
+    .slice(0, 4)
+    .map((name: any) => {
         return {
             label: name,
             icon: getServiceIcon(name),
@@ -132,6 +139,29 @@ for (let i = 0; i < levels.length; i++) {
         currentLevel = levels[i];
     }
 }
+
+const isBlocked = (profesional.plan === "semilla" || !profesional.plan) && (profesional.contactos_whatsapp_mes >= 60);
+
+const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    "name": profesional.nombre,
+    "image": seoImage,
+    "description": seoDescription,
+    "telephone": profesional.telefono || "",
+    "address": {
+        "@type": "PostalAddress",
+        "addressLocality": ubicacion,
+        "addressCountry": "AR"
+    },
+    "priceRange": profesional.precio_min ? `$${profesional.precio_min} - $${profesional.precio_max}` : "$$",
+    "aggregateRating": votos > 0 ? {
+        "@type": "AggregateRating",
+        "ratingValue": promedio.toFixed(1),
+        "reviewCount": votos
+    } : undefined,
+    "url": Astro.url.href
+};
 ---
 
 <Layout
@@ -142,13 +172,11 @@ for (let i = 0; i < levels.length; i++) {
     hideFooter={mostrarComoLanding}
     hideIA={mostrarComoLanding}
 >
-    <!-- Map Script (Head) -->
-    <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json" slot="head" set:html={JSON.stringify(schemaData)} />
     
-    <!-- jsPDF Script -->
-    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
+    <!-- Map & PDF Scripts (Now imported in module script) -->
+    
     <script is:inline>
         // Map Initialization
         document.addEventListener("astro:page-load", () => {
@@ -203,7 +231,7 @@ for (let i = 0; i < levels.length; i++) {
     {
         mostrarComoLanding ? (
             /* MODO LANDING NUEVO */
-            <div class="landing-body font-sans min-h-screen bg-slate-100 flex items-center justify-center py-10 px-4 overflow-x-hidden">
+            <div id="landing-profile-container" data-id={idProfesional} data-profesional-json={profesionalJson} class="landing-body font-sans min-h-screen bg-slate-100 flex flex-col items-center justify-start py-10 px-4 overflow-x-hidden">
                 <ModernProfileCard
                     name={profesional.nombre}
                     role={profesional.seo_profesion || profesional.rubro_principal}
@@ -216,13 +244,13 @@ for (let i = 0; i < levels.length; i++) {
                     experience={profesional.experiencia}
                     category={profesional.rubro_principal}
                     tags={profesional.etiquetas}
+                    cuit={profesional.cuit}
+                    idPro={idProfesional}
+                    idName={profesional.nombre}
+                    isBlocked={isBlocked}
                     
                     /* Security Feature props */
-                    id="btn-whatsapp-contact"
-                    whatsappUrl="#"
-                    data-whatsapp={profesional.telefono}
-                    data-pro-id={idProfesional}
-                    data-pro-name={profesional.nombre}
+                    whatsappUrl={`https://wa.me/549${profesional.telefono}?text=${encodeURIComponent(`Hola ${profesional.nombre}, te contacto desde DeOficios.`)}`}
                 />
                 <div class="max-w-[360px] w-full mx-auto mt-8 bg-white/50 backdrop-blur-sm rounded-3xl p-6 border border-white/40 shadow-xl">
                    <ProfileReviews client:visible idProfesional={idProfesional} />
@@ -246,10 +274,17 @@ for (let i = 0; i < levels.length; i++) {
                             <div class="relative group">
                                 <img
                                     src={profesional.foto || "https://ui-avatars.com/api/?name=" + profesional.nombre}
-                                    class="w-40 h-40 rounded-full object-cover border-4 border-white shadow-2xl transition-transform duration-500 group-hover:scale-105"
+                                    class={`w-40 h-40 rounded-full object-cover border-4 border-white shadow-2xl transition-transform duration-500 group-hover:scale-105 ${isBlocked ? 'filter blur-[2px] grayscale-[0.5]' : ''}`}
                                     alt={profesional.nombre}
                                 />
-                                {profesional.plan === "experto" && (
+                                {isBlocked && (
+                                    <div class="absolute inset-0 z-40 flex items-center justify-center bg-black/40 rounded-full">
+                                         <div class="bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl border border-orange-500 shadow-xl transform rotate-3 scale-75">
+                                            <span class="text-slate-900 font-extrabold text-[10px] uppercase tracking-tighter">PERFIL EN PAUSA</span>
+                                        </div>
+                                    </div>
+                                )}
+                                {profesional.plan === "experto" && !isBlocked && (
                                     <div class="absolute -bottom-2 right-4 bg-yellow-400 text-slate-900 p-1.5 rounded-full border-2 border-white shadow-lg animate-bounce">
                                         <span class="material-symbols-outlined text-sm font-bold">star</span>
                                     </div>
@@ -269,6 +304,9 @@ for (let i = 0; i < levels.length; i++) {
                                             </h1>
                                             {profesional.nombre_fantasia && (
                                                 <span class="text-sm font-bold text-slate-400 mt-1">{profesional.nombre_fantasia}</span>
+                                            )}
+                                            {profesional.cuit && (
+                                                <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest mt-1">CUIT/CUIL: {profesional.cuit}</span>
                                             )}
                                         </div>
                                         
@@ -349,19 +387,13 @@ for (let i = 0; i < levels.length; i++) {
                                 <div class="mt-10">
                                     <h3 class="text-xs font-black text-neutral-gray uppercase tracking-[0.2em] mb-6">Servicios Ofrecidos</h3>
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        {profesional.servicios_lista?.map((s: any) => (
+                                        {allServices.map((s: any) => (
                                             <div class="flex items-center gap-3 p-3 rounded-xl bg-white border border-neutral-gray-light hover:border-primary/40 transition-colors">
                                                 <span class="material-symbols-outlined text-primary text-xl">check_circle</span>
-                                                <span class="text-xs font-bold text-neutral-black capitalize">{typeof s === 'object' ? (s.nombre || s.label || "Servicio") : s}</span>
+                                                <span class="text-xs font-bold text-neutral-black capitalize">{s}</span>
                                             </div>
                                         ))}
-                                        {profesional.etiquetas?.map((tag: string) => (
-                                            <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-primary/40 transition-colors">
-                                                <span class="material-symbols-outlined text-primary text-xl">check_circle</span>
-                                                <span class="text-xs font-bold text-slate-600 capitalize">{tag}</span>
-                                            </div>
-                                        ))}
-                                        {(!profesional.servicios_lista || profesional.servicios_lista.length === 0) && (!profesional.etiquetas || profesional.etiquetas.length === 0) && (
+                                        {allServices.length === 0 && (
                                             <p class="text-sm text-gray-500 italic">No se especificaron servicios ni etiquetas.</p>
                                         )}
                                     </div>
@@ -446,7 +478,7 @@ for (let i = 0; i < levels.length; i++) {
                                         </button>
                                      )}
                                      
-                                     {profesional.servicios_lista?.length > 0 && (
+                                     {profesional.servicios_lista?.length > 0 && profesional.plan !== "semilla" && (
                                         <button onclick="window.openBudgetModal()" class="w-full flex items-center justify-center gap-3 bg-slate-400 text-white rounded-xl py-4.5 font-black shadow-lg hover:bg-primary transition-all text-base h-16">
                                             <span class="text-2xl">📄</span> Ver Presupuestos
                                         </button>
@@ -510,7 +542,11 @@ for (let i = 0; i < levels.length; i++) {
                                         </div>
                                     )}
                                     <div class="pt-4">
-                                         <button id="btn-report-profile" class="text-red-400 text-xs font-bold hover:text-red-500 flex items-center gap-1 justify-center w-full transition-colors">
+                                         <button 
+                                            id="btn-report-profile" 
+                                            class="text-red-400 text-xs font-bold hover:text-red-500 flex items-center gap-1 justify-center w-full transition-colors"
+                                            onclick="document.getElementById('report-modal').classList.remove('hidden')"
+                                        >
                                             <span>🚩</span> Reportar este perfil
                                         </button>
                                     </div>
@@ -551,12 +587,65 @@ for (let i = 0; i < levels.length; i++) {
 
     <script>
         import { auth, db } from "../firebase/client";
-        import { doc, getDoc, updateDoc, arrayUnion, setDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
+        import { doc, getDoc, updateDoc, arrayUnion, setDoc, addDoc, collection, serverTimestamp, increment } from "firebase/firestore";
         import { onAuthStateChanged } from "firebase/auth";
+        import L from "leaflet";
+        import "leaflet/dist/leaflet.css";
+        import { jsPDF } from "jspdf";
 
         document.addEventListener("astro:page-load", async () => {
+            // --- MAP LOGIC (Moved here to use imported Leaflet) ---
+            try {
+                const mapContainer = document.getElementById("mini-map");
+                if (mapContainer) {
+                    const lat = parseFloat(mapContainer.dataset.lat);
+                    const lng = parseFloat(mapContainer.dataset.lng);
+
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                         // @ts-ignore
+                        if (mapContainer._leaflet_id) {
+                            // Already initialized
+                        } else {
+                            const map = L.map("mini-map", {
+                                center: [lat, lng],
+                                zoom: 15,
+                                attributionControl: false,
+                                zoomControl: false,
+                            });
+
+                            L.tileLayer(
+                                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                                { maxZoom: 19 }
+                            ).addTo(map);
+
+                            L.circle([lat, lng], {
+                                color: '#f97316',
+                                fillColor: '#f97316',
+                                fillOpacity: 0.15,
+                                radius: 800,
+                                weight: 1
+                            }).addTo(map);
+
+                            L.popup({
+                                closeButton: false,
+                                autoClose: false,
+                                closeOnClick: false,
+                                className: 'zone-popup text-center font-bold text-xs',
+                                offset: [0, -10]
+                            })
+                            .setLatLng([lat, lng])
+                            .setContent('<div class="text-orange-600">Zona de Cobertura</div>')
+                            .openOn(map);
+                        }
+                    }
+                }
+            } catch(e) { console.error("Error in map script:", e); }
+
+
             const contactButtons = document.querySelectorAll("#btn-whatsapp-contact");
+            const landingBtn = document.getElementById("btn-whatsapp-landing");
             const profileDiv = document.getElementById("profile-directory");
+            const landingDiv = document.getElementById("landing-profile-container");
             
             let idProfesional = null;
             let profesionalJson = {};
@@ -566,173 +655,266 @@ for (let i = 0; i < levels.length; i++) {
                 try {
                     profesionalJson = JSON.parse(profileDiv.dataset.profesionalJson || "{}");
                 } catch(e) {}
+            } else if (landingDiv) {
+                 idProfesional = landingDiv.dataset.id;
+                 try {
+                    profesionalJson = JSON.parse(landingDiv.dataset.profesionalJson || "{}");
+                } catch(e) {}
             }
 
-            // WhatsApp Contact Logic
+            // Centralized Tracking Function
+            const trackWhatsApp = async (proId, proName, whatsapp) => {
+                if (!proId) return;
+
+                try {
+                    const response = await fetch('/api/track-click', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uid: proId })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.status === 'bloqueado') {
+                        // @ts-ignore
+                        const Swal = window.Swal;
+                        if (Swal) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Perfil en Pausa',
+                                html: `
+                                    <div class="text-left space-y-3 p-2">
+                                        <p class="text-slate-600">Este profesional ha alcanzado su límite mensual de contactos gratuitos.</p>
+                                        <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
+                                            <p class="text-xs font-bold text-red-800 uppercase tracking-wider mb-1">Nota para el profesional</p>
+                                            <p class="text-sm text-red-700">Has llegado a los 60 contactos. Tu perfil permanecerá oculto de los resultados principales hasta que actualices tu plan.</p>
+                                        </div>
+                                    </div>
+                                `,
+                                confirmButtonText: 'Ver Planes',
+                                showCancelButton: true,
+                                cancelButtonText: 'Cerrar',
+                                confirmButtonColor: '#ea580c'
+                            }).then((res) => {
+                                if (res.isConfirmed) window.location.href = '/planes';
+                            });
+                        }
+                        return false;
+                    }
+
+                    if (result.status === 'aviso') {
+                        console.warn("⚠️ Aviso de límite:", result.quedan, "clicks restantes");
+                    }
+
+                    // Log contact event (Legacy/Extra logging)
+                    const user = auth.currentUser;
+                    await addDoc(collection(db, "contactos"), {
+                        proId: proId,
+                        proNombre: proName,
+                        clienteId: user?.uid || "anonimo",
+                        clienteNombre: user?.displayName || "Anonimo",
+                        fecha: serverTimestamp(),
+                        visto: false,
+                    });
+                    
+                    return true;
+                } catch (err) {
+                    console.error("❌ [TRACK] Error incrementando contador:", err);
+                    return true; // No bloquear la experiencia si falla la API
+                }
+            };
+
+            // WhatsApp Contact Logic for Directory Buttons
             if (contactButtons.length > 0) {
                 contactButtons.forEach(btnContact => {
                     btnContact.addEventListener("click", async (e) => {
                         e.preventDefault();
                         
-                        const proId = btnContact.getAttribute("data-pro-id");
+                        const proId = btnContact.getAttribute("data-pro-id") || idProfesional;
                         const proName = btnContact.getAttribute("data-pro-name");
                         const whatsapp = btnContact.getAttribute("data-whatsapp");
 
                         if (!proId || !proName || !whatsapp) return;
 
-                        // @ts-ignore
-                        const Swal = window.Swal;
+                        const tracked = await trackWhatsApp(proId, proName, whatsapp);
+                        if (!tracked) return;
 
-                        try {
-                            const { addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-                            const { db, auth } = await import("/src/firebase/client.js");
-                            
-                            const user = auth.currentUser;
+                        const waUrl = `https://wa.me/549${whatsapp}?text=${encodeURIComponent(`Hola ${proName}, te contacto desde DeOficios.`)}`;
+                        window.open(waUrl, "_blank");
 
-                            await addDoc(collection(db, "contactos"), {
-                                proId: proId,
-                                proNombre: proName,
-                                clienteId: user?.uid || "anonimo",
-                                clienteNombre: user?.displayName || "Anonimo",
-                                fecha: serverTimestamp(),
-                                visto: false,
-                            });
-
-                            const waUrl = `https://wa.me/549${whatsapp}?text=${encodeURIComponent(`Hola ${proName}, te contacto desde DeOficios.`)}`;
-                            window.open(waUrl, "_blank");
-
-                            setTimeout(() => {
-                                if (!Swal) return;
-                                Swal.fire({
-                                    title: "¿Pudiste contactarlo? 🤔",
-                                    text: "Tu feedback nos ayuda a mejorar.",
-                                    icon: "question",
-                                    showDenyButton: true,
-                                    showCancelButton: true,
-                                    confirmButtonText: "✅ Sí",
-                                    denyButtonText: "🚫 No contestó",
-                                    cancelButtonText: "🚩 Reportar",
-                                    confirmButtonColor: "#16a34a",
-                                    denyButtonColor: "#ef4444",
-                                }).then(async (res) => {
-                                    let type = "";
-                                    if (res.isConfirmed) type = "positivo";
-                                    else if (res.isDenied) type = "sin_respuesta";
-                                    else if (res.isDismissed && res.dismiss === "cancel") type = "reporte";
-
-                                    if (type) {
-                                        await addDoc(collection(db, "feedback_contactos"), {
-                                            proId: proId,
-                                            tipo: type,
-                                            fecha: serverTimestamp(),
-                                            uid: user?.uid || "anonimo",
-                                        });
-                                    }
-                                });
-                            }, 8000);
-
-                        } catch (err) {
-                            window.open(`https://wa.me/549${whatsapp}?text=${encodeURIComponent(`Hola ${proName}, te contacto desde DeOficios.`)}`, "_blank");
-                        }
+                        // Feedback Modal logic follows...
+                        handleFeedbackModal(proName);
                     });
                 });
             }
 
-            // Report Profile Logic
-            const btnReport = document.getElementById("btn-report-profile");
-            if(btnReport && idProfesional) {
-                btnReport.addEventListener("click", () => {
-                    // @ts-ignore
-                    const Swal = window.Swal;
+            // WhatsApp Contact Logic for Landing Button
+            if (landingBtn) {
+                landingBtn.addEventListener("click", async (e) => {
+                    // El botón ya tiene href con target="_blank", solo trackeamos
+                    const proName = landingBtn.getAttribute("data-pro-name") || idNameFromDataset || "el profesional";
+                    const proId = landingBtn.getAttribute("data-pro-id") || idProfesional;
+                    const whatsapp = landingBtn.getAttribute("data-whatsapp");
+
+                    await trackWhatsApp(proId, proName, whatsapp);
+                    
+                    handleFeedbackModal(proName);
+                });
+            }
+
+            function handleFeedbackModal(proName) {
+                // @ts-ignore
+                const Swal = window.Swal;
+                setTimeout(() => {
                     if (!Swal) return;
-
                     Swal.fire({
-                        title: '🚩 Reportar Perfil',
-                        text: '¿Por qué quieres reportar a este profesional?',
-                        input: 'select',
-                        inputOptions: {
-                            'fraude': 'Posible Fraude',
-                            'trato': 'Mal trato / Comportamiento ofensivo',
-                            'spam': 'Spam / Publicidad engañosa',
-                            'identidad': 'Suplantación de identidad',
-                            'otro': 'Otro motivo'
-                        },
-                        inputPlaceholder: 'Selecciona una razón',
+                        title: "¿Pudiste contactarlo? 🤔",
+                        text: "Tu feedback nos ayuda a mejorar.",
+                        icon: "question",
+                        showDenyButton: true,
                         showCancelButton: true,
-                        confirmButtonText: 'Enviar Reporte',
-                        confirmButtonColor: '#ef4444',
-                        cancelButtonText: 'Cancelar',
-                        inputValidator: (value) => {
-                            return !value && 'Debes seleccionar un motivo';
-                        }
-                    }).then(async (result) => {
-                        if (result.isConfirmed) {
-                            try {
-                                await addDoc(collection(db, "reportes"), {
-                                    idProfesional: idProfesional,
-                                    motivo: result.value,
-                                    fecha: serverTimestamp(),
-                                    reportadoPor: auth.currentUser ? auth.currentUser.uid : 'anonimo'
-                                });
-                                Swal.fire('Reporte Enviado', 'Nuestro equipo revisará el caso.', 'success');
-                            } catch(e) {}
+                        confirmButtonText: "✅ Sí, hablamos",
+                        denyButtonText: "🚫 No contestó",
+                        cancelButtonText: "🚩 Reportar",
+                        confirmButtonColor: "#16a34a",
+                        denyButtonColor: "#ef4444",
+                    }).then(async (res) => {
+                        let type = "";
+                        if (res.isConfirmed) type = "positivo";
+                        else if (res.isDenied) type = "sin_respuesta";
+                        else if (res.isDismissed && res.dismiss === "cancel") type = "reporte";
+
+                        if (type) {
+                            await addDoc(collection(db, "feedback_contactos"), {
+                                proId: idProfesional,
+                                proNombre: proName,
+                                tipo: type,
+                                fecha: serverTimestamp()
+                            });
                         }
                     });
+                }, 2000);
+            }
+
+
+            // Report Profile Logic (Standardized)
+            const btnReport = document.getElementById("btn-report-profile");
+            const reportModal = document.getElementById("report-modal");
+            const formReport = document.getElementById("form-report-profile");
+
+            if(btnReport) {
+                btnReport.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    if(reportModal) reportModal.classList.remove("hidden");
                 });
             }
 
-            // Favorites Logic
-            const btnFav = document.getElementById("btn-toggle-fav");
-            if(btnFav && idProfesional) {
-                onAuthStateChanged(auth, async (user) => {
-                    if(!user) return; 
+            if(formReport) {
+                formReport.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    console.log("🚀 [REPORT-DEBUG] Form submit triggered!");
+                    console.trace("🚀 [REPORT-DEBUG] Trace:"); // See who called it
+                    
+                    const motivo = document.getElementById("report-motivo").value;
+                    const desc = document.getElementById("report-desc").value;
+                    
+                    if (!motivo || !desc) {
+                        return;
+                    }
 
-                    const favRef = doc(db, "favoritos", user.uid);
-                    let isFav = false;
+                    const btn = formReport.querySelector('button[type="submit"]');
+                    const originalText = btn.textContent;
+                    btn.disabled = true; btn.textContent = "Enviando...";
 
                     try {
+                        // The 'motivo' and 'desc' variables are already declared above,
+                        // so these declarations are redundant and removed.
+                        
+                        // FIXED: Collection name to match Admin Panel (denuncias)
+                        await addDoc(collection(db, "denuncias"), {
+                            profesionalId: idProfesional, 
+                            profesionalNombre: profesionalJson.nombre || "Profesional", 
+                            motivo: motivo,
+                            descripcion: desc,
+                            fecha: serverTimestamp(),
+                            denuncianteUid: auth.currentUser ? auth.currentUser.uid : null, 
+                            denuncianteEmail: auth.currentUser ? auth.currentUser.email : 'Anónimo'
+                        });
+                        
+                        // Show Success Modal
+                        showStatusModal('Reporte Enviado', 'Nuestro equipo de moderación revisará el caso a la brevedad.', 'success');
+                        
+                        // Close and reset
+                        if(reportModal) reportModal.classList.add("hidden");
+                        formReport.reset();
+
+                    } catch(e) {
+                         console.error("Error sending report:", e);
+                         showStatusModal('Error', 'No se pudo enviar el reporte. Por favor intenta nuevamente.', 'error');
+                    } finally {
+                        btn.disabled = false; btn.textContent = originalText;
+                    }
+                });
+            }
+
+            // Helper: Show Status Modal
+            const showStatusModal = (title, message, type = 'success') => {
+                const modal = document.getElementById("status-modal");
+                if(!modal) return;
+                
+                const iconMap = {
+                    'success': '✅',
+                    'error': '❌',
+                    'info': 'ℹ️',
+                    'warning': '⚠️'
+                };
+
+                const iconEl = document.getElementById("status-icon");
+                const titleEl = document.getElementById("status-title");
+                const msgEl = document.getElementById("status-message");
+
+                if(iconEl) iconEl.innerHTML = iconMap[type] || '✨';
+                if(titleEl) titleEl.textContent = title;
+                if(msgEl) msgEl.textContent = message;
+
+                modal.classList.remove("hidden");
+            };
+
+            // Favorites Logic (Fixed Auth Race Condition)
+            const btnFav = document.getElementById("btn-toggle-fav");
+            if(btnFav && idProfesional) {
+                // Initialize state
+                let isFav = false;
+                
+                onAuthStateChanged(auth, async (user) => {
+                    // console.log("🚀 [FAV-DEBUG] Auth State Changed:", user ? `User: ${user.uid}` : "No User");
+                    if(!user) {
+                        // Reset if logged out
+                        isFav = false;
+                        updateFavIcon(false);
+                        return; 
+                    }
+
+                    const favRef = doc(db, "favoritos", user.uid);
+                    // console.log(`🚀 [FAV-DEBUG] Fetching doc: favoritos/${user.uid}`);
+
+                    try {
+                        // Only fetch now that we KNOW user is defined
                         const favSnap = await getDoc(favRef);
+                        // console.log("🚀 [FAV-DEBUG] Fetch result:", favSnap.exists() ? "Exists" : "Not Found");
+                        
                         if(favSnap.exists()) {
                             const list = favSnap.data().profesionales || [];
                             isFav = list.some(p => p.id === idProfesional);
-                        }
-                    } catch(e) {}
-
-                    updateFavIcon(isFav);
-
-                    btnFav.addEventListener("click", async () => {
-                        // @ts-ignore
-                        const Swal = window.Swal;
-                        
-                        isFav = !isFav;
-                        updateFavIcon(isFav);
-
-                        try {
-                            if (isFav) {
-                                await setDoc(favRef, {
-                                    profesionales: arrayUnion({
-                                        id: idProfesional,
-                                        nombre: profesionalJson.nombre || "Profesional",
-                                        rubro: profesionalJson.rubro_principal || "",
-                                        foto: profesionalJson.foto || "",
-                                        zona: profesionalJson.zona || ""
-                                    })
-                                }, { merge: true });
-                            } else {
-                                const currentSnap = await getDoc(favRef);
-                                if(currentSnap.exists()) {
-                                    const currentList = currentSnap.data().profesionales || [];
-                                    const newList = currentList.filter(p => p.id !== idProfesional);
-                                    await updateDoc(favRef, { profesionales: newList });
-                                }
-                            }
-                        } catch(e) {
-                            isFav = !isFav;
                             updateFavIcon(isFav);
                         }
-                    });
+                    } catch(e) {
+                         // Silent error for fetch
+                         console.error("Error fetching favorites:", e);
+                    }
                 });
-
+                
+                // Helper to update UI
                 function updateFavIcon(fav) {
                     const icon = btnFav.querySelector(".material-symbols-outlined");
                     if(!icon) return;
@@ -746,6 +928,51 @@ for (let i = 0; i < levels.length; i++) {
                         btnFav.classList.add("text-slate-400", "bg-slate-50");
                     }
                 }
+
+                btnFav.addEventListener("click", async () => {
+                    const user = auth.currentUser;
+                    if (!user) {
+                         // Redirect to login or show alert
+                         showStatusModal('Acceso Requerido', 'Debes iniciar sesión para guardar favoritos.', 'warning');
+                         return;
+                    }
+                    
+                    // Optimistic update
+                    isFav = !isFav;
+                    updateFavIcon(isFav);
+
+                    try {
+                         const favRef = doc(db, "favoritos", user.uid);
+                         
+                        if (isFav) {
+                            await setDoc(favRef, {
+                                profesionales: arrayUnion({
+                                    id: idProfesional,
+                                    nombre: profesionalJson.nombre || "Profesional",
+                                    rubro: profesionalJson.rubro_principal || "",
+                                    foto: profesionalJson.foto || "",
+                                    zona: profesionalJson.zona || ""
+                                })
+                            }, { merge: true });
+                        } else {
+                            // Removing is trickier with arrayRemove if object differs, 
+                            // need to read-modify-write for safety or ensure object exact match.
+                            // For now, let's just toggle UI and fetch-update safely.
+                            const currentSnap = await getDoc(favRef);
+                            if(currentSnap.exists()) {
+                                const currentList = currentSnap.data().profesionales || [];
+                                const newList = currentList.filter(p => p.id !== idProfesional);
+                                await updateDoc(favRef, { profesionales: newList });
+                            }
+                        }
+                    } catch(e) {
+                        console.error("Error updating favorite:", e);
+                        // Revert on error
+                        isFav = !isFav;
+                        updateFavIcon(isFav);
+                        showStatusModal('Error', 'No se pudo actualizar favoritos.', 'error');
+                    }
+                });
             }
         });
     </script>
@@ -764,8 +991,75 @@ for (let i = 0; i < levels.length; i++) {
         }
 
         /* Ensure modal overlay is above everything */
-        #budget-modal {
+        #budget-modal, #report-modal {
             z-index: 9999;
         }
     </style>
+
+    <!-- Modal de Reporte (Standardized) -->
+    <div
+        id="report-modal"
+        class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 backdrop-blur-sm"
+    >
+        <div class="bg-white rounded-2xl w-full max-w-md relative shadow-2xl overflow-hidden animate-fade-in-up">
+            <div class="bg-red-50 p-6 flex justify-between items-center border-b border-red-100">
+                <div>
+                    <h3 class="font-bold text-xl text-red-700">Reportar Perfil</h3>
+                    <p class="text-xs text-red-500 mt-1">Ayúdanos a mantener segura la comunidad</p>
+                </div>
+                <button id="btn-close-report" class="text-red-400 hover:text-red-600 text-2xl font-bold" onclick="document.getElementById('report-modal').classList.add('hidden')">&times;</button>
+            </div>
+            
+            <form id="form-report-profile" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Motivo</label>
+                    <select id="report-motivo" required class="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-500 bg-white">
+                        <option value="">Seleccionar motivo...</option>
+                        <option value="spam">Spam o Publicidad</option>
+                        <option value="falso">Perfil Falso / Suplantación</option>
+                        <option value="comportamiento">Comportamiento Inapropiado</option>
+                        <option value="fraude">Intento de Estafa</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Detalles del caso</label>
+                    <textarea 
+                        id="report-desc" 
+                        required 
+                        rows="3" 
+                        class="w-full p-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-500 resize-none"
+                        placeholder="Describe brevemente lo sucedido..."
+                    ></textarea>
+                </div>
+
+                <div class="pt-2 flex gap-3">
+                    <button type="button" id="btn-cancel-report" class="flex-1 py-3 text-gray-500 font-bold hover:bg-gray-50 rounded-xl transition" onclick="document.getElementById('report-modal').classList.add('hidden')">Cancelar</button>
+                    <button type="submit" class="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition shadow-md">Enviar Reporte</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Status Messages (Success/Error) -->
+    <div
+        id="status-modal"
+        class="fixed inset-0 bg-black/60 hidden flex items-center justify-center p-4 backdrop-blur-sm z-[10000]"
+    >
+        <div class="bg-white rounded-2xl w-full max-w-sm relative shadow-2xl overflow-hidden animate-fade-in-up p-6 text-center transform transition-all scale-100">
+            <div id="status-icon" class="mb-4 text-5xl"></div>
+            <h3 id="status-title" class="font-bold text-xl text-slate-900 mb-2"></h3>
+            <p id="status-message" class="text-sm text-slate-500 mb-6 leading-relaxed"></p>
+            
+            <button 
+                id="btn-close-status" 
+                class="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition shadow-md"
+                onclick="document.getElementById('status-modal').classList.add('hidden')"
+            >
+                Entendido
+            </button>
+        </div>
+    </div>
+
 </Layout>

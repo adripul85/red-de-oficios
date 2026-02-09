@@ -47,5 +47,11 @@ export function calculateRankingScore(proData: any) {
     if (proData.foto && !proData.foto.includes("ui-avatars")) score += 30;
     if (proData.ubicacion_exacta) score += 20;
 
-    return Math.round(score);
+    // 5. PENALIZACIÓN POR LÍMITE (Smart Blocking)
+    // Si es Plan Semilla y superó el límite de 60 contactos, penalizar fuertemente
+    if ((proData.plan === "semilla" || !proData.plan) && (proData.contactos_whatsapp_mes >= 60)) {
+        score -= 1000; // Lo manda al final de los resultados
+    }
+
+    return Math.max(0, Math.round(score));
 }

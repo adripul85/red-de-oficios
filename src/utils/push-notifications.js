@@ -3,6 +3,14 @@ import { getToken } from "firebase/messaging";
 import { collection, doc, setDoc, query, where, getDocs } from "firebase/firestore";
 
 /**
+ * Verifica si ya tenemos permiso
+ */
+export function checkPushPermission() {
+    if (!('Notification' in window)) return 'unsupported';
+    return Notification.permission;
+}
+
+/**
  * Solicita permiso y registra el token de FCM
  * @param {string} uid - ID del usuario
  * @param {string} collectionName - Nombre de la colección ('profesionales' o 'clientes')
@@ -10,15 +18,21 @@ import { collection, doc, setDoc, query, where, getDocs } from "firebase/firesto
 export async function registerPushNotifications(uid, collectionName = 'profesionales') {
     if (!messaging || !uid) return;
 
+    // Si ya está denegado, no insistimos
+    if (Notification.permission === 'denied') {
+        console.log("🚫 [PUSH] El usuario denegó previamente las notificaciones");
+        return;
+    }
+
     try {
-        console.log(`🔔 [PUSH] Solicitando permiso para ${collectionName}...`);
+        console.log(`🔔 [PUSH] Iniciando registro para ${collectionName}...`);
         const permission = await Notification.requestPermission();
 
         if (permission === 'granted') {
-            console.log("✅ [PUSH] Permiso concedido");
-
             const registration = await navigator.serviceWorker.ready;
-            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Pequeño delay para asegurar que el SW esté totalmente activo
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
             const vapidKey = import.meta.env.PUBLIC_FIREBASE_VAPID_KEY;
 
@@ -28,13 +42,9 @@ export async function registerPushNotifications(uid, collectionName = 'profesion
             });
 
             if (token) {
-                console.log("🎫 [PUSH] Token obtenido:", token);
                 await saveTokenToFirestore(uid, collectionName, token);
-            } else {
-                console.warn("⚠️ [PUSH] No se pudo obtener el token");
+                console.log("✅ [PUSH] Subscripción exitosa");
             }
-        } else {
-            console.warn("❌ [PUSH] Permiso denegado");
         }
     } catch (error) {
         console.error("💥 [PUSH] Error en registro:", error);

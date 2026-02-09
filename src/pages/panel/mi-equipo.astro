@@ -183,7 +183,7 @@ derivaciones automáticamente
                         <!-- Team Grid -->
                         <div
                             id="team-grid"
-class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+class="hidden grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
                         >
                         </div>
                     </div>
@@ -194,7 +194,7 @@ class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
         <!-- ADD/EDIT MEMBER MODAL -->
         <div
             id="modal-member"
-class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4"
+class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4"
         >
             <div
                 class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform scale-95 transition-all"
@@ -312,7 +312,7 @@ class="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold px-4 py-2 r
         <!-- ALERT MODAL -->
         <div
             id="alert-modal"
-class="fixed inset-0 z-[60] hidden flex items-center justify-center p-4"
+class="fixed inset-0 z-[60] hidden items-center justify-center p-4"
         >
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
             <div
@@ -352,6 +352,7 @@ class="flex-1 bg-slate-800 text-white font-bold py-2 px-4 rounded-lg hover:bg-sl
         <script>
             import { auth, db } from "../../firebase/client";
             import { onAuthStateChanged, signOut } from "firebase/auth";
+            import { getAuthRedirect } from "../../utils/auth-redirects";
             import {
                 collection,
                 addDoc,
@@ -380,8 +381,13 @@ console.log("🚀 [MI EQUIPO] Página cargada/navegada");
                 let teamData = [];
 
                 // AUTH
-                onAuthStateChanged(auth, (user) => {
+                onAuthStateChanged(auth, async (user) => {
                     if (user) {
+                        const redirectUrl = await getAuthRedirect(user);
+                        if (redirectUrl !== "/panel") {
+                            window.location.href = redirectUrl;
+                            return;
+                        }
                         currentUser = user;
                         loadTeam(user.uid);
                     } else {
@@ -420,10 +426,12 @@ console.log("🚀 [MI EQUIPO] Página cargada/navegada");
                     if (teamData.length === 0) {
                         emptyState.classList.remove("hidden");
                         teamGrid.classList.add("hidden");
+                        teamGrid.classList.remove("grid");
                         return;
                     }
 
                     emptyState.classList.add("hidden");
+                    teamGrid.classList.add("grid");
                     teamGrid.classList.remove("hidden");
 
                     teamGrid.innerHTML = teamData
@@ -486,10 +494,12 @@ console.log("🚀 [MI EQUIPO] Página cargada/navegada");
                 // MODAL CONTROLS
                 btnAddMember.addEventListener("click", () => {
                     modalMember.classList.remove("hidden");
+                    modalMember.classList.add("flex");
                 });
 
                 btnCancelMember.addEventListener("click", () => {
                     modalMember.classList.add("hidden");
+                    modalMember.classList.remove("flex");
                     formMember.reset();
                 });
 
@@ -558,6 +568,7 @@ console.log("🚀 [MI EQUIPO] Página cargada/navegada");
                         );
 
                         modalMember.classList.add("hidden");
+                        modalMember.classList.remove("flex");
                         formMember.reset();
                         await loadTeam(currentUser.uid);
                     } catch (error) {
@@ -688,6 +699,7 @@ console.log("🚀 [MI EQUIPO] Página cargada/navegada");
                         okBtn.innerText = "Aceptar";
                         okBtn.onclick = () => {
                             modal.classList.add("hidden");
+                            modal.classList.remove("flex");
                             resolve(true);
                         };
 
@@ -705,6 +717,7 @@ iconEl.innerText = "✅";
                                 "flex-1 bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition shadow-lg shadow-indigo-200";
                         }
 
+                        modal.classList.add("flex");
                         modal.classList.remove("hidden");
                     });
                 }
@@ -733,16 +746,13 @@ iconEl.innerText = "🤔";
                         cancelBtn.classList.remove("hidden");
                         cancelBtn.onclick = () => {
                             modal.classList.add("hidden");
+                            modal.classList.remove("flex");
                             resolve(false);
                         };
 
                         okBtn.innerText = actionText;
                         okBtn.className = `flex-1 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg ${actionClass}`;
-                        okBtn.onclick = () => {
-                            modal.classList.add("hidden");
-                            resolve(true);
-                        };
-
+                        modal.classList.add("flex");
                         modal.classList.remove("hidden");
                     });
                 }

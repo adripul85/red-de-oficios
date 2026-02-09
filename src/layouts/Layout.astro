@@ -58,7 +58,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		/>
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonicalURL} />
-		<link rel="canonical" href={canonicalURL} />
 		<PWAHead />
 
 		<!-- Open Graph / Facebook -->
@@ -96,9 +95,28 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		<title>{title}</title>
 		<ClientRouter />
 
+
+		<slot name="head" />
+		
 		<!-- SweetAlert2 -->
-		<script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
-		></script>
+		<script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		
+		<!-- Structured Data -->
+		<script type="application/ld+json" is:inline set:html={JSON.stringify({
+			"@context": "https://schema.org",
+			"@type": "WebSite",
+			"name": "DeOficios",
+			"url": Astro.site,
+			"description": description,
+			"potentialAction": {
+				"@type": "SearchAction",
+				"target": {
+					"@type": "EntryPoint",
+					"urlTemplate": `${Astro.site}/resultados?q={search_term_string}`
+				},
+				"query-input": "required name=search_term_string"
+			}
+		})} />
 	</head>
 	<body class="bg-white text-gray-900 transition-colors duration-300">
 		<!-- PREMIUM SPLASH SCREEN (Apple Music Style) -->
@@ -106,8 +124,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 			<img
 				src="/icon-512.png"
 				alt="Logo DeOficios"
-				width="1000"
-				height="1000"
+				width="512"
+				height="512"
 			/>
 		</div>
 

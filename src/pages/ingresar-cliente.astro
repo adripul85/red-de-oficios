@@ -63,9 +63,21 @@ import Layout from "../layouts/Layout.astro";
                             required
                             minlength="6"
                         />
+                        <div class="legal-container">
+                            <label class="legal-check">
+                                <input type="checkbox" id="reg-terms" required />
+                                <span>Acepto los <a href="/terminos" target="_blank">Términos y Condiciones</a></span>
+                            </label>
+                            <label class="legal-check">
+                                <input type="checkbox" id="reg-privacy" required />
+                                <span>Acepto la <a href="/privacidad" target="_blank">Política de Privacidad</a></span>
+                            </label>
+                        </div>
                         <button
                             type="submit"
-                            class="btn-submit bg-green-600 hover:bg-green-700"
+                            id="register-submit"
+                            disabled
+                            class="btn-submit bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                             >Crear Cuenta</button
                         >
                         <p id="register-feedback" class="feedback hidden"></p>
@@ -115,6 +127,7 @@ import Layout from "../layouts/Layout.astro";
         signOut,
     } from "firebase/auth";
     import { doc, setDoc, getDoc } from "firebase/firestore";
+    import { getAuthRedirect } from "../utils/auth-redirects";
 
     const tabBtns = document.querySelectorAll(".tab-btn");
     const params = new URLSearchParams(window.location.search);
@@ -132,6 +145,21 @@ const tab = btn.dataset.tab;
             document.getElementById(`tab-${tab}`).classList.add("active");
         });
     });
+
+    // LEGAL COMPLIANCE LOGIC
+    const regForm = document.getElementById("register-form");
+    const regSubmit = document.getElementById("register-submit");
+    const checkTerms = document.getElementById("reg-terms");
+    const checkPrivacy = document.getElementById("reg-privacy");
+
+    function updateRegSubmit() {
+        if (regSubmit && checkTerms && checkPrivacy) {
+            regSubmit.disabled = !checkTerms.checked || !checkPrivacy.checked;
+        }
+    }
+
+    checkTerms?.addEventListener("change", updateRegSubmit);
+    checkPrivacy?.addEventListener("change", updateRegSubmit);
 
     // 1. INICIAR SESIÓN (CON CONTROL DE VERIFICACIÓN)
     document
@@ -172,7 +200,8 @@ const email = document.getElementById("login-email").value;
                 }
 
 // Si pasa, redireccionamos
-                window.location.href = returnUrl;
+                const redirectUrl = await getAuthRedirect(user);
+                window.location.href = params.get("returnUrl") || redirectUrl;
             } catch (error) {
                 feedback.textContent = "❌ Email o contraseña incorrectos";
                 feedback.classList.remove("hidden");
@@ -270,7 +299,8 @@ const name = document.getElementById("register-name").value;
                         createdAt: new Date(),
                     });
 }
-                window.location.href = returnUrl;
+                const redirectUrl = await getAuthRedirect(result.user);
+                window.location.href = params.get("returnUrl") || redirectUrl;
             } catch (error) {
                 alert("Error con Google: " + error.message);
             }
@@ -416,6 +446,37 @@ const name = document.getElementById("register-name").value;
         background: #fef2f2;
         margin-top: 10px;
         border-radius: 8px;
+    }
+    .legal-container {
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 15px;
+        padding: 10px;
+        background: #f9fafb;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+    }
+    .legal-check {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        color: #4b5563;
+    }
+    .legal-check input {
+        width: auto !important;
+        margin-top: 3px;
+    }
+    .legal-check a {
+        color: #3b82f6;
+        font-weight: 700;
+        text-decoration: none;
+    }
+    .legal-check a:hover {
+        text-decoration: underline;
     }
     .hidden {
         display: none;

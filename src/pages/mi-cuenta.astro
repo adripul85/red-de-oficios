@@ -5,6 +5,9 @@ import { sendEmailVerification } from "firebase/auth";
 ---
 
 <Layout title="Mi Cuenta - Cliente" hideBottomNav={true} hideIA={true}>
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 py-8 px-4">
         <div class="max-w-5xl mx-auto">
             <!-- Banner de Verificación de Email -->
@@ -544,18 +547,38 @@ class="hidden text-center py-12"
             updateDoc,
             deleteDoc,
             arrayRemove,
+            arrayUnion,
             deleteField,
         } from "firebase/firestore";
         import Swal from "sweetalert2";
         import "sweetalert2/dist/sweetalert2.min.css";
         import { registerPushNotifications } from "../utils/push-notifications";
+        import { getAuthRedirect } from "../utils/auth-redirects";
 
         let unsubscribe: any = null;
         let unsubNotifs: any = null;
         let currentUser: any = null;
         let unreadSolicitudes = new Map(); // IDs de solicitudes -> cantidad de notificaciones sin leer
 
-        // Wrap everything in a setup function handled by astro:page-load
+        // Wrap everything in a setup function
+        (window as any).marcarSolicitudLeida = async (id: string) => {
+            if (!currentUser) return;
+            const count = unreadSolicitudes.get(id) || 0;
+            if (count > 0) {
+                try {
+                    const solRef = doc(db, "solicitudes", id);
+                    await updateDoc(solRef, {
+                        leidoPorCliente: arrayUnion(currentUser.uid)
+                    });
+                    unreadSolicitudes.set(id, 0);
+                    // Refresh local UI if needed or let onSnapshot handle it
+                } catch (e) {
+                    console.error("Error marcando como leída:", e);
+                }
+            }
+        };
+
+
         document.addEventListener("astro:page-load", () => {
 console.log("🚀 [MI-CUENTA] Página cargada/navegada");
 
@@ -569,6 +592,13 @@ console.log("🚀 [MI-CUENTA] Página cargada/navegada");
                         "✅ [MI-CUENTA] Usuario autenticado:",
                         user.uid,
                     );
+
+                    // Role Guard: Ensure user is a client
+                    const redirectUrl = await getAuthRedirect(user);
+                    if (redirectUrl !== "/mi-cuenta") {
+                        window.location.href = redirectUrl;
+                        return;
+                    }
 
                     // Email Verification Banner
                     const banner = document.getElementById("email-verification-banner");
@@ -1107,101 +1137,88 @@ console.error("DEBUG - Error cargando reseñas:", e);
                             let actionsHTML = `
                                 <button 
                                     onclick="borrarSolicitud('${s.id}')"
-                                    class="text-xs text-red-500 font-bold hover:underline transition-all mt-1"
+                                    class="text-[10px] bg-red-50 text-red-500 font-black px-3 py-1.5 rounded-xl hover:bg-red-100 transition-all uppercase tracking-widest border border-red-100"
                                 >
-                                    Eliminar Solicitud
+                                    Eliminar
                                 </button>
                             `;
 
                             if (s.status === "completada") {
                                 statusLabel = "Finalizada";
-                                statusClass = "bg-gray-100 text-gray-700";
+                                statusClass = "bg-slate-100 text-slate-400";
                                 icon = "🏁";
                             } else if (
                                 s.status === "aceptada" ||
                                 s.status === "en_progreso"
                             ) {
-                                // Customize message with Professional Name
-                                const proName =
-                                    s.profesionalNombre || "El profesional";
-                                statusLabel = `${proName} se va a contactar con vos`;
-                                statusClass =
-                                    "bg-green-100 text-green-700 font-bold border border-green-200";
+                                const proName = s.profesionalNombre || "El profesional";
+                                statusLabel = `Trabajando con ${proName}`;
+                                statusClass = "bg-emerald-50 text-emerald-600 border-emerald-100";
                                 icon = "🚀";
 
-                                // Allow cancelling/returning to pool
                                 actionsHTML = `
-                                    <div class="flex gap-2 mt-2">
-                                        <button 
-                                            onclick="cancelarTrabajo('${s.id}')"
-                                            class="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded font-bold hover:bg-orange-200 transition"
-                                            title="El profesional no respondió o no hubo arreglo"
-                                        >
-                                            🔄 Volver a Publicar
-                                        </button>
-                                        <button 
-                                            onclick="borrarSolicitud('${s.id}')"
-                                            class="text-xs text-red-400 hover:text-red-600 transition"
-                                        >
-                                            Eliminar
-                                        </button>
-                                    </div>
+                                    <button 
+                                        onclick="cancelarTrabajo('${s.id}')"
+                                        class="text-[10px] bg-amber-50 text-amber-600 font-black px-3 py-1.5 rounded-xl hover:bg-amber-100 transition-all uppercase tracking-widest border border-amber-100"
+                                        title="El profesional no respondió o no hubo arreglo"
+                                    >
+                                        🔄 Republicar
+                                    </button>
                                 `;
                             } else if (propuestas.length > 0) {
                                 statusLabel = `${propuestas.length} presupuesto${propuestas.length > 1 ? 's' : ''}`;
-                                statusClass = "bg-blue-100 text-blue-700";
+                                statusClass = "bg-indigo-50 text-indigo-600 border-indigo-100";
                                 icon = "💬";
                             } else if (contactados > 0) {
                                 statusLabel = `${contactados} contactos`;
-                                statusClass = "bg-blue-100 text-blue-700";
+                                statusClass = "bg-blue-50 text-blue-600 border-blue-100";
                                 icon = "💬";
                             } else if (candidatos > 0) {
                                 statusLabel = "Buscando expertos...";
-                                statusClass = "bg-yellow-100 text-yellow-700";
+                                statusClass = "bg-amber-50 text-amber-600 border-amber-100";
                                 icon = "🔍";
                             }
 
                             let securityCodeHTML = "";
                             if (s.trabajoAceptadoPor && s.codigoSeguridad) {
-                                // Enhanced card for accepted budgets with professional info
                                 securityCodeHTML = `
-                                    <div class="mt-4 bg-gradient-to-br from-green-50 to-emerald-50 border-4 border-green-500 rounded-2xl p-4 shadow-lg">
-                                        <div class="bg-green-600 text-white rounded-xl px-4 py-2 text-center mb-3">
-                                            <span class="text-lg font-black">🚀 PRESUPUESTO ACEPTADO</span>
-                                        </div>
-
-                                        <div class="bg-white border-2 border-green-200 rounded-xl p-3 mb-4 text-center shadow-inner">
-                                            <p class="text-[10px] uppercase font-black tracking-widest text-green-600 mb-1">Tu Código de Seguridad</p>
-                                            <p class="text-3xl font-black text-slate-900 tracking-widest">${s.codigoSeguridad}</p>
-                                            <p class="text-[10px] text-slate-400 mt-1">Dáselo al profesional solo cuando termine el trabajo</p>
-                                        </div>
+                                    <div class="mt-5 bg-gradient-to-br from-emerald-500 to-green-600 rounded-3xl p-6 shadow-xl border-4 border-white/20 relative overflow-hidden group">
+                                        <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
                                         
-                                        <!-- Professional Info -->
-                                        ${s.profesionalNombre || s.profesionalId ? `
-                                        <div class="bg-white rounded-xl p-4 mb-3 border border-green-200 shadow-sm">
-                                            <p class="text-xs font-bold text-green-800 uppercase mb-2">👷 Profesional Asignado</p>
-                                            <div class="flex items-center gap-3 mb-2">
-                                                ${s.profesionalFoto ? `<img src="${s.profesionalFoto}" class="w-12 h-12 rounded-full object-cover border-2 border-green-400" alt="Profesional"/>` : ''}
-                                                <div>
-                                                    <p class="font-bold text-slate-900 text-lg">${s.profesionalNombre || 'Profesional'}</p>
-                                                    ${s.rubro ? `<p class="text-xs text-slate-500">${s.rubro}</p>` : ''}
+                                        <div class="relative z-10">
+                                            <div class="flex items-center gap-2 mb-4 bg-white/20 backdrop-blur-md rounded-xl px-3 py-1.5 w-fit">
+                                                <span class="text-lg">🛡️</span>
+                                                <span class="text-[10px] font-black uppercase tracking-widest text-white">Código de Seguridad</span>
+                                            </div>
+
+                                            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 mb-6 text-center transform group-hover:scale-[1.02] transition-transform duration-300">
+                                                <p class="text-4xl font-black text-white tracking-[0.3em] drop-shadow-lg">${s.codigoSeguridad}</p>
+                                                <p class="text-[10px] text-green-100 font-medium mt-3 uppercase tracking-wider opacity-80">Proporcionar solo al finalizar el trabajo</p>
+                                            </div>
+                                            
+                                            ${s.profesionalNombre || s.profesionalId ? `
+                                            <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-4 mb-4 shadow-xl flex items-center gap-4 border border-white">
+                                                <div class="relative">
+                                                    <img src="${s.profesionalFoto || 'https://ui-avatars.com/api/?name=' + s.profesionalNombre}" 
+                                                         class="w-14 h-14 rounded-xl object-cover border-2 border-green-500 shadow-md" alt="Pro"/>
+                                                    <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full flex items-center justify-center text-[10px]">✅</div>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <p class="text-[10px] font-black text-green-700 uppercase tracking-widest leading-none mb-1">Profesional Asignado</p>
+                                                    <h4 class="font-bold text-slate-900 text-lg leading-tight">${s.profesionalNombre || 'Profesional'}</h4>
+                                                    <p class="text-xs text-slate-500 font-medium">${s.rubro || 'Especialista'}</p>
                                                 </div>
                                             </div>
+                                            ` : ''}
+                                            
+                                            ${s.profesionalTelefono ? `
+                                            <a href="https://wa.me/549${s.profesionalTelefono.replace(/\D/g, "")}" target="_blank" 
+                                               class="w-full bg-white text-green-600 hover:bg-green-50 font-black py-4 px-6 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl active:scale-95 group/btn">
+                                                <span class="text-xl group-hover/btn:scale-110 transition-transform">💬</span>
+                                                Contactar por WhatsApp
+                                            </a>
+                                            ` : ''}
                                         </div>
-                                        ` : ''}
-                                        
-                                        
-                                        <!-- Contact Info -->
-                                        ${s.profesionalTelefono ? `
-                                        <a href="https://wa.me/549${s.profesionalTelefono.replace(/\D/g, "")}" target="_blank" 
-                                           class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition shadow-md active:scale-95 mb-2">
-                                            💬 Contactar Profesional
-                                        </a>
-                                        ` : ''}
-                                        
-                                        ${s.profesionalEmail ? `
-                                        <p class="text-xs text-center text-slate-600 mb-2">📧 ${s.profesionalEmail}</p>
-                                        ` : ''}
                                     </div>
                                 `;
                             }
@@ -1210,50 +1227,82 @@ console.error("DEBUG - Error cargando reseñas:", e);
                             let propuestasHTML = "";
                             if (propuestas.length > 0) {
                                 propuestasHTML = `
-                                    <div class="mt-4 space-y-2">
-                                        <p class="text-xs font-bold text-slate-600 uppercase">Presupuestos Recibidos:</p>
-                                        ${propuestas.map(p => {
-                                            // Check if this proposal was accepted or rejected based on solicitud data
-                                            const isAccepted = s.trabajoAceptadoPor === p.proId;
-                                            const isRejected = s.propuestasRechazadas?.includes(p.id);
-                                            
-                                            return `
-                                            <div class="bg-white rounded-xl p-3 border ${isAccepted ? 'border-green-300 bg-green-50' : isRejected ? 'border-slate-200 bg-slate-50 opacity-60' : 'border-blue-200'} shadow-sm">
-                                                <div class="flex justify-between items-start mb-2">
-                                                    <p class="font-bold text-slate-900">${p.proNombre || 'Profesional'}</p>
-                                                    <span class="text-lg font-black ${isAccepted ? 'text-green-700' : 'text-green-600'}">$${p.precio ? parseInt(p.precio).toLocaleString('es-AR') : '0'}</span>
+                                    <div class="mt-6 space-y-3">
+                                        <div class="flex items-center gap-2 px-1">
+                                            <div class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
+                                            <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Presupuestos Recibidos</p>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-1 gap-3">
+                                            ${propuestas.map(p => {
+                                                const isAccepted = s.trabajoAceptadoPor === p.proId;
+                                                const isRejected = s.propuestasRechazadas?.includes(p.id);
+                                                
+                                                return `
+                                                <div id="budget-card-${p.id}" class="group/budget bg-white rounded-2xl p-5 border-2 ${isAccepted ? 'border-green-500 shadow-green-100 shadow-xl' : isRejected ? 'border-slate-100 opacity-60 grayscale' : 'border-blue-50 hover:border-blue-200'} transition-all duration-300">
+                                                    <div class="flex justify-between items-start mb-4">
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-lg font-bold text-slate-400 border border-slate-200">
+                                                                ${(p.proNombre || 'P')[0]}
+                                                            </div>
+                                                            <div>
+                                                                <p class="font-bold text-slate-900 text-base leading-tight">${p.proNombre || 'Profesional'}</p>
+                                                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">${p.fecha?.toDate ? p.fecha.toDate().toLocaleDateString('es-AR') : 'Reciente'}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="text-right">
+                                                            <p class="text-2xl font-black ${isAccepted ? 'text-green-600' : 'text-blue-600'} leading-none tracking-tight">$${p.precio ? parseInt(p.precio).toLocaleString('es-AR') : '0'}</p>
+                                                            <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest mt-1">Total Estimado</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="bg-slate-50/50 rounded-xl p-4 mb-4 border border-slate-100/50 group-hover/budget:bg-blue-50/30 transition-colors">
+                                                        <p class="text-sm text-slate-600 leading-relaxed font-medium">"${p.mensaje || 'Hola, puedo realizar el trabajo...'}"</p>
+                                                    </div>
+
+                                                    ${isAccepted ? `
+                                                        <div class="flex gap-2">
+                                                            <div class="flex-1 bg-green-50 text-green-700 rounded-xl py-3 px-4 flex items-center justify-center gap-2 font-black text-xs uppercase tracking-widest border border-green-200">
+                                                                <span>✅</span> Aceptado
+                                                            </div>
+                                                            <button 
+                                                                onclick='renderClientBudgetPDF(${JSON.stringify({
+                                                                    cliente: currentUser.displayName || 'Cliente',
+                                                                    titulo: s.rubro,
+                                                                    items: [{desc: p.mensaje || "Servicio profesional", cant: 1, precio: p.precio}],
+                                                                    total: p.precio,
+                                                                    profesional: p.proNombre || "Profesional",
+                                                                    profesionalTel: p.telefono || ""
+                                                                })})'
+                                                                class="p-3 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-xl transition-all shadow-sm active:scale-95"
+                                                                title="Descargar PDF"
+                                                            >
+                                                                📄
+                                                            </button>
+                                                        </div>
+                                                    ` : isRejected ? `
+                                                        <div class="bg-slate-100 text-slate-500 rounded-xl py-2 px-4 text-center font-bold text-[10px] uppercase tracking-widest border border-slate-200">
+                                                            Presupuesto Rechazado
+                                                        </div>
+                                                    ` : `
+                                                        <div class="flex gap-3">
+                                                            <button 
+                                                                onclick="aceptarPresupuesto('${s.id}', '${p.id}', '${p.proId}')"
+                                                                class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 px-4 rounded-xl transition-all shadow-lg shadow-indigo-100 active:scale-95 text-xs uppercase tracking-widest"
+                                                            >
+                                                                Aceptar 📩
+                                                            </button>
+                                                            <button 
+                                                                onclick="rechazarPresupuesto('${s.id}', '${p.id}')"
+                                                                class="flex-1 bg-white border-2 border-slate-100 text-slate-400 hover:text-red-500 hover:border-red-100 font-black py-3 px-4 rounded-xl transition-all active:scale-95 text-xs uppercase tracking-widest"
+                                                            >
+                                                                Rechazar
+                                                            </button>
+                                                        </div>
+                                                    `}
                                                 </div>
-                                                <p class="text-sm text-slate-600 mb-3">${p.mensaje || 'Sin mensaje'}</p>
-                                                <div class="flex justify-between items-center gap-2 mb-2">
-                                                    <span class="text-xs text-slate-400">${p.fecha?.toDate ? p.fecha.toDate().toLocaleDateString('es-AR') : 'Reciente'}</span>
-                                                    ${p.telefono ? `<a href="https://wa.me/549${p.telefono.replace(/\D/g, "")}" target="_blank" class="bg-green-500 text-white px-2 py-1 rounded-lg text-xs font-bold hover:bg-green-600 transition">💬 WhatsApp</a>` : ''}
-                                                </div>
-                                                ${isAccepted ? `
-                                                    <div class="bg-green-100 border border-green-300 rounded-lg p-2 text-center">
-                                                        <span class="text-green-700 font-bold text-sm">✅ Presupuesto Aceptado</span>
-                                                    </div>
-                                                ` : isRejected ? `
-                                                    <div class="bg-slate-100 border border-slate-300 rounded-lg p-2 text-center">
-                                                        <span class="text-slate-600 font-medium text-sm">❌ Presupuesto Rechazado</span>
-                                                    </div>
-                                                ` : `
-                                                    <div class="flex gap-2">
-                                                        <button 
-                                                            onclick="aceptarPresupuesto('${s.id}', '${p.id}', '${p.proId}')"
-                                                            class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl transition shadow-md active:scale-95 text-sm"
-                                                        >
-                                                            ✅ Aceptar
-                                                        </button>
-                                                        <button 
-                                                            onclick="rechazarPresupuesto('${s.id}', '${p.id}')"
-                                                            class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-xl transition shadow-md active:scale-95 text-sm"
-                                                        >
-                                                            ❌ Rechazar
-                                                        </button>
-                                                    </div>
-                                                `}
-                                            </div>
-                                        `}).join('')}
+                                                `}).join('')}
+                                        </div>
                                     </div>
                                 `;
                             }
@@ -1264,27 +1313,46 @@ console.error("DEBUG - Error cargando reseñas:", e);
                             return `
                         <div 
                             onclick="marcarSolicitudLeida('${s.id}')"
-                            class="bg-slate-50 hover:bg-slate-100 rounded-2xl p-5 transition-all border ${isUnread ? 'border-red-200 shadow-md ring-1 ring-red-100' : 'border-slate-100'} group shadow-sm hover:shadow-md relative overflow-hidden"
+                            class="bg-white hover:bg-slate-50/50 rounded-[2.5rem] p-8 transition-all duration-300 border-2 ${isUnread ? 'border-indigo-400 shadow-xl ring-4 ring-indigo-50 shadow-indigo-100' : 'border-slate-100 shadow-sm hover:shadow-xl'} group relative overflow-hidden"
                         >
-                            ${isUnread ? `<div class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl shadow-sm animate-pulse">${unreadCount > 1 ? unreadCount : '¡NUEVO!'}</div>` : ''}
-                            <div class="flex items-start justify-between gap-4">
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <span class="text-xl">${icon}</span>
-                                        <h4 class="font-extrabold text-slate-900">${s.rubro || "Servicio"}</h4>
+                            ${isUnread ? `<div class="absolute top-0 right-12 bg-indigo-600 text-white text-[11px] font-black px-4 py-2 rounded-b-2xl shadow-lg animate-bounce z-10">${unreadCount > 1 ? unreadCount : '¡NUEVO!'}</div>` : ''}
+                            
+                            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-indigo-100 group-hover:scale-105 transition-transform duration-300">
+                                        ${icon}
                                     </div>
-                                    <p class="text-sm text-slate-500 mb-2">📍 ${s.zona || "Sin zona"}</p>
-                                    ${actionsHTML}
-                                    ${securityCodeHTML}
-                                    ${propuestasHTML}
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] bg-indigo-50 px-2 py-0.5 rounded-lg">Solicitud #12${s.id.slice(-3)}</span>
+                                        </div>
+                                        <h4 class="font-black text-slate-900 text-2xl tracking-tighter">${s.rubro || "Servicio"}</h4>
+                                        <p class="text-sm font-bold text-slate-400 flex items-center gap-1 mt-0.5">
+                                            <svg class="w-4 h-4 text-slate-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
+                                            ${s.zona || "Buenos Aires"}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div class="text-right flex flex-col items-end gap-2">
-                                    <span class="inline-block px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-full ${statusClass} text-center leading-tight shadow-sm">
+
+                                <div class="flex flex-col items-end gap-2 shrink-0">
+                                    <span class="inline-flex px-4 py-2 text-[11px] font-black uppercase tracking-widest rounded-2xl ${statusClass} border-2 border-white shadow-sm ring-1 ring-slate-100 whitespace-nowrap">
                                         ${statusLabel}
                                     </span>
-                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">${fecha}</p>
+                                    <div class="flex items-center gap-3">
+                                        <p class="text-[11px] text-slate-300 font-bold uppercase tracking-widest">${fecha}</p>
+                                        ${actionsHTML}
+                                    </div>
                                 </div>
                             </div>
+
+                            <div class="w-full h-px bg-gradient-to-r from-transparent via-slate-100 to-transparent my-6"></div>
+
+                            ${securityCodeHTML || propuestasHTML || `
+                                <div class="bg-slate-50/50 rounded-2xl p-6 border border-slate-100/50">
+                                    <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Tu Pedido Original:</p>
+                                    <p class="text-slate-600 text-sm italic font-medium leading-relaxed">"${s.detalle || 'Buscando el mejor profesional para este trabajo...'}"</p>
+                                </div>
+                            `}
                         </div>
                     `;
 
@@ -1718,6 +1786,98 @@ title: "¿Quitar de favoritos?",
                     "error",
                 );
             }
+        };
+
+        (window as any).renderClientBudgetPDF = async (data: any) => {
+            const { jsPDF } = window as any;
+            if (!jsPDF) {
+                Swal.fire("Error", "Librería de PDF no cargada", "error");
+                return;
+            }
+
+            const doc = new jsPDF();
+            const margin = 20;
+            let y = margin;
+
+            // Branding
+            doc.setFillColor(79, 70, 229); // Indigo 600
+            doc.rect(0, 0, 210, 40, 'F');
+            
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.setFont("helvetica", "bold");
+            doc.text("RED DE OFICIOS", margin, 25);
+            
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text("PRESUPUESTO PROFESIONAL", margin, 32);
+
+            // Client & Info
+            y = 55;
+            doc.setTextColor(30, 41, 59); // Slate 800
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Presupuesto para: ${data.titulo}`, margin, y);
+            
+            y += 10;
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Cliente: ${data.cliente}`, margin, y);
+            doc.text(`Fecha: ${new Date().toLocaleDateString('es-AR')}`, 150, y);
+
+            y += 15;
+            doc.setDrawColor(226, 232, 240); // Slate 200
+            doc.line(margin, y, 190, y);
+
+            // Table Header
+            y += 15;
+            doc.setFont("helvetica", "bold");
+            doc.text("Descripción", margin, y);
+            doc.text("Cant.", 140, y, { align: "center" });
+            doc.text("Precio", 170, y, { align: "right" });
+
+            y += 5;
+            doc.line(margin, y, 190, y);
+
+            // Table Body
+            y += 10;
+            doc.setFont("helvetica", "normal");
+            data.items.forEach((item: any) => {
+                const lines = doc.splitTextToSize(item.desc, 110);
+                doc.text(lines, margin, y);
+                doc.text(item.cant.toString(), 140, y, { align: "center" });
+                doc.text(`$${parseInt(item.precio).toLocaleString('es-AR')}`, 170, y, { align: "right" });
+                y += (lines.length * 5) + 5;
+            });
+
+            // Total
+            y += 10;
+            doc.setDrawColor(79, 70, 229);
+            doc.setLineWidth(1);
+            doc.line(130, y, 190, y);
+            
+            y += 12;
+            doc.setFontSize(16);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(79, 70, 229);
+            doc.text("TOTAL ESTIMADO:", 130, y);
+            doc.text(`$${parseInt(data.total).toLocaleString('es-AR')}`, 190, y, { align: "right" });
+
+            // Footer
+            doc.setFontSize(8);
+            doc.setTextColor(148, 163, 184);
+            doc.text("Este es un presupuesto generado a través de Red de Oficios.", 105, 285, { align: "center" });
+            doc.text("La validez del mismo depende del acuerdo final con el profesional.", 105, 290, { align: "center" });
+
+            doc.save(`Presupuesto-${data.titulo.replace(/\s+/g, '-')}.pdf`);
+            
+            Swal.fire({
+                title: "¡PDF Generado!",
+                text: "El presupuesto se ha descargado correctamente.",
+                icon: "success",
+                timer: 2000,
+                showConfirmButton: false
+            });
         };
         
         // Mark solicitud as read

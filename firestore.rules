@@ -43,8 +43,8 @@ service cloud.firestore {
         .hasOnly(['promedio', 'total_votos', 'puntuacion', 'total_valoraciones', 'suma_puntuacion', 'vistas_perfil', 'contactos_whatsapp', 'likes', 'portfolio', 'servicios_lista'])
       );
       
-      // Borrar: Solo Admin
-      allow delete: if isStaff();
+      // Borrar: El dueño o Admin
+      allow delete: if isOwner(userId) || isStaff();
       
       // Subcolección de Reseñas
       match /resenas/{reviewId} {
@@ -289,6 +289,20 @@ service cloud.firestore {
     match /newsletter_campaigns/{campId} {
       allow read: if isStaff();
       allow create: if isStaff(); // Client side logic currently saves it
+    }
+
+    // --- 10. ADMIN & FINANCE ---
+    match /denuncias/{id} {
+      allow read, update, delete: if isStaff();
+      allow create: if true; 
+    }
+
+    match /pagos_historial/{id} {
+      allow read, write: if isStaff();
+    }
+
+    match /admin_finanzas/{id} {
+      allow read, write: if isStaff();
     }
 
     // --- ESTA LÍNEA DEBE ESTAR AL FINAL (Bloqueo por defecto) ---

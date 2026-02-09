@@ -341,7 +341,7 @@ class="lucide lucide-trash-2"
         <!-- MODAL INGRESO -->
         <div
             id="modal-ingreso"
-class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center p-4"
+class="fixed inset-0 bg-black/60 z-[9999] hidden items-center justify-center p-4"
         >
             <div
                 class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
@@ -475,7 +475,7 @@ class="flex-1 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 rounded-lg 
         <!-- MODAL GASTO -->
         <div
             id="modal-gasto"
-class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center p-4"
+class="fixed inset-0 bg-black/60 z-[9999] hidden items-center justify-center p-4"
         >
             <div
                 class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
@@ -579,7 +579,7 @@ class="flex-1 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 rounded-lg 
         <!-- MODAL EDITAR MOVIMIENTO -->
         <div
             id="modal-edit-mov"
-class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center p-4"
+class="fixed inset-0 bg-black/60 z-[9999] hidden items-center justify-center p-4"
         >
             <div
                 class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
@@ -670,7 +670,7 @@ class="flex-1 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 rounded-lg 
         <!-- MODAL AGREGAR MIEMBRO DEL EQUIPO -->
         <div
             id="modal-team"
-class="fixed inset-0 bg-black/60 z-[9999] hidden flex items-center justify-center p-4"
+class="fixed inset-0 bg-black/60 z-[9999] hidden items-center justify-center p-4"
         >
             <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full">
                 <div
@@ -782,7 +782,7 @@ class="flex-1 px-4 py-3 text-slate-600 font-medium hover:bg-slate-50 rounded-lg 
         <!-- CUSTOM ALERT MODAL -->
         <div
             id="custom-alert"
-class="hidden fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300"
+class="hidden fixed inset-0 bg-black/50 z-[60] items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300"
         >
             <div
                 class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl transform scale-95 transition-transform duration-300"
@@ -811,7 +811,7 @@ class="hidden fixed inset-0 bg-black/50 z-[60] flex items-center justify-center 
         <!-- CUSTOM CONFIRM MODAL -->
         <div
             id="custom-confirm"
-class="hidden fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300"
+class="hidden fixed inset-0 bg-black/50 z-[60] items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300"
         >
             <div
                 class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl transform scale-95 transition-transform duration-300"
@@ -848,6 +848,7 @@ class="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 t
         <script>
             import { auth, db } from "../../firebase/client";
             import { onAuthStateChanged, signOut } from "firebase/auth";
+            import { getAuthRedirect } from "../../utils/auth-redirects";
             import {
                 doc,
                 getDoc,
@@ -903,6 +904,7 @@ icon.textContent = type === "success" ? "✅" : "❌";
                     titleEl.textContent = title;
                     msgEl.textContent = message;
 
+                    modal.classList.add("flex");
                     modal.classList.remove("hidden");
                     // Animation
                     setTimeout(() => {
@@ -921,6 +923,7 @@ icon.textContent = type === "success" ? "✅" : "❌";
                                 ?.classList.add("scale-95");
                             setTimeout(() => {
                                 modal.classList.add("hidden");
+                                modal.classList.remove("flex");
                                 resolve();
                             }, 300);
                         };
@@ -954,6 +957,7 @@ icon.textContent = type === "success" ? "✅" : "❌";
                     confirmBtn.textContent = confirmText;
                     confirmBtn.className = `flex-1 py-3 text-white rounded-xl font-bold transition hover:opacity-90 ${confirmColor}`;
 
+                    modal.classList.add("flex");
                     modal.classList.remove("hidden");
                     // Animation
                     setTimeout(() => {
@@ -972,6 +976,7 @@ icon.textContent = type === "success" ? "✅" : "❌";
                                 ?.classList.add("scale-95");
                             setTimeout(() => {
                                 modal.classList.add("hidden");
+                                modal.classList.remove("flex");
                                 resolve(result);
                             }, 300);
                         };
@@ -997,6 +1002,12 @@ icon.textContent = type === "success" ? "✅" : "❌";
 
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
+                        const redirectUrl = await getAuthRedirect(user);
+                        if (redirectUrl !== "/panel") {
+                            window.location.href = redirectUrl;
+                            return;
+                        }
+
                         const docRef = doc(db, "profesionales", user.uid);
                         const docSnap = await getDoc(docRef);
 
@@ -1013,49 +1024,58 @@ icon.textContent = type === "success" ? "✅" : "❌";
                 });
 
                 // Abrir/Cerrar modales
-                btnAddIncome?.addEventListener("click", () =>
-                    modalIngreso.classList.remove("hidden"),
-                );
-                btnAddExpense?.addEventListener("click", () =>
-                    modalGasto.classList.remove("hidden"),
-                );
+                btnAddIncome?.addEventListener("click", () => {
+                    modalIngreso.classList.remove("hidden");
+                    modalIngreso.classList.add("flex");
+                });
+                btnAddExpense?.addEventListener("click", () => {
+                    modalGasto.classList.remove("hidden");
+                    modalGasto.classList.add("flex");
+                });
 
                 document
                     .getElementById("close-modal-ingreso")
-                    ?.addEventListener("click", () =>
-                        modalIngreso.classList.add("hidden"),
-                    );
+                    ?.addEventListener("click", () => {
+                        modalIngreso.classList.add("hidden");
+                        modalIngreso.classList.remove("flex");
+                    });
                 document
                     .getElementById("cancel-ingreso")
-                    ?.addEventListener("click", () =>
-                        modalIngreso.classList.add("hidden"),
-                    );
+                    ?.addEventListener("click", () => {
+                        modalIngreso.classList.add("hidden");
+                        modalIngreso.classList.remove("flex");
+                    });
 
                 document
                     .getElementById("close-modal-gasto")
-                    ?.addEventListener("click", () =>
-                        modalGasto.classList.add("hidden"),
-                    );
+                    ?.addEventListener("click", () => {
+                        modalGasto.classList.add("hidden");
+                        modalGasto.classList.remove("flex");
+                    });
                 document
                     .getElementById("cancel-gasto")
-                    ?.addEventListener("click", () =>
-                        modalGasto.classList.add("hidden"),
-                    );
+                    ?.addEventListener("click", () => {
+                        modalGasto.classList.add("hidden");
+                        modalGasto.classList.remove("flex");
+                    });
 
                 // === TEAM MODAL ===
-                btnAddTeam?.addEventListener("click", () =>
-                    modalTeam.classList.remove("hidden"),
-                );
+                btnAddTeam?.addEventListener("click", () => {
+                    modalTeam.classList.remove("hidden");
+                    modalTeam.classList.add("flex");
+                });
                 document
                     .getElementById("close-modal-team")
-                    ?.addEventListener("click", () =>
-                        modalTeam.classList.add("hidden"),
-                    );
+                    ?.addEventListener("click", () => {
+                        modalTeam.classList.add("hidden");
+                        modalTeam.classList.remove("flex");
+                    });
                 document
                     .getElementById("cancel-team")
-                    ?.addEventListener("click", () =>
-                        modalTeam.classList.add("hidden"),
-                    );
+                    ?.addEventListener("click", () => {
+                        modalTeam.classList.add("hidden");
+                        modalTeam.classList.remove("flex");
+                    });
 
 // Cambiar hint según tipo de pago
                 document
@@ -1143,19 +1163,21 @@ icon.textContent = type === "success" ? "✅" : "❌";
                 // === EDIT MODAL EVENTS ===
                 document
                     .getElementById("close-modal-edit")
-                    ?.addEventListener("click", () =>
-                        modalEdit?.classList.add("hidden"),
-                    );
+                    ?.addEventListener("click", () => {
+                        modalEdit?.classList.add("hidden");
+                        modalEdit?.classList.remove("flex");
+                    });
                 document
                     .getElementById("cancel-edit")
-                    ?.addEventListener("click", () =>
-                        modalEdit?.classList.add("hidden"),
-                    );
+                    ?.addEventListener("click", () => {
+                        modalEdit?.classList.add("hidden");
+                        modalEdit?.classList.remove("flex");
+                    });
 
                 // Open Edit Modal
-                (window as any).openEditMov = (async function (id, tipo) {
+                (window as any).openEditMov = async function (movId: string, tipo: string) {
                     if (!currentUser) return;
-console.log("📝 Editando:", id, tipo);
+                        console.log("📝 Editando:", movId, tipo);
 
                     try {
                         const docRef = doc(
@@ -1163,7 +1185,7 @@ console.log("📝 Editando:", id, tipo);
                             "profesionales",
                             currentUser.uid,
                             "finanzas",
-                            id,
+                            movId,
                         );
                         const snap = await getDoc(docRef);
 
@@ -1226,19 +1248,19 @@ console.log("📝 Editando:", id, tipo);
                             editExtraContainer.innerHTML = "";
                         }
 
+                        modalEdit?.classList.add("flex");
                         modalEdit?.classList.remove("hidden");
                     } catch (error) {
                         console.error(error);
-                        showAlert(
+                        await showAlert(
                             "Error",
-"No se pudo cargar la información del movimiento",
+                            "No se pudo cargar la información del movimiento",
                             "error",
                         );
                     }
-                })(
-                    // Delete Movement
-                    window as any,
-                ).deleteMov = async function (id, tipo) {
+                };
+
+                (window as any).deleteMov = async function (movId: string, tipo: string) {
                     const confirmed = await (window as any).showConfirm(
 "¿Eliminar movimiento?",
                         "Esta acción borrará el registro de tus finanzas. Si es un ingreso que tenía equipo asignado, las derivaciones no se borrarán automáticamente.",
@@ -1251,17 +1273,18 @@ console.log("📝 Editando:", id, tipo);
                                 "profesionales",
                                 currentUser.uid,
                                 "finanzas",
-                                id,
+                                movId,
                             );
                             await deleteDoc(docRef);
-                            showAlert(
+                            await showAlert(
                                 "Eliminado",
-"El movimiento ha sido borrado con éxito.",
+                                "El movimiento ha sido borrado con éxito.",
+                                "success",
                             );
                             await loadFinanzas(currentUser.uid);
                         } catch (error) {
                             console.error(error);
-                            showAlert(
+                            await showAlert(
                                 "Error",
                                 "No se pudo eliminar el movimiento",
                                 "error",
@@ -1274,7 +1297,7 @@ console.log("📝 Editando:", id, tipo);
                     e.preventDefault();
                     if (!currentUser) return;
 
-                    const id = (
+                    const movIdToEdit = (
                         document.getElementById(
                             "edit-mov-id",
                         ) as HTMLInputElement
@@ -1330,20 +1353,21 @@ const fecha = new Date(fechaValue + "T12:00:00"); // Forzar mediodía para evita
                             "profesionales",
                             currentUser.uid,
                             "finanzas",
-                            id,
+                            movIdToEdit,
                         );
                         await updateDoc(docRef, updateData);
 
-                        showAlert(
-"¡Actualizado!",
+                        await showAlert(
+                            "¡Actualizado!",
                             "El movimiento ha sido modificado correctamente.",
                             "success",
                         );
                         modalEdit?.classList.add("hidden");
+                        modalEdit?.classList.remove("flex");
                         await loadFinanzas(currentUser.uid);
                     } catch (error) {
                         console.error(error);
-                        showAlert(
+                        await showAlert(
                             "Error",
                             "No se pudo actualizar el movimiento",
                             "error",
@@ -2276,7 +2300,6 @@ icon = mov.tipo === "ingreso" ? "💵" : "💸";
                 document.dispatchEvent(new CustomEvent("toggle-sidebar"));
             });
         </script>
-
                 </div> <!-- flex-1 overflow-y-auto -->
             </main>
         </div> <!-- flex h-screen -->

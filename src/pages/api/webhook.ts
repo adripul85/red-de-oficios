@@ -74,7 +74,7 @@ export const POST: APIRoute = async ({ request }) => {
 
                 await userRef.update({
                     plan: nuevoPlan,
-                    vencimiento_plan: fechaVencimiento,
+                    plan_vencimiento: fechaVencimiento,
                     estado_pago: "activo",
                     limite_fotos,
                     puede_aparecer_mapa,

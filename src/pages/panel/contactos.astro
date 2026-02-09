@@ -87,6 +87,7 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 <script>
     import { auth, db } from "../../firebase/client";
     import { onAuthStateChanged } from "firebase/auth";
+    import { getAuthRedirect } from "../../utils/auth-redirects";
     import {
         collection,
         query,
@@ -97,9 +98,15 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
         doc,
     } from "firebase/firestore";
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
         if (!user) {
             window.location.href = "/ingresar";
+            return;
+        }
+
+        const redirectUrl = await getAuthRedirect(user);
+        if (redirectUrl !== "/panel") {
+            window.location.href = redirectUrl;
             return;
         }
 

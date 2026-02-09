@@ -448,6 +448,7 @@ import Layout from "../../layouts/Layout.astro";
         import { doc, getDoc, collection, query, where, getDocs, limit, orderBy, onSnapshot, deleteDoc, updateDoc } from "firebase/firestore";
         import { onAuthStateChanged } from "firebase/auth";
         import { registerPushNotifications } from "../../utils/push-notifications";
+        import { getAuthRedirect } from "../../utils/auth-redirects";
 
         // Elementos del DOM
         const userNameEl = document.getElementById("user-name");
@@ -480,14 +481,22 @@ import Layout from "../../layouts/Layout.astro";
         }
 
         // SPA & First Load Handler
-        document.addEventListener("astro:page-load", () => {
+        document.addEventListener("astro:page-load", async () => {
              dashboardInitialized = false;
              const user = window.currentUser || auth.currentUser;
              if (user) {
+                // Relaxed check: We are already on the panel.
                 initDashboard(user);
              } else {
-                onAuthStateChanged(auth, (u) => {
-                     if(u) initDashboard(u);
+                onAuthStateChanged(auth, async (u) => {
+                     if(u) {
+                        // Relaxed check: We are already on the panel, so we don't force redirect
+                        // unless we really want to restrict access (e.g. wrong role).
+                        // For now, allow access if logged in.
+                        initDashboard(u);
+                     } else {
+                         window.location.href = "/ingresar";
+                     }
                 }, { once: true });
              }
         });

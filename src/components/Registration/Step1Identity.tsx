@@ -116,12 +116,46 @@ export default function Step1Identity({ data, onChange, onNext }: Step1Props) {
                 </div>
             </div>
 
-            <div className="pt-4 flex justify-end">
+
+
+            <div className="space-y-3 pt-4 border-t border-gray-100">
+                <label className="flex items-start space-x-3 cursor-pointer group">
+                    <input
+                        type="checkbox"
+                        required
+                        className="mt-1 h-5 w-5 text-orange-600 rounded focus:ring-orange-500 border-gray-300"
+                        onChange={(e) => onChange('acceptedTerms', e.target.checked)}
+                        checked={data.acceptedTerms || false}
+                    />
+                    <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
+                        Acepto los <a href="/terminos" target="_blank" className="text-orange-600 font-bold hover:underline">Términos y Condiciones</a> *
+                    </span>
+                </label>
+
+                <label className="flex items-start space-x-3 cursor-pointer group">
+                    <input
+                        type="checkbox"
+                        required
+                        className="mt-1 h-5 w-5 text-orange-600 rounded focus:ring-orange-500 border-gray-300"
+                        onChange={(e) => onChange('acceptedPrivacy', e.target.checked)}
+                        checked={data.acceptedPrivacy || false}
+                    />
+                    <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
+                        Acepto la <a href="/privacidad" target="_blank" className="text-orange-600 font-bold hover:underline">Política de Privacidad</a> *
+                    </span>
+                </label>
+            </div>
+
+            <div className="pt-6 flex justify-end">
                 <button
                     type="submit"
-                    className="bg-orange-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-orange-700 transition shadow-lg"
+                    disabled={!data.acceptedTerms || !data.acceptedPrivacy}
+                    className={`px-8 py-3 rounded-xl font-black text-sm uppercase tracking-widest transition-all shadow-lg ${data.acceptedTerms && data.acceptedPrivacy
+                        ? 'bg-orange-600 text-white hover:bg-orange-700 hover:-translate-y-0.5 active:scale-95'
+                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        }`}
                 >
-                    Siguiente: Especialidad ➡️
+                    Siguiente etapa ➡️
                 </button>
             </div>
         </form>

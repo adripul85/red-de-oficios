@@ -16,23 +16,35 @@ const urlRubro = searchParams.get("rubro") || "";
 // 2. BUSCAR EN FIREBASE
 let resultadosFinales: any[] = [];
 let aiResults: any[] = [];
+let isNearbySearch = false;
+let fallbackZoneName = "";
+
+const snapshot = await getDocs(collection(db, "profesionales"));
+const todosLosPros = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
 if (useAI && q && q !== "todos") {
   try {
     console.log("🚀 [AI SEARCH] Intentando búsqueda semántica para:", q);
-    aiResults = await findProfessionalsByDescription(q);
-    resultadosFinales = aiResults;
+    aiResults = await findProfessionalsByDescription(q, urlUbicacion);
+    // Filtrar AI results con lógica normal para asegurar zona/rubro si se pasaron por URL
+    resultadosFinales = filterNormal(aiResults, q, urlUbicacion, urlRubro);
   } catch (error) {
     console.error("❌ [AI SEARCH] Error:", error);
-    // Fallback a búsqueda normal si falla la IA
-    const snapshot = await getDocs(collection(db, "profesionales"));
-    const todos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    resultadosFinales = filterNormal(todos, q, urlUbicacion, urlRubro);
+    resultadosFinales = filterNormal(todosLosPros, q, urlUbicacion, urlRubro);
   }
 } else {
-  const snapshot = await getDocs(collection(db, "profesionales"));
-  const todos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-  resultadosFinales = filterNormal(todos, q, urlUbicacion, urlRubro);
+  resultadosFinales = filterNormal(todosLosPros, q, urlUbicacion, urlRubro);
+}
+
+// 3. FALLBACK CERCANO: Si no hay resultados y habia una zona especifica
+if (resultadosFinales.length === 0 && urlUbicacion) {
+    const zoneObj = LOCATIONS.find(g => g.zones.some(z => z.toLowerCase() === urlUbicacion.toLowerCase()));
+    if (zoneObj) {
+        isNearbySearch = true;
+        fallbackZoneName = zoneObj.group;
+        // Buscar todos en la misma PROVINCIA/GRUPO que coincidan con el rubro
+        resultadosFinales = filterNormal(todosLosPros, q, zoneObj.group, urlRubro);
+    }
 }
 
 function filterNormal(todos: any[], queryText: string, ubi: string, rub: string) {
@@ -47,7 +59,16 @@ function filterNormal(todos: any[], queryText: string, ubi: string, rub: string)
         if (ubi) {
             const zonaPro = (pro.zona || "").toLowerCase();
             const targetZona = ubi.toLowerCase();
-            if (!zonaPro.includes(targetZona) && !targetZona.includes(zonaPro)) match = false;
+            // Match exacto o si la zona del pro contiene la ubi (o viceversa para provincias)
+            if (!zonaPro.includes(targetZona) && !targetZona.includes(zonaPro)) {
+                // Check if the pro is in a zone that belongs to the group 'ubi'
+                const groupObj = LOCATIONS.find(g => g.group.toLowerCase() === targetZona);
+                if (groupObj) {
+                    if (!groupObj.zones.some(z => z.toLowerCase() === zonaPro)) match = false;
+                } else {
+                    match = false;
+                }
+            }
         }
         if (rub) {
             const rubros = [pro.rubro_principal, ...(pro.rubros || [])].filter(Boolean).map(r => r.toLowerCase());
@@ -164,8 +185,24 @@ class="max-w-[1440px] mx-auto px-6 lg:px-20 py-10 font-sans min-h-screen"
         {q === "todos" ? "Todos los Profesionales" : q}
       </h1>
       <p class="text-gray-500 font-medium tracking-tight">
-{resultados.length} profesionales certificados disponibles
+        {resultados.length} profesionales certificados disponibles
       </p>
+      
+      {isNearbySearch && (
+        <div class="mt-4 p-4 bg-orange-50 border-l-4 border-orange-500 rounded-r-xl shadow-sm animate-fade-in">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">📍</span>
+                <div>
+                    <p class="text-orange-900 font-bold text-sm">
+                        No encontramos resultados exactos en **{urlUbicacion}**
+                    </p>
+                    <p class="text-orange-700 text-xs">
+                        Mostrando profesionales en zonas cercanas de **{fallbackZoneName}**.
+                    </p>
+                </div>
+            </div>
+        </div>
+      )}
       <div class="flex flex-col md:flex-row gap-4 mt-8">
         <!-- Barra de búsqueda interna -->
         <div class="relative flex-1 max-w-lg">
@@ -392,7 +429,7 @@ data-search={`${p.nombre} ${p.rubro_principal} ${(p.rubros || []).join(" ")} ${p
                       star
                     </span>
                     <span class="text-base font-black text-neutral-black">
-                      {(p.promedio || 5.0).toFixed(1)}
+                      {(p.promedio || 3.0).toFixed(1)}
                     </span>
                   </div>
                   <span class="text-[11px] text-gray-400 font-bold uppercase tracking-widest">
@@ -434,10 +471,14 @@ data-search={`${p.nombre} ${p.rubro_principal} ${(p.rubros || []).join(" ")} ${p
                     <span class="text-lg font-black text-neutral-black">
                       GRATIS
                     </span>
+                  ) : p.precio_visita ? (
+                    <span class="text-lg font-black text-neutral-black">
+                      ${Number(p.precio_visita).toLocaleString('es-AR')}
+                      <span class="text-xs font-bold text-gray-400"> visita</span>
+                    </span>
                   ) : (
                     <span class="text-lg font-black text-neutral-black">
-                      $3.500
-                      <span class="text-xs font-bold text-gray-400">/h</span>
+                      Consultar
                     </span>
                   )}
                 </div>
