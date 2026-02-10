@@ -29,10 +29,10 @@ export function calculateRankingScore(proData: any) {
         score += votosScore;
     }
 
-    // 3. NIVEL GAMIFICACIÓN (Max 100)
-    // Usamos el XP real si existe, sino un cálculo aproximado
-    const xp = proData.experiencePoints || 0;
-    const { current } = calculateLevel(xp);
+    // 3. PUNTOS Y NIVEL (Max 100)
+    // Usamos el campo 'puntos' sugerido por el usuario
+    const puntos = proData.puntos || 0;
+    const { current } = calculateLevel(puntos);
 
     switch (current.name.split(' ')[0]) { // "Maestro", "Experto", etc
         case "Maestro": score += 100; break;
@@ -43,14 +43,18 @@ export function calculateRankingScore(proData: any) {
     }
 
     // 4. VERIFICACIÓN & PERFIL (Max 100)
-    if (proData.verificado) score += 50;
+    if (proData.verificado || proData.is_verified) score += 50;
     if (proData.foto && !proData.foto.includes("ui-avatars")) score += 30;
-    if (proData.ubicacion_exacta) score += 20;
+    if (proData.ubicacion_exacta || proData.zona) score += 20;
 
     // 5. PENALIZACIÓN POR LÍMITE (Smart Blocking)
-    // Si es Plan Semilla y superó el límite de 60 contactos, penalizar fuertemente
-    if ((proData.plan === "semilla" || !proData.plan) && (proData.contactos_whatsapp_mes >= 60)) {
-        score -= 1000; // Lo manda al final de los resultados
+    // Si es Plan Semilla/Prueba y superó el límite de 60 contactos LIFETIME, penalizar
+    const plan = proData.plan || "semilla";
+    const esGratuito = plan === "semilla" || plan === "prueba";
+    const totalContactos = proData.contactos_whatsapp_total || 0;
+
+    if (esGratuito && totalContactos >= 60) {
+        score -= 1000; // Al final de los resultados
     }
 
     return Math.max(0, Math.round(score));

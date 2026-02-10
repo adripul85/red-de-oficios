@@ -6,6 +6,7 @@ import ProfileCardPreview from './ProfileCardPreview';
 import { auth, db } from '../../firebase/client';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import { calcularPuntosIniciales } from '../../utils/gamification';
 
 export default function RegistrationWizard() {
     const [step, setStep] = useState(1);
@@ -133,9 +134,19 @@ export default function RegistrationWizard() {
             profileData.rol = 'profesional';
 
             // Initial score and usage limits
+            profileData.puntos = calcularPuntosIniciales(profileData); // 👈 Calculamos puntos iniciales
             profileData.promedio = 3.0; // Request: start at 3.0
             profileData.total_votos = 0;
-            profileData.whatsapp_restantes = 20; // Seed plan limit
+            profileData.whatsapp_restantes = 60; // Lifetime base 60
+            profileData.contactos_whatsapp_total = 0;
+
+            // 90 days trial logic
+            const fechaRegistro = new Date();
+            const fechaVencimientoPrueba = new Date();
+            fechaVencimientoPrueba.setDate(fechaRegistro.getDate() + 90); // 👈 90 días exactos
+
+            profileData.plan = "prueba";
+            profileData.trialEndsAt = fechaVencimientoPrueba;
 
             // 3. Save to Firestore
             console.log("💾 [FIRESTORE] Guardando perfil...");

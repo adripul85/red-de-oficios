@@ -478,7 +478,7 @@ const schemaData = {
                                         </button>
                                      )}
                                      
-                                     {profesional.servicios_lista?.length > 0 && profesional.plan !== "semilla" && (
+                                     {profesional.servicios_lista?.length > 0 && (profesional.plan === "experto" || profesional.plan === "semestral") && (
                                         <button onclick="window.openBudgetModal()" class="w-full flex items-center justify-center gap-3 bg-slate-400 text-white rounded-xl py-4.5 font-black shadow-lg hover:bg-primary transition-all text-base h-16">
                                             <span class="text-2xl">📄</span> Ver Presupuestos
                                         </button>
@@ -592,6 +592,7 @@ const schemaData = {
         import L from "leaflet";
         import "leaflet/dist/leaflet.css";
         import { jsPDF } from "jspdf";
+        import { registrarClickWhatsApp } from '../scripts/plan-restrictions.js';
 
         document.addEventListener("astro:page-load", async () => {
             // --- MAP LOGIC (Moved here to use imported Leaflet) ---
@@ -662,67 +663,13 @@ const schemaData = {
                 } catch(e) {}
             }
 
-            // Centralized Tracking Function
-            const trackWhatsApp = async (proId, proName, whatsapp) => {
-                if (!proId) return;
-
-                try {
-                    const response = await fetch('/api/track-click', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ uid: proId })
-                    });
-
-                    const result = await response.json();
-
-                    if (result.status === 'bloqueado') {
-                        // @ts-ignore
-                        const Swal = window.Swal;
-                        if (Swal) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Perfil en Pausa',
-                                html: `
-                                    <div class="text-left space-y-3 p-2">
-                                        <p class="text-slate-600">Este profesional ha alcanzado su límite mensual de contactos gratuitos.</p>
-                                        <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
-                                            <p class="text-xs font-bold text-red-800 uppercase tracking-wider mb-1">Nota para el profesional</p>
-                                            <p class="text-sm text-red-700">Has llegado a los 60 contactos. Tu perfil permanecerá oculto de los resultados principales hasta que actualices tu plan.</p>
-                                        </div>
-                                    </div>
-                                `,
-                                confirmButtonText: 'Ver Planes',
-                                showCancelButton: true,
-                                cancelButtonText: 'Cerrar',
-                                confirmButtonColor: '#ea580c'
-                            }).then((res) => {
-                                if (res.isConfirmed) window.location.href = '/planes';
-                            });
-                        }
-                        return false;
-                    }
-
-                    if (result.status === 'aviso') {
-                        console.warn("⚠️ Aviso de límite:", result.quedan, "clicks restantes");
-                    }
-
-                    // Log contact event (Legacy/Extra logging)
-                    const user = auth.currentUser;
-                    await addDoc(collection(db, "contactos"), {
-                        proId: proId,
-                        proNombre: proName,
-                        clienteId: user?.uid || "anonimo",
-                        clienteNombre: user?.displayName || "Anonimo",
-                        fecha: serverTimestamp(),
-                        visto: false,
-                    });
-                    
-                    return true;
-                } catch (err) {
-                    console.error("❌ [TRACK] Error incrementando contador:", err);
-                    return true; // No bloquear la experiencia si falla la API
-                }
-            };
+            // Centralized Tracking is now handled by registrarClickWhatsApp
+            // @ts-ignore
+            window.registrarClickWhatsApp = registrarClickWhatsApp;
+            
+            // Register local trackWhatsApp for legacy if any (optional)
+            // @ts-ignore
+            window.registrarClickWhatsApp = registrarClickWhatsApp;
 
             // WhatsApp Contact Logic for Directory Buttons
             if (contactButtons.length > 0) {
@@ -736,7 +683,7 @@ const schemaData = {
 
                         if (!proId || !proName || !whatsapp) return;
 
-                        const tracked = await trackWhatsApp(proId, proName, whatsapp);
+                        const tracked = await registrarClickWhatsApp(proId);
                         if (!tracked) return;
 
                         const waUrl = `https://wa.me/549${whatsapp}?text=${encodeURIComponent(`Hola ${proName}, te contacto desde DeOficios.`)}`;
@@ -752,11 +699,14 @@ const schemaData = {
             if (landingBtn) {
                 landingBtn.addEventListener("click", async (e) => {
                     // El botón ya tiene href con target="_blank", solo trackeamos
-                    const proName = landingBtn.getAttribute("data-pro-name") || idNameFromDataset || "el profesional";
                     const proId = landingBtn.getAttribute("data-pro-id") || idProfesional;
-                    const whatsapp = landingBtn.getAttribute("data-whatsapp");
+                    const proName = landingBtn.getAttribute("data-pro-name") || "el profesional";
 
-                    await trackWhatsApp(proId, proName, whatsapp);
+                    const tracked = await registrarClickWhatsApp(proId);
+                    if (!tracked) {
+                        e.preventDefault();
+                        return;
+                    }
                     
                     handleFeedbackModal(proName);
                 });
@@ -1063,3 +1013,52 @@ const schemaData = {
     </div>
 
 </Layout>
+<script is:inline>
+  // Script de respaldo y verificación inmediata
+  async function registrarClickWhatsAppGlobal(uid) {
+    console.log("🚀 [TRACK-DEBUG] Registrando click para:", uid);
+    
+    try {
+      const response = await fetch('/api/track-click', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const display = document.getElementById('clicks-current');
+        const progress = document.getElementById('clicks-progress');
+        if (display) display.innerText = data.actual;
+        if (progress) {
+            const pct = Math.min((data.actual / 60) * 100, 100);
+            progress.style.width = pct + "%";
+        }
+        console.log("✅ [TRACK-DEBUG] Nuevo valor:", data.actual);
+        return true;
+      }
+      
+      if (response.status === 403) {
+        // @ts-ignore
+        if (window.Swal) {
+             window.Swal.fire({
+                icon: 'error',
+                title: 'Perfil en Pausa',
+                text: 'Este profesional ha alcanzado su límite de 60 contactos gratuitos.',
+                confirmButtonText: 'Ver Planes',
+                confirmButtonColor: '#ea580c'
+            }).then(r => { if(r.isConfirmed) window.location.href = "/planes" });
+        } else {
+            alert("Límite de 60 clicks alcanzado.");
+            window.location.href = "/planes";
+        }
+        return false;
+      }
+    } catch (error) {
+      console.error("❌ [TRACK-DEBUG] Error:", error);
+      return true;
+    }
+  }
+</script>
+

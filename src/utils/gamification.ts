@@ -1,11 +1,63 @@
-
 export const LEVELS = [
     { name: "Novato 🌱", threshold: 0, benefits: "Acceso básico" },
-    { name: "Aprendiz 🔨", threshold: 1000, benefits: "Badge en perfil" },
-    { name: "Profesional 👷", threshold: 3500, benefits: "+5% Boost en Ranking" },
-    { name: "Experto 🦁", threshold: 8000, benefits: "+10% Boost + Descuento 10%" },
-    { name: "Maestro 👑", threshold: 15000, benefits: "Destacado Home + Descuento 20%" }
+    { name: "Aprendiz 🔨", threshold: 10, benefits: "Badge en perfil" },
+    { name: "Profesional 👷", threshold: 25, benefits: "+5% Boost en Ranking" },
+    { name: "Experto 🦁", threshold: 50, benefits: "+10% Boost + Descuento 10%" },
+    { name: "Maestro 👑", threshold: 100, benefits: "Destacado Home + Descuento 20%" }
 ];
+
+export const PUNTOS_RECOMPENSA = {
+    VERIFICAR_EMAIL: 1,
+    PRIMERA_FOTO_PORTFOLIO: 2,
+    PERFIL_COMPLETO: 2, // Descripción + Datos básicos
+};
+
+export const PUNTAJE_MINIMO = 0;
+
+/**
+ * Calcula los puntos ganados basados en las acciones realizadas
+ * @param userData El objeto del usuario de Firestore
+ */
+export const calcularPuntosIniciales = (userData: any): number => {
+    let totalPuntos = 0;
+
+    if (userData.emailVerified) totalPuntos += PUNTOS_RECOMPENSA.VERIFICAR_EMAIL;
+    if (userData.portfolio && userData.portfolio.length > 0) totalPuntos += PUNTOS_RECOMPENSA.PRIMERA_FOTO_PORTFOLIO;
+    if (userData.descripcion && userData.descripcion.length > 50) totalPuntos += PUNTOS_RECOMPENSA.PERFIL_COMPLETO;
+
+    return totalPuntos;
+};
+
+/**
+ * Función para restar puntos (Denuncias o Cancelaciones)
+ */
+export const penalizarPuntos = (puntosActuales: number, penalizacion: number): number => {
+    const resultado = puntosActuales - penalizacion;
+    return resultado < PUNTAJE_MINIMO ? PUNTAJE_MINIMO : resultado;
+};
+
+/**
+ * Función para recompensar una acción del profesional
+ * @param userId ID del profesional
+ * @param puntos Puntos a sumar
+ */
+export const recompensarAccion = async (userId: string, puntos: number) => {
+    try {
+        const { db } = await import('../firebase/client');
+        const { doc, updateDoc, increment } = await import('firebase/firestore');
+
+        const userRef = doc(db, "profesionales", userId);
+        await updateDoc(userRef, {
+            puntos: increment(puntos)
+        });
+
+        console.log(`⭐ [GAMIFICATION] +${puntos} puntos para ${userId}`);
+        return true;
+    } catch (e) {
+        console.error("❌ [GAMIFICATION] Error penalizando/recompensando:", e);
+        return false;
+    }
+};
 
 export const XP_TABLE = {
     VERIFY_IDENTITY: 1000,

@@ -1256,6 +1256,7 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
     import {
         doc as fireDoc,
         getDoc,
+        onSnapshot,
         updateDoc,
         arrayUnion,
         arrayRemove,
@@ -1263,6 +1264,7 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
     } from "firebase/firestore";
     import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
     import { CATEGORIES } from "../data/categories";
+    import { recompensarAccion, PUNTOS_RECOMPENSA } from "../utils/gamification";
 
     // --- 1. HELPERS Y RENDER FUNCTIONS (HOISTING FIX) ---
     const setVal = (id, v) => {
@@ -1576,7 +1578,10 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
         const counter = document.getElementById("click-counter");
         if (!counter) return; 
         
-        if (userPlan !== "semilla") {
+        // Determinar plan desde userData global si está disponible
+        const currentPlan = (typeof userData !== 'undefined' && userData?.plan) || "semilla";
+        
+        if (currentPlan !== "semilla") {
             counter.classList.add("hidden");
             return;
         }
@@ -1763,26 +1768,24 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
             "San Rafael",
         ],
         Tucumán: ["San Miguel de Tucumán", "Yerba Buena", "Tafí Viejo"],
-        "Resto del País": [
-            "Salta",
-            "Misiones",
-            "Chaco",
-            "Corrientes",
-            "Entre Ríos",
-            "San Juan",
-            "San Luis",
-            "Neuquén",
-            "Río Negro",
-            "Chubut",
-            "Santa Cruz",
-            "Tierra del Fuego",
-            "La Pampa",
-            "Santiago del Estero",
-            "Catamarca",
-            "La Rioja",
-            "Jujuy",
-            "Formosa",
-        ],
+        "Salta": ["Salta Capital", "San Lorenzo", "Cafayate", "Metán", "Orán"],
+        "Misiones": ["Posadas", "Puerto Iguazú", "Oberá", "Eldorado"],
+        "Chaco": ["Resistencia", "Presidencia Roque Sáenz Peña", "Villa Ángela"],
+        "Corrientes": ["Corrientes Capital", "Goya", "Paso de los Libres", "Curuzú Cuatiá"],
+        "Entre Ríos": ["Paraná", "Concordia", "Gualeguaychú", "Concepción del Uruguay"],
+        "San Juan": ["San Juan Capital", "Rawson", "Chimbas", "Santa Lucía"],
+        "San Luis": ["San Luis Capital", "Villa Mercedes", "Merlo"],
+        "Neuquén": ["Neuquén Capital", "Cutral Có", "San Martín de los Andes", "Villa La Angostura"],
+        "Río Negro": ["San Carlos de Bariloche", "Cipolletti", "General Roca", "Viedma"],
+        "Chubut": ["Comodoro Rivadavia", "Trelew", "Puerto Madryn", "Rawson", "Esquel"],
+        "Santa Cruz": ["Río Gallegos", "El Calafate", "Caleta Olivia", "Puerto Deseado"],
+        "Tierra del Fuego": ["Ushuaia", "Río Grande", "Tolhuin"],
+        "La Pampa": ["Santa Rosa", "General Pico", "Toay"],
+        "Santiago del Estero": ["Santiago del Estero Capital", "La Banda", "Termas de Río Hondo"],
+        "Catamarca": ["San Fernando del Valle de Catamarca", "Valle Viejo", "Recreo"],
+        "La Rioja": ["La Rioja Capital", "Chilecito", "Aimogasta"],
+        "Jujuy": ["San Salvador de Jujuy", "Palpalá", "San Pedro de Jujuy", "Tilcara"],
+        "Formosa": ["Formosa Capital", "Clorinda", "Pirané"],
     };
 
     // RUBROS se importa de categories.ts ahora
@@ -1914,7 +1917,6 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                 });
             }
         });
-    });
 
     function initSelects() {
         const selRubro = document.getElementById("rubro_select");
@@ -2045,6 +2047,19 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                 campos: Object.keys(data).length,
             });
             userData = data;
+
+            // --- REAL-TIME UPDATES ---
+            onSnapshot(docRef, (snap) => {
+                if (snap.exists()) {
+                    const freshData = snap.data();
+                    userData = freshData;
+                    // Update counter and bar in real-time
+                    updateClickCounter(freshData.contactos_whatsapp_total || 0);
+                    // Update other minor UI parts if needed
+                    const barCurrent = document.getElementById("clicks-current");
+                    if (barCurrent) barCurrent.innerText = freshData.contactos_whatsapp_total || 0;
+                }
+            });
 
             // ⏰ VERIFICAR EXPIRACIÓN DEL PLAN
             if (data.plan_vencimiento && data.plan !== "semilla") {
@@ -2214,7 +2229,7 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                 }
             }
 
-            updateClickCounter(data.contactos_whatsapp_mes || 0);
+            updateClickCounter(data.contactos_whatsapp_total || 0);
 
             if (data.rol === "admin")
                 document
@@ -2730,6 +2745,18 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
             }
 
             await updateDoc(fireDoc(db, "profesionales", currentUserUid), updates);
+
+            // ⭐ [GAMIFICATION] Recompensa por Descripción
+            if (updates.descripcion && updates.descripcion.length > 50) {
+                const recompensas = userData.recompensas_obtenidas || [];
+                if (!recompensas.includes("descripcion_completa")) {
+                    await recompensarAccion(currentUserUid, PUNTOS_RECOMPENSA.PERFIL_COMPLETO);
+                    await updateDoc(fireDoc(db, "profesionales", currentUserUid), {
+                        recompensas_obtenidas: arrayUnion("descripcion_completa")
+                    });
+                }
+            }
+
             // @ts-ignore
             Swal.fire({
                 icon: "success",
@@ -3108,6 +3135,19 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                             ...formValues,
                             createdAt: new Date()
                         };
+
+                        // ⭐ [GAMIFICATION] Recompensa por Primera Foto
+                        const currentPortfolio = userData.portfolio || [];
+                        if (currentPortfolio.length === 0) {
+                            const recompensas = userData.recompensas_obtenidas || [];
+                            if (!recompensas.includes("primera_foto_portfolio")) {
+                                await recompensarAccion(currentUserUid, PUNTOS_RECOMPENSA.PRIMERA_FOTO_PORTFOLIO);
+                                await updateDoc(fireDoc(db, "profesionales", currentUserUid), {
+                                    recompensas_obtenidas: arrayUnion("primera_foto_portfolio")
+                                });
+                            }
+                        }
+
                         await updateDoc(fireDoc(db, "profesionales", currentUserUid), {
                             portfolio: arrayUnion(newItem),
                         });

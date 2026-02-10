@@ -450,7 +450,7 @@ import ModernProfileCard from "../components/ModernProfileCard.astro";
                                 </button>
                             )}
 
-                            {profesional.servicios_lista?.length > 0 && profesional.plan !== "semilla" && (
+                            {profesional.servicios_lista?.length > 0 && (profesional.plan === "experto" || profesional.plan === "semestral") && (
                                 <button
                                     id="btn-generate-pdf-sidebar"
                                     class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-orange-200 transition transform hover:-translate-y-1 flex items-center justify-center gap-2"
@@ -1136,6 +1136,7 @@ import ModernProfileCard from "../components/ModernProfileCard.astro";
         updateDoc,
         increment,
     } from "firebase/firestore";
+    import { registrarClickWhatsApp } from '../scripts/plan-restrictions.js';
 
     document.addEventListener("astro:page-load", () => {
         console.log("🚀 [PERFIL-IMPORT] Página cargada/navegada");
@@ -1147,54 +1148,20 @@ import ModernProfileCard from "../components/ModernProfileCard.astro";
         // @ts-ignore
         window.trackClick = async () => {
             if (!idPro) return;
-            
-            try {
-                const response = await fetch('/api/track-click', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ uid: idPro })
-                });
-
-                const result = await response.json();
-
-                if (result.status === 'bloqueado') {
-                    // @ts-ignore
-                    const Swal = window.Swal;
-                    if (Swal) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Perfil en Pausa',
-                            html: `
-                                <div class="text-left space-y-3 p-2">
-                                    <p class="text-slate-600">Este profesional ha alcanzado su límite mensual de contactos gratuitos.</p>
-                                    <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
-                                        <p class="text-xs font-bold text-red-800 uppercase tracking-wider mb-1">Nota para el profesional</p>
-                                        <p class="text-sm text-red-700">Has llegado a los 60 contactos. Tu perfil permanecerá oculto de los resultados principales hasta que actualices tu plan.</p>
-                                    </div>
-                                </div>
-                            `,
-                            confirmButtonText: 'Ver Planes',
-                            showCancelButton: true,
-                            cancelButtonText: 'Cerrar',
-                            confirmButtonColor: '#ea580c'
-                        }).then((res) => {
-                            if (res.isConfirmed) window.location.href = '/planes';
-                        });
-                    }
-                    return false;
-                }
-
-                if (result.status === 'aviso') {
-                    console.warn("⚠️ Aviso de límite:", result.quedan, "clicks restantes");
-                }
-
-                console.log("✅ [TRACK] Incremento exitoso");
-                return true;
-            } catch (err) {
-                console.error("❌ [TRACK] Error incrementando contador:", err);
-                return true;
-            }
+            return await registrarClickWhatsApp(idPro);
         };
+
+        const landingBtn = document.getElementById("btn-whatsapp-landing");
+        if (landingBtn) {
+            landingBtn.addEventListener("click", async (e) => {
+                const proId = landingBtn.getAttribute("data-pro-id") || idPro;
+                const tracked = await registrarClickWhatsApp(proId);
+                if (!tracked) {
+                    e.preventDefault();
+                    return;
+                }
+            });
+        }
 
         if (idPro) {
             const list = document.getElementById("reviews-list");
@@ -1658,4 +1625,52 @@ import ModernProfileCard from "../components/ModernProfileCard.astro";
             }
         });
     });
+</script>
+<script is:inline>
+  // Script de respaldo y verificación inmediata
+  async function registrarClickWhatsAppGlobal(uid) {
+    console.log("🚀 [TRACK-DEBUG] Registrando click para:", uid);
+    
+    try {
+      const response = await fetch('/api/track-click', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const display = document.getElementById('clicks-current');
+        const progress = document.getElementById('clicks-progress');
+        if (display) display.innerText = data.actual;
+        if (progress) {
+            const pct = Math.min((data.actual / 60) * 100, 100);
+            progress.style.width = pct + "%";
+        }
+        console.log("✅ [TRACK-DEBUG] Nuevo valor:", data.actual);
+        return true;
+      }
+      
+      if (response.status === 403) {
+        // @ts-ignore
+        if (window.Swal) {
+             window.Swal.fire({
+                icon: 'error',
+                title: 'Perfil en Pausa',
+                text: 'Has alcanzado el límite de 60 contactos gratuitos.',
+                confirmButtonText: 'Ver Planes',
+                confirmButtonColor: '#ea580c'
+            }).then(r => { if(r.isConfirmed) window.location.href = "/planes" });
+        } else {
+            alert("Límite de 60 clicks alcanzado.");
+            window.location.href = "/planes";
+        }
+        return false;
+      }
+    } catch (error) {
+      console.error("❌ [TRACK-DEBUG] Error:", error);
+      return true;
+    }
+  }
 </script>

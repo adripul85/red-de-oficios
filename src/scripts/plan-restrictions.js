@@ -242,3 +242,69 @@ export async function initPlanRestrictions() {
         console.error('❌ Error restricciones:', e);
     }
 }
+
+/**
+ * Registrar Click en WhatsApp y actualizar UI en tiempo real
+ */
+export async function registrarClickWhatsApp(uid) {
+    try {
+        const response = await fetch('/api/track-click', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Actualizar el número en pantalla (Sidebar)
+            const display = document.getElementById('clicks-current');
+            const progress = document.getElementById('clicks-progress');
+            const remaining = document.getElementById('clicks-remaining');
+
+            if (display && data.actual !== undefined) {
+                display.innerText = data.actual;
+            }
+            if (remaining && data.quedan !== undefined) {
+                remaining.innerText = data.quedan;
+            }
+            if (progress && data.actual !== undefined) {
+                const pct = Math.min((data.actual / 60) * 100, 100);
+                progress.style.width = `${pct}%`;
+                if (data.actual >= 60) {
+                    progress.classList.remove("from-blue-500", "to-blue-600");
+                    progress.classList.add("bg-red-500");
+                } else if (data.actual >= 50) {
+                    progress.classList.remove("from-blue-500", "to-blue-600");
+                    progress.classList.add("bg-amber-500");
+                }
+            }
+
+            return true; // Todo bien, puede ir a WhatsApp
+        }
+
+        if (response.status === 403) {
+            // @ts-ignore
+            const Swal = window.Swal;
+            if (Swal) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Límite alcanzado',
+                    text: 'Has alcanzado el límite de 60 contactos. Pásate a un plan premium para recibir más clientes.',
+                    confirmButtonText: 'Ver Planes',
+                    confirmButtonColor: '#ea580c'
+                }).then((res) => {
+                    if (res.isConfirmed) window.location.href = '/planes';
+                });
+            } else {
+                alert("Has alcanzado el límite de 60 contactos. Pásate a un plan premium.");
+                window.location.href = "/planes";
+            }
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.error("Error track-click:", error);
+        return true; // Dejar pasar si falla la API
+    }
+}

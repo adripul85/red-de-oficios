@@ -1,9 +1,10 @@
 import type { APIRoute } from "astro";
 import { dbAdmin } from "../../firebase/admin";
+import admin from "firebase-admin";
 
 export const POST: APIRoute = async ({ request }) => {
     try {
-        const { uid } = await request.json();
+        const { uid, clienteId, clienteNombre } = await request.json();
 
         if (!uid) {
             return new Response(JSON.stringify({ error: "Falta uid" }), { status: 400 });
@@ -19,56 +20,47 @@ export const POST: APIRoute = async ({ request }) => {
         const data = doc.data();
         const plan = data?.plan || "semilla";
 
-        // Verificar si necesita reset mensual
-        const ahora = new Date();
-        const ultimoReset = data?.ultimo_reset_clicks?.toDate() || new Date(0);
-        const mesActual = ahora.getMonth();
-        const mesReset = ultimoReset.getMonth();
-
-        let clicksMes = data?.contactos_whatsapp_mes || 0;
-
-        if (mesActual !== mesReset) {
-            // Nuevo mes, resetear contador
-            clicksMes = 0;
+        // --- REGISTRO DE CONTACTO ---
+        try {
+            await dbAdmin.collection("contactos").add({
+                proId: uid,
+                proNombre: data?.nombre || "Profesional",
+                clienteId: clienteId || "anonimo",
+                clienteNombre: clienteNombre || "Anonimo",
+                fecha: new Date(),
+                visto: false,
+            });
+        } catch (e) {
+            console.error("⚠️ Error guardando log de contacto:", e);
         }
 
-        const nuevosClicks = clicksMes + 1;
+        // --- CONTADOR LIFETIME ---
+        const totalActual = data?.contactos_whatsapp_total || 0;
+        const nuevoTotal = totalActual + 1;
 
-        // Actualizar contadores
+        // Si el usuario es gratuito (semilla/prueba) y ya llegó al límite, bloqueamos (403)
+        const esGratuito = plan === "semilla" || plan === "prueba";
+
+        if (esGratuito && totalActual >= 60) {
+            return new Response(JSON.stringify({
+                status: 'bloqueado',
+                actual: totalActual,
+                quedan: 0,
+                message: 'Límite total alcanzado (60/60). Pásate a Premium para seguir recibiendo clientes.'
+            }), { status: 403 });
+        }
+
         const updateData: any = {
-            contacto_clicks: (data?.contacto_clicks || 0) + 1,
-            ultimo_reset_clicks: ahora,
+            contactos_whatsapp_total: admin.firestore.FieldValue.increment(1),
+            ultima_interaccion: admin.firestore.FieldValue.serverTimestamp(),
         };
-
-        if (plan === "semilla") {
-            updateData.contactos_whatsapp_mes = nuevosClicks;
-        }
 
         await profRef.update(updateData);
 
-        // Lógica de respuesta basada en límites
-        if (plan === "semilla") {
-            if (nuevosClicks >= 60) {
-                return new Response(JSON.stringify({
-                    status: 'bloqueado',
-                    clicks_mes: nuevosClicks,
-                    message: 'Límite mensual alcanzado (60/60). Pásate a Premium para seguir recibiendo clientes.'
-                }), { status: 403 });
-            }
-
-            if (nuevosClicks >= 50) {
-                return new Response(JSON.stringify({
-                    status: 'aviso',
-                    clicks_mes: nuevosClicks,
-                    quedan: 60 - nuevosClicks
-                }), { status: 200 });
-            }
-        }
-
         return new Response(JSON.stringify({
-            ok: true,
             status: 'ok',
-            clicks_mes: nuevosClicks
+            actual: nuevoTotal,
+            quedan: Math.max(0, 60 - nuevoTotal)
         }), { status: 200 });
 
     } catch (error: any) {
