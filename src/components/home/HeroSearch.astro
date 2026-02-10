@@ -1,6 +1,6 @@
 ---
 // Recibir tendencias como prop desde index.astro
-const { trends } = Astro.props;
+const { trends, totalWorkers } = Astro.props;
 import { Mic } from "lucide-astro";
 
 
@@ -45,7 +45,7 @@ if (!trendingTags || trendingTags.length === 0) {
 
   <!-- Contenido izquierdo -->
   <div
-    class="w-full md:w-1/2 flex flex-col justify-center items-center px-6 md:px-20 py-8 md:py-12 z-10 bg-white -mt-12 md:-mt-20"
+    class="w-full md:w-1/2 flex flex-col justify-center items-center px-6 md:px-8 lg:px-20 py-8 md:py-12 z-10 bg-white -mt-12 md:-mt-20"
   >
     <div class="w-full max-w-xl">
       <h1
@@ -55,8 +55,7 @@ if (!trendingTags || trendingTags.length === 0) {
         <br /> que necesitás.
       </h1>
       <p class="text-slate-500 text-lg mb-8">
-        Plomeros, electricistas y más de <strong>62.000 profesionales</strong> verificados.
-
+        Plomeros, electricistas y más de <strong>{totalWorkers ? totalWorkers.toLocaleString() : "..."} trabajadores</strong> verificados.
       </p>
 
       <!-- Buscador Premium simplificado - Solo Servicio -->

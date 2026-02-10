@@ -427,24 +427,16 @@ data-search={`${p.nombre} ${p.rubro_principal} ${(p.rubros || []).join(" ")} ${p
                   )}
                 </div>
                   <div class="flex flex-col items-end gap-1">
-                    <div class="flex items-center text-primary gap-1">
-                      <span class="material-symbols-outlined text-[18px] fill-1">
-                        stars
-                      </span>
-                      <span class="text-xs font-black text-primary uppercase tracking-tighter">
-                        {p.puntos || 0} pts
-                      </span>
-                    </div>
                     <div class="flex items-center text-primary gap-1 justify-end">
                       <span class="material-symbols-outlined text-[20px] fill-1">
                         star
                       </span>
                       <span class="text-base font-black text-neutral-black">
-                        {(p.promedio || 3.0).toFixed(1)}
+                        {(p.puntuacion || p.promedio || 4.0).toFixed(1)}
                       </span>
                     </div>
                     <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none">
-                      {p.total_votos || 0} reviews
+                      {p.total_valoraciones || p.total_votos || 0} reviews
                     </span>
                   </div>
               </div>

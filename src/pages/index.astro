@@ -10,6 +10,7 @@ import {
   where,
   limit,
   orderBy,
+  getCountFromServer,
 } from "firebase/firestore";
 import {
   Search,
@@ -45,7 +46,7 @@ const qTrends = query(
 );
 
 // 2. EJECUCIÓN PARALELA (Optimización clave)
-const [snapDest, snapTop, snapTrends] = await Promise.all([
+const [snapDest, snapTop, snapTrends, totalCountSnap] = await Promise.all([
   getDocs(qDestacados),
   getDocs(qTop).catch((e) => {
     console.warn("Error TopRated", e);
@@ -55,7 +56,10 @@ const [snapDest, snapTop, snapTrends] = await Promise.all([
     console.warn("Error Trends", e);
     return { docs: [] };
   }), // Fail-safe
+  getCountFromServer(collection(db, "profesionales")).catch(() => ({ data: () => ({ count: 0 }) })),
 ]);
+
+const totalWorkers = totalCountSnap.data().count;
 
 // 3. PROCESAMIENTO DE DATOS
 
@@ -94,7 +98,7 @@ if (trendingTags.length === 0) {
 
 <Layout title="DeOficios - Encontrá profesionales de confianza">
   <main>
-    <HeroSearch trends={trendingTags} />
+    <HeroSearch trends={trendingTags} totalWorkers={totalWorkers} />
 
     <CategoryQuickLinks />
 
