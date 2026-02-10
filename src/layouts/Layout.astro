@@ -146,28 +146,28 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
 		<!-- Splash Screen Script -->
 		<script is:inline>
-			// Hide splash screen faster
 			function hideSplash() {
 				const splash = document.getElementById("custom-splash-screen");
 				if (splash) {
 					splash.classList.add("hidden");
-					setTimeout(() => splash.remove(), 400); 
+					setTimeout(() => { if(splash) splash.remove(); }, 600); 
 				}
 			}
 
-			// Solo mostrar en carga inicial dura
-			if (!window.name) {
+			// Failsafe: Siempre ocultar despues de 2.5s si algo falla
+			setTimeout(hideSplash, 2500);
+
+			if (!window.name || window.name === "") {
 				window.name = "app_loaded";
-				document.addEventListener("DOMContentLoaded", () => {
-					setTimeout(hideSplash, 150);
-				});
+				// Escuchar ambos para mayor compatibilidad
+				window.addEventListener("load", hideSplash);
+				document.addEventListener("DOMContentLoaded", hideSplash);
 			} else {
-				// Si ya cargÃ³ antes (navegaciÃ³n interna), ocultar inmediatamente
-				const s = document.getElementById("custom-splash-screen");
-				if (s) s.style.display = 'none';
+				hideSplash();
 			}
 
 			document.addEventListener("astro:page-load", hideSplash);
+			document.addEventListener("astro:after-swap", hideSplash);
 		</script>
 
         <script is:inline>

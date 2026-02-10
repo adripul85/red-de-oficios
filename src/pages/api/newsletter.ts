@@ -30,3 +30,19 @@ export const POST: APIRoute = async ({ request }) => {
         return new Response(JSON.stringify({ error: e.message }), { status: 500 });
     }
 };
+
+export const DELETE: APIRoute = async ({ request }) => {
+    try {
+        const { email } = await request.json();
+        if (!email) return new Response(JSON.stringify({ error: "Email requerido" }), { status: 400 });
+
+        const snap = await dbAdmin.collection("newsletter").where("email", "==", email).get();
+        const batch = dbAdmin.batch();
+        snap.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+
+        return new Response(JSON.stringify({ success: true }), { status: 200 });
+    } catch (e: any) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    }
+};

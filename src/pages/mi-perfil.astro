@@ -2970,6 +2970,16 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                                         return;
                                     }
 
+                                    // Cleanup newsletter
+                                    try {
+                                        await fetch("/api/newsletter", {
+                                            method: "DELETE",
+                                            body: JSON.stringify({ email: user.email })
+                                        });
+                                    } catch (e) {
+                                        console.warn("Newsletter cleanup failed:", e);
+                                    }
+
                                     // Retry delete
                                     await deleteDoc(fireDoc(db, "profesionales", currentUserUid));
                                     await deleteUser(user);
