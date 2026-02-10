@@ -189,7 +189,11 @@ service cloud.firestore {
     // Configuración del sistema (incluye giftcard)
     match /configuracion/{docId} { 
       allow read: if true; // Lectura pública para giftcard
-      allow write: if isStaff(); // Solo admin puede modificar
+      allow write: if isStaff() || (
+        docId == 'giftcard' && 
+        isSignedIn() && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usos'])
+      ); 
     }
     
     // Gift Cards (si usas colección separada)
