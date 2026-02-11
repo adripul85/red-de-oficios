@@ -140,7 +140,14 @@ for (let i = 0; i < levels.length; i++) {
     }
 }
 
-const isBlocked = (profesional.plan === "semilla" || !profesional.plan) && (profesional.contactos_whatsapp_mes >= 60);
+// --- RESTRICCIONES Y BLOQUEO ---
+const now = new Date();
+const trialEndsAt = profesional.trialEndsAt?.toDate ? profesional.trialEndsAt.toDate() : (profesional.trialEndsAt ? new Date(profesional.trialEndsAt) : null);
+const isTrialExpired = profesional.plan === "prueba" && trialEndsAt && trialEndsAt < now;
+const isLimitReached = (profesional.plan === "semilla" || !profesional.plan) && (profesional.contactos_whatsapp_mes >= 60);
+
+const isBlocked = isTrialExpired || isLimitReached;
+const blockReason = isTrialExpired ? "trial_expired" : (isLimitReached ? "limit_reached" : "");
 
 const schemaData = {
     "@context": "https://schema.org",
@@ -232,12 +239,16 @@ const schemaData = {
         mostrarComoLanding ? (
             /* MODO LANDING NUEVO */
             <div id="landing-profile-container" data-id={idProfesional} data-profesional-json={profesionalJson} class="landing-body font-sans min-h-screen bg-slate-100 flex flex-col items-center justify-start py-10 px-4 overflow-x-hidden">
-                <ModernProfileCard
+                  <ModernProfileCard
                     name={profesional.nombre}
-                    role={profesional.seo_profesion || profesional.rubro_principal}
+                    role={
+                        profesional.seo_profesion || profesional.rubro_principal
+                    }
                     avatar={profesional.foto}
                     location={ubicacion}
                     rating={promedio.toFixed(1)}
+                    isBlocked={isBlocked}
+                    blockReason={blockReason}
                     priceInfo={profesional.presupuestos_config?.activo ? "Presupuestos sin cargo" : (profesional.precio_visita ? `Precio visita: $ ${Number(profesional.precio_visita).toLocaleString('es-AR')}` : "Consultar precio")}
                     services={mappedServices}
                     bio={profesional.descripcion}

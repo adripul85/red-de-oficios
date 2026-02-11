@@ -148,6 +148,44 @@ export async function uploadPortfolioImage(file, uid, categoria) {
 }
 
 /**
+ * Sube un archivo genérico a una ruta específica
+ * @param {File} file - Archivo
+ * @param {string} path - Ruta en Storage
+ * @returns {Promise<string>} - URL de descarga
+ */
+export async function uploadFile(file, path) {
+    try {
+        const validation = validateImage(file);
+        if (!validation.valid) throw new Error(validation.error);
+
+        const compressedBlob = await compressImage(file);
+        const storageRef = ref(storage, path);
+
+        await uploadBytes(storageRef, compressedBlob, {
+            contentType: 'image/jpeg'
+        });
+
+        return await getDownloadURL(storageRef);
+    } catch (error) {
+        console.error('Error al subir archivo:', error);
+        throw error;
+    }
+}
+
+/**
+ * Sube una imagen temporal para registro (cuando aún no hay UID)
+ * @param {File} file - Archivo
+ * @param {string} type - 'avatar' o 'portfolio'
+ * @returns {Promise<string>} - URL de descarga
+ */
+export async function uploadAnonymousImage(file, type = 'avatar') {
+    const timestamp = Date.now();
+    const sanitizedName = sanitizeFilename(file.name);
+    const path = `temp_registro/${type}_${timestamp}_${sanitizedName}`;
+    return await uploadFile(file, path);
+}
+
+/**
  * Elimina una imagen del Storage
  * @param {string} imageUrl - URL completa de la imagen
  * @returns {Promise<void>}

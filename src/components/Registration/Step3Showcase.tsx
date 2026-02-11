@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { uploadAnonymousImage } from '../../firebase/storage-utils';
 
 interface Step3Props {
     data: any;
@@ -8,6 +9,32 @@ interface Step3Props {
 }
 
 export default function Step3Showcase({ data, onChange, onSubmit, onBack }: Step3Props) {
+    const [isUploading, setIsUploading] = useState<Record<string, boolean>>({});
+    const profFileRef = useRef<HTMLInputElement>(null);
+    const portFileRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
+
+    const handleUpload = async (file: File, field: string, index?: number) => {
+        if (!file) return;
+
+        const uploadKey = index !== undefined ? `${field}_${index}` : field;
+        setIsUploading(prev => ({ ...prev, [uploadKey]: true }));
+
+        try {
+            const url = await uploadAnonymousImage(file, field === 'foto' ? 'avatar' : 'portfolio');
+
+            if (field === 'foto') {
+                onChange('foto', url);
+            } else if (field === 'portfolio') {
+                const newPhotos = [...(data.portfolio || [])];
+                newPhotos[index!] = url;
+                onChange('portfolio', newPhotos);
+            }
+        } catch (error: any) {
+            alert("Error al subir imagen: " + error.message);
+        } finally {
+            setIsUploading(prev => ({ ...prev, [uploadKey]: false }));
+        }
+    };
 
     const handlePaymentToggle = (method: string) => {
         const current = (data.medios_pago as string[]) || [];
@@ -24,7 +51,7 @@ export default function Step3Showcase({ data, onChange, onSubmit, onBack }: Step
     };
 
     // Check if user is on free plan (default for registration)
-    const isFree = !data.plan || data.plan === 'gratuito';
+    const isFree = !data.plan || data.plan === 'gratuito' || data.plan === 'prueba';
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -85,66 +112,106 @@ export default function Step3Showcase({ data, onChange, onSubmit, onBack }: Step
                 <h3 className="font-bold text-gray-800 mb-3">📸 Tu Imagen</h3>
 
                 <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Foto de Perfil (URL)</label>
-                    <div className="flex items-center space-x-4">
-                        <div className="h-16 w-16 bg-gray-200 rounded-full overflow-hidden flex-shrink-0 border border-gray-300">
+                    <label className="block text-sm font-medium text-gray-700 mb-2 font-bold">Foto de Perfil</label>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                        <div className="h-20 w-20 bg-gray-200 rounded-full overflow-hidden flex-shrink-0 border-2 border-orange-200 relative group">
                             {data.foto ? (
                                 <img src={data.foto} alt="Preview" className="h-full w-full object-cover" />
                             ) : (
-                                <span className="flex items-center justify-center h-full text-gray-400 text-2xl">👤</span>
+                                <span className="flex items-center justify-center h-full text-gray-400 text-3xl">👤</span>
+                            )}
+                            {isUploading['foto'] && (
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                                </div>
                             )}
                         </div>
-                        <input
-                            type="text"
-                            value={data.foto || ''}
-                            onChange={(e) => onChange('foto', e.target.value)}
-                            className="block w-full rounded-md border-gray-300 shadow-sm p-3 border focus:border-orange-500 focus:ring-orange-500"
-                            placeholder="https://... (Pegá el link de tu foto)"
-                        />
+
+                        <div className="flex-1 w-full space-y-2">
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={data.foto || ''}
+                                    onChange={(e) => onChange('foto', e.target.value)}
+                                    className="flex-1 rounded-md border-gray-300 shadow-sm text-sm p-2 border focus:border-orange-500 focus:ring-orange-500"
+                                    placeholder="Pegá el link de tu foto o subí una →"
+                                />
+                                <input
+                                    type="file"
+                                    ref={profFileRef}
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0], 'foto')}
+                                />
+                                <button
+                                    type="button"
+                                    disabled={isUploading['foto']}
+                                    onClick={() => profFileRef.current?.click()}
+                                    className="bg-white border-2 border-orange-500 text-orange-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-orange-50 transition flex items-center gap-2 whitespace-nowrap min-w-[120px] justify-center"
+                                >
+                                    {isUploading['foto'] ? 'Subiendo...' : '📁 Subir Foto'}
+                                </button>
+                            </div>
+                            <p className="text-[10px] text-gray-500">Podés usar el link de Facebook/Instagram o subir una desde tu celular.</p>
+                        </div>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1 ml-20">Podés usar el link de tu foto de Facebook, Instagram, LinkedIn o Unsplash.</p>
                 </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Fotos de Trabajos (Links)</label>
-                    <p className="text-xs text-gray-500 mb-2">Pegá links de fotos de tus trabajos anteriores.</p>
+                <div className="mt-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2 font-bold">Fotos de Trabajos (Portfolio)</label>
+                    <p className="text-[10px] text-gray-500 mb-2">Muestra tus mejores trabajos para generar confianza.</p>
 
-                    {/* ALWAYS LOCKED FOR FREE PLAN (registration default) */}
-                    {isFree ? (
-                        <div className="bg-gray-100 border-2 border-gray-300 rounded-lg p-6 text-center">
-                            <span className="text-3xl block mb-2">🔒</span>
-                            <p className="text-sm font-bold text-gray-700 mb-1">Portfolio Bloqueado</p>
-                            <p className="text-xs text-gray-500">
-                                Tu plan inicial es <strong>Gratuito</strong>. <br />
-                                Podrás subir fotos de tus trabajos al mejorar a <strong>Premium</strong> desde tu perfil.
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="space-y-2">
-                            <input
-                                type="text"
-                                value={data.portfolio ? data.portfolio[0] : ''}
-                                onChange={(e) => {
-                                    const newPhotos = [...(data.portfolio || [])];
-                                    newPhotos[0] = e.target.value;
-                                    onChange('portfolio', newPhotos);
-                                }}
-                                className="block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                                placeholder="Link Foto 1"
-                            />
-                            <input
-                                type="text"
-                                value={data.portfolio ? data.portfolio[1] : ''}
-                                onChange={(e) => {
-                                    const newPhotos = [...(data.portfolio || [])];
-                                    newPhotos[1] = e.target.value;
-                                    onChange('portfolio', newPhotos);
-                                }}
-                                className="block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                                placeholder="Link Foto 2"
-                            />
-                        </div>
-                    )}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {[0, 1].map((idx) => (
+                            <div key={idx} className="space-y-2">
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={data.portfolio ? data.portfolio[idx] : ''}
+                                        onChange={(e) => {
+                                            const newPhotos = [...(data.portfolio || [])];
+                                            newPhotos[idx] = e.target.value;
+                                            onChange('portfolio', newPhotos);
+                                        }}
+                                        className="flex-1 rounded-md border-gray-300 shadow-sm text-sm p-2 border focus:border-orange-500 focus:ring-orange-500"
+                                        placeholder={`Link Foto ${idx + 1}`}
+                                    />
+                                    <input
+                                        type="file"
+                                        ref={portFileRefs[idx]}
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0], 'portfolio', idx)}
+                                    />
+                                    <button
+                                        type="button"
+                                        disabled={isUploading[`portfolio_${idx}`]}
+                                        onClick={() => portFileRefs[idx].current?.click()}
+                                        className="bg-gray-100 border border-gray-300 text-gray-600 p-2 rounded-lg hover:bg-gray-200 transition"
+                                        title="Subir archivo"
+                                    >
+                                        {isUploading[`portfolio_${idx}`] ? '⌛' : '📁'}
+                                    </button>
+                                </div>
+                                {data.portfolio?.[idx] && (
+                                    <div className="h-32 w-full bg-gray-200 rounded-lg overflow-hidden border border-gray-100 shadow-inner group relative">
+                                        <img src={data.portfolio[idx]} alt="Preview" className="w-full h-full object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const newPhotos = [...(data.portfolio || [])];
+                                                newPhotos[idx] = '';
+                                                onChange('portfolio', newPhotos);
+                                            }}
+                                            className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full text-[10px] opacity-0 group-hover:opacity-100 transition"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
 

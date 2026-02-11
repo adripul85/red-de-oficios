@@ -38,6 +38,7 @@ export default function RegistrationWizard() {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     // Auto-load from local storage
     useEffect(() => {
@@ -106,6 +107,12 @@ export default function RegistrationWizard() {
             profileData.formas_pago = profileData.medios_pago || [];
             profileData.emite_factura = profileData.tipo_factura && profileData.tipo_factura !== 'no';
 
+            // New Matrícula Structure Mapping
+            profileData.matricula = {
+                es_matriculado: !!formData.es_matriculado,
+                texto: formData.numero_matricula || ''
+            };
+
             // Sanitize Phone to 549...
             let rawPhone = profileData.celular.replace(/\D/g, ''); // Remove non-digits
             if (rawPhone.startsWith('0')) rawPhone = rawPhone.substring(1);
@@ -139,6 +146,7 @@ export default function RegistrationWizard() {
             profileData.total_votos = 0;
             profileData.whatsapp_restantes = 60; // Lifetime base 60
             profileData.contactos_whatsapp_total = 0;
+            profileData.validacion_estado = "pendiente"; // For Admin Panel visibility
 
             // 90 days trial logic
             const fechaRegistro = new Date();
@@ -176,11 +184,28 @@ export default function RegistrationWizard() {
                 console.warn("⚠️ [WELCOME] No se pudo disparar el email de bienvenida:", emailErr);
             }
 
-            // 4. Success / Redirect
-            localStorage.removeItem('reg_wizard_data'); // Clear draft
-            console.log("🎉 [REGISTRO] Registro completo - Redirigiendo...");
+            // 4. Notify Telegram (Background)
+            try {
+                const tgRes = await fetch("/api/notify-registration", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        nombre: profileData.nombre,
+                        rubro: profileData.rubro_principal,
+                        zona: profileData.zona
+                    })
+                });
+                const tgData = await tgRes.json();
+                console.log("📢 [TELEGRAM] Notification result:", tgData);
+            } catch (tgErr) {
+                console.warn("⚠️ [TELEGRAM] Notification failed:", tgErr);
+            }
 
-            window.location.href = '/mi-perfil'; // Redicción por defecto al perfil
+            // 5. Success UI
+            localStorage.removeItem('reg_wizard_data'); // Clear draft
+            console.log("🎉 [REGISTRO] Registro completo - Mostrando Modal...");
+            setShowSuccessModal(true);
+            setLoading(false);
 
         } catch (err: any) {
             console.error(err);
@@ -307,6 +332,66 @@ export default function RegistrationWizard() {
 
                 </div>
             </div>
+            {/* SUCCESS MODAL */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden transform animate-in zoom-in-95 duration-300">
+                        {/* Header Gradient */}
+                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-8 text-center text-white">
+                            <div className="text-6xl mb-4">🎉</div>
+                            <h2 className="text-3xl font-black mb-2 uppercase tracking-tight">¡Registro completado!</h2>
+                            <p className="text-orange-100 font-medium">Ya sos parte de la comunidad de DeOficios.</p>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-8">
+                            <div className="space-y-6 text-slate-600 leading-relaxed">
+                                <p className="text-lg">
+                                    Hola <span className="font-bold text-slate-900">{formData.nombre}</span>, ¡gracias por sumarte! Recibimos tus datos correctamente.
+                                </p>
+
+                                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5">
+                                    <h3 className="text-slate-900 font-bold mb-3 flex items-center gap-2">
+                                        🛠️ ¿Qué sigue ahora?
+                                    </h3>
+                                    <p className="text-sm">
+                                        Nuestro equipo está revisando tu información para otorgarte el <span className="text-orange-600 font-bold">Sello de Confianza</span>. Este proceso suele tardar menos de 24 horas.
+                                    </p>
+                                </div>
+
+                                <div className="flex items-start gap-4 p-2">
+                                    <div className="text-2xl mt-1">📲</div>
+                                    <div>
+                                        <h4 className="text-slate-900 font-bold text-sm">Un último favor:</h4>
+                                        <p className="text-xs text-slate-500">
+                                            Mientras esperás, seguinos en Instagram. Vamos a estar promocionando a los pioneros de la plataforma.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Buttons */}
+                            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                                <button
+                                    onClick={() => window.location.href = '/mi-perfil'}
+                                    className="flex-1 bg-slate-900 text-white font-black py-4 rounded-xl uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                                >
+                                    ENTENDIDO
+                                </button>
+                                <a
+                                    href="https://instagram.com/reddeoficio"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-1 bg-white border-2 border-slate-200 text-slate-900 font-black py-4 rounded-xl uppercase tracking-widest hover:border-orange-500 hover:text-orange-600 transition-all text-center flex items-center justify-center gap-2 active:scale-95"
+                                >
+                                    <span>INSTAGRAM</span>
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

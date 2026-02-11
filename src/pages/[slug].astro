@@ -103,7 +103,14 @@ const mappedServices = allServices
         icon: getServiceIcon(name),
     }));
 
-const isBlocked = (profesional.plan === "semilla" || !profesional.plan) && (profesional.contactos_whatsapp_mes >= 60);
+// --- RESTRICCIONES Y BLOQUEO ---
+const now = new Date();
+const trialEndsAt = profesional.trialEndsAt?.toDate ? profesional.trialEndsAt.toDate() : (profesional.trialEndsAt ? new Date(profesional.trialEndsAt) : null);
+const isTrialExpired = profesional.plan === "prueba" && trialEndsAt && trialEndsAt < now;
+const isLimitReached = (profesional.plan === "semilla" || !profesional.plan) && (profesional.contactos_whatsapp_mes >= 60);
+
+const isBlocked = isTrialExpired || isLimitReached;
+const blockReason = isTrialExpired ? "trial_expired" : (isLimitReached ? "limit_reached" : "");
 
 import ModernProfileCard from "../components/ModernProfileCard.astro";
 ---
@@ -148,6 +155,8 @@ import ModernProfileCard from "../components/ModernProfileCard.astro";
                     avatar={profesional.foto}
                     location={ubicacion}
                     rating={promedio.toFixed(1)}
+                    isBlocked={isBlocked}
+                    blockReason={blockReason}
                     priceInfo={
                         profesional.presupuestos_config?.activo
                             ? "Presupuestos sin cargo"
