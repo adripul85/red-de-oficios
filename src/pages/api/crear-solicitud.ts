@@ -1,7 +1,7 @@
 ﻿export const prerender = false;
 
 import { dbAdmin, messagingAdmin } from "../../firebase/admin";
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, Filter } from "firebase-admin/firestore";
 
 export async function POST({ request }: { request: Request }) {
     try {
@@ -21,12 +21,18 @@ export async function POST({ request }: { request: Request }) {
 
         // 1. MATCHING: Buscar todos los profesionales Premium y filtrar en código
         const prosRef = dbAdmin.collection("profesionales");
+
+        // Optimización: Filtrar por rubro directamente en Firestore usando Filter.or
         const qPros = prosRef
-            .where("plan", "==", "experto");
-        // Sin límite para obtener TODOS los profesionales premium
+            .where("plan", "==", "experto")
+            .where(Filter.or(
+                Filter.where("rubro_principal", "==", rubro),
+                Filter.where("rubro", "==", rubro),
+                Filter.where("rubros", "array-contains", rubro)
+            ));
 
         const snapPros = await qPros.get();
-        console.log(`📋 [API] Query retornó ${snapPros.docs.length} profesionales`);
+        console.log(`📋 [API] Query retornó ${snapPros.docs.length} profesionales (filtrados por rubro)`);
 
         // Filtrar por rubro y zona (soporta múltiples nombres de campos)
         const candidatos = snapPros.docs
