@@ -275,7 +275,7 @@ import Layout from "../../layouts/Layout.astro";
         import { 
             getFirestore, collection, query, where, getDocs, orderBy, limit, 
             doc, updateDoc, arrayUnion, getDoc, deleteField, 
-            onSnapshot, addDoc, increment 
+            onSnapshot, addDoc, increment, documentId
         } from "firebase/firestore";
         import { onAuthStateChanged } from "firebase/auth";
         import Swal from 'sweetalert2';
@@ -423,31 +423,46 @@ import Layout from "../../layouts/Layout.astro";
                         // Convertir Map a Array and sort
                         const arr = Array.from(allSolicitudes.values());
                         
-                        // Resolver nombres
-                        const namePromises = arr.map(async (sol: any) => {
+                        // Resolver nombres (Optimized Batch)
+                        const idsToFetch = new Set();
+                        arr.forEach((sol: any) => {
                             if (sol.clienteId && !clientNames.has(sol.clienteId)) {
                                 const isGeneric = !sol.clienteNombre || sol.clienteNombre.toLowerCase().includes('cliente') || sol.clienteNombre.includes('@');
                                 if (isGeneric) {
-                                    try {
-                                        const cSnap = await getDoc(doc(db, "clientes", sol.clienteId));
-                                        if (cSnap.exists()) {
-                                            const cData = cSnap.data();
-                                            if (cData.nombre) {
-                                                clientNames.set(sol.clienteId, cData.nombre);
-                                                return;
-                                            }
-                                        }
-                                        clientNames.set(sol.clienteId, sol.clienteNombre || 'Cliente');
-                                    } catch (e) {
-                                        clientNames.set(sol.clienteId, sol.clienteNombre || 'Cliente');
-                                    }
+                                    idsToFetch.add(sol.clienteId);
                                 } else {
                                     clientNames.set(sol.clienteId, sol.clienteNombre);
                                 }
                             }
                         });
 
-                        await Promise.all(namePromises);
+                        const idArray = Array.from(idsToFetch);
+                        // Chunking (Firestore limit 30 for 'in' queries)
+                        for (let i = 0; i < idArray.length; i += 10) {
+                            const chunk = idArray.slice(i, i + 10);
+                            if (chunk.length === 0) continue;
+
+                            try {
+                                const q = query(collection(db, "clientes"), where(documentId(), "in", chunk));
+                                const querySnapshot = await getDocs(q);
+                                querySnapshot.forEach((doc) => {
+                                    const data = doc.data();
+                                    if (data.nombre) {
+                                        clientNames.set(doc.id, data.nombre);
+                                    }
+                                });
+                            } catch (error) {
+                                console.error("Error resolving names batch:", error);
+                            }
+
+                            // Fallback for missing or error
+                            chunk.forEach(id => {
+                                if (!clientNames.has(id)) {
+                                    const original = arr.find((s: any) => s.clienteId === id);
+                                    clientNames.set(id, original?.clienteNombre || 'Cliente');
+                                }
+                            });
+                        }
 
                         todasSolicitudes = arr.sort((a, b) => {
                             const fechaA =
