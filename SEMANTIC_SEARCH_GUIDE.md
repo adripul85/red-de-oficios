@@ -20,7 +20,14 @@ La búsqueda semántica permite a los usuarios describir problemas en lenguaje n
 
 Se ejecuta automáticamente cuando se crea una solicitud nueva.
 
-- Genera embedding del texto
+- Genera embedding del texto usando Vertex AI (`text-multilingual-embedding-002`)
+- Guarda el vector en Firestore
+
+#### `onProfessionalWritten` (Trigger Automático)
+
+Se ejecuta automáticamente cuando se crea o actualiza un perfil profesional.
+
+- Genera embedding del perfil (rubro, descripción, zona)
 - Guarda el vector en Firestore
 
 #### `semanticSearch` (Callable)
@@ -107,18 +114,17 @@ const similares = await searchSolicitudes(
 }
 ```
 
-### Resultado de Búsqueda
+### Profesional con Embedding
 
 ```typescript
 {
-  id: "abc123",
-  data: {
-    detalle: "...",
-    rubro: "...",
-    zona: "...",
-    clienteNombre: "..."
-  },
-  similarity: 0.85 // 0-1, mayor = más similar
+  id: "prof123",
+  nombre: "Juan Perez",
+  rubro_principal: "Plomero",
+  descripcion: "Especialista en filtraciones",
+  zona: "CABA",
+  embedding: [0.123, 0.456, ...], // 768 números
+  embeddingGeneratedAt: Timestamp
 }
 ```
 
@@ -126,57 +132,29 @@ const similares = await searchSolicitudes(
 
 ### 1. Habilitar Vertex AI (IMPORTANTE)
 
+Asegúrate de que la API de Vertex AI esté habilitada en Google Cloud Console para el proyecto.
+
 ```bash
 # En Google Cloud Console:
 # 1. Ir a https://console.cloud.google.com
-# 2. Seleccionar proyecto "red-oficios-lucas"
+# 2. Seleccionar proyecto
 # 3. Buscar "Vertex AI API"
 # 4. Hacer clic en "Habilitar"
 ```
 
-### 2. Implementar Embeddings Reales
+### 2. Migrar Datos Existentes
 
-Actualmente usa embeddings simulados. Para producción:
-
-```typescript
-// Reemplazar en functions/src/index.ts
-import {PredictionServiceClient} from "@google-cloud/aiplatform";
-
-async function generateEmbedding(text: string): Promise<number[]> {
-  const client = new PredictionServiceClient();
-  const endpoint = `projects/${PROJECT_ID}/locations/${LOCATION}/publishers/google/models/${MODEL}`;
-  
-  const [response] = await client.predict({
-    endpoint,
-    instances: [{content: text}],
-  });
-  
-  return response.predictions[0].embeddings.values;
-}
-```
-
-### 3. Migrar Solicitudes Existentes
-
-Ejecutar script para agregar embeddings a solicitudes antiguas:
-
-```bash
-# Crear script: functions/src/migrateEmbeddings.ts
-# Ejecutar: npm run migrate
-```
-
-### 4. Integrar en Frontend
-
-Modificar `oportunidades.astro` para usar búsqueda semántica.
+Para solicitudes y profesionales antiguos que no tienen embeddings, se necesita un script de migración que recorra la colección y genere los embeddings.
 
 ## 💰 Costos Estimados
 
 | Operación | Costo | Ejemplo |
 |-----------|-------|---------|
-| Generar embedding | $0.000025/request | 1000 solicitudes = $0.025 |
-| Búsqueda | Gratis (cálculo local) | Ilimitado |
+| Generar embedding | $0.000025/request | 1000 items = $0.025 |
+| Búsqueda | Gratis (cálculo local en Cloud Function) | Ilimitado |
 | Cloud Function | $0.40/millón | 10k búsquedas = $0.004 |
 
-**Total mensual estimado (1000 solicitudes + 5000 búsquedas): ~$0.03**
+**Total mensual estimado (1000 items + 5000 búsquedas): ~$0.03**
 
 ## 🧪 Testing
 
@@ -192,23 +170,6 @@ npm run serve
 ```bash
 firebase deploy --only functions
 ```
-
-### Ejemplo de Prueba
-
-```typescript
-// En consola del navegador:
-const { searchSolicitudes } = await import("./firebase/semanticSearch");
-
-const results = await searchSolicitudes("tengo humedad");
-console.log(results);
-```
-
-## ⚠️ Notas Importantes
-
-1. **Embeddings Simulados**: La versión actual usa embeddings aleatorios para testing
-2. **Vertex AI**: Necesitas habilitarlo en Google Cloud Console
-3. **Costos**: Muy bajos (~$0.03/mes para 1000 solicitudes)
-4. **Performance**: Primera búsqueda puede tardar ~2s, luego es instantánea
 
 ## 📚 Recursos
 
