@@ -10,6 +10,7 @@ import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import * as logger from "firebase-functions/logger";
+import { PredictionServiceClient, helpers } from "@google-cloud/aiplatform";
 
 // Inicializar Firebase Admin
 initializeApp();
@@ -20,16 +21,49 @@ const db = getFirestore();
  * NOTA: Esta es una implementación simplificada
  * En producción, usarías @google-cloud/aiplatform
  */
-async function generateEmbedding(text: string): Promise<number[]> {
+async function generateEmbedding(text: string, taskType: 'RETRIEVAL_DOCUMENT' | 'RETRIEVAL_QUERY' = 'RETRIEVAL_DOCUMENT'): Promise<number[]> {
     try {
-        // Por ahora, retornamos un embedding simulado
-        // TODO: Implementar llamada real a Vertex AI
         logger.info(`Generando embedding para: ${text.substring(0, 50)}...`);
 
-        // Embedding simulado de 768 dimensiones
-        const mockEmbedding = Array(768).fill(0).map(() => Math.random());
+        const projectId = process.env.GCLOUD_PROJECT;
+        if (!projectId) {
+            throw new Error("GCLOUD_PROJECT not set");
+        }
 
-        return mockEmbedding;
+        const location = "us-central1";
+        const model = "text-multilingual-embedding-002";
+        const endpoint = `${location}-aiplatform.googleapis.com`;
+
+        const client = new PredictionServiceClient({
+            apiEndpoint: endpoint,
+        });
+
+        const instance = {
+            content: text,
+            task_type: taskType,
+        };
+        const instanceValue = helpers.toValue(instance);
+        if (!instanceValue) {
+            throw new Error("Failed to convert instance to value");
+        }
+
+        const [response] = await client.predict({
+            endpoint: `projects/${projectId}/locations/${location}/publishers/google/models/${model}`,
+            instances: [instanceValue],
+        });
+
+        if (!response.predictions || response.predictions.length === 0) {
+            throw new Error("No predictions returned");
+        }
+
+        const prediction = response.predictions[0];
+        const predictionData = helpers.fromValue(prediction as any);
+
+        if (!predictionData) {
+            throw new Error("Failed to parse prediction");
+        }
+
+        return (predictionData as any).embeddings.values;
     } catch (error) {
         logger.error("Error generando embedding:", error);
         throw new HttpsError("internal", "Error al generar embedding");
@@ -77,7 +111,7 @@ export const onSolicitudCreated = onDocumentCreated(
 
         try {
             // Generar embedding del detalle
-            const embedding = await generateEmbedding(detalle);
+            const embedding = await generateEmbedding(detalle, "RETRIEVAL_DOCUMENT");
 
             // Guardar embedding en el documento
             await snapshot.ref.update({
@@ -107,7 +141,7 @@ export const semanticSearch = onCall(async (request) => {
 
     try {
         // 1. Generar embedding del query
-        const queryEmbedding = await generateEmbedding(query);
+        const queryEmbedding = await generateEmbedding(query, "RETRIEVAL_QUERY");
 
         // 2. Obtener todas las solicitudes (con filtro de zona si aplica)
         let solicitudesQuery = db.collection("solicitudes");
@@ -180,7 +214,7 @@ export const findProfessionals = onCall(async (request) => {
 
     try {
         // Generar embedding de la descripción
-        const descEmbedding = await generateEmbedding(description);
+        const descEmbedding = await generateEmbedding(description, "RETRIEVAL_QUERY");
 
         // Obtener profesionales
         let profQuery = db.collection("profesionales");
