@@ -5,19 +5,25 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 import Layout from "../../layouts/Layout.astro";
 ---
 
-<Layout title="Panel Profesional - DeOficios" hideHeader={true} hideBottomNav={true} hideIA={true}>
-
+<Layout
+    title="Panel Profesional - DeOficios"
+    hideHeader={true}
+    hideBottomNav={true}
+    hideIA={true}
+>
     <div class="flex h-screen overflow-hidden">
         <Sidebar currentPath={Astro.url.pathname} />
 
         <MobileSidebar currentPath={Astro.url.pathname} />
 
         <!-- MAIN CONTENT -->
-        <main
-            class="flex-1 flex flex-col h-screen relative overflow-hidden">
+        <main class="flex-1 flex flex-col h-screen relative overflow-hidden">
             <header
-                class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-30 relative">
-                <button id="open-sidebar" class="md:hidden text-2xl mr-4">☰</button>
+                class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-30 relative"
+            >
+                <button id="open-sidebar" class="md:hidden text-2xl mr-4"
+                    >☰</button
+                >
 
                 <h2 class="text-lg font-bold text-slate-800">
                     Resumen General
@@ -26,30 +32,46 @@ import Layout from "../../layouts/Layout.astro";
                 <div class="flex items-center gap-4">
                     <button
                         id="btn-notifications"
-                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 relative transition-colors">
+                        class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 relative transition-colors"
+                    >
                         🔔
                         <span
                             id="badge-bell"
-                            class="hidden absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
+                            class="hidden absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"
+                        ></span>
                     </button>
-                    <div id="security-code-container" class="hidden items-center gap-2 px-3 py-1.5 bg-slate-900 rounded-xl border border-slate-700 shadow-lg animate-pulse ml-2">
-                        <span class="text-[10px] font-black text-orange-500 uppercase tracking-widest hidden sm:block">Cód. Seguridad:</span>
-                        <span id="security-code-value" class="text-sm font-mono font-black text-white tracking-widest">------</span>
+                    <div
+                        id="security-code-container"
+                        class="hidden items-center gap-2 px-3 py-1.5 bg-slate-900 rounded-xl border border-slate-700 shadow-lg animate-pulse ml-2"
+                    >
+                        <span
+                            class="text-[10px] font-black text-orange-500 uppercase tracking-widest hidden sm:block"
+                            >Cód. Seguridad:</span
+                        >
+                        <span
+                            id="security-code-value"
+                            class="text-sm font-mono font-black text-white tracking-widest"
+                            >------</span
+                        >
                     </div>
 
                     <div
-                        class="flex items-center gap-3 pl-4 border-l border-slate-200">
+                        class="flex items-center gap-3 pl-4 border-l border-slate-200"
+                    >
                         <div class="text-right hidden sm:block">
                             <p
                                 class="text-sm font-bold text-slate-800"
-                                id="user-name">
+                                id="user-name"
+                            >
                                 <div
-                                    class="h-4 w-24 bg-slate-200 rounded animate-pulse inline-block">
+                                    class="h-4 w-24 bg-slate-200 rounded animate-pulse inline-block"
+                                >
                                 </div>
                             </p>
                             <p
                                 class="text-xs text-slate-500"
-                                id="user-plan-label">
+                                id="user-plan-label"
+                            >
                                 Plan Profesional
                             </p>
                         </div>
@@ -61,23 +83,27 @@ import Layout from "../../layouts/Layout.astro";
                     </div>
                 </div>
 
-
                 <!-- Notification Dropdown -->
                 <div
                     id="notification-dropdown"
-                    class="hidden absolute top-16 right-6 w-80 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden">
+                    class="hidden absolute top-16 right-6 w-80 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden"
+                >
                     <div
-                        class="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                        class="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50"
+                    >
                         <h3 class="font-bold text-sm text-slate-800">
                             Notificaciones
                         </h3>
                         <button
                             id="mark-all-read"
-                            class="text-xs text-orange-600 hover:text-orange-700 font-medium">Marcar leídas</button>
+                            class="text-xs text-orange-600 hover:text-orange-700 font-medium"
+                            >Marcar leídas</button
+                        >
                     </div>
                     <div
                         id="notification-list"
-                        class="max-h-64 overflow-y-auto">
+                        class="max-h-64 overflow-y-auto"
+                    >
                         <!-- Dynamic Content -->
                         <div class="p-4 text-center text-slate-400 text-xs">
                             No tienes notificaciones
@@ -86,77 +112,98 @@ import Layout from "../../layouts/Layout.astro";
                     <div class="p-2 border-t border-slate-100 text-center">
                         <a
                             href="/panel/oportunidades"
-                            class="text-xs text-indigo-600 font-medium hover:underline">Ver todas las oportunidades</a>
+                            class="text-xs text-indigo-600 font-medium hover:underline"
+                            >Ver todas las oportunidades</a
+                        >
                     </div>
                 </div>
             </header>
 
             <div class="flex-1 overflow-y-auto p-6 bg-slate-50">
                 <div
-                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+                >
                     <div
-                        class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                        class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100"
+                    >
                         <div class="flex justify-between items-start mb-4">
                             <div class="p-2 bg-green-50 rounded-lg text-xl">
                                 💰
                             </div>
-                            <span id="badge-ingresos-percent" class="hidden bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full">+12%</span>
+                            <span
+                                id="badge-ingresos-percent"
+                                class="hidden bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full"
+                                >+12%</span
+                            >
                         </div>
                         <p class="text-slate-500 text-sm font-medium">
                             Ingresos este mes
                         </p>
                         <h3
                             id="kpi-ingresos"
-                            class="text-2xl font-bold text-slate-800 flex items-center">
+                            class="text-2xl font-bold text-slate-800 flex items-center"
+                        >
                             <div
-                                class="h-8 w-24 bg-slate-100 rounded animate-pulse">
+                                class="h-8 w-24 bg-slate-100 rounded animate-pulse"
+                            >
                             </div>
                         </h3>
                     </div>
 
                     <div
-                        class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                        class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100"
+                    >
                         <div class="flex justify-between items-start mb-4">
                             <div class="p-2 bg-blue-50 rounded-lg text-xl">
                                 📄
                             </div>
-                            <span class="text-slate-400 text-xs font-medium">Activos</span>
+                            <span class="text-slate-400 text-xs font-medium"
+                                >Activos</span
+                            >
                         </div>
                         <p class="text-slate-500 text-sm font-medium">
                             Presupuestos
                         </p>
                         <h3
                             id="kpi-presupuestos"
-                            class="text-2xl font-bold text-slate-800 flex items-center">
+                            class="text-2xl font-bold text-slate-800 flex items-center"
+                        >
                             <div
-                                class="h-8 w-16 bg-slate-100 rounded animate-pulse">
+                                class="h-8 w-16 bg-slate-100 rounded animate-pulse"
+                            >
                             </div>
                         </h3>
                     </div>
 
                     <div
-                        class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                        class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100"
+                    >
                         <div class="flex justify-between items-start mb-4">
-                            <div
-                                class="p-2 bg-orange-50 rounded-lg text-xl">
+                            <div class="p-2 bg-orange-50 rounded-lg text-xl">
                                 👁️
                             </div>
-                            <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full">+5%</span>
+                            <span
+                                class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full"
+                                >+5%</span
+                            >
                         </div>
                         <p class="text-slate-500 text-sm font-medium">
                             Visitas Perfil
                         </p>
                         <h3
                             id="kpi-visitas"
-                            class="text-2xl font-bold text-slate-800 flex items-center">
+                            class="text-2xl font-bold text-slate-800 flex items-center"
+                        >
                             <div
-                                class="h-8 w-16 bg-slate-100 rounded animate-pulse">
+                                class="h-8 w-16 bg-slate-100 rounded animate-pulse"
+                            >
                             </div>
                         </h3>
                     </div>
 
                     <div
-                        class="bg-gradient-to-br from-indigo-600 to-purple-700 p-5 rounded-2xl shadow-lg text-white">
+                        class="bg-gradient-to-br from-indigo-600 to-purple-700 p-5 rounded-2xl shadow-lg text-white"
+                    >
                         <div class="flex justify-between items-start mb-2">
                             <div class="p-2 bg-white/20 rounded-lg text-xl">
                                 🏆
@@ -167,9 +214,11 @@ import Layout from "../../layouts/Layout.astro";
                         </p>
                         <h3
                             id="total-points-card"
-                            class="text-2xl font-bold flex items-center">
+                            class="text-2xl font-bold flex items-center"
+                        >
                             <div
-                                class="h-8 w-20 bg-white/20 rounded animate-pulse">
+                                class="h-8 w-20 bg-white/20 rounded animate-pulse"
+                            >
                             </div>
                         </h3>
                     </div>
@@ -178,70 +227,86 @@ import Layout from "../../layouts/Layout.astro";
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-2 space-y-8">
                         <div
-                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                            <div
-                                class="flex justify-between items-center mb-6">
-                                <h3
-                                    class="font-bold text-lg text-slate-800">
+                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="font-bold text-lg text-slate-800">
                                     Rendimiento Mensual
                                 </h3>
                                 <div class="flex items-center gap-2">
                                     <span
                                         id="chart-total"
-                                        class="text-sm font-bold text-green-600"></span>
+                                        class="text-sm font-bold text-green-600"
+                                    ></span>
                                     <select
                                         id="chart-period-select"
-                                        class="bg-slate-50 border border-slate-200 text-sm rounded-lg p-2 outline-none">
-                                        <option value="6">Últimos 6 meses</option>
+                                        class="bg-slate-50 border border-slate-200 text-sm rounded-lg p-2 outline-none"
+                                    >
+                                        <option value="6"
+                                            >Últimos 6 meses</option
+                                        >
                                         <option value="12">Este año</option>
                                     </select>
                                 </div>
                             </div>
                             <div
                                 id="performance-chart"
-                                class="h-64 flex items-end justify-between gap-2 px-4 pb-2">
+                                class="h-64 flex items-end justify-between gap-2 px-4 pb-2"
+                            >
                                 <!-- Skeleton Bars -->
                                 <div
-                                    class="w-full bg-slate-100 rounded-t h-1/4 animate-pulse">
+                                    class="w-full bg-slate-100 rounded-t h-1/4 animate-pulse"
+                                >
                                 </div>
                                 <div
-                                    class="w-full bg-slate-100 rounded-t h-2/4 animate-pulse">
+                                    class="w-full bg-slate-100 rounded-t h-2/4 animate-pulse"
+                                >
                                 </div>
                                 <div
-                                    class="w-full bg-slate-100 rounded-t h-1/3 animate-pulse">
+                                    class="w-full bg-slate-100 rounded-t h-1/3 animate-pulse"
+                                >
                                 </div>
                                 <div
-                                    class="w-full bg-slate-100 rounded-t h-3/4 animate-pulse">
+                                    class="w-full bg-slate-100 rounded-t h-3/4 animate-pulse"
+                                >
                                 </div>
                                 <div
-                                    class="w-full bg-slate-100 rounded-t h-1/2 animate-pulse">
+                                    class="w-full bg-slate-100 rounded-t h-1/2 animate-pulse"
+                                >
                                 </div>
                                 <div
-                                    class="w-full bg-slate-100 rounded-t h-2/3 animate-pulse">
+                                    class="w-full bg-slate-100 rounded-t h-2/3 animate-pulse"
+                                >
                                 </div>
                             </div>
                             <div
                                 id="chart-labels"
-                                class="flex justify-between px-4 mt-2 text-xs text-slate-500">
+                                class="flex justify-between px-4 mt-2 text-xs text-slate-500"
+                            >
                                 <!-- Month labels will be inserted here -->
                             </div>
                         </div>
 
                         <div
-                            class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                            class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden"
+                        >
                             <div
-                                class="p-6 border-b border-slate-100 flex justify-between items-center">
-                                <h3
-                                    class="font-bold text-lg text-slate-800">
+                                class="p-6 border-b border-slate-100 flex justify-between items-center"
+                            >
+                                <h3 class="font-bold text-lg text-slate-800">
                                     Últimos Presupuestos
                                 </h3>
                                 <button
-                                    class="text-orange-600 text-sm font-bold hover:underline">Ver todos</button>
+                                    class="text-orange-600 text-sm font-bold hover:underline"
+                                    >Ver todos</button
+                                >
                             </div>
                             <table
-                                class="w-full text-left text-sm text-slate-600">
+                                class="w-full text-left text-sm text-slate-600"
+                            >
                                 <thead
-                                    class="bg-slate-50 text-slate-500 uppercase font-bold text-xs">
+                                    class="bg-slate-50 text-slate-500 uppercase font-bold text-xs"
+                                >
                                     <tr>
                                         <th class="px-6 py-3">Cliente</th>
                                         <th class="px-6 py-3">Monto</th>
@@ -251,53 +316,69 @@ import Layout from "../../layouts/Layout.astro";
                                 </thead>
                                 <tbody
                                     id="latest-budgets-tbody"
-                                    class="divide-y divide-slate-100">
+                                    class="divide-y divide-slate-100"
+                                >
                                     <tr>
                                         <td colspan="4" class="p-0">
                                             <div class="space-y-4 p-4">
                                                 <div
-                                                    class="flex items-center space-x-4 animate-pulse">
+                                                    class="flex items-center space-x-4 animate-pulse"
+                                                >
                                                     <div
-                                                        class="h-4 w-24 bg-slate-100 rounded">
+                                                        class="h-4 w-24 bg-slate-100 rounded"
+                                                    >
                                                     </div>
                                                     <div
-                                                        class="h-4 w-16 bg-slate-100 rounded">
+                                                        class="h-4 w-16 bg-slate-100 rounded"
+                                                    >
                                                     </div>
                                                     <div
-                                                        class="h-6 w-20 bg-slate-100 rounded-full">
+                                                        class="h-6 w-20 bg-slate-100 rounded-full"
+                                                    >
                                                     </div>
                                                     <div
-                                                        class="h-4 w-20 bg-slate-100 rounded ml-auto">
-                                                    </div>
-                                                </div>
-                                                <div
-                                                    class="flex items-center space-x-4 animate-pulse">
-                                                    <div
-                                                        class="h-4 w-32 bg-slate-100 rounded">
-                                                    </div>
-                                                    <div
-                                                        class="h-4 w-12 bg-slate-100 rounded">
-                                                    </div>
-                                                    <div
-                                                        class="h-6 w-20 bg-slate-100 rounded-full">
-                                                    </div>
-                                                    <div
-                                                        class="h-4 w-20 bg-slate-100 rounded ml-auto">
+                                                        class="h-4 w-20 bg-slate-100 rounded ml-auto"
+                                                    >
                                                     </div>
                                                 </div>
                                                 <div
-                                                    class="flex items-center space-x-4 animate-pulse">
+                                                    class="flex items-center space-x-4 animate-pulse"
+                                                >
                                                     <div
-                                                        class="h-4 w-20 bg-slate-100 rounded">
+                                                        class="h-4 w-32 bg-slate-100 rounded"
+                                                    >
                                                     </div>
                                                     <div
-                                                        class="h-4 w-20 bg-slate-100 rounded">
+                                                        class="h-4 w-12 bg-slate-100 rounded"
+                                                    >
                                                     </div>
                                                     <div
-                                                        class="h-6 w-20 bg-slate-100 rounded-full">
+                                                        class="h-6 w-20 bg-slate-100 rounded-full"
+                                                    >
                                                     </div>
                                                     <div
-                                                        class="h-4 w-20 bg-slate-100 rounded ml-auto">
+                                                        class="h-4 w-20 bg-slate-100 rounded ml-auto"
+                                                    >
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    class="flex items-center space-x-4 animate-pulse"
+                                                >
+                                                    <div
+                                                        class="h-4 w-20 bg-slate-100 rounded"
+                                                    >
+                                                    </div>
+                                                    <div
+                                                        class="h-4 w-20 bg-slate-100 rounded"
+                                                    >
+                                                    </div>
+                                                    <div
+                                                        class="h-6 w-20 bg-slate-100 rounded-full"
+                                                    >
+                                                    </div>
+                                                    <div
+                                                        class="h-4 w-20 bg-slate-100 rounded ml-auto"
+                                                    >
                                                     </div>
                                                 </div>
                                             </div>
@@ -310,71 +391,91 @@ import Layout from "../../layouts/Layout.astro";
 
                     <div class="space-y-8">
                         <!-- Magic Link Review Request -->
-                        <div class="bg-gradient-to-r from-orange-500 to-amber-500 p-6 rounded-2xl shadow-lg text-white">
+                        <div
+                            class="bg-gradient-to-r from-orange-500 to-amber-500 p-6 rounded-2xl shadow-lg text-white"
+                        >
                             <div class="flex items-center gap-3 mb-3">
-                                <span class="text-2xl bg-white/20 p-2 rounded-lg">🚀</span>
+                                <span
+                                    class="text-2xl bg-white/20 p-2 rounded-lg"
+                                    >🚀</span
+                                >
                                 <div>
-                                    <h3 class="font-bold text-lg leading-tight">Link Mágico</h3>
-                                    <p class="text-xs text-orange-100">Pedir opinión por WhatsApp</p>
+                                    <h3 class="font-bold text-lg leading-tight">
+                                        Link Mágico
+                                    </h3>
+                                    <p class="text-xs text-orange-100">
+                                        Pedir opinión por WhatsApp
+                                    </p>
                                 </div>
                             </div>
-                            <button id="btn-magic-link" class="w-full bg-white text-orange-600 font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 hover:bg-orange-50 transition transform active:scale-95">
+                            <button
+                                id="btn-magic-link"
+                                class="w-full bg-white text-orange-600 font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 hover:bg-orange-50 transition transform active:scale-95"
+                            >
                                 <span class="text-lg">💬</span> Enviar Link a Cliente
                             </button>
-                            <p class="text-[10px] text-center mt-2 text-white/80">
+                            <p
+                                class="text-[10px] text-center mt-2 text-white/80"
+                            >
                                 El cliente calificará sin registrarse.
                             </p>
                         </div>
 
                         <div
-                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                            <div
-                                class="flex justify-between items-center mb-4">
-                                <h3
-                                    class="font-bold text-lg text-slate-800">
+                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-bold text-lg text-slate-800">
                                     Mi Equipo
                                 </h3>
                             </div>
                             <div id="team-members-list" class="space-y-3">
                                 <div
-                                    class="flex items-center gap-3 py-2 animate-pulse">
+                                    class="flex items-center gap-3 py-2 animate-pulse"
+                                >
                                     <div
-                                        class="w-8 h-8 rounded-full bg-slate-100">
+                                        class="w-8 h-8 rounded-full bg-slate-100"
+                                    >
                                     </div>
                                     <div class="flex-1 space-y-2">
                                         <div
-                                            class="h-3 w-24 bg-slate-100 rounded">
+                                            class="h-3 w-24 bg-slate-100 rounded"
+                                        >
                                         </div>
                                         <div
-                                            class="h-2 w-16 bg-slate-100 rounded">
+                                            class="h-2 w-16 bg-slate-100 rounded"
+                                        >
                                         </div>
                                     </div>
                                 </div>
                                 <div
-                                    class="flex items-center gap-3 py-2 animate-pulse">
+                                    class="flex items-center gap-3 py-2 animate-pulse"
+                                >
                                     <div
-                                        class="w-8 h-8 rounded-full bg-slate-100">
+                                        class="w-8 h-8 rounded-full bg-slate-100"
+                                    >
                                     </div>
                                     <div class="flex-1 space-y-2">
                                         <div
-                                            class="h-3 w-32 bg-slate-100 rounded">
+                                            class="h-3 w-32 bg-slate-100 rounded"
+                                        >
                                         </div>
                                         <div
-                                            class="h-2 w-12 bg-slate-100 rounded">
+                                            class="h-2 w-12 bg-slate-100 rounded"
+                                        >
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div
-                                class="mt-4 pt-4 border-t border-slate-200">
-                                <div
-                                    class="flex justify-between items-center">
+                            <div class="mt-4 pt-4 border-t border-slate-200">
+                                <div class="flex justify-between items-center">
                                     <p class="text-sm text-slate-600">
                                         Total Pendiente
                                     </p>
                                     <p
                                         id="team-total-pending"
-                                        class="text-lg font-bold text-slate-800">
+                                        class="text-lg font-bold text-slate-800"
+                                    >
                                         $0
                                     </p>
                                 </div>
@@ -383,57 +484,105 @@ import Layout from "../../layouts/Layout.astro";
 
                         <!-- Oportunidades Rápidas -->
                         <div
-                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                            <h3
-                                class="font-bold text-lg text-slate-800 mb-4">
+                            class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
+                        >
+                            <h3 class="font-bold text-lg text-slate-800 mb-4">
                                 Oportunidades
                             </h3>
-                            <div id="quick-opportunities-list" class="space-y-4">
+                            <div
+                                id="quick-opportunities-list"
+                                class="space-y-4"
+                            >
                                 <!-- Dynamic Content -->
                                 <div class="space-y-4">
-                                    <div class="h-24 bg-slate-50 rounded-xl animate-pulse"></div>
-                                    <div class="h-24 bg-slate-50 rounded-xl animate-pulse"></div>
+                                    <div
+                                        class="h-24 bg-slate-50 rounded-xl animate-pulse"
+                                    >
+                                    </div>
+                                    <div
+                                        class="h-24 bg-slate-50 rounded-xl animate-pulse"
+                                    >
+                                    </div>
                                 </div>
                             </div>
                             <a
                                 href="/panel/oportunidades"
-                                class="w-full mt-4 py-2 text-sm font-bold text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition flex items-center justify-center">
+                                class="w-full mt-4 py-2 text-sm font-bold text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition flex items-center justify-center"
+                            >
                                 Ver todas
                             </a>
                         </div>
 
                         <!-- Objetivos por Puntos -->
-                        <div class="p-6 rounded-2xl shadow-lg border border-indigo-700" style="background-color: #1e1b4b !important; color: white !important;">
-                            <h3 class="font-bold text-lg mb-4 flex items-center gap-2 text-white">
+                        <div
+                            class="p-6 rounded-2xl shadow-lg border border-indigo-700"
+                            style="background-color: #1e1b4b !important; color: white !important;"
+                        >
+                            <h3
+                                class="font-bold text-lg mb-4 flex items-center gap-2 text-white"
+                            >
                                 📈 Sube de Nivel
                             </h3>
                             <div class="space-y-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-lg bg-indigo-800 flex items-center justify-center text-sm font-bold text-white">1</div>
+                                    <div
+                                        class="w-8 h-8 rounded-lg bg-indigo-800 flex items-center justify-center text-sm font-bold text-white"
+                                    >
+                                        1
+                                    </div>
                                     <div class="flex-1">
-                                        <p class="text-[11px] font-bold text-indigo-300 uppercase">Identidad</p>
-                                        <p class="text-xs text-white">Verifica tu DNI (+1000 pts)</p>
+                                        <p
+                                            class="text-[11px] font-bold text-indigo-300 uppercase"
+                                        >
+                                            Identidad
+                                        </p>
+                                        <p class="text-xs text-white">
+                                            Verifica tu DNI (+1000 pts)
+                                        </p>
                                     </div>
                                     <span class="text-xs">⚠️</span>
                                 </div>
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-lg bg-indigo-800 flex items-center justify-center text-sm font-bold text-white">2</div>
+                                    <div
+                                        class="w-8 h-8 rounded-lg bg-indigo-800 flex items-center justify-center text-sm font-bold text-white"
+                                    >
+                                        2
+                                    </div>
                                     <div class="flex-1">
-                                        <p class="text-[11px] font-bold text-indigo-300 uppercase">Perfil</p>
-                                        <p class="text-xs text-white">Completa tu bio y fotos (+500 pts)</p>
+                                        <p
+                                            class="text-[11px] font-bold text-indigo-300 uppercase"
+                                        >
+                                            Perfil
+                                        </p>
+                                        <p class="text-xs text-white">
+                                            Completa tu bio y fotos (+500 pts)
+                                        </p>
                                     </div>
                                     <span class="text-xs">✅</span>
                                 </div>
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-lg bg-indigo-800 flex items-center justify-center text-sm font-bold text-white">3</div>
+                                    <div
+                                        class="w-8 h-8 rounded-lg bg-indigo-800 flex items-center justify-center text-sm font-bold text-white"
+                                    >
+                                        3
+                                    </div>
                                     <div class="flex-1">
-                                        <p class="text-[11px] font-bold text-indigo-300 uppercase">Actividad</p>
-                                        <p class="text-xs text-white">Responde cotizaciones (+10 pts c/u)</p>
+                                        <p
+                                            class="text-[11px] font-bold text-indigo-300 uppercase"
+                                        >
+                                            Actividad
+                                        </p>
+                                        <p class="text-xs text-white">
+                                            Responde cotizaciones (+10 pts c/u)
+                                        </p>
                                     </div>
                                     <span class="text-xs">🚀</span>
                                 </div>
                             </div>
-                            <button onclick="window.location.href='/mi-perfil'" class="w-full mt-6 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-xl transition text-sm shadow-lg">
+                            <button
+                                onclick="window.location.href='/mi-perfil'"
+                                class="w-full mt-6 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-white font-bold rounded-xl transition text-sm shadow-lg"
+                            >
                                 Ganar más puntos
                             </button>
                         </div>
@@ -445,7 +594,19 @@ import Layout from "../../layouts/Layout.astro";
 
     <script>
         import { db, auth } from "../../firebase/client";
-        import { doc, getDoc, collection, query, where, getDocs, limit, orderBy, onSnapshot, deleteDoc, updateDoc } from "firebase/firestore";
+        import {
+            doc,
+            getDoc,
+            collection,
+            query,
+            where,
+            getDocs,
+            limit,
+            orderBy,
+            onSnapshot,
+            deleteDoc,
+            updateDoc,
+        } from "firebase/firestore";
         import { onAuthStateChanged } from "firebase/auth";
         import { registerPushNotifications } from "../../utils/push-notifications";
         import { getAuthRedirect } from "../../utils/auth-redirects";
@@ -460,107 +621,154 @@ import Layout from "../../layouts/Layout.astro";
         const notificationListEl = document.getElementById("notification-list");
         const badgeBellEl = document.getElementById("badge-bell");
         const teamListEl = document.getElementById("team-members-list");
-        const teamTotalPendingEl = document.getElementById("team-total-pending");
-        const quickOportunidadesEl = document.getElementById("quick-opportunities-list");
-         // Security Code Elements
-        const securityCodeContainer = document.getElementById("security-code-container");
-        const securityCodeValue = document.getElementById("security-code-value");
+        const teamTotalPendingEl =
+            document.getElementById("team-total-pending");
+        const quickOportunidadesEl = document.getElementById(
+            "quick-opportunities-list",
+        );
+        // Security Code Elements
+        const securityCodeContainer = document.getElementById(
+            "security-code-container",
+        );
+        const securityCodeValue = document.getElementById(
+            "security-code-value",
+        );
 
         // Cache simple
         let currentUser = null;
         let dashboardInitialized = false;
 
         async function initDashboard(user) {
-             console.log("🎯 [DASHBOARD] initDashboard start for:", user.uid);
-             if(dashboardInitialized) return;
-             currentUser = user;
-             dashboardInitialized = true;
-             await loadDashboardData(user.uid);
-             registerPushNotifications(user.uid);
-             loadQuickOpportunities();
+            console.log("🎯 [DASHBOARD] initDashboard start for:", user.uid);
+            if (dashboardInitialized) return;
+            currentUser = user;
+            dashboardInitialized = true;
+            await loadDashboardData(user.uid);
+            registerPushNotifications(user.uid);
+            loadQuickOpportunities();
         }
 
         // SPA & First Load Handler
         document.addEventListener("astro:page-load", async () => {
-             dashboardInitialized = false;
-             const user = window.currentUser || auth.currentUser;
-             if (user) {
+            dashboardInitialized = false;
+            const user = window.currentUser || auth.currentUser;
+            if (user) {
                 // Relaxed check: We are already on the panel.
                 initDashboard(user);
-             } else {
-                onAuthStateChanged(auth, async (u) => {
-                     if(u) {
-                        // Relaxed check: We are already on the panel, so we don't force redirect
-                        // unless we really want to restrict access (e.g. wrong role).
-                        // For now, allow access if logged in.
-                        initDashboard(u);
-                     } else {
-                         window.location.href = "/ingresar";
-                     }
-                }, { once: true });
-             }
+            } else {
+                onAuthStateChanged(
+                    auth,
+                    async (u) => {
+                        if (u) {
+                            // Relaxed check: We are already on the panel, so we don't force redirect
+                            // unless we really want to restrict access (e.g. wrong role).
+                            // For now, allow access if logged in.
+                            initDashboard(u);
+                        } else {
+                            window.location.href = "/ingresar";
+                        }
+                    },
+                    { once: true },
+                );
+            }
         });
 
         async function loadQuickOpportunities() {
             try {
-                console.log("🔍 [DASHBOARD] loadQuickOpportunities attempting query...");
-                
+                console.log(
+                    "🔍 [DASHBOARD] loadQuickOpportunities attempting query...",
+                );
+
                 // Debug: Check if 'solicitudes' has any data and what fields it uses
-                const testSnap = await getDocs(query(collection(db, "solicitudes"), limit(3)));
-                console.log("📋 [DASHBOARD] solicitudes found in collection:", testSnap.size);
-                if(!testSnap.empty) {
-                    console.log("📋 [DASHBOARD] Sample solicitud fields:", Object.keys(testSnap.docs[0].data()));
-                    console.log("📋 [DASHBOARD] Sample solicitud estado:", testSnap.docs[0].data().estado);
+                const testSnap = await getDocs(
+                    query(collection(db, "solicitudes"), limit(3)),
+                );
+                console.log(
+                    "📋 [DASHBOARD] solicitudes found in collection:",
+                    testSnap.size,
+                );
+                if (!testSnap.empty) {
+                    console.log(
+                        "📋 [DASHBOARD] Sample solicitud fields:",
+                        Object.keys(testSnap.docs[0].data()),
+                    );
+                    console.log(
+                        "📋 [DASHBOARD] Sample solicitud estado:",
+                        testSnap.docs[0].data().estado,
+                    );
                 }
 
                 const q = query(
                     collection(db, "solicitudes"),
                     where("estado", "in", ["nueva", "abierta"]), // Be more inclusive
                     orderBy("fechaHora", "desc"),
-                    limit(3)
+                    limit(3),
                 );
 
-                onSnapshot(q, (snapshot) => {
-                    console.log("📥 [DASHBOARD] Quick opportunities snapshot received. Size:", snapshot.size);
-                    if (quickOportunidadesEl) {
-                        if (snapshot.empty) {
-                            quickOportunidadesEl.innerHTML = `
+                onSnapshot(
+                    q,
+                    (snapshot) => {
+                        console.log(
+                            "📥 [DASHBOARD] Quick opportunities snapshot received. Size:",
+                            snapshot.size,
+                        );
+                        if (quickOportunidadesEl) {
+                            if (snapshot.empty) {
+                                quickOportunidadesEl.innerHTML = `
                                 <div class="text-center py-4 text-slate-400 text-sm">
                                     No hay solicitudes nuevas en este momento.
                                 </div>
                             `;
-                            return;
-                        }
+                                return;
+                            }
 
-                        quickOportunidadesEl.innerHTML = snapshot.docs.map(doc => {
-                            const data = doc.data();
-                            const fecha = data.fechaHora?.toDate ? data.fechaHora.toDate() : (data.fecha?.toDate ? data.fecha.toDate() : new Date());
-                            const timeAgo = getTimeAgo(fecha);
-                            
-                            return `
+                            quickOportunidadesEl.innerHTML = snapshot.docs
+                                .map((doc) => {
+                                    const data = doc.data();
+                                    const fecha = data.fechaHora?.toDate
+                                        ? data.fechaHora.toDate()
+                                        : data.fecha?.toDate
+                                          ? data.fecha.toDate()
+                                          : new Date();
+                                    const timeAgo = getTimeAgo(fecha);
+
+                                    return `
                                 <div onclick="window.location.href='/panel/oportunidades'" class="p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-orange-200 transition cursor-pointer">
                                     <div class="flex justify-between items-start mb-2">
                                         <span class="text-xs font-bold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">NUEVO</span>
                                         <span class="text-xs text-slate-400">${timeAgo}</span>
                                     </div>
                                     <p class="text-sm font-medium text-slate-700">
-                                        ${data.rubro || 'Servicio'} - ${data.localidad || 'Zona desconocida'}
+                                        ${data.rubro || "Servicio"} - ${data.localidad || "Zona desconocida"}
                                     </p>
                                 </div>
                             `;
-                        }).join('');
-                    }
-                }, (err) => {
-                    console.error("❌ [DASHBOARD] Error in quick opportunities snapshot:", err);
-                    if (quickOportunidadesEl) quickOportunidadesEl.innerHTML = '<p class="text-xs text-red-400">Error en el índice de Firebase</p>';
-                });
+                                })
+                                .join("");
+                        }
+                    },
+                    (err) => {
+                        console.error(
+                            "❌ [DASHBOARD] Error in quick opportunities snapshot:",
+                            err,
+                        );
+                        if (quickOportunidadesEl)
+                            quickOportunidadesEl.innerHTML =
+                                '<p class="text-xs text-red-400">Error en el índice de Firebase</p>';
+                    },
+                );
             } catch (error) {
-                console.error("❌ [DASHBOARD] Error initial load of quick opportunities:", error);
+                console.error(
+                    "❌ [DASHBOARD] Error initial load of quick opportunities:",
+                    error,
+                );
             }
         }
 
         function getTimeAgo(date) {
-            const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+            const seconds = Math.floor(
+                (new Date().getTime() - date.getTime()) / 1000,
+            );
             let interval = seconds / 31536000;
             if (interval > 1) return `Hace ${Math.floor(interval)} años`;
             interval = seconds / 2592000;
@@ -576,37 +784,53 @@ import Layout from "../../layouts/Layout.astro";
 
         let profileUnsub = null;
         async function loadDashboardData(uid) {
-            console.log("📊 [DASHBOARD] loadDashboardData started for uid:", uid);
+            console.log(
+                "📊 [DASHBOARD] loadDashboardData started for uid:",
+                uid,
+            );
             try {
                 if (profileUnsub) profileUnsub();
-                
+
                 const docRef = doc(db, "profesionales", uid);
-                
+
                 profileUnsub = onSnapshot(docRef, (docSnap) => {
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        
+
                         // Header Info
-                        if (userNameEl) userNameEl.innerText = data.nombre || "Profesional";
+                        if (userNameEl)
+                            userNameEl.innerText = data.nombre || "Profesional";
                         // @ts-ignore
-                        if (userAvatarEl && data.foto) userAvatarEl.src = data.foto;
+                        if (userAvatarEl && data.foto)
+                            userAvatarEl.src = data.foto;
 
                         // Security Code Logic
                         if (data.codigo_seguridad) {
-                            if (securityCodeValue) securityCodeValue.innerText = data.codigo_seguridad;
-                            if (securityCodeContainer) securityCodeContainer.classList.remove("hidden");
+                            if (securityCodeValue)
+                                securityCodeValue.innerText =
+                                    data.codigo_seguridad;
+                            if (securityCodeContainer)
+                                securityCodeContainer.classList.remove(
+                                    "hidden",
+                                );
                         } else {
-                            if (securityCodeContainer) securityCodeContainer.classList.add("hidden");
+                            if (securityCodeContainer)
+                                securityCodeContainer.classList.add("hidden");
                         }
 
                         // Puntos y Visitas (Live from main doc)
-                        const visitas = data.visitas_perfil || data.vistas_perfil || 0;
-                        if (kpiVisitasEl) kpiVisitasEl.innerText = visitas.toString();
-                        
-                        const puntos = data.puntos || 0;
-                        if (totalPointsCardEl) totalPointsCardEl.innerHTML = puntos.toString();
+                        const visitas =
+                            data.visitas_perfil || data.vistas_perfil || 0;
+                        if (kpiVisitasEl)
+                            kpiVisitasEl.innerText = visitas.toString();
 
-                        console.log("✅ [DASHBOARD] Profile updated in real-time");
+                        const puntos = data.puntos || 0;
+                        if (totalPointsCardEl)
+                            totalPointsCardEl.innerHTML = puntos.toString();
+
+                        console.log(
+                            "✅ [DASHBOARD] Profile updated in real-time",
+                        );
                     }
                 });
 
@@ -618,9 +842,8 @@ import Layout from "../../layouts/Layout.astro";
                     loadPerformanceChart(uid), // This is okay as a one-time load or we can leave it
                     loadNotifications(uid),
                     loadTeamMembers(uid),
-                    loadLatestBudgets(uid)
+                    loadLatestBudgets(uid),
                 ]);
-
             } catch (error) {
                 console.error("💥 [DASHBOARD] Error loading dashboard:", error);
             }
@@ -630,25 +853,38 @@ import Layout from "../../layouts/Layout.astro";
         async function loadFinanzas(uid) {
             try {
                 if (finanzasUnsub) finanzasUnsub();
-                
+
                 const now = new Date();
-                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-                
+                const startOfMonth = new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    1,
+                );
+
                 const q = query(
                     collection(db, "profesionales", uid, "finanzas"),
                     where("fecha", ">=", startOfMonth),
-                    where("tipo", "==", "ingreso")
+                    where("tipo", "==", "ingreso"),
                 );
-                
+
                 finanzasUnsub = onSnapshot(q, (snapshot) => {
-                    const totalIngresos = snapshot.docs.reduce((sum, doc) => sum + (doc.data().monto || 0), 0);
+                    const totalIngresos = snapshot.docs.reduce(
+                        (sum, doc) => sum + (doc.data().monto || 0),
+                        0,
+                    );
                     if (kpiIngresosEl) {
                         kpiIngresosEl.innerText = `$${totalIngresos.toLocaleString()}`;
-                        console.log("💰 [DASHBOARD] Actualizados ingresos:", totalIngresos);
+                        console.log(
+                            "💰 [DASHBOARD] Actualizados ingresos:",
+                            totalIngresos,
+                        );
                     }
                 });
             } catch (error) {
-                console.error("❌ [DASHBOARD] Error en listener de finanzas:", error);
+                console.error(
+                    "❌ [DASHBOARD] Error en listener de finanzas:",
+                    error,
+                );
                 if (kpiIngresosEl) kpiIngresosEl.innerText = "$0";
             }
         }
@@ -657,69 +893,101 @@ import Layout from "../../layouts/Layout.astro";
         async function loadPresupuestos(uid) {
             try {
                 if (presupuestosUnsub) presupuestosUnsub();
-                
+
                 const q = query(
                     collection(db, "profesionales", uid, "presupuestos"),
-                    where("estado", "in", ["pendiente", "enviado", "en_revision"])
+                    where("estado", "in", [
+                        "pendiente",
+                        "enviado",
+                        "en_revision",
+                    ]),
                 );
-                
+
                 presupuestosUnsub = onSnapshot(q, (snapshot) => {
                     const count = snapshot.size;
                     if (kpiPresupuestosEl) {
                         kpiPresupuestosEl.innerText = count.toString();
-                        console.log("📄 [DASHBOARD] Actualizados presupuestos:", count);
+                        console.log(
+                            "📄 [DASHBOARD] Actualizados presupuestos:",
+                            count,
+                        );
                     }
                 });
             } catch (error) {
-                console.error("❌ [DASHBOARD] Error en listener de presupuestos:", error);
+                console.error(
+                    "❌ [DASHBOARD] Error en listener de presupuestos:",
+                    error,
+                );
                 if (kpiPresupuestosEl) kpiPresupuestosEl.innerText = "0";
             }
         }
-
 
         // Load Performance Chart (monthly revenue)
         async function loadPerformanceChart(uid) {
             try {
                 console.log("📈 [DASHBOARD] Loading performance chart...");
-                const chartContainer = document.getElementById("performance-chart");
+                const chartContainer =
+                    document.getElementById("performance-chart");
                 const chartLabels = document.getElementById("chart-labels");
                 const chartTotal = document.getElementById("chart-total");
-                const periodSelect = document.getElementById("chart-period-select");
-                
+                const periodSelect = document.getElementById(
+                    "chart-period-select",
+                );
+
                 if (!chartContainer) return;
 
                 const loadChartData = async (months = 6) => {
                     const now = new Date();
                     const monthsData = [];
-                    
+
                     // Get last N months of data
                     for (let i = months - 1; i >= 0; i--) {
-                        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-                        const nextMonth = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
-                        
+                        const date = new Date(
+                            now.getFullYear(),
+                            now.getMonth() - i,
+                            1,
+                        );
+                        const nextMonth = new Date(
+                            now.getFullYear(),
+                            now.getMonth() - i + 1,
+                            1,
+                        );
+
                         const q = query(
                             collection(db, "profesionales", uid, "finanzas"),
                             where("fecha", ">=", date),
                             where("fecha", "<", nextMonth),
-                            where("tipo", "==", "ingreso")
+                            where("tipo", "==", "ingreso"),
                         );
-                        
+
                         const snapshot = await getDocs(q);
-                        const total = snapshot.docs.reduce((sum, doc) => sum + (doc.data().monto || 0), 0);
-                        
+                        const total = snapshot.docs.reduce(
+                            (sum, doc) => sum + (doc.data().monto || 0),
+                            0,
+                        );
+
                         monthsData.push({
-                            month: date.toLocaleDateString('es-AR', { month: 'short' }),
-                            total: total
+                            month: date.toLocaleDateString("es-AR", {
+                                month: "short",
+                            }),
+                            total: total,
                         });
                     }
-                    
-                    const maxValue = Math.max(...monthsData.map(m => m.total), 1);
-                    const totalRevenue = monthsData.reduce((sum, m) => sum + m.total, 0);
-                    
+
+                    const maxValue = Math.max(
+                        ...monthsData.map((m) => m.total),
+                        1,
+                    );
+                    const totalRevenue = monthsData.reduce(
+                        (sum, m) => sum + m.total,
+                        0,
+                    );
+
                     // Render bars
-                    chartContainer.innerHTML = monthsData.map(m => {
-                        const heightPercentage = (m.total / maxValue) * 100;
-                        return `
+                    chartContainer.innerHTML = monthsData
+                        .map((m) => {
+                            const heightPercentage = (m.total / maxValue) * 100;
+                            return `
                             <div class="w-full flex flex-col items-center justify-end" style="height: 100%;">
                                 <div class="w-full bg-gradient-to-t from-orange-500 to-orange-400 rounded-t hover:from-orange-600 hover:to-orange-500 transition-all cursor-pointer relative group" 
                                      style="height: ${heightPercentage}%;">
@@ -729,35 +997,45 @@ import Layout from "../../layouts/Layout.astro";
                                 </div>
                             </div>
                         `;
-                    }).join('');
-                    
+                        })
+                        .join("");
+
                     // Render labels
                     if (chartLabels) {
-                        chartLabels.innerHTML = monthsData.map(m => `<span>${m.month}</span>`).join('');
+                        chartLabels.innerHTML = monthsData
+                            .map((m) => `<span>${m.month}</span>`)
+                            .join("");
                     }
-                    
+
                     // Update total
                     if (chartTotal) {
                         chartTotal.innerText = `Total: $${totalRevenue.toLocaleString()}`;
                     }
-                    
-                    console.log("✅ [DASHBOARD] Performance chart rendered", monthsData);
+
+                    console.log(
+                        "✅ [DASHBOARD] Performance chart rendered",
+                        monthsData,
+                    );
                 };
-                
+
                 // Initial load
                 await loadChartData(6);
-                
+
                 // Period selector
                 periodSelect?.addEventListener("change", async (e) => {
                     const months = parseInt(e.target.value);
                     await loadChartData(months);
                 });
-                
             } catch (error) {
-                console.error("❌ [DASHBOARD] Error loading performance chart:", error);
-                const chartContainer = document.getElementById("performance-chart");
+                console.error(
+                    "❌ [DASHBOARD] Error loading performance chart:",
+                    error,
+                );
+                const chartContainer =
+                    document.getElementById("performance-chart");
                 if (chartContainer) {
-                    chartContainer.innerHTML = '<div class="flex items-center justify-center h-full text-slate-400 text-sm">Error al cargar gráfico</div>';
+                    chartContainer.innerHTML =
+                        '<div class="flex items-center justify-center h-full text-slate-400 text-sm">Error al cargar gráfico</div>';
                 }
             }
         }
@@ -765,79 +1043,105 @@ import Layout from "../../layouts/Layout.astro";
         let notificationsUnsub = null;
 
         async function loadNotifications(uid) {
-            console.log("🔔 [DASHBOARD] Setting up real-time notifications for:", uid);
-            
+            console.log(
+                "🔔 [DASHBOARD] Setting up real-time notifications for:",
+                uid,
+            );
+
             if (notificationsUnsub) notificationsUnsub();
 
             const q = query(
                 collection(db, "profesionales", uid, "notificaciones"),
                 orderBy("fecha", "desc"),
-                limit(20)
+                limit(20),
             );
 
             let isInitialLoad = true;
-            notificationsUnsub = onSnapshot(q, (snapshot) => {
-                const notifs = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+            notificationsUnsub = onSnapshot(
+                q,
+                (snapshot) => {
+                    const notifs = snapshot.docs.map((doc) => ({
+                        id: doc.id,
+                        ...doc.data(),
+                    }));
 
-                // Real-time Toast for new notifications
-                if (!isInitialLoad) {
-                    snapshot.docChanges().forEach((change) => {
-                        if (change.type === "added") {
-                            const n = change.doc.data();
-                            if (!n.leido) {
-                                // @ts-ignore
-                                Swal.fire({
-                                    title: n.titulo || "Nueva Notificación",
-                                    text: n.mensaje || "",
-                                    icon: "info",
-                                    toast: true,
-                                    position: "top-end",
-                                    showConfirmButton: false,
-                                    timer: 5000,
-                                    timerProgressBar: true,
-                                    didOpen: (toast) => {
-                                        toast.addEventListener('mouseenter', Swal.stopTimer)
-                                        toast.addEventListener('mouseleave', Swal.resumeTimer)
-                                        toast.addEventListener('click', () => {
-                                            window.verNotificacion(change.doc.id, n.link || '#', false);
-                                        })
-                                    }
-                                });
+                    // Real-time Toast for new notifications
+                    if (!isInitialLoad) {
+                        snapshot.docChanges().forEach((change) => {
+                            if (change.type === "added") {
+                                const n = change.doc.data();
+                                if (!n.leido) {
+                                    // @ts-ignore
+                                    Swal.fire({
+                                        title: n.titulo || "Nueva Notificación",
+                                        text: n.mensaje || "",
+                                        icon: "info",
+                                        toast: true,
+                                        position: "top-end",
+                                        showConfirmButton: false,
+                                        timer: 5000,
+                                        timerProgressBar: true,
+                                        didOpen: (toast) => {
+                                            toast.addEventListener(
+                                                "mouseenter",
+                                                Swal.stopTimer,
+                                            );
+                                            toast.addEventListener(
+                                                "mouseleave",
+                                                Swal.resumeTimer,
+                                            );
+                                            toast.addEventListener(
+                                                "click",
+                                                () => {
+                                                    window.verNotificacion(
+                                                        change.doc.id,
+                                                        n.link || "#",
+                                                        false,
+                                                    );
+                                                },
+                                            );
+                                        },
+                                    });
+                                }
                             }
-                        }
-                    });
-                }
-                isInitialLoad = false;
+                        });
+                    }
+                    isInitialLoad = false;
 
-                console.log(`📥 [DASHBOARD] Recibidas ${notifs.length} notificaciones`);
+                    console.log(
+                        `📥 [DASHBOARD] Recibidas ${notifs.length} notificaciones`,
+                    );
 
-                if (notificationListEl) {
-                    if (notifs.length === 0) {
-                        notificationListEl.innerHTML = `
+                    if (notificationListEl) {
+                        if (notifs.length === 0) {
+                            notificationListEl.innerHTML = `
                             <div class="p-8 text-center text-slate-400">
                                 <span class="text-2xl block mb-2">🎈</span>
                                 <p class="text-xs">No tienes notificaciones aún</p>
                             </div>
                         `;
-                    } else {
-                        notificationListEl.innerHTML = notifs.map(n => {
-                            const fecha = n.fecha?.toDate ? n.fecha.toDate() : new Date();
-                            const timeStr = formatDate(fecha);
-                            // Escapar comillas para el objeto JSON
-                            const notifJson = JSON.stringify(n).replace(/'/g, "\\'");
-                            return `
-                                <div class="p-3 border-b border-slate-50 hover:bg-slate-50 transition cursor-pointer group flex items-start gap-2 ${n.leido ? 'opacity-60' : ''}" 
+                        } else {
+                            notificationListEl.innerHTML = notifs
+                                .map((n) => {
+                                    const fecha = n.fecha?.toDate
+                                        ? n.fecha.toDate()
+                                        : new Date();
+                                    const timeStr = formatDate(fecha);
+                                    // Escapar comillas para el objeto JSON
+                                    const notifJson = JSON.stringify(n).replace(
+                                        /'/g,
+                                        "\\'",
+                                    );
+                                    return `
+                                <div class="p-3 border-b border-slate-50 hover:bg-slate-50 transition cursor-pointer group flex items-start gap-2 ${n.leido ? "opacity-60" : ""}" 
                                      onclick='window.verNotificacion("${n.id}", "${n.link || "#"}", ${n.leido}, ${notifJson})'>
                                     <div class="flex-1 min-w-0">
                                         <div class="flex justify-between mb-1">
-                                            <span class="font-bold text-[11px] text-slate-700 leading-tight truncate">${n.titulo || 'Notificación'}</span>
+                                            <span class="font-bold text-[11px] text-slate-700 leading-tight truncate">${n.titulo || "Notificación"}</span>
                                             <span class="text-[9px] text-slate-400 whitespace-nowrap ml-2">${timeStr}</span>
                                         </div>
-                                        <p class="text-[10px] text-slate-500 line-clamp-2 mb-1">${n.mensaje || ''}</p>
-                                        ${!n.leido ? '<span class="inline-block w-1.5 h-1.5 bg-orange-500 rounded-full"></span>' : ''} 
+                                        <p class="text-[10px] text-slate-500 line-clamp-2 mb-1">${n.mensaje || ""}</p>
+                                        ${!n.leido ? '<span class="inline-block w-1.5 h-1.5 bg-orange-500 rounded-full"></span>' : ""} 
                                     </div>
                                     <button 
                                         onclick="event.stopPropagation(); window.borrarNotificacion('${n.id}')"
@@ -849,33 +1153,45 @@ import Layout from "../../layouts/Layout.astro";
                                     </button>
                                 </div>
                             `;
-                        }).join('');
+                                })
+                                .join("");
+                        }
                     }
-                }
 
-                // Badge Logic
-                const unreadCount = notifs.filter(n => !n.leido).length;
-                if (badgeBellEl) {
-                    if (unreadCount > 0) {
-                        badgeBellEl.classList.remove("hidden");
-                        // Optional: update badge with number if needed
-                    } else {
-                        badgeBellEl.classList.add("hidden");
+                    // Badge Logic
+                    const unreadCount = notifs.filter((n) => !n.leido).length;
+                    if (badgeBellEl) {
+                        if (unreadCount > 0) {
+                            badgeBellEl.classList.remove("hidden");
+                            // Optional: update badge with number if needed
+                        } else {
+                            badgeBellEl.classList.add("hidden");
+                        }
                     }
-                }
-            }, (error) => {
-                console.error("❌ [DASHBOARD] Error en listener de notificaciones:", error);
-            });
+                },
+                (error) => {
+                    console.error(
+                        "❌ [DASHBOARD] Error en listener de notificaciones:",
+                        error,
+                    );
+                },
+            );
         }
 
         // Action when clicking a notification
         window.verNotificacion = async (id, link, leido, notifData) => {
             if (!currentUser) return;
-            
+
             // Mark as read if it wasn't
             if (!leido) {
                 try {
-                    const docRef = doc(db, "profesionales", currentUser.uid, "notificaciones", id);
+                    const docRef = doc(
+                        db,
+                        "profesionales",
+                        currentUser.uid,
+                        "notificaciones",
+                        id,
+                    );
                     await updateDoc(docRef, { leido: true });
                 } catch (e) {
                     console.error("Error al marcar como leída:", e);
@@ -890,7 +1206,7 @@ import Layout from "../../layouts/Layout.astro";
                     html: `
                         <div class="text-left space-y-4 pt-2">
                             <div class="flex items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-sm">
-                                <img src="${notifData.clienteFoto || '/default-avatar.png'}" alt="${notifData.clienteNombre}" class="w-16 h-16 rounded-full object-cover border-2 border-green-500 shadow-sm" />
+                                <img src="${notifData.clienteFoto || "/default-avatar.png"}" alt="${notifData.clienteNombre}" class="w-16 h-16 rounded-full object-cover border-2 border-green-500 shadow-sm" />
                                 <div>
                                     <h3 class="font-bold text-lg text-slate-900 leading-tight">${notifData.clienteNombre || "Cliente"}</h3>
                                     <p class="text-xs text-slate-500 uppercase font-black tracking-widest mt-1">CLIENTE</p>
@@ -899,16 +1215,22 @@ import Layout from "../../layouts/Layout.astro";
                             
 
                             <div class="grid grid-cols-1 gap-2 text-sm px-1">
-                                ${notifData.clienteTelefono ? `
+                                ${
+                                    notifData.clienteTelefono
+                                        ? `
                                     <div class="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl">
                                         <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600">📱</div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-[10px] text-slate-400 font-bold uppercase">Teléfono</p>
-                                            <a href="https://wa.me/549${notifData.clienteTelefono.replace(/\D/g, '')}" target="_blank" class="font-bold text-slate-700 hover:text-green-600 transition truncate block">${notifData.clienteTelefono}</a>
+                                            <a href="https://wa.me/549${notifData.clienteTelefono.replace(/\D/g, "")}" target="_blank" class="font-bold text-slate-700 hover:text-green-600 transition truncate block">${notifData.clienteTelefono}</a>
                                         </div>
                                     </div>
-                                ` : ''}
-                                ${notifData.clienteEmail ? `
+                                `
+                                        : ""
+                                }
+                                ${
+                                    notifData.clienteEmail
+                                        ? `
                                     <div class="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl">
                                         <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">📧</div>
                                         <div class="flex-1 min-w-0">
@@ -916,38 +1238,48 @@ import Layout from "../../layouts/Layout.astro";
                                             <span class="font-bold text-slate-700 truncate block">${notifData.clienteEmail}</span>
                                         </div>
                                     </div>
-                                ` : ''}
+                                `
+                                        : ""
+                                }
                             </div>
 
-                            ${notifData.clienteTelefono ? `
-                                <a href="https://wa.me/549${notifData.clienteTelefono.replace(/\D/g, '')}" target="_blank" class="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-black py-4 px-6 rounded-2xl transition-all shadow-lg shadow-green-100 transform active:scale-95">
+                            ${
+                                notifData.clienteTelefono
+                                    ? `
+                                <a href="https://wa.me/549${notifData.clienteTelefono.replace(/\D/g, "")}" target="_blank" class="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-black py-4 px-6 rounded-2xl transition-all shadow-lg shadow-green-100 transform active:scale-95">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.588-5.946 0-6.556 5.332-11.888 11.888-11.888 3.176 0 6.161 1.237 8.404 3.483 2.247 2.248 3.481 5.234 3.481 8.406 0 6.556-5.332 11.888-11.888 11.888-2.01 0-3.988-.511-5.741-1.483l-6.243 1.692zm6.205-4.008l.445.265c1.404.835 3.028 1.277 4.693 1.277 5.175 0 9.387-4.212 9.387-9.387 0-2.506-.975-4.861-2.744-6.632-1.771-1.77-4.125-2.745-6.631-2.745-5.176 0-9.387 4.212-9.387 9.387 0 1.954.59 3.86 1.706 5.466l.29.418-.992 3.623 3.712-.998zm11.239-5.918c-.31-.155-1.838-.906-2.119-1.008-.281-.102-.486-.155-.69.155-.205.31-.79.998-.968 1.205-.178.207-.356.233-.666.078-.31-.155-1.31-.483-2.496-1.542-.922-.822-1.544-1.838-1.724-2.148-.181-.31-.019-.478.136-.632.14-.138.31-.359.466-.539.15-.181.2-.31.3-.517.102-.207.051-.389-.026-.544-.076-.155-.69-1.662-.946-2.278-.249-.6-.503-.518-.69-.527-.179-.009-.384-.011-.59-.011-.205 0-.539.077-.82.384-.282.311-1.077 1.053-1.077 2.568 0 1.516 1.102 2.977 1.256 3.184.154.207 2.169 3.328 5.253 4.653.733.315 1.306.503 1.751.644.737.234 1.406.201 1.936.121.591-.088 1.838-.751 2.094-1.477.256-.725.256-1.346.179-1.477-.077-.13-.282-.207-.591-.362z"></path></svg>
                                     CONTACTAR POR WHATSAPP
                                 </a>
-                            ` : ''}
+                            `
+                                    : ""
+                            }
                         </div>
                     `,
                     width: "450px",
                     confirmButtonText: "Entendido",
                     confirmButtonColor: "#1e293b", // slate-800
                     customClass: {
-                        container: 'budget-notif-container',
-                        popup: 'rounded-3xl shadow-2xl border border-slate-100',
-                        confirmButton: 'rounded-xl font-black px-8 py-3 uppercase tracking-widest text-sm'
-                    }
+                        container: "budget-notif-container",
+                        popup: "rounded-3xl shadow-2xl border border-slate-100",
+                        confirmButton:
+                            "rounded-xl font-black px-8 py-3 uppercase tracking-widest text-sm",
+                    },
                 });
-            } else if (notifData && notifData.tipo === "presupuesto_rechazado") {
+            } else if (
+                notifData &&
+                notifData.tipo === "presupuesto_rechazado"
+            ) {
                 // @ts-ignore
                 Swal.fire({
                     title: "Presupuesto Rechazado",
                     text: notifData.mensaje,
                     icon: "info",
                     confirmButtonText: "Cerrar",
-                    confirmButtonColor: "#64748b"
+                    confirmButtonColor: "#64748b",
                 });
             } else {
                 // Fallback: original logic
-                if (link && link !== '#') {
+                if (link && link !== "#") {
                     window.location.href = link;
                 }
             }
@@ -957,20 +1289,29 @@ import Layout from "../../layouts/Layout.astro";
         window.borrarNotificacion = async (id) => {
             if (!currentUser) return;
             try {
-                const docRef = doc(db, "profesionales", currentUser.uid, "notificaciones", id);
+                const docRef = doc(
+                    db,
+                    "profesionales",
+                    currentUser.uid,
+                    "notificaciones",
+                    id,
+                );
                 await deleteDoc(docRef);
                 console.log("🗑️ [DASHBOARD] Notificación eliminada:", id);
             } catch (error) {
-                console.error("❌ [DASHBOARD] Error al borrar notificación:", error);
+                console.error(
+                    "❌ [DASHBOARD] Error al borrar notificación:",
+                    error,
+                );
             }
         };
 
-         async function loadTeamMembers(uid) {
+        async function loadTeamMembers(uid) {
             try {
                 console.log("👥 [DASHBOARD] Loading team members...");
                 const q = query(collection(db, "profesionales", uid, "equipo"));
                 const snapshot = await getDocs(q);
-                
+
                 if (snapshot.empty) {
                     console.log("ℹ️ [DASHBOARD] No team members found");
                     if (teamListEl) {
@@ -985,16 +1326,22 @@ import Layout from "../../layouts/Layout.astro";
                 }
 
                 let totalPending = 0;
-                const teamMembers = snapshot.docs.map(doc => {
+                const teamMembers = snapshot.docs.map((doc) => {
                     const data = doc.data();
                     totalPending += data.pendiente || 0;
                     return data;
                 });
 
-                console.log("✅ [DASHBOARD] Found", teamMembers.length, "team members");
+                console.log(
+                    "✅ [DASHBOARD] Found",
+                    teamMembers.length,
+                    "team members",
+                );
 
                 if (teamListEl) {
-                     teamListEl.innerHTML = teamMembers.map(member => `
+                    teamListEl.innerHTML = teamMembers
+                        .map(
+                            (member) => `
                         <div class="flex items-center gap-3 py-2 border-b border-slate-50 last:border-0">
                             <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-500 text-xs">
                                 ${(member.nombre || member.name || "T")[0].toUpperCase()}
@@ -1003,11 +1350,13 @@ import Layout from "../../layouts/Layout.astro";
                                 <p class="text-sm font-medium text-slate-800">${member.nombre || member.name || "Miembro"}</p>
                                 <p class="text-xs text-slate-500">${member.rol || member.role || "Colaborador"}</p>
                             </div>
-                            <span class="text-[10px] px-2 py-1 rounded-full ${member.estado === 'Trabajando' || member.status === 'working' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}">
-                                ${member.estado || (member.status === 'working' ? 'Trabajando' : 'Libre')}
+                            <span class="text-[10px] px-2 py-1 rounded-full ${member.estado === "Trabajando" || member.status === "working" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}">
+                                ${member.estado || (member.status === "working" ? "Trabajando" : "Libre")}
                             </span>
                         </div>
-                     `).join('');
+                     `,
+                        )
+                        .join("");
                 }
 
                 if (teamTotalPendingEl) {
@@ -1023,49 +1372,55 @@ import Layout from "../../layouts/Layout.astro";
                     `;
                 }
             }
-         }
+        }
 
-         async function loadLatestBudgets(uid) {
-             try {
-                 console.log("📋 [DASHBOARD] Loading latest budgets...");
-                 const q = query(
-                     collection(db, "profesionales", uid, "presupuestos"),
-                     orderBy("fecha", "desc"),
-                     limit(5)
-                 );
-                 
-                 const snapshot = await getDocs(q);
-                 const budgetsTbody = document.getElementById("latest-budgets-tbody");
-                 
-                 if (snapshot.empty) {
-                     console.log("ℹ️ [DASHBOARD] No budgets found");
-                     if(budgetsTbody) {
-                         budgetsTbody.innerHTML = `
+        async function loadLatestBudgets(uid) {
+            try {
+                console.log("📋 [DASHBOARD] Loading latest budgets...");
+                const q = query(
+                    collection(db, "profesionales", uid, "presupuestos"),
+                    orderBy("fecha", "desc"),
+                    limit(5),
+                );
+
+                const snapshot = await getDocs(q);
+                const budgetsTbody = document.getElementById(
+                    "latest-budgets-tbody",
+                );
+
+                if (snapshot.empty) {
+                    console.log("ℹ️ [DASHBOARD] No budgets found");
+                    if (budgetsTbody) {
+                        budgetsTbody.innerHTML = `
                              <tr>
                                  <td colspan="4" class="px-6 py-8 text-center text-slate-400 text-sm">
                                      No tienes presupuestos aún
                                  </td>
                              </tr>
                          `;
-                     }
-                     return;
-                 }
+                    }
+                    return;
+                }
 
-                 console.log("✅ [DASHBOARD] Found", snapshot.size, "budgets");
-                 
-                 const budgets = snapshot.docs.map(doc => {
-                     const data = doc.data();
-                     const fecha = data.fecha?.toDate ? data.fecha.toDate() : new Date();
-                     return {
-                         client: data.clienteNombre || data.cliente || "Cliente",
-                         amount: data.monto || data.amount || 0,
-                         status: data.estado || data.status || "pendiente",
-                         date: formatDate(fecha)
-                     };
-                 });
+                console.log("✅ [DASHBOARD] Found", snapshot.size, "budgets");
 
-                 if(budgetsTbody) {
-                     budgetsTbody.innerHTML = budgets.map(b => `
+                const budgets = snapshot.docs.map((doc) => {
+                    const data = doc.data();
+                    const fecha = data.fecha?.toDate
+                        ? data.fecha.toDate()
+                        : new Date();
+                    return {
+                        client: data.clienteNombre || data.cliente || "Cliente",
+                        amount: data.monto || data.amount || 0,
+                        status: data.estado || data.status || "pendiente",
+                        date: formatDate(fecha),
+                    };
+                });
+
+                if (budgetsTbody) {
+                    budgetsTbody.innerHTML = budgets
+                        .map(
+                            (b) => `
                         <tr class="hover:bg-slate-50">
                             <td class="px-6 py-4 font-medium text-slate-800">${b.client}</td>
                             <td class="px-6 py-4">$${b.amount.toLocaleString()}</td>
@@ -1076,58 +1431,78 @@ import Layout from "../../layouts/Layout.astro";
                             </td>
                             <td class="px-6 py-4 text-slate-500">${b.date}</td>
                         </tr>
-                     `).join('');
-                 }
-             } catch (error) {
-                 console.error("❌ [DASHBOARD] Error loading budgets:", error);
-                 const budgetsTbody = document.getElementById("latest-budgets-tbody");
-                 if(budgetsTbody) {
-                     budgetsTbody.innerHTML = `
+                     `,
+                        )
+                        .join("");
+                }
+            } catch (error) {
+                console.error("❌ [DASHBOARD] Error loading budgets:", error);
+                const budgetsTbody = document.getElementById(
+                    "latest-budgets-tbody",
+                );
+                if (budgetsTbody) {
+                    budgetsTbody.innerHTML = `
                          <tr>
                              <td colspan="4" class="px-6 py-4 text-center text-red-400 text-sm">
                                  Error al cargar presupuestos
                              </td>
                          </tr>
                      `;
-                 }
-             }
-         }
+                }
+            }
+        }
 
-         // Helper functions
-         function formatDate(date) {
-             const today = new Date();
-             const yesterday = new Date(today);
-             yesterday.setDate(yesterday.getDate() - 1);
-             
-             if (date.toDateString() === today.toDateString()) return "Hoy";
-             if (date.toDateString() === yesterday.toDateString()) return "Ayer";
-             
-             return date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
-         }
+        // Helper functions
+        function formatDate(date) {
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
 
-         function getStatusClass(status) {
-             const statusLower = (status || "").toLowerCase();
-             if (statusLower.includes('acepta') || statusLower.includes('approved')) return 'bg-green-100 text-green-700';
-             if (statusLower.includes('pend') || statusLower.includes('pending')) return 'bg-yellow-100 text-yellow-700';
-             if (statusLower.includes('proceso') || statusLower.includes('progress')) return 'bg-blue-100 text-blue-700';
-             if (statusLower.includes('rechaza') || statusLower.includes('rejected')) return 'bg-red-100 text-red-700';
-             return 'bg-slate-100 text-slate-700';
-         }
+            if (date.toDateString() === today.toDateString()) return "Hoy";
+            if (date.toDateString() === yesterday.toDateString()) return "Ayer";
 
-         function formatStatus(status) {
-             const statusMap = {
-                 'pendiente': 'Pendiente',
-                 'pending': 'Pendiente',
-                 'aceptado': 'Aceptado',
-                 'approved': 'Aceptado',
-                 'en_proceso': 'En Proceso',
-                 'in_progress': 'En Proceso',
-                 'rechazado': 'Rechazado',
-                 'rejected': 'Rechazado',
-                 'enviado': 'Enviado'
-             };
-             return statusMap[status?.toLowerCase()] || status || 'Pendiente';
-         }
+            return date.toLocaleDateString("es-AR", {
+                day: "2-digit",
+                month: "2-digit",
+            });
+        }
+
+        function getStatusClass(status) {
+            const statusLower = (status || "").toLowerCase();
+            if (
+                statusLower.includes("acepta") ||
+                statusLower.includes("approved")
+            )
+                return "bg-green-100 text-green-700";
+            if (statusLower.includes("pend") || statusLower.includes("pending"))
+                return "bg-yellow-100 text-yellow-700";
+            if (
+                statusLower.includes("proceso") ||
+                statusLower.includes("progress")
+            )
+                return "bg-blue-100 text-blue-700";
+            if (
+                statusLower.includes("rechaza") ||
+                statusLower.includes("rejected")
+            )
+                return "bg-red-100 text-red-700";
+            return "bg-slate-100 text-slate-700";
+        }
+
+        function formatStatus(status) {
+            const statusMap = {
+                pendiente: "Pendiente",
+                pending: "Pendiente",
+                aceptado: "Aceptado",
+                approved: "Aceptado",
+                en_proceso: "En Proceso",
+                in_progress: "En Proceso",
+                rechazado: "Rechazado",
+                rejected: "Rechazado",
+                enviado: "Enviado",
+            };
+            return statusMap[status?.toLowerCase()] || status || "Pendiente";
+        }
 
         // UI Actions
         const btnNotifications = document.getElementById("btn-notifications");
@@ -1141,36 +1516,51 @@ import Layout from "../../layouts/Layout.astro";
 
         document.addEventListener("click", (e) => {
             // @ts-ignore
-            if (!notifDropdown?.contains(e.target) && !btnNotifications?.contains(e.target)) {
+            if (
+                !notifDropdown?.contains(e.target) &&
+                !btnNotifications?.contains(e.target)
+            ) {
                 notifDropdown?.classList.add("hidden");
             }
         });
 
         markReadBtn?.addEventListener("click", async () => {
-             if (!currentUser) return;
-             
-             try {
+            if (!currentUser) return;
+
+            try {
                 console.log("🧹 [DASHBOARD] Marcando todas como leídas...");
                 const q = query(
-                    collection(db, "profesionales", currentUser.uid, "notificaciones"),
-                    where("leido", "==", false)
+                    collection(
+                        db,
+                        "profesionales",
+                        currentUser.uid,
+                        "notificaciones",
+                    ),
+                    where("leido", "==", false),
                 );
-                
+
                 const snap = await getDocs(q);
-                const batchPromises = snap.docs.map(d => updateDoc(d.ref, { leido: true }));
+                const batchPromises = snap.docs.map((d) =>
+                    updateDoc(d.ref, { leido: true }),
+                );
                 await Promise.all(batchPromises);
-                
+
                 if (badgeBellEl) badgeBellEl.classList.add("hidden");
-                console.log("✅ [DASHBOARD] Todas las notificaciones marcadas como leídas");
-             } catch (error) {
-                 console.error("❌ [DASHBOARD] Error al marcar todas como leídas:", error);
-             }
+                console.log(
+                    "✅ [DASHBOARD] Todas las notificaciones marcadas como leídas",
+                );
+            } catch (error) {
+                console.error(
+                    "❌ [DASHBOARD] Error al marcar todas como leídas:",
+                    error,
+                );
+            }
         });
 
-         // Sidebar Mobile Toggle
+        // Sidebar Mobile Toggle
         const btnOpenSidebar = document.getElementById("open-sidebar");
         const sidebarOverlay = document.getElementById("sidebar-overlay");
-        
+
         // Note: Actual sidebar toggle logic likely handled in Sidebar/MobileSidebar components or global event bus
         // Basic fallback integration:
         btnOpenSidebar?.addEventListener("click", () => {
@@ -1180,16 +1570,15 @@ import Layout from "../../layouts/Layout.astro";
         // MAGIC LINK LOGIC
         const btnMagicLink = document.getElementById("btn-magic-link");
         btnMagicLink?.addEventListener("click", () => {
-            if(!currentUser) return;
+            if (!currentUser) return;
             // @ts-ignore
             const link = `https://deoficios.com/calificar/${currentUser.uid}`;
             const text = `Hola! Terminé el trabajo. Te dejo este link para que puedas calificarme en un segundo (no necesitas app): ${link}`;
             const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-            window.open(waUrl, '_blank');
+            window.open(waUrl, "_blank");
         });
     </script>
-
-                </div> <!-- flex-1 overflow-y-auto -->
-            </main>
-        </div> <!-- flex h-screen -->
 </Layout>
+<!-- flex-1 overflow-y-auto -->
+
+<!-- flex h-screen -->

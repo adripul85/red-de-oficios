@@ -1,5 +1,11 @@
 ---
-import { Briefcase, BookOpen, CircleHelp, Menu, MessageSquare } from "lucide-astro";
+import {
+  Briefcase,
+  BookOpen,
+  CircleHelp,
+  Menu,
+  MessageSquare,
+} from "lucide-astro";
 ---
 
 <div id="global-announcement" class="global-announcement hidden">
@@ -17,7 +23,8 @@ import { Briefcase, BookOpen, CircleHelp, Menu, MessageSquare } from "lucide-ast
         <a
           href="/planes"
           id="btn-planes-desktop"
-          class="nav-link destacados hidden flex items-center gap-1">
+          class="nav-link destacados hidden items-center gap-1"
+        >
           <Briefcase class="w-4 h-4" /> Planes
         </a>
         <a href="/blog" class="nav-link flex items-center gap-1">
@@ -29,7 +36,6 @@ import { Briefcase, BookOpen, CircleHelp, Menu, MessageSquare } from "lucide-ast
         <a href="/faq" class="nav-link flex items-center gap-1">
           <CircleHelp class="w-4 h-4" /> Ayuda
         </a>
-
       </nav>
 
       <div class="separator hidden-mobile"></div>
@@ -40,7 +46,6 @@ import { Briefcase, BookOpen, CircleHelp, Menu, MessageSquare } from "lucide-ast
         </div>
         <button id="menu-toggle" class="menu-toggle" aria-label="Abrir menú">
           <Menu class="w-8 h-8 text-gray-700" aria-hidden="true" />
-
         </button>
       </div>
     </div>
@@ -49,12 +54,13 @@ import { Briefcase, BookOpen, CircleHelp, Menu, MessageSquare } from "lucide-ast
 
 <div id="mobile-menu" class="mobile-menu hidden">
   <a href="/" class="mobile-link">🔍 Buscar</a>
-  <a href="/planes" id="btn-planes-mobile" class="mobile-link hidden">🚀 Planes</a>
+  <a href="/planes" id="btn-planes-mobile" class="mobile-link hidden"
+    >🚀 Planes</a
+  >
   <a href="/blog" class="mobile-link">📰 Blog</a>
   <a href="/foro" class="mobile-link">💬 Comunidad / Foro</a>
   <div id="mobile-auth-area" class="p-4 flex flex-col gap-2"></div>
 </div>
-
 
 <script>
   import { auth, db } from "../firebase/client";
@@ -91,27 +97,43 @@ import { Briefcase, BookOpen, CircleHelp, Menu, MessageSquare } from "lucide-ast
       let avatarHTML =
         '<div class="avatar-placeholder" style="width:32px;height:32px;border-radius:50%;background:#ea580c;color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;">U</div>';
       let profileLink = "/mi-perfil";
+      console.log("👤 updateHeaderUI starting for user:", currentUser?.uid);
       let userType = null;
 
       try {
+        if (!currentUser) {
+          console.log("🚫 No current user in updateHeaderUI");
+          return;
+        }
+
         // 🚀 OPTIMIZACIÓN 1: Verificar caché primero
         const cachedType = localStorage.getItem(`userType_${currentUser.uid}`);
+        console.log("📦 Cached userType:", cachedType);
 
         if (cachedType === "profesional" || cachedType === "cliente") {
-
           // Usar caché para query directa
 
           const collection =
             cachedType === "profesional" ? "profesionales" : "clientes";
           const docRef = doc(db, collection, currentUser.uid);
-          const snap = await getDoc(docRef);
+          const docSnap = await getDoc(docRef);
 
-          if (snap.exists()) {
-            const data = snap.data();
+          if (docSnap.exists()) {
+            const data = docSnap.data();
             nombre = data.nombre || "Usuario";
             profileLink =
               cachedType === "profesional" ? "/mi-perfil" : "/mi-cuenta";
             userType = cachedType;
+
+            // Mostrar sección admin si aplica
+            const isAdmin = ["admin", "administrador", "staff"].includes(
+              (data.rol || data.role || "").toLowerCase(),
+            );
+            if (isAdmin) {
+              document
+                .getElementById("admin-link-container")
+                ?.classList.remove("hidden");
+            }
 
             if (data.foto) {
               avatarHTML = `<img src="${data.foto}" alt="${nombre}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; display: block;" />`;
@@ -127,64 +149,77 @@ import { Briefcase, BookOpen, CircleHelp, Menu, MessageSquare } from "lucide-ast
           }
         }
 
-        // 🚀 OPTIMIZACIÓN 2: Si no hay caché, queries EN PARALELO
+        // 🚀 OPTIMIZACIÓN 2: Si no hay caché, queries SECUENCIALES con manejo de errores
         if (!userType) {
+          // Intentar como profesional primero (más común en esta ruta)
+          try {
+            const profSnap = await getDoc(
+              doc(db, "profesionales", currentUser.uid),
+            );
+            if (profSnap.exists()) {
+              const data = profSnap.data();
+              nombre = data.nombre || "Usuario";
+              profileLink = "/mi-perfil";
+              userType = "profesional";
 
+              if (data.foto) {
+                avatarHTML = `<img src="${data.foto}" alt="${nombre}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; display: block;" />`;
+              } else if (data.nombre) {
+                avatarHTML = `<div class="avatar-placeholder" style="width:32px;height:32px;border-radius:50%;background:#ea580c;color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;">${data.nombre[0].toUpperCase()}</div>`;
+              }
 
-          const [profSnap, clientSnap] = await Promise.all([
-            getDoc(doc(db, "profesionales", currentUser.uid)),
-            getDoc(doc(db, "clientes", currentUser.uid)),
-          ]);
+              // Mostrar sección admin si aplica
+              const isAdmin = ["admin", "administrador", "staff"].includes(
+                (data.rol || data.role || "").toLowerCase(),
+              );
+              if (isAdmin) {
+                document
+                  .getElementById("admin-link-container")
+                  ?.classList.remove("hidden");
+              }
 
-          if (profSnap.exists()) {
-            // Es profesional
-            const data = profSnap.data();
-            nombre = data.nombre || "Usuario";
-            profileLink = "/mi-perfil";
-            userType = "profesional";
-
-            if (data.foto) {
-              avatarHTML = `<img src="${data.foto}" alt="${nombre}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; display: block;" />`;
-            } else if (data.nombre) {
-              avatarHTML = `<div class="avatar-placeholder" style="width:32px;height:32px;border-radius:50%;background:#ea580c;color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;">${data.nombre[0].toUpperCase()}</div>`;
+              localStorage.setItem(
+                `userType_${currentUser.uid}`,
+                "profesional",
+              );
             }
+          } catch (e) {
+            console.warn("No es profesional o error de permisos", e);
+          }
 
-            // Mostrar botón Planes para profesionales (query sin caché)
+          // Si no se encontró como profesional, intentar como cliente
+          if (!userType) {
+            try {
+              const clientSnap = await getDoc(
+                doc(db, "clientes", currentUser.uid),
+              );
+              if (clientSnap.exists()) {
+                const data = clientSnap.data();
+                nombre = data.nombre || "Usuario";
+                profileLink = "/mi-cuenta";
+                userType = "cliente";
 
-            document
-              .getElementById("btn-planes-desktop")
-              ?.classList.remove("hidden");
-            document
-              .getElementById("btn-planes-mobile")
-              ?.classList.remove("hidden");
+                if (data.foto) {
+                  avatarHTML = `<img src="${data.foto}" alt="${nombre}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; display: block;" />`;
+                } else if (data.nombre) {
+                  avatarHTML = `<div class="avatar-placeholder" style="width:32px;height:32px;border-radius:50%;background:#4f46e5;color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;">${data.nombre[0].toUpperCase()}</div>`;
+                }
 
-            // Guardar en caché
-            localStorage.setItem(`userType_${currentUser.uid}`, "profesional");
+                // Mostrar sección admin si aplica
+                const isAdmin = ["admin", "administrador", "staff"].includes(
+                  (data.rol || data.role || "").toLowerCase(),
+                );
+                if (isAdmin) {
+                  document
+                    .getElementById("admin-link-container")
+                    ?.classList.remove("hidden");
+                }
 
-            // Mostrar botón Planes para profesionales
-
-            document
-              .getElementById("btn-planes-desktop")
-              ?.classList.remove("hidden");
-            document
-              .getElementById("btn-planes-mobile")
-              ?.classList.remove("hidden");
-          } else if (clientSnap.exists()) {
-            // Es cliente
-            const data = clientSnap.data();
-            nombre = data.nombre || "Usuario";
-            profileLink = "/mi-cuenta";
-            userType = "cliente";
-
-            if (data.foto) {
-              avatarHTML = `<img src="${data.foto}" alt="${nombre}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; display: block;" />`;
-            } else if (data.nombre) {
-              avatarHTML = `<div class="avatar-placeholder" style="width:32px;height:32px;border-radius:50%;background:#4f46e5;color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;">${data.nombre[0].toUpperCase()}</div>`;
+                localStorage.setItem(`userType_${currentUser.uid}`, "cliente");
+              }
+            } catch (e) {
+              console.warn("No es cliente o error de permisos", e);
             }
-
-            // Guardar en caché
-
-            localStorage.setItem(`userType_${currentUser.uid}`, "cliente");
           }
         }
       } catch (e) {
@@ -206,6 +241,12 @@ import { Briefcase, BookOpen, CircleHelp, Menu, MessageSquare } from "lucide-ast
             <div class="absolute right-0 top-full pt-2 w-48 hidden group-hover:block z-50">
                 <div class="bg-white border border-gray-100 rounded-xl shadow-xl p-2">
                     <a href="${profileLink}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition flex items-center">${iconUser} Mi Perfil</a>
+                    <div id="admin-link-container" class="hidden">
+                        <a href="/admin" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-block mr-1"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+                            Panel Admin
+                        </a>
+                    </div>
                     ${userType === "cliente" ? `<a href="/mi-cuenta" class="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition flex items-center">${iconHeart} Favoritos</a>` : ""}
                     <hr class="my-1 border-gray-100">
                     <button id="btn-logout-header" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition flex items-center">${iconLogOut} Cerrar Sesión</button>
@@ -244,7 +285,6 @@ import { Briefcase, BookOpen, CircleHelp, Menu, MessageSquare } from "lucide-ast
           }
           await signOut(auth);
           window.location.href = "/"; // Redirigir a la página principal
-
         });
       });
     } else {
@@ -416,7 +456,6 @@ import { Briefcase, BookOpen, CircleHelp, Menu, MessageSquare } from "lucide-ast
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
     max-height: calc(100vh - 70px);
     overflow-y: auto;
-
   }
   .mobile-link {
     display: block;
@@ -424,7 +463,6 @@ import { Briefcase, BookOpen, CircleHelp, Menu, MessageSquare } from "lucide-ast
     text-decoration: none;
     @apply text-gray-700 border-b border-gray-50;
     font-weight: 600;
-
   }
   .hidden {
     display: none !important;
@@ -517,4 +555,3 @@ import { Briefcase, BookOpen, CircleHelp, Menu, MessageSquare } from "lucide-ast
     }
   }
 </style>
-

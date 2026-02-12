@@ -1,49 +1,64 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import LayoutAdmin from "../../layouts/LayoutAdmin.astro";
 ---
 
-<Layout title="Buzón de Mensajes - Admin">
-    <div class="min-h-screen bg-slate-50 py-12 px-4 shadow-inner">
-        <div class="max-w-5xl mx-auto">
-            <!-- HEADER -->
-            <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
-                <div>
-                    <a href="/admin" class="text-slate-400 hover:text-slate-600 font-bold text-sm mb-3 flex items-center gap-2 transition-colors uppercase tracking-widest">
-                        <span>⬅</span> VOLVER AL PANEL
-                    </a>
-                    <h1 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                        <span class="text-3xl">📩</span> Buzón de Consultas
-                    </h1>
-                    <p class="text-slate-500 font-medium mt-1">Gestión de mensajes de contacto y soporte web</p>
-                </div>
+<LayoutAdmin title="Buzón de Mensajes - Admin">
+    <header
+        class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6"
+    >
+        <div>
+            <h1
+                class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3"
+            >
+                <span class="text-3xl">📩</span> Buzón de Consultas
+            </h1>
+            <p class="text-slate-500 font-medium mt-1">
+                Gestión de mensajes de contacto y soporte web
+            </p>
+        </div>
 
-                <div class="bg-indigo-50 border border-indigo-100 rounded-2xl px-5 py-3 flex items-center gap-3 shadow-sm">
-                    <div class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
-                    <span id="unread-count" class="text-indigo-700 font-black text-xs uppercase tracking-widest">Sincronizando...</span>
-                </div>
-            </header>
+        <div
+            class="bg-indigo-50 border border-indigo-100 rounded-2xl px-5 py-3 flex items-center gap-3 shadow-sm"
+        >
+            <div class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+            <span
+                id="unread-count"
+                class="text-indigo-700 font-black text-xs uppercase tracking-widest"
+                >Sincronizando...</span
+            >
+        </div>
+    </header>
 
-            <!-- LISTADO -->
-            <div id="msg-list" class="space-y-6">
-                <!-- Skeleton / Loading -->
-                <div class="flex items-center justify-center py-20">
-                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+    <!-- LISTADO -->
+    <div id="msg-list" class="space-y-6 min-h-[400px]">
+        <!-- Skeleton / Loading -->
+        <div class="flex items-center justify-center py-20">
+            <div class="text-center">
+                <div
+                    class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"
+                >
                 </div>
+                <p
+                    class="text-slate-400 font-black text-[10px] uppercase tracking-widest"
+                >
+                    Cargando buzón...
+                </p>
             </div>
         </div>
     </div>
-</Layout>
+</LayoutAdmin>
 
 <script>
     import { auth, db } from "../../firebase/client";
     import { onAuthStateChanged } from "firebase/auth";
-    import { 
-        collection, 
-        onSnapshot, 
-        deleteDoc, 
-        doc, 
-        getDoc,
-        updateDoc 
+    import {
+        collection,
+        onSnapshot,
+        deleteDoc,
+        doc,
+        updateDoc,
+        query,
+        orderBy,
     } from "firebase/firestore";
 
     const listContainer = document.getElementById("msg-list");
@@ -52,18 +67,7 @@ import Layout from "../../layouts/Layout.astro";
     document.addEventListener("astro:page-load", () => {
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const userDoc = await getDoc(doc(db, "profesionales", user.uid));
-                const data = userDoc.data();
-                const rol = (data?.rol || data?.role || "").toLowerCase().trim();
-                
-                const isStaff = rol === "admin" || rol === "moderador" || rol === "administrador";
-                if (isStaff) {
-                    initMessages();
-                } else {
-                    window.location.href = "/mi-perfil";
-                }
-            } else {
-                window.location.href = "/ingresar";
+                initMessages();
             }
         });
     });
@@ -71,37 +75,54 @@ import Layout from "../../layouts/Layout.astro";
     function initMessages() {
         if (!listContainer) return;
 
-        onSnapshot(collection(db, "mensajes_web"), (snap) => {
-            if (unreadEl) {
-                const total = snap.size;
-                const pendientes = snap.docs.filter(d => !d.data().respondido).length;
-                unreadEl.textContent = `${pendientes} PENDIENTES / ${total} TOTAL`;
-            }
-            
-            if (snap.empty) {
-                renderEmpty();
-                return;
-            }
+        const q = query(
+            collection(db, "mensajes_web"),
+            orderBy("fecha", "desc"),
+        );
 
-            const mensajes = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-                .sort((a:any, b:any) => (b.fecha?.seconds || 0) - (a.fecha?.seconds || 0));
+        onSnapshot(
+            q,
+            (snap) => {
+                if (unreadEl) {
+                    const total = snap.size;
+                    const pendientes = snap.docs.filter(
+                        (d) => !d.data().respondido,
+                    ).length;
+                    unreadEl.textContent = `${pendientes} PENDIENTES / ${total} TOTAL`;
+                }
 
-            renderMessages(mensajes);
-        }, (err) => {
-            console.error("Error cargando mensajes:", err);
-            if (listContainer) {
-                listContainer.innerHTML = `<div class="p-12 bg-red-50 border border-red-100 rounded-3xl text-center text-red-600 font-bold">Error de acceso: Asegúrate de tener permisos de admin y haber desplegado las reglas.</div>`;
-            }
-        });
+                if (snap.empty) {
+                    renderEmpty();
+                    return;
+                }
+
+                const mensajes = snap.docs.map((d) => ({
+                    id: d.id,
+                    ...d.data(),
+                }));
+                renderMessages(mensajes);
+            },
+            (err) => {
+                console.error("Error loading messages:", err);
+                if (listContainer) {
+                    listContainer.innerHTML = `
+                    <div class="p-12 bg-rose-50 border border-rose-100 rounded-[2rem] text-center">
+                        <p class="text-rose-600 font-black text-xs uppercase tracking-widest">Error de sincronización</p>
+                        <p class="text-slate-500 text-sm mt-2 font-medium">No se pudieron cargar los mensajes. Verifica tu conexión o permisos.</p>
+                    </div>
+                `;
+                }
+            },
+        );
     }
 
     function renderEmpty() {
         if (listContainer) {
             listContainer.innerHTML = `
-                <div class="bg-indigo-50 border border-indigo-100 p-16 text-center rounded-[2.5rem] shadow-sm">
+                <div class="bg-indigo-50/50 border border-indigo-100 p-16 text-center rounded-[2.5rem] shadow-sm">
                     <div class="text-6xl mb-6">📭</div>
                     <h3 class="text-2xl font-black text-indigo-900 tracking-tight">Buzón vacío</h3>
-                    <p class="text-indigo-600 mt-2 font-medium">No hay mensajes de contacto por el momento.</p>
+                    <p class="text-indigo-600 mt-2 font-medium uppercase text-[10px] tracking-widest font-black">No hay consultas pendientes por el momento</p>
                 </div>
             `;
         }
@@ -111,94 +132,131 @@ import Layout from "../../layouts/Layout.astro";
         if (!listContainer) return;
         listContainer.innerHTML = `
             <div class="grid gap-6">
-                ${mensajes.map(m => `
-                    <div class="bg-white border border-slate-100 rounded-[2rem] p-8 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full -mr-16 -mt-16 group-hover:bg-indigo-50 transition-colors"></div>
+                ${mensajes
+                    .map(
+                        (m) => `
+                    <div class="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full -mr-16 -mt-16 group-hover:bg-indigo-50/50 transition-all duration-500"></div>
                         
                         <div class="relative z-10 flex flex-col md:flex-row justify-between gap-6">
                             <div class="flex-1">
-                                <header class="flex flex-wrap items-center gap-3 mb-6">
-                                    <div class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-xl shadow-inner">👤</div>
+                                <header class="flex flex-wrap items-center gap-4 mb-6">
+                                    <div class="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center text-2xl shadow-inner group-hover:bg-white transition-colors">👤</div>
                                     <div>
                                         <div class="flex items-center gap-3">
-                                            <h3 class="text-xl font-black text-slate-800 tracking-tight">${m.nombre || 'Anónimo'}</h3>
-                                            ${m.respondido ? 
-                                                `<span class="bg-emerald-100 text-emerald-700 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest flex items-center gap-1">✅ Respondido</span>` 
-                                                : `<span class="bg-amber-100 text-amber-700 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">⏳ Pendiente</span>`
+                                            <h3 class="text-xl font-black text-slate-800 tracking-tight">${m.nombre || "Interesado Anónimo"}</h3>
+                                            ${
+                                                m.respondido
+                                                    ? `<span class="bg-emerald-100 text-emerald-700 text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1 border border-emerald-200">✅ Respondido</span>`
+                                                    : `<span class="bg-amber-100 text-amber-700 text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest border border-amber-200">⏳ Pendiente</span>`
                                             }
                                         </div>
                                         <div class="flex flex-wrap gap-x-4 gap-y-1 mt-1">
-                                            <span class="text-xs font-bold text-indigo-600">${m.email}</span>
-                                            <span class="text-xs font-bold text-slate-400 underline decoration-slate-200 decoration-2">${m.telefono || 'Sin teléfono'}</span>
+                                            <span class="text-xs font-bold text-indigo-600 tracking-tight">${m.email}</span>
+                                            <span class="text-xs font-bold text-slate-400">${m.telefono || "Sin contacto telefónico"}</span>
                                         </div>
                                     </div>
                                 </header>
 
-                                <div class="bg-slate-50 border border-slate-100 rounded-3xl p-6 mb-6">
+                                <div class="bg-slate-50 border border-slate-100 rounded-[2rem] p-6 mb-6 group-hover:bg-white transition-colors">
                                     <p class="text-slate-700 font-medium leading-relaxed italic text-sm">"${m.mensaje}"</p>
                                 </div>
 
                                 <footer class="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                    <span class="bg-white border border-slate-100 px-3 py-1 rounded-lg">📅 ${m.fecha?.seconds ? new Date(m.fecha.seconds * 1000).toLocaleString('es-AR') : 'Recientemente'}</span>
-                                    <span>ID: ${m.id.slice(-8).toUpperCase()}</span>
+                                    <span class="bg-slate-100/50 px-3 py-1.5 rounded-xl border border-slate-50">📅 ${m.fecha?.seconds ? new Date(m.fecha.seconds * 1000).toLocaleString("es-AR") : "Recientemente"}</span>
+                                    <span class="hidden md:inline">ID: ${m.id.slice(-8).toUpperCase()}</span>
                                 </footer>
                             </div>
 
-                            <div class="flex md:flex-col items-center justify-end gap-3 min-w-[160px]">
+                            <div class="flex md:flex-col items-center justify-center gap-3 min-w-[180px]">
                                 <button 
-                                    onclick="handleReply('${m.id}', '${m.email}', '${m.nombre}')"
-                                    class="w-full h-12 bg-indigo-600 text-white rounded-xl font-black text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-900 transition-all shadow-lg shadow-indigo-100"
+                                    data-id="${m.id}"
+                                    data-email="${m.email}"
+                                    data-nombre="${m.nombre}"
+                                    class="btn-reply w-full h-14 bg-indigo-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-900 transition-all shadow-lg shadow-indigo-100 active:scale-95"
                                 >
                                     <span>✉</span> Responder
                                 </button>
                                 <button 
-                                    onclick="handleDeleteMsg('${m.id}')"
-                                    class="w-full h-12 bg-white border border-slate-100 text-slate-400 rounded-xl font-black text-[11px] uppercase tracking-widest hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all"
+                                    data-id="${m.id}"
+                                    class="btn-delete w-full h-14 bg-white border border-slate-100 text-slate-400 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all active:scale-95"
                                 >
                                     Eliminar
                                 </button>
                             </div>
                         </div>
                     </div>
-                `).join('')}
+                `,
+                    )
+                    .join("")}
             </div>
         `;
+
+        // Event delegation
+        listContainer.querySelectorAll(".btn-reply").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+                const target = e.currentTarget as HTMLButtonElement;
+                const { id, email, nombre } = target.dataset;
+                if (id && email && nombre) handleReply(id, email, nombre);
+            });
+        });
+
+        listContainer.querySelectorAll(".btn-delete").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+                const target = e.currentTarget as HTMLButtonElement;
+                const { id } = target.dataset;
+                if (id) handleDeleteMsg(id);
+            });
+        });
     }
 
-    (window as any).handleReply = async (id: string, email: string, nombre: string) => {
-        // Build professional body
-        const subject = encodeURIComponent(`Consulta Red de Oficios - Hola ${nombre}`);
-        const body = encodeURIComponent(`Hola ${nombre},\n\nGracias por contactarte con Red de Oficios. Recibimos tu consulta y queríamos responderte...\n\nSaludos,\nEquipo de Red de Oficios`);
-        
-        // Open Mail
-        window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+    async function handleReply(id: string, email: string, nombre: string) {
+        const subject = encodeURIComponent(
+            `Consulta Red de Oficios - Hola ${nombre}`,
+        );
+        const body = encodeURIComponent(
+            `Hola ${nombre},\n\nGracias por contactarte con Red de Oficios. Recibimos tu consulta y queríamos responderte...\n\nSaludos,\nEquipo de Red de Oficios`,
+        );
 
-        // Mark as responded in DB
+        window.open(
+            `mailto:${email}?subject=${subject}&body=${body}`,
+            "_blank",
+        );
+
         try {
             await updateDoc(doc(db, "mensajes_web", id), {
                 respondido: true,
                 respondidoAt: new Date(),
-                respondidoBy: auth.currentUser?.email
+                respondidoBy: auth.currentUser?.email,
             });
         } catch (e) {
             console.error("Error marking as responded:", e);
         }
-    };
+    }
 
-    (window as any).handleDeleteMsg = async (id: string) => {
-        if (!confirm("⚠️ Se eliminará el mensaje permanentemente. ¿Continuar?")) return;
+    async function handleDeleteMsg(id: string) {
+        if (!confirm("⚠️ Se eliminará el mensaje permanentemente. ¿Continuar?"))
+            return;
         try {
             await deleteDoc(doc(db, "mensajes_web", id));
         } catch (e) {
             alert("Error al borrar el mensaje.");
         }
-    };
+    }
 </script>
 
 <style>
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
-    #msg-list { animation: fadeIn 0.5s ease-out; }
+    #msg-list {
+        animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 </style>

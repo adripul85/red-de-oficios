@@ -1,285 +1,392 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import LayoutAdmin from "../../layouts/LayoutAdmin.astro";
 ---
 
-<Layout title="Panel de Administración - Staff">
-    <div class="min-h-screen bg-slate-50 py-8 px-4 font-sans text-slate-900">
-        <div class="max-w-6xl mx-auto">
-            <!-- HEADER -->
-            <header
-                class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden">
-                <div class="relative z-10 flex items-center gap-4">
-                    <div
-                        class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-2xl shadow-inner">
-                        👮‍♂️
-                    </div>
-                    <div>
-                        <h1
-                            class="text-2xl font-black text-slate-800 tracking-tight">
-                            Centro de Comando
-                        </h1>
-                        <p class="text-slate-500 text-sm font-medium">
-                            Hola, <span id="staff-name" class="text-slate-800 font-bold">...</span>
-                            <span
-                                id="staff-role"
-                                class="ml-2 bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">...</span>
-                        </p>
-                    </div>
+<LayoutAdmin title="Panel de Operaciones - DeOficios">
+    <section>
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center space-x-4">
+                <div class="h-6 w-1 bg-[var(--accent-gold)] rounded-full"></div>
+                <h2
+                    class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-[0.25em]"
+                >
+                    Métricas Operativas Clave
+                </h2>
+            </div>
+            <button
+                id="btn-config-layout"
+                class="text-[10px] font-bold text-[var(--text-secondary)] hover:text-[var(--accent-gold)] flex items-center uppercase tracking-widest border border-[var(--border-color)] px-3 py-1.5 rounded bg-white shadow-sm transition-all"
+            >
+                <span class="material-symbols-outlined !text-xs mr-2"
+                    >settings</span
+                >
+                Configurar Diseño
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <!-- Profesionales Activos -->
+            <div class="metric-card p-8 rounded-xl">
+                <div class="flex justify-between items-start mb-6">
+                    <p
+                        class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest"
+                    >
+                        Profesionales Activos
+                    </p>
+                    <span
+                        class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded text-[10px] font-bold border border-emerald-100"
+                        >En línea</span
+                    >
                 </div>
-
-                <div class="relative z-10">
-                    <button
-                        id="btn-logout-admin"
-                        class="group flex items-center gap-2 px-5 py-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-all font-bold text-sm">
-                        <span>Cerrar Sesión</span>
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="2"
-                            stroke="currentColor"
-                            class="w-4 h-4 group-hover:translate-x-1 transition-transform">
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"></path>
-                        </svg>
-                    </button>
+                <div class="flex items-end justify-between">
+                    <p
+                        class="text-4xl font-light text-[var(--text-primary)]"
+                        id="count-users"
+                    >
+                        ...
+                    </p>
+                    <p
+                        class="text-[10px] font-medium text-[var(--text-secondary)] uppercase tracking-tighter opacity-70"
+                    >
+                        Prestadores Verificados
+                    </p>
                 </div>
-            </header>
-
-            <!-- STATS GRID -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                <!-- Users Stat -->
-                <div
-                    class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5 hover:shadow-md transition-shadow">
-                    <div
-                        class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl shadow-sm">
-                        👥
-                    </div>
-                    <div>
-                        <p
-                            class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-                            Total Usuarios
-                        </p>
-                        <p
-                            class="text-3xl font-black text-slate-800"
-                            id="count-users">
-                            ...
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Reports Stat -->
-                <a
-                    href="/admin/denuncias"
-                    class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5 hover:shadow-md transition-shadow group">
-                    <div
-                        class="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-2xl shadow-sm group-hover:bg-amber-100 transition-colors">
-                        ⚠️
-                    </div>
-                    <div>
-                        <p
-                            class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-                            Reportes
-                        </p>
-                        <p
-                            class="text-3xl font-black text-slate-800"
-                            id="count-reports">
-                            0
-                        </p>
-                    </div>
-                </a>
-
-                <!-- Finance Stat (Hidden by default) -->
-                <a
-                    id="finance-card"
-                    href="/admin/finanzas"
-                    class="bg-emerald-600 p-6 rounded-2xl shadow-sm border border-emerald-100 items-center gap-5 hidden relative overflow-hidden">
-                    <div
-                        class="relative z-10 w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
-                        💰
-                    </div>
-                    <div class="relative z-10">
-                        <p
-                            class="text-xs font-bold text-emerald-600/70 uppercase tracking-wider mb-1">
-                            Facturación Total
-                        </p>
-                        <p
-                            class="text-3xl font-black text-white"
-                            id="revenue">
-                            $ 0
-                        </p>
-                    </div>
-                    <div
-                        class="absolute right-0 bottom-0 w-24 h-24 bg-emerald-700/50 rounded-full blur-xl">
-                    </div>
-                </a>
             </div>
 
-            <!-- QUICK ACTIONS -->
-            <h2
-                class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span>
-                Acciones Rápidas
-            </h2>
+            <!-- Reportes Pendientes -->
+            <div class="metric-card p-8 rounded-xl">
+                <div class="flex justify-between items-start mb-6">
+                    <p
+                        class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest"
+                    >
+                        Reportes Pendientes
+                    </p>
+                    <span
+                        class="text-slate-500 bg-slate-50 px-2 py-0.5 rounded text-[10px] font-bold border border-slate-100"
+                        >Estable</span
+                    >
+                </div>
+                <div class="flex items-end justify-between">
+                    <p
+                        class="text-4xl font-light text-[var(--text-primary)]"
+                        id="count-reports"
+                    >
+                        0
+                    </p>
+                    <p
+                        class="text-[10px] font-medium text-[var(--text-secondary)] uppercase tracking-tighter opacity-70"
+                    >
+                        Acciones requeridas
+                    </p>
+                </div>
+            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- NEWSLETTER -->
-                <a
-                    href="/admin/newsletter"
-                    class="bg-gradient-to-br from-indigo-600 to-violet-600 text-white p-6 rounded-3xl shadow-lg hover:shadow-indigo-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48">
-                    <div class="relative z-10">
-                        <div
-                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white">
-                            📧
-                        </div>
-                        <h3 class="font-black text-2xl tracking-tight mb-1">
-                            Newsletter
-                        </h3>
-                        <p
-                            class="text-indigo-100 text-sm font-medium leading-relaxed opacity-90">
-                            Gestionar suscriptores y campañas.
-                        </p>
-                    </div>
-                </a>
+            <!-- Balance Financiero -->
+            <div
+                class="metric-card p-8 rounded-xl border-l-4 gold-border"
+                id="finance-card"
+            >
+                <div class="flex justify-between items-start mb-6">
+                    <p
+                        class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest"
+                    >
+                        Balance Financiero
+                    </p>
+                    <span
+                        class="text-[var(--accent-gold)] bg-orange-50/50 px-2 py-0.5 rounded text-[10px] font-bold border border-orange-100/50"
+                        >Total histórico</span
+                    >
+                </div>
+                <div class="flex items-end justify-between">
+                    <p class="text-3xl font-bold accent-text" id="revenue">
+                        $ 0
+                    </p>
+                    <p
+                        class="text-[10px] font-medium text-[var(--text-secondary)] uppercase tracking-tighter opacity-70"
+                    >
+                        Ingresos totales
+                    </p>
+                </div>
+            </div>
 
-                <!-- USUARIOS -->
-                <a
-                    href="/admin/usuarios"
-                    class="bg-gradient-to-br from-blue-500 to-cyan-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-blue-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48">
-                    <div class="relative z-10">
-                        <div
-                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white">
-                            🔍
-                        </div>
-                        <h3 class="font-black text-2xl tracking-tight mb-1">
-                            Usuarios
-                        </h3>
-                        <p
-                            class="text-blue-100 text-sm font-medium leading-relaxed opacity-90">
-                            Perfiles y control de accesos.
-                        </p>
-                    </div>
-                </a>
-
-                <!-- MENSAJES -->
-                <a
-                    href="/admin/mensajes"
-                    class="bg-gradient-to-br from-indigo-500 to-blue-600 text-white p-6 rounded-3xl shadow-lg hover:shadow-indigo-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48">
-                    <div class="relative z-10">
-                        <div
-                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white">
-                            💬
-                        </div>
-                        <h3 class="font-black text-2xl tracking-tight mb-1">
-                            Mensajes
-                        </h3>
-                        <p
-                            class="text-indigo-100 text-sm font-medium leading-relaxed opacity-90">
-                            Buzón de entrada y soporte.
-                        </p>
-                    </div>
-                </a>
-
-                <!-- DENUNCIAS -->
-                <a
-                    href="/admin/denuncias"
-                    class="bg-gradient-to-br from-orange-500 to-red-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-orange-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48">
-                    <div class="relative z-10">
-                        <div
-                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white">
-                            🚨
-                        </div>
-                        <h3 class="font-black text-2xl tracking-tight mb-1">
-                            Denuncias
-                        </h3>
-                        <p
-                            class="text-orange-100 text-sm font-medium leading-relaxed opacity-90">
-                            Moderación y bloqueos.
-                        </p>
-                    </div>
-                </a>
-
-                <!-- FINANZAS -->
-                <a
-                    href="/admin/finanzas"
-                    id="admin-finanzas"
-                    class="bg-gradient-to-br from-emerald-600 to-green-700 text-white p-6 rounded-3xl shadow-lg hover:shadow-emerald-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48 hidden">
-                    <div class="relative z-10">
-                        <div
-                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white">
-                            💰
-                        </div>
-                        <h3 class="font-black text-2xl tracking-tight mb-1">
-                            Finanzas
-                        </h3>
-                        <p
-                            class="text-emerald-100 text-sm font-medium leading-relaxed opacity-90">
-                            Gestión de saldos y billetera.
-                        </p>
-                    </div>
-                </a>
-
-                <!-- VALIDACIONES -->
-                <a
-                    href="/admin/validaciones"
-                    class="bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-violet-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48">
-                    <div class="relative z-10">
-                        <div
-                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white">
-                            ✅
-                        </div>
-                        <h3 class="font-black text-2xl tracking-tight mb-1">
-                            Validaciones
-                        </h3>
-                        <p
-                            class="text-violet-100 text-sm font-medium leading-relaxed opacity-90">
-                            Aprobar nuevos profesionales.
-                        </p>
-                    </div>
-                </a>
-
-                <!-- BLOG -->
-                <a
-                    href="/admin/blog"
-                    class="bg-gradient-to-br from-pink-500 to-rose-500 text-white p-6 rounded-3xl shadow-lg hover:shadow-pink-500/30 hover:scale-[1.02] transition-all group relative overflow-hidden flex flex-col justify-between h-48">
-                    <div class="relative z-10">
-                        <div
-                            class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-4 backdrop-blur-sm shadow-inner-white">
-                            📝
-                        </div>
-                        <h3 class="font-black text-2xl tracking-tight mb-1">
-                            Blog
-                        </h3>
-                        <p
-                            class="text-pink-100 text-sm font-medium leading-relaxed opacity-90">
-                            Publicar novedades y artículos.
-                        </p>
-                    </div>
-                </a>
-
-                <!-- CONFIGURACIÓN -->
-                <a
-                    href="/admin/configuracion"
-                    id="admin-settings"
-                    class="bg-white border-2 border-dashed border-slate-300 text-slate-400 p-6 rounded-3xl hover:border-slate-400 hover:bg-slate-50 hover:text-slate-500 hover:scale-[1.02] transition-all group relative overflow-hidden items-center justify-between h-48 hidden">
-                    <div class="relative z-10">
-                        <div
-                            class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-2xl mb-4 group-hover:bg-slate-200 transition-colors">
-                            ⚙️
-                        </div>
-                        <h3 class="font-black text-2xl tracking-tight mb-1">
-                            Configuración
-                        </h3>
-                        <p class="text-xs font-medium opacity-80">
-                            Ajustes globales (Solo Admin).
-                        </p>
-                    </div>
-                </a>
+            <!-- Acción de añadir métrica -->
+            <div
+                id="btn-add-metric"
+                class="metric-card p-8 rounded-xl bg-[var(--main-bg)] border-dashed border-2 flex flex-col items-center justify-center text-[var(--text-secondary)] hover:bg-white hover:border-[var(--accent-gold)] hover:text-[var(--accent-gold)] cursor-pointer transition-all"
+            >
+                <span class="material-symbols-outlined !text-3xl mb-3"
+                    >add_circle</span
+                >
+                <span class="text-[10px] font-bold uppercase tracking-[0.2em]"
+                    >Añadir Métrica</span
+                >
             </div>
         </div>
-    </div>
+    </section>
+
+    <div class="section-separator"></div>
+
+    <section>
+        <div class="flex items-center space-x-4 mb-8">
+            <div class="h-6 w-1 bg-[var(--accent-gold)] rounded-full"></div>
+            <h2
+                class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-[0.25em]"
+            >
+                Acciones Operativas Rápidas
+            </h2>
+        </div>
+
+        <div
+            class="bg-white border border-[var(--border-color)] rounded-xl shadow-lg overflow-hidden"
+        >
+            <div
+                class="px-8 py-5 border-b border-[var(--border-color)] flex items-center justify-between bg-[var(--main-bg)]/30"
+            >
+                <h3
+                    class="text-xs font-bold text-[var(--text-primary)] uppercase tracking-widest"
+                >
+                    Módulos del Sistema
+                </h3>
+                <span
+                    class="text-[10px] text-[var(--text-secondary)] font-medium uppercase tracking-tighter"
+                    >Enlaces de acceso directo</span
+                >
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="new-table-head">
+                        <tr>
+                            <th
+                                class="px-8 py-4 font-bold border-b border-[var(--border-color)]"
+                                >Módulo</th
+                            >
+                            <th
+                                class="px-8 py-4 font-bold border-b border-[var(--border-color)]"
+                                >Descripción</th
+                            >
+                            <th
+                                class="px-8 py-4 font-bold border-b border-[var(--border-color)]"
+                                >Estado</th
+                            >
+                            <th
+                                class="px-8 py-4 font-bold text-right border-b border-[var(--border-color)]"
+                                >Enlace Directo</th
+                            >
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        <!-- Newsletter -->
+                        <tr
+                            class="table-row-enhanced hover:bg-[var(--main-bg)]/50"
+                        >
+                            <td class="px-8 py-6 flex items-center space-x-4">
+                                <div
+                                    class="w-9 h-9 rounded bg-slate-100 flex items-center justify-center"
+                                >
+                                    <span
+                                        class="material-symbols-outlined text-[var(--text-secondary)] !text-lg"
+                                        >mail</span
+                                    >
+                                </div>
+                                <span
+                                    class="font-bold text-[var(--text-primary)] tracking-tight"
+                                    >Newsletter</span
+                                >
+                            </td>
+                            <td
+                                class="px-8 py-6 text-[var(--text-secondary)] text-xs leading-relaxed max-w-xs"
+                                >Gestionar suscriptores y campañas
+                                automatizadas.</td
+                            >
+                            <td class="px-8 py-6">
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 uppercase tracking-widest"
+                                    >Activo</span
+                                >
+                            </td>
+                            <td class="px-8 py-6 text-right">
+                                <a
+                                    class="text-[11px] font-bold accent-text hover:brightness-90 uppercase tracking-widest flex items-center justify-end group"
+                                    href="/admin/newsletter"
+                                >
+                                    Abrir Herramienta <span
+                                        class="material-symbols-outlined !text-xs ml-2 group-hover:translate-x-1 transition-transform"
+                                        >arrow_forward</span
+                                    >
+                                </a>
+                            </td>
+                        </tr>
+
+                        <!-- Profesionales -->
+                        <tr
+                            class="table-row-enhanced hover:bg-[var(--main-bg)]/50"
+                        >
+                            <td class="px-8 py-6 flex items-center space-x-4">
+                                <div
+                                    class="w-9 h-9 rounded bg-slate-100 flex items-center justify-center"
+                                >
+                                    <span
+                                        class="material-symbols-outlined text-[var(--text-secondary)] !text-lg"
+                                        >engineering</span
+                                    >
+                                </div>
+                                <span
+                                    class="font-bold text-[var(--text-primary)] tracking-tight"
+                                    >Profesionales</span
+                                >
+                            </td>
+                            <td
+                                class="px-8 py-6 text-[var(--text-secondary)] text-xs leading-relaxed max-w-xs"
+                                >Control de directorio y análisis de desempeño.</td
+                            >
+                            <td class="px-8 py-6">
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 uppercase tracking-widest"
+                                    >Activo</span
+                                >
+                            </td>
+                            <td class="px-8 py-6 text-right">
+                                <a
+                                    class="text-[11px] font-bold accent-text hover:brightness-90 uppercase tracking-widest flex items-center justify-end group"
+                                    href="/admin/usuarios"
+                                >
+                                    Ver Listado <span
+                                        class="material-symbols-outlined !text-xs ml-2 group-hover:translate-x-1 transition-transform"
+                                        >arrow_forward</span
+                                    >
+                                </a>
+                            </td>
+                        </tr>
+
+                        <!-- Usuarios/Clientes -->
+                        <tr
+                            class="table-row-enhanced hover:bg-[var(--main-bg)]/50"
+                        >
+                            <td class="px-8 py-6 flex items-center space-x-4">
+                                <div
+                                    class="w-9 h-9 rounded bg-slate-100 flex items-center justify-center"
+                                >
+                                    <span
+                                        class="material-symbols-outlined text-[var(--text-secondary)] !text-lg"
+                                        >group</span
+                                    >
+                                </div>
+                                <span
+                                    class="font-bold text-[var(--text-primary)] tracking-tight"
+                                    >Soporte Clientes</span
+                                >
+                            </td>
+                            <td
+                                class="px-8 py-6 text-[var(--text-secondary)] text-xs leading-relaxed max-w-xs"
+                                >Gestión del ciclo de vida del usuario final.</td
+                            >
+                            <td class="px-8 py-6">
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 uppercase tracking-widest"
+                                    >Activo</span
+                                >
+                            </td>
+                            <td class="px-8 py-6 text-right">
+                                <a
+                                    class="text-[11px] font-bold accent-text hover:brightness-90 uppercase tracking-widest flex items-center justify-end group"
+                                    href="/admin/clientes"
+                                >
+                                    Gestionar <span
+                                        class="material-symbols-outlined !text-xs ml-2 group-hover:translate-x-1 transition-transform"
+                                        >arrow_forward</span
+                                    >
+                                </a>
+                            </td>
+                        </tr>
+
+                        <!-- Denuncias -->
+                        <tr
+                            class="table-row-enhanced hover:bg-[var(--main-bg)]/50"
+                        >
+                            <td class="px-8 py-6 flex items-center space-x-4">
+                                <div
+                                    class="w-9 h-9 rounded bg-amber-50 flex items-center justify-center"
+                                >
+                                    <span
+                                        class="material-symbols-outlined text-amber-600 !text-lg"
+                                        >report</span
+                                    >
+                                </div>
+                                <span
+                                    class="font-bold text-amber-900 tracking-tight"
+                                    >Infracciones</span
+                                >
+                            </td>
+                            <td
+                                class="px-8 py-6 text-[var(--text-secondary)] text-xs leading-relaxed max-w-xs"
+                                >Moderación de contenido y cumplimiento de
+                                protocolos.</td
+                            >
+                            <td class="px-8 py-6">
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-200 uppercase tracking-widest"
+                                    >Revisión</span
+                                >
+                            </td>
+                            <td class="px-8 py-6 text-right">
+                                <a
+                                    class="text-[11px] font-bold accent-text hover:brightness-90 uppercase tracking-widest flex items-center justify-end group"
+                                    href="/admin/denuncias"
+                                >
+                                    Moderar <span
+                                        class="material-symbols-outlined !text-xs ml-2 group-hover:translate-x-1 transition-transform"
+                                        >arrow_forward</span
+                                    >
+                                </a>
+                            </td>
+                        </tr>
+
+                        <!-- Validaciones -->
+                        <tr
+                            class="table-row-enhanced hover:bg-[var(--main-bg)]/50"
+                        >
+                            <td class="px-8 py-6 flex items-center space-x-4">
+                                <div
+                                    class="w-9 h-9 rounded bg-slate-100 flex items-center justify-center"
+                                >
+                                    <span
+                                        class="material-symbols-outlined text-[var(--text-secondary)] !text-lg"
+                                        >verified</span
+                                    >
+                                </div>
+                                <span
+                                    class="font-bold text-[var(--text-primary)] tracking-tight"
+                                    >Validaciones</span
+                                >
+                            </td>
+                            <td
+                                class="px-8 py-6 text-[var(--text-secondary)] text-xs leading-relaxed max-w-xs"
+                                >Autenticación de credenciales y documentación
+                                legal.</td
+                            >
+                            <td class="px-8 py-6">
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-widest"
+                                    >En cola</span
+                                >
+                            </td>
+                            <td class="px-8 py-6 text-right">
+                                <a
+                                    class="text-[11px] font-bold accent-text hover:brightness-90 uppercase tracking-widest flex items-center justify-end group"
+                                    href="/admin/validaciones"
+                                >
+                                    Procesar <span
+                                        class="material-symbols-outlined !text-xs ml-2 group-hover:translate-x-1 transition-transform"
+                                        >arrow_forward</span
+                                    >
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
 
     <script>
         import { auth, db } from "../../firebase/client";
@@ -298,65 +405,35 @@ import Layout from "../../layouts/Layout.astro";
         let listeners: (() => void)[] = [];
 
         function cleanup() {
-            listeners.forEach(unsub => unsub());
+            listeners.forEach((unsub) => unsub());
             listeners = [];
         }
 
         document.addEventListener("astro:page-load", () => {
             cleanup();
-            
-            const user = (window as any).currentUser || auth.currentUser;
-            if (user) {
-                initDashboard(user);
-            } else {
-                onAuthStateChanged(auth, (u) => {
-                    if (u) initDashboard(u);
-                    else if (!(window as any).currentUser) window.location.href = "/ingresar";
-                });
-            }
-
-            document.getElementById("btn-logout-admin")?.addEventListener("click", async () => {
-                await signOut(auth);
-                window.location.href = "/";
+            onAuthStateChanged(auth, (u) => {
+                if (u) initDashboard(u);
             });
         });
 
         document.addEventListener("astro:before-preparation", cleanup);
 
-        async function initDashboard(user) {
+        async function initDashboard(user: any) {
             try {
                 const snap = await getDoc(doc(db, "profesionales", user.uid));
-                if (!snap.exists()) {
-                    window.location.href = "/";
-                    return;
-                }
+                if (!snap.exists()) return;
 
                 const data = snap.data();
-                const rawRol = (data.rol || data.role || "").toString().toLowerCase().trim();
-                
-                // Broad matching for staff roles
-                const isStaff = ["admin", "moderador", "moderator", "administrador"].includes(rawRol);
-
-                if (!isStaff) {
-                    window.location.href = "/mi-perfil";
-                    return;
-                }
-
-                // Update UI Protected
-                const staffName = document.getElementById("staff-name");
-                const staffRole = document.getElementById("staff-role");
-                if (staffName) staffName.textContent = data.nombre || data.email || user.email;
-                if (staffRole) staffRole.textContent = rawRol.toUpperCase();
+                const rawRol = (data.rol || data.role || "")
+                    .toString()
+                    .toLowerCase()
+                    .trim();
 
                 // Admin only sections
                 if (rawRol === "admin" || rawRol === "administrador") {
                     const financeCard = document.getElementById("finance-card");
-                    const adminFinanzas = document.getElementById("admin-finanzas");
-                    const adminSettings = document.getElementById("admin-settings");
-                    
-                    if (financeCard) financeCard.style.display = "flex";
-                    if (adminFinanzas) adminFinanzas.style.display = "flex";
-                    if (adminSettings) adminSettings.style.display = "flex";
+                    if (financeCard) financeCard.classList.remove("hidden");
+                    if (financeCard) financeCard.classList.add("flex");
                 }
 
                 // Stats Elements
@@ -365,84 +442,57 @@ import Layout from "../../layouts/Layout.astro";
                 const revenueEl = document.getElementById("revenue");
 
                 // 1. Initial Static Count (Professionals)
-                getCountFromServer(collection(db, "profesionales")).then(s => {
-                    if (countUsers) countUsers.textContent = s.data().count.toString();
-                }).catch(e => console.warn("Error count users", e));
+                getCountFromServer(collection(db, "profesionales"))
+                    .then((s) => {
+                        if (countUsers)
+                            countUsers.textContent = s.data().count.toString();
+                    })
+                    .catch((e) => console.warn("Error count users", e));
 
-                // 2. Real-time Reporting Count & Badge
-                const unsubReports = onSnapshot(collection(db, "denuncias"), (snap) => {
-                    if (countReports) countReports.textContent = snap.size.toString();
-                    updateBadgeByHref("/admin/denuncias", snap.size);
-                }, (err) => {
-                    console.warn("⚠️ Error en Denuncias: ¿Ya desplegaste las reglas de Firestore?");
-                });
+                // 2. Real-time Reporting Count
+                const unsubReports = onSnapshot(
+                    collection(db, "denuncias"),
+                    (snap) => {
+                        if (countReports)
+                            countReports.textContent = snap.size.toString();
+                    },
+                );
                 listeners.push(unsubReports);
 
-                // 3. Real-time Validations Badge
-                const qVal = query(collection(db, "profesionales"), where("validacion_estado", "==", "pendiente"));
-                const unsubVal = onSnapshot(qVal, (snap) => {
-                    updateBadgeByHref("/admin/validaciones", snap.size);
-                }, (err) => console.warn("Validations listener blocked", err));
-                listeners.push(unsubVal);
-
-                // 4. Revenue calculation
-                const qRev = query(collection(db, "pagos_historial"), where("estado", "==", "approved"));
-                getDocs(qRev).then(snapRev => {
+                // 3. Revenue calculation
+                const qRev = query(
+                    collection(db, "pagos_historial"),
+                    where("estado", "==", "approved"),
+                );
+                getDocs(qRev).then((snapRev) => {
                     let total = 0;
-                    snapRev.forEach(d => total += (Number(d.data().monto) || 0));
-                    if (revenueEl) revenueEl.textContent = `$ ${total.toLocaleString('es-AR')}`;
-                }).catch(e => {
-                    console.warn("⚠️ Error en Revenue: ¿Ya desplegaste las reglas de Firestore?");
+                    snapRev.forEach(
+                        (d) => (total += Number(d.data().monto) || 0),
+                    );
+                    if (revenueEl)
+                        revenueEl.textContent = `$ ${total.toLocaleString("es-AR")}`;
                 });
 
+                // Dashboard Actions
+                const btnConfig = document.getElementById("btn-config-layout");
+                const btnAdd = document.getElementById("btn-add-metric");
+
+                if (btnConfig) {
+                    btnConfig.addEventListener("click", () => {
+                        window.location.href = "/admin/configuracion";
+                    });
+                }
+
+                if (btnAdd) {
+                    btnAdd.addEventListener("click", () => {
+                        alert(
+                            "🛠️ La personalización de métricas estará disponible próximamente en el Centro de Operaciones.",
+                        );
+                    });
+                }
             } catch (e) {
                 console.error("Dashboard Init Error (Client):", e);
             }
         }
-
-        function updateBadgeByHref(href, count) {
-            const btn = document.querySelector(`a[href="${href}"]`);
-            if (!btn) return;
-
-            let badge = btn.querySelector(".badge-notify");
-            if (count > 0) {
-                if (!badge) {
-                    badge = document.createElement("span");
-                    badge.className = "badge-notify text-[10px]";
-                    btn.appendChild(badge);
-                }
-                (badge as HTMLElement).textContent = count > 9 ? "+9" : count.toString();
-                (badge as HTMLElement).style.display = "flex";
-            } else if (badge) {
-                (badge as HTMLElement).style.display = "none";
-            }
-        }
     </script>
-
-    <style>
-        .badge-notify {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            background: #ef4444;
-            color: white;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            border: 2px solid white;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            animation: pulse-ring 2s infinite;
-            z-index: 10;
-        }
-
-        @keyframes pulse-ring {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-    </style>
-</Layout>
+</LayoutAdmin>

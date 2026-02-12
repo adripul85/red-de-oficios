@@ -1,88 +1,62 @@
 ---
-// 🔥 NOTA: Como estás en la carpeta /admin/, usamos ../../ para volver a la raíz src
-import Layout from "../../layouts/Layout.astro";
+import LayoutAdmin from "../../layouts/LayoutAdmin.astro";
 ---
 
-<Layout title="Panel Admin - Validaciones" hideHeader={true} hideFooter={true}>
-    <div class="flex h-screen bg-gray-100 font-sans">
-        <aside class="w-64 bg-gray-900 text-white flex flex-col shadow-xl">
-            <div
-class="p-6 text-xl font-bold border-b border-gray-800 flex items-center gap-2"
+<LayoutAdmin title="Validaciones de Identidad - Admin">
+    <header class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">
+                Solicitudes de Blindaje 🛡️
+            </h1>
+            <p class="text-slate-500 font-medium mt-1">
+                Revisa la documentación y otorga el Sello de Confianza.
+            </p>
+        </div>
+        <div
+            class="bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-100"
+        >
+            <span
+                class="text-xs font-bold text-slate-400 uppercase tracking-widest"
+                >Cola de Trabajo:</span
             >
-                🛡️ Admin Panel
-            </div>
-            <nav class="flex-1 p-4 space-y-2">
-                <a
-                    href="/admin"
-class="block py-2.5 px-4 rounded text-gray-300 hover:bg-gray-800 hover:text-white transition"
-                >
-                    ⬅ Volver al Sitio
-                </a>
-                <div
-                    class="block py-2.5 px-4 rounded bg-blue-600 text-white font-bold shadow-md"
-                >
-                    Validaciones
-                </div>
-            </nav>
-            <div
-class="p-4 border-t border-gray-800 text-xs text-gray-500 text-center"
+            <span class="text-emerald-600 font-black ml-1 uppercase text-xs"
+                >Sistema Activo 🟢</span
             >
-                DeOficios Admin v1.0
-            </div>
-        </aside>
+        </div>
+    </header>
 
-        <main class="flex-1 p-8 overflow-y-auto">
-            <header class="mb-8 flex justify-between items-center">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-800">
-                        Solicitudes de Blindaje
-                    </h1>
-                    <p class="text-gray-600 mt-1">
-Revisa la documentación y otorga el Check Azul.
-                    </p>
-                </div>
-                <div
-                    class="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200"
-                >
-                    <span class="text-sm font-bold text-gray-500">Estado:</span>
-                    <span class="text-green-600 font-bold ml-1"
-                        >Sistema Activo 🟢</span
-                    >
-                </div>
-            </header>
-
-            <div id="loading" class="text-center py-20">
-                <div
-class="inline-block animate-spin text-4xl text-blue-600 mb-4"
-                >
-                    🌀
-                </div>
-                <p class="text-gray-500">Buscando solicitudes pendientes...</p>
-            </div>
-
-            <div
-                id="empty-state"
-class="hidden text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-200"
-            >
-                <div class="text-5xl mb-4">✅</div>
-                <h3 class="font-bold text-xl text-gray-800">Todo al día</h3>
-                <p class="text-gray-500 mt-2">
-                    No hay profesionales pendientes de validación en este
-                    momento.
-                </p>
-            </div>
-
-            <div
-                id="cards-container"
-class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-            >
-            </div>
-        </main>
+    <div
+        id="loading"
+        class="text-center py-20 bg-white rounded-[2rem] border border-slate-50 shadow-sm"
+    >
+        <div class="inline-block animate-spin text-4xl text-blue-600 mb-4">
+            🌀
+        </div>
+        <p class="text-slate-400 font-bold uppercase tracking-widest text-xs">
+            Buscando solicitudes pendientes...
+        </p>
     </div>
-</Layout>
+
+    <div
+        id="empty-state"
+        class="hidden text-center py-20 bg-white rounded-[2rem] shadow-sm border border-slate-50"
+    >
+        <div class="text-5xl mb-4">✅</div>
+        <h3 class="font-black text-xl text-slate-800">Todo al día</h3>
+        <p class="text-slate-500 mt-2 font-medium">
+            No hay profesionales pendientes de validación en este momento.
+        </p>
+    </div>
+
+    <div
+        id="cards-container"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+    >
+    </div>
+</LayoutAdmin>
 
 <script>
-// 🔥 IMPORTANTE: Ajustamos las rutas aquí también (../../)
+    // 🔥 IMPORTANTE: Ajustamos las rutas aquí también (../../)
     import { auth, db } from "../../firebase/client";
     import { onAuthStateChanged } from "firebase/auth";
     import {
@@ -96,7 +70,7 @@ class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
     } from "firebase/firestore";
 
     document.addEventListener("astro:page-load", () => {
-console.log("🚀 [ADMIN-VALIDACIONES] Página cargada/navegada");
+        console.log("🚀 [ADMIN-VALIDACIONES] Página cargada/navegada");
 
         const container = document.getElementById("cards-container");
         const loading = document.getElementById("loading");
@@ -109,7 +83,7 @@ console.log("🚀 [ADMIN-VALIDACIONES] Página cargada/navegada");
             const docRef = doc(db, "profesionales", user.uid);
             const docSnap = await getDoc(docRef);
 
-// AQUI DEFINES QUIÉN ES ADMIN (Reemplaza con tu lógica o mail si prefieres)
+            // AQUI DEFINES QUIÉN ES ADMIN (Reemplaza con tu lógica o mail si prefieres)
             const data = docSnap.data();
             const isAdmin =
                 data && (data.rol === "admin" || data.rol === "moderador");
@@ -117,7 +91,7 @@ console.log("🚀 [ADMIN-VALIDACIONES] Página cargada/navegada");
             if (isAdmin) {
                 cargarSolicitudes();
             } else {
-alert("⛔ Acceso Denegado: Solo personal autorizado.");
+                alert("⛔ Acceso Denegado: Solo personal autorizado.");
                 window.location.href = "/";
             }
         });
@@ -132,20 +106,23 @@ alert("⛔ Acceso Denegado: Solo personal autorizado.");
 
             try {
                 const querySnapshot = await getDocs(q);
-                loading.classList.add("hidden");
+                if (loading) loading.classList.add("hidden");
 
                 if (querySnapshot.empty) {
-                    empty.classList.remove("hidden");
+                    if (empty) empty.classList.remove("hidden");
                     return;
                 }
 
-                container.innerHTML = "";
-                querySnapshot.forEach((docSnap) => {
-                    crearTarjeta(docSnap.id, docSnap.data());
-                });
+                if (container) {
+                    container.innerHTML = "";
+                    querySnapshot.forEach((docSnap) => {
+                        crearTarjeta(docSnap.id, docSnap.data());
+                    });
+                }
             } catch (error) {
                 console.error(error);
-                loading.innerHTML = `<div class="bg-red-100 text-red-700 p-4 rounded">Error cargando datos: ${error.message}</div>`;
+                if (loading)
+                    loading.innerHTML = `<div class="bg-red-100 text-red-700 p-4 rounded">Error cargando datos: ${error.message}</div>`;
             }
         }
 
@@ -196,14 +173,14 @@ alert("⛔ Acceso Denegado: Solo personal autorizado.");
             </div>
         `;
 
-// Lógica Botones
+            // Lógica Botones
             const btnApprove = card.querySelector(".btn-approve");
             const btnReject = card.querySelector(".btn-reject");
 
             btnApprove.onclick = async () => {
                 if (
                     !confirm(
-`¿Confirmas que los documentos de ${data.nombre} son válidos?`,
+                        `¿Confirmas que los documentos de ${data.nombre} son válidos?`,
                     )
                 )
                     return;
@@ -219,7 +196,7 @@ alert("⛔ Acceso Denegado: Solo personal autorizado.");
             };
 
             btnReject.onclick = async () => {
-if (!confirm(`¿Rechazar documentación de ${data.nombre}?`))
+                if (!confirm(`¿Rechazar documentación de ${data.nombre}?`))
                     return;
                 try {
                     await updateDoc(doc(db, "profesionales", uid), {
@@ -240,7 +217,7 @@ if (!confirm(`¿Rechazar documentación de ${data.nombre}?`))
             element.style.opacity = "0";
             setTimeout(() => {
                 element.remove();
-                if (container.children.length === 0)
+                if (container.children.length === 0 && empty)
                     empty.classList.remove("hidden");
             }, 300);
         }

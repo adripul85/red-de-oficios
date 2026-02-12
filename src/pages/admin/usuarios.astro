@@ -1,9 +1,9 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import LayoutAdmin from "../../layouts/LayoutAdmin.astro";
 import { db } from "../../firebase/client";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 
-// TRAER TODOS LOS USUARIOS
+// TRAER TODOS LOS USUARIOS (Server-side initial load)
 const users = [];
 try {
     const q = query(collection(db, "profesionales"), orderBy("nombre"));
@@ -12,123 +12,167 @@ try {
         users.push({ id: doc.id, ...doc.data() });
     });
 } catch (e) {
-    console.error(e);
+    console.error("Error fetching users server-side:", e);
 }
 ---
 
-<Layout title="Gestión de Usuarios - Admin">
-    <main class="container">
-        <div class="header-row">
-            <div>
-                <h1>👥 Gestión de Profesionales</h1>
+<LayoutAdmin title="Gestión de Profesionales - Admin">
+    <div
+        class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4"
+    >
+        <div>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">
+                Gestión de Profesionales 👥
+            </h1>
+            <p class="text-slate-500 font-medium">
+                Total: <span class="text-blue-600 font-black"
+                    >{users.length}</span
+                > registrados
+            </p>
+        </div>
 
-                <p>Total: {users.length} registrados</p>
-            </div>
-            <div class="actions-header">
+        <div class="flex items-center gap-3 w-full md:w-auto">
+            <div class="relative flex-1 md:flex-none">
+                <span
+                    class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                    >🔍</span
+                >
                 <input
                     type="text"
                     id="searchUser"
-                    placeholder="🔍 Buscar por nombre o email..."
-                    class="search-input"
+                    placeholder="Buscar por nombre o email..."
+                    class="w-full md:w-72 pl-10 pr-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none shadow-sm transition-all"
                 />
-                <a href="/admin" class="btn-back">⬅ Panel</a>
-
             </div>
         </div>
+    </div>
 
-        <div class="table-responsive">
-            <table id="usersTable">
+    <div
+        class="bg-white rounded-[2rem] shadow-sm border border-slate-50 overflow-hidden"
+    >
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse" id="usersTable">
                 <thead>
-                    <tr>
-                        <th>Perfil</th>
-                        <th>Datos</th>
-                        <th>Métricas</th>
-
-                        <th>Estado</th>
-                        <th>Plan</th>
-                        <th>Acciones</th>
+                    <tr class="bg-slate-50/50 border-b border-slate-50">
+                        <th
+                            class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest"
+                            >Perfil</th
+                        >
+                        <th
+                            class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest"
+                            >Datos / Rubro</th
+                        >
+                        <th
+                            class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center"
+                            >Métricas</th
+                        >
+                        <th
+                            class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest"
+                            >Estado</th
+                        >
+                        <th
+                            class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest"
+                            >Plan</th
+                        >
+                        <th
+                            class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right"
+                            >Acciones</th
+                        >
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-slate-50">
                     {
                         users.map((u) => (
-                            <tr class="user-row">
-                                <td>
-                                    <div class="user-cell">
-                                        {u.foto ? (
-                                            <img
-                                                src={u.foto}
-                                                class="mini-avatar"
-                                            />
-                                        ) : (
-                                            <span class="no-pic">👤</span>
-
-                                        )}
+                            <tr class="user-row hover:bg-slate-50/50 transition-colors">
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-4">
+                                        <div class="relative">
+                                            {u.foto ? (
+                                                <img
+                                                    src={u.foto}
+                                                    class="w-12 h-12 rounded-2xl object-cover shadow-sm border-2 border-white"
+                                                />
+                                            ) : (
+                                                <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-xl shadow-inner">
+                                                    👤
+                                                </div>
+                                            )}
+                                            {u.verificado && (
+                                                <span class="absolute -top-1 -right-1 bg-blue-500 text-white text-[8px] p-0.5 rounded-full ring-2 ring-white">
+                                                    ✅
+                                                </span>
+                                            )}
+                                        </div>
                                         <div>
-                                            <strong class="u-name">
+                                            <p class="font-black text-slate-800 text-sm leading-tight u-name">
                                                 {u.nombre}
-                                            </strong>
-                                            <br />
-                                            <small class="u-email">
-                                                {u.email ||
-                                                    "ID: " +
-                                                        u.id.substring(0, 5) +
-                                                        "..."}
-                                            </small>
+                                            </p>
+                                            <p
+                                                class="text-xs text-slate-400 font-bold italic truncate max-w-[150px] u-email"
+                                                title={u.email}
+                                            >
+                                                {u.email || "Sin email"}
+                                            </p>
                                         </div>
                                     </div>
                                 </td>
-                                <td>
-                                    <small>
-                                        {u.categoria || "Sin rubro"}
-                                        <br />
-                                        📍 {u.zona || "Sin zona"}
-
-                                    </small>
+                                <td class="px-6 py-5">
+                                    <p class="text-xs font-black text-slate-700 uppercase tracking-tight">
+                                        {u.rubro_principal ||
+                                            u.categoria ||
+                                            "Sin rubro"}
+                                    </p>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5 flex items-center gap-1">
+                                        <span class="grayscale opacity-50">
+                                            📍
+                                        </span>{" "}
+                                        {u.zona || "Global"}
+                                    </p>
                                 </td>
-                                <td>
+                                <td class="px-6 py-5 text-center">
                                     <div
-                                        class="stat-badge whatsapp-stat"
-                                        title="Clicks en WhatsApp"
+                                        class="inline-flex flex-col items-center px-3 py-1 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100/50"
+                                        title="Clicks WhatsApp"
                                     >
-                                        <span class="icon">📲</span>
-
-                                        <span class="count">
+                                        <span class="text-[10px] font-black uppercase leading-none mb-1">
+                                            WA
+                                        </span>
+                                        <span class="text-sm font-black leading-none">
                                             {u.contactos_whatsapp || 0}
                                         </span>
                                     </div>
                                 </td>
-                                <td id={`status-${u.id}`}>
+                                <td class="px-6 py-5" id={`status-${u.id}`}>
                                     {u.verificado ? (
-                                        <span class="badge verified">
-                                            Verificado ✅
+                                        <span class="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase rounded-lg border border-blue-100">
+                                            Verificado
                                         </span>
                                     ) : (
-                                        <span class="badge pending">
-                                            Pendiente ⏳
-
+                                        <span class="px-3 py-1 bg-slate-100 text-slate-400 text-[10px] font-black uppercase rounded-lg">
+                                            Pendiente
                                         </span>
                                     )}
                                 </td>
-                                <td id={`plan-${u.id}`}>
-                                    {u.plan === "mensual" ||
-                                    u.plan === "semestral" ||
-                                    u.plan === "experto" ? (
-                                        <span class="badge premium">
-                                            PREMIUM 💎
-
+                                <td class="px-6 py-5" id={`plan-${u.id}`}>
+                                    {u.plan &&
+                                    (u.plan === "experto" ||
+                                        u.plan === "semestral" ||
+                                        u.plan === "mensual") ? (
+                                        <span class="px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-black uppercase rounded-lg border border-amber-100 shadow-sm">
+                                            Diamond
                                         </span>
                                     ) : (
-                                        <span class="badge free">Gratis</span>
+                                        <span class="px-3 py-1 bg-slate-50 text-slate-400 text-[10px] font-black uppercase rounded-lg border border-slate-100">
+                                            Free
+                                        </span>
                                     )}
                                 </td>
-                                <td>
+                                <td class="px-6 py-5 text-right">
                                     <button
-                                        class="btn-manage"
+                                        class="btn-manage px-4 py-2 bg-slate-900 hover:bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-95"
                                         data-user={JSON.stringify(u)}
                                     >
-                                        ⚙️ Gestionar
-
+                                        Gestionar
                                     </button>
                                 </td>
                             </tr>
@@ -137,107 +181,188 @@ try {
                 </tbody>
             </table>
         </div>
+    </div>
 
-        <dialog id="userModal" class="admin-modal">
-            <div class="modal-content">
-                <span class="close-modal" id="btn-close-modal">×</span>
+    <!-- MODAL GESTION -->
+    <dialog
+        id="userModal"
+        class="bg-white rounded-[2.5rem] shadow-2xl p-0 w-[95%] max-w-2xl overflow-hidden backdrop:bg-slate-900/40 backdrop:backdrop-blur-sm border border-slate-100"
+    >
+        <div class="relative">
+            <button
+                id="btn-close-modal"
+                class="absolute right-6 top-6 w-10 h-10 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-slate-800 transition-all font-black text-xl z-20"
+                >&times;</button
+            >
 
-                <h2 id="m-nombre">Gestionar Usuario</h2>
-                <p id="m-id" class="text-muted">ID: ...</p>
+            <div class="p-8 pb-0 flex items-center gap-6">
+                <div
+                    id="m-foto-container"
+                    class="w-20 h-20 rounded-3xl bg-slate-100 flex items-center justify-center text-3xl shadow-inner border shadow-blue-50"
+                >
+                    👤
+                </div>
+                <div>
+                    <h2
+                        id="m-nombre"
+                        class="text-2xl font-black text-slate-900 tracking-tight leading-none mb-2"
+                    >
+                        Cargando...
+                    </h2>
+                    <p
+                        id="m-id"
+                        class="text-[10px] font-black text-slate-400 uppercase tracking-widest"
+                    >
+                        ID: ...
+                    </p>
+                </div>
+            </div>
 
-                <div class="modal-grid">
-                    <div class="modal-col">
-                        <h3>🔐 Datos Sensibles</h3>
-
-                        <div class="data-group">
-                            <label>DNI:</label>
-                            <span id="m-dni">-</span>
-                        </div>
-                        <div class="data-group">
-                            <label>CUIT:</label>
-                            <span id="m-cuit">-</span>
-                        </div>
-                        <div class="data-group">
-                            <label>Rol Actual:</label>
-                            <strong id="m-rol-display">-</strong>
-                        </div>
-                        <div class="data-group">
-                            <label>Certificado/Matrícula:</label>
-                            <a
-                                id="m-cert-link"
-                                href="#"
-                                target="_blank"
-                                class="btn-link hidden">Ver Documento 📄</a
+            <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Columna Izquierda: Datos y Verificacion -->
+                <div class="space-y-6">
+                    <section>
+                        <h3
+                            class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"
+                        >
+                            <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"
+                            ></span> Información Técnica
+                        </h3>
+                        <div class="space-y-3">
+                            <div
+                                class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl"
                             >
-                            <span id="m-no-cert">No subió archivo</span>
-
+                                <span class="text-xs font-bold text-slate-500"
+                                    >Documento DNI</span
+                                >
+                                <span
+                                    id="m-dni"
+                                    class="text-xs font-black text-slate-800"
+                                    >-</span
+                                >
+                            </div>
+                            <div
+                                class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl"
+                            >
+                                <span class="text-xs font-bold text-slate-500"
+                                    >CUIT / CUIL</span
+                                >
+                                <span
+                                    id="m-cuit"
+                                    class="text-xs font-black text-slate-800"
+                                    >-</span
+                                >
+                            </div>
+                            <div
+                                class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl"
+                            >
+                                <span class="text-xs font-bold text-slate-500"
+                                    >Rol Sistema</span
+                                >
+                                <strong
+                                    id="m-rol-display"
+                                    class="text-[10px] font-black uppercase text-blue-600"
+                                    >PROFESIONAL</strong
+                                >
+                            </div>
                         </div>
+                    </section>
 
-                        <hr />
-
-                        <h3>✅ Estado de Verificación</h3>
-                        <div class="verify-box">
-                            <p>¿Certificado válido?</p>
-                            <button id="btn-verify" class="btn-action verify"
-                                >Dar el Tilde Azul ✅</button
+                    <section>
+                        <h3
+                            class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"
+                        >
+                            <span
+                                class="w-1.5 h-1.5 bg-emerald-500 rounded-full"
+                            ></span> Sello de Confianza
+                        </h3>
+                        <div class="flex gap-2">
+                            <button
+                                id="btn-verify"
+                                class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black uppercase py-4 rounded-2xl transition-all shadow-lg shadow-emerald-100"
+                                >✅ Vincular</button
                             >
                             <button
                                 id="btn-unverify"
-                                class="btn-action unverify"
-                                >Quitar Verificación ❌</button
+                                class="px-6 bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-600 py-4 rounded-2xl transition-all text-sm font-black"
+                                >❌ Quitar</button
                             >
-
                         </div>
-                    </div>
+                        <a
+                            id="m-cert-link"
+                            href="#"
+                            target="_blank"
+                            class="block text-center mt-3 text-[10px] font-black uppercase text-blue-600 hover:underline hidden"
+                            >Ver Documento Adjunto 📄</a
+                        >
+                    </section>
+                </div>
 
-                    <div class="modal-col">
-                        <h3>👑 Roles del Sistema</h3>
-                        <div class="data-group">
-                            <label>Asignar Rol:</label>
-                            <select id="m-rol-select">
-                                <option value="profesional"
-                                    >Usuario / Profesional</option
-                                >
-
+                <!-- Columna Derecha: Roles y Membresia -->
+                <div class="space-y-6">
+                    <section>
+                        <h3
+                            class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"
+                        >
+                            <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full"
+                            ></span> Cambiar Rol
+                        </h3>
+                        <div class="flex gap-2">
+                            <select
+                                id="m-rol-select"
+                                class="flex-1 bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 appearance-none"
+                            >
+                                <option value="profesional">Profesional</option>
                                 <option value="moderador">Moderador</option>
                                 <option value="admin">Administrador</option>
                             </select>
                             <button
                                 id="btn-save-rol"
-                                class="btn-save"
-                                style="background-color: #7c3aed; margin-top: 5px;"
-                                >💾 Actualizar Rol</button
+                                class="w-12 h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl flex items-center justify-center transition-all shadow-lg shadow-indigo-100"
+                                >💾</button
                             >
-
                         </div>
+                    </section>
 
-                        <hr />
-
-                        <h3>💎 Membresía</h3>
-                        <select id="m-plan-select">
-                            <option value="gratuito">Gratuito (Básico)</option>
-
-                            <option value="mensual">Premium Mensual</option>
-                            <option value="semestral">Premium Semestral</option>
-                            <option value="experto">Plan Experto</option>
-                        </select>
-                        <button id="btn-save-plan" class="btn-save"
-                            >💾 Actualizar Plan</button
+                    <section>
+                        <h3
+                            class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"
                         >
+                            <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"
+                            ></span> Forzar Membresía
+                        </h3>
+                        <div class="flex gap-2">
+                            <select
+                                id="m-plan-select"
+                                class="flex-1 bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-amber-500 appearance-none"
+                            >
+                                <option value="gratuito">Plan Gratuito</option>
+                                <option value="mensual">Mensual Diamond</option>
+                                <option value="semestral"
+                                    >Semestral Diamond</option
+                                >
+                                <option value="experto">Plan Experto</option>
+                            </select>
+                            <button
+                                id="btn-save-plan"
+                                class="w-12 h-12 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl flex items-center justify-center transition-all shadow-lg shadow-amber-100"
+                                >💎</button
+                            >
+                        </div>
+                    </section>
 
-                        <hr />
-
-                        <h3>🚨 Zona de Peligro</h3>
-                        <button id="btn-delete-user" class="btn-delete-danger"
-                            >🗑️ ELIMINAR USUARIO</button
+                    <section class="pt-4">
+                        <button
+                            id="btn-delete-user"
+                            class="w-full bg-rose-50 hover:bg-rose-100 text-rose-600 text-[10px] font-black uppercase py-4 rounded-2xl border border-rose-100 transition-all"
+                            >🗑️ Eliminar Definitivamente</button
                         >
-
-                    </div>
+                    </section>
                 </div>
             </div>
-        </dialog>
-    </main>
-</Layout>
+        </div>
+    </dialog>
+</LayoutAdmin>
 
 <script>
     import { db, auth } from "../../firebase/client";
@@ -245,49 +370,42 @@ try {
     import { onAuthStateChanged } from "firebase/auth";
 
     document.addEventListener("astro:page-load", () => {
-        console.log("🚀 [ADMIN-USUARIOS] Página cargada/navegada");
-
-
-        // 1. SEGURIDAD
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) window.location.href = "/";
-            const snap = await getDoc(doc(db, "profesionales", user.uid));
-            if (!snap.exists() || snap.data().rol !== "admin")
-                window.location.href = "/";
-        });
-
-        // 2. BUSCADOR
+        // 1. BUSCADOR
         const searchInput = document.getElementById("searchUser");
         searchInput?.addEventListener("keyup", (e) => {
             // @ts-ignore
             const term = e.target.value.toLowerCase();
             document.querySelectorAll(".user-row").forEach((row) => {
-                const name = row
-                    .querySelector(".u-name")
-                    .textContent.toLowerCase();
-                const email = row
-                    .querySelector(".u-email")
-                    .textContent.toLowerCase();
-                // @ts-ignore
-                row.style.display =
-                    name.includes(term) || email.includes(term) ? "" : "none";
+                const nameNode = row.querySelector(".u-name");
+                const emailNode = row.querySelector(".u-email");
+
+                if (nameNode && emailNode) {
+                    const name = nameNode.textContent?.toLowerCase() || "";
+                    const email = emailNode.textContent?.toLowerCase() || "";
+
+                    // @ts-ignore
+                    row.style.display =
+                        name.includes(term) || email.includes(term)
+                            ? ""
+                            : "none";
+                }
             });
         });
 
-        // 3. LÓGICA DEL MODAL
-
+        // 2. LÓGICA DEL MODAL
         const modal = document.getElementById("userModal") as HTMLDialogElement;
         const closeBtn = document.getElementById("btn-close-modal");
         let currentUserId = null;
 
+        if (!modal) return;
+
         // Cerrar modal
         closeBtn?.addEventListener("click", () => modal.close());
-        modal?.addEventListener("click", (e) => {
+        modal.addEventListener("click", (e) => {
             if (e.target === modal) modal.close();
         });
 
-        // 4. Abrir modal (Delegación de eventos para botones "Gestionar")
-
+        // 3. Abrir modal
         document.querySelectorAll(".btn-manage").forEach((btn) => {
             btn.addEventListener("click", (e) => {
                 // @ts-ignore
@@ -299,375 +417,151 @@ try {
         function openModal(u) {
             currentUserId = u.id;
 
-            // Llenar datos básicos
+            const mNombre = document.getElementById("m-nombre");
+            const mId = document.getElementById("m-id");
+            const mDni = document.getElementById("m-dni");
+            const mCuit = document.getElementById("m-cuit");
+            const mRolDisplay = document.getElementById("m-rol-display");
+            const mFotoContainer = document.getElementById("m-foto-container");
+            const mCertLink = document.getElementById("m-cert-link");
+            const mPlanSelect = document.getElementById(
+                "m-plan-select",
+            ) as HTMLSelectElement;
+            const mRolSelect = document.getElementById(
+                "m-rol-select",
+            ) as HTMLSelectElement;
 
-            document.getElementById("m-nombre").textContent = u.nombre;
-            document.getElementById("m-id").textContent = "ID: " + u.id;
-            document.getElementById("m-dni").textContent =
-                u.dni || "No cargado";
-            document.getElementById("m-cuit").textContent =
-                u.cuit || "No cargado";
+            if (mNombre) mNombre.textContent = u.nombre;
+            if (mId) mId.textContent = "ID: " + u.id;
+            if (mDni) mDni.textContent = u.dni || "No cargado";
+            if (mCuit) mCuit.textContent = u.cuit || "No cargado";
+
+            if (mFotoContainer) {
+                if (u.foto) {
+                    mFotoContainer.innerHTML = `<img src="${u.foto}" class="w-full h-full object-cover rounded-3xl">`;
+                } else {
+                    mFotoContainer.innerHTML = "👤";
+                }
+            }
 
             // Certificado
-            const certLink = document.getElementById("m-cert-link");
-            const noCert = document.getElementById("m-no-cert");
-            if (u.certificado_url) {
-                // @ts-ignore
-                certLink.href = u.certificado_url;
-                certLink.classList.remove("hidden");
-                noCert.classList.add("hidden");
-            } else {
-                certLink.classList.add("hidden");
-                noCert.classList.remove("hidden");
+            if (mCertLink) {
+                if (u.certificado_url) {
+                    // @ts-ignore
+                    mCertLink.href = u.certificado_url;
+                    mCertLink.classList.remove("hidden");
+                } else {
+                    mCertLink.classList.add("hidden");
+                }
             }
 
             // Planes y Roles
-            // @ts-ignore
-            document.getElementById("m-plan-select").value =
-                u.plan || "gratuito";
+            if (mPlanSelect) mPlanSelect.value = u.plan || "gratuito";
 
             const currentRol = u.rol || "profesional";
-            document.getElementById("m-rol-display").textContent =
-                currentRol.toUpperCase();
-            // @ts-ignore
-            document.getElementById("m-rol-select").value = currentRol;
+            if (mRolDisplay) mRolDisplay.textContent = currentRol.toUpperCase();
+            if (mRolSelect) mRolSelect.value = currentRol;
 
-            // @ts-ignore
             modal.showModal();
         }
 
-        // 4. ACCIONES DE BOTONES
-
-        // Verificar
+        // 4. ACCIONES
         document
             .getElementById("btn-verify")
             ?.addEventListener("click", async () => {
-                if (!confirm("¿Confirmas que el documento es válido?")) return;
-                await updateDoc(doc(db, "profesionales", currentUserId), {
-                    verificado: true,
-                });
-                alert("¡Usuario Verificado! ✅");
-                window.location.reload();
+                if (
+                    !currentUserId ||
+                    !confirm("¿Confirmas que el documento es válido?")
+                )
+                    return;
+                try {
+                    await updateDoc(doc(db, "profesionales", currentUserId), {
+                        verificado: true,
+                    });
+                    alert("¡Usuario Verificado! ✅");
+                    window.location.reload();
+                } catch (e) {
+                    alert("Error: " + e.message);
+                }
             });
-
-        // Quitar Verificación
 
         document
             .getElementById("btn-unverify")
             ?.addEventListener("click", async () => {
-                await updateDoc(doc(db, "profesionales", currentUserId), {
-                    verificado: false,
-                });
-                alert("Verificación revocada.");
-
-                window.location.reload();
+                if (!currentUserId || !confirm("¿Quitar verificación?")) return;
+                try {
+                    await updateDoc(doc(db, "profesionales", currentUserId), {
+                        verificado: false,
+                    });
+                    alert("Verificación revocada.");
+                    window.location.reload();
+                } catch (e) {
+                    alert("Error: " + e.message);
+                }
             });
 
-        // Actualizar Rol
         document
             .getElementById("btn-save-rol")
             ?.addEventListener("click", async () => {
-                // @ts-ignore
-                const nuevoRol = document.getElementById("m-rol-select").value;
-                if (confirm(`¿Cambiar rol a ${nuevoRol.toUpperCase()}?`)) {
+                const select = document.getElementById(
+                    "m-rol-select",
+                ) as HTMLSelectElement;
+                const nuevoRol = select?.value;
+                if (!currentUserId || !nuevoRol) return;
 
-                    await updateDoc(doc(db, "profesionales", currentUserId), {
-                        rol: nuevoRol,
-                    });
-                    alert("Rol actualizado.");
-                    window.location.reload();
+                if (confirm(`¿Cambiar rol a ${nuevoRol.toUpperCase()}?`)) {
+                    try {
+                        await updateDoc(
+                            doc(db, "profesionales", currentUserId),
+                            { rol: nuevoRol },
+                        );
+                        alert("Rol actualizado.");
+                        window.location.reload();
+                    } catch (e) {
+                        alert("Error: " + e.message);
+                    }
                 }
             });
 
-        // Actualizar Plan
         document
             .getElementById("btn-save-plan")
             ?.addEventListener("click", async () => {
-                // @ts-ignore
-                const nuevoPlan =
-                    document.getElementById("m-plan-select").value;
-                await updateDoc(doc(db, "profesionales", currentUserId), {
-                    plan: nuevoPlan,
-                });
-                alert(`Plan actualizado a: ${nuevoPlan.toUpperCase()}`);
-                window.location.reload();
+                const select = document.getElementById(
+                    "m-plan-select",
+                ) as HTMLSelectElement;
+                const nuevoPlan = select?.value;
+                if (!currentUserId || !nuevoPlan) return;
+
+                try {
+                    await updateDoc(doc(db, "profesionales", currentUserId), {
+                        plan: nuevoPlan,
+                    });
+                    alert(`Plan actualizado a: ${nuevoPlan.toUpperCase()}`);
+                    window.location.reload();
+                } catch (e) {
+                    alert("Error: " + e.message);
+                }
             });
 
-        // Eliminar Usuario
         document
             .getElementById("btn-delete-user")
             ?.addEventListener("click", async () => {
+                if (!currentUserId) return;
                 if (
                     confirm(
-                        "⚠ PELIGRO: Esto borrará al usuario permanentemente.",
-
+                        "⚠ PELIGRO: Esto borrará al usuario de la base de datos permanentemente.",
                     )
                 ) {
-                    await deleteDoc(doc(db, "profesionales", currentUserId));
-                    alert("Usuario eliminado.");
-                    window.location.reload();
+                    try {
+                        await deleteDoc(
+                            doc(db, "profesionales", currentUserId),
+                        );
+                        alert("Usuario eliminado.");
+                        window.location.reload();
+                    } catch (e) {
+                        alert("Error: " + e.message);
+                    }
                 }
             });
-    }); // End of astro:page-load
+    });
 </script>
-
-<style>
-    .container {
-        max-width: 1100px;
-        margin: 40px auto;
-        padding: 20px;
-        font-family: "Segoe UI", system-ui, sans-serif;
-    }
-    .header-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-    .header-row h1 {
-        margin: 0;
-        color: #1f2937;
-    }
-
-    .search-input {
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        width: 250px;
-    }
-    .btn-back {
-        background: #333;
-        color: white;
-        padding: 10px 15px;
-        text-decoration: none;
-        border-radius: 5px;
-        margin-left: 10px;
-    }
-
-    /* TABLA */
-    .table-responsive {
-        overflow-x: auto;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 800px;
-    }
-    th {
-        background: #f3f4f6;
-        text-align: left;
-        padding: 15px;
-        color: #4b5563;
-        border-bottom: 2px solid #e5e7eb;
-    }
-    td {
-        padding: 12px 15px;
-        border-bottom: 1px solid #eee;
-        vertical-align: middle;
-        color: #374151;
-    }
-
-    .user-cell {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .mini-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-    }
-    .no-pic {
-        font-size: 1.5rem;
-        background: #eee;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-    }
-
-    /* BADGES */
-    .badge {
-        padding: 4px 8px;
-        border-radius: 10px;
-        font-size: 0.75rem;
-        font-weight: bold;
-    }
-    .verified {
-        background: #dcfce7;
-        color: #166534;
-    }
-    .pending {
-        background: #f3f4f6;
-        color: #6b7280;
-    }
-    .premium {
-        background: #fef3c7;
-        color: #92400e;
-        border: 1px solid #fbbf24;
-    }
-    .free {
-        background: #e5e7eb;
-        color: #374151;
-    }
-
-    /* ESTILO WHATSAPP */
-    .whatsapp-stat {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background-color: #dcfce7;
-        color: #166534;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 700;
-        border: 1px solid #bbf7d0;
-    }
-
-    .btn-manage {
-        background: #2563eb;
-        color: white;
-        border: none;
-        padding: 6px 12px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: 0.2s;
-    }
-    .btn-manage:hover {
-        background: #1d4ed8;
-    }
-
-    /* MODAL */
-    .admin-modal {
-        border: none;
-        border-radius: 12px;
-        padding: 0;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-        max-width: 800px;
-        width: 95%;
-    }
-    .admin-modal::backdrop {
-        background: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(2px);
-    }
-    .modal-content {
-        padding: 30px;
-        position: relative;
-    }
-    .close-modal {
-        position: absolute;
-        top: 15px;
-        right: 20px;
-        font-size: 2rem;
-        cursor: pointer;
-        color: #666;
-    }
-    .modal-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 30px;
-        margin-top: 20px;
-    }
-    .modal-col h3 {
-        margin-top: 0;
-        border-bottom: 2px solid #eee;
-        padding-bottom: 10px;
-        font-size: 1.1rem;
-        color: #333;
-    }
-    .data-group {
-        margin-bottom: 15px;
-    }
-    .data-group label {
-        font-weight: bold;
-        display: block;
-        color: #555;
-        font-size: 0.9rem;
-    }
-    .btn-link {
-        display: inline-block;
-        color: #2563eb;
-        text-decoration: underline;
-    }
-
-    .verify-box {
-        background: #f0fdfa;
-        padding: 15px;
-        border-radius: 8px;
-        text-align: center;
-        border: 1px dashed #10b981;
-    }
-    .btn-action {
-        width: 100%;
-        padding: 10px;
-        margin-top: 5px;
-        cursor: pointer;
-        border-radius: 6px;
-        border: none;
-        font-weight: bold;
-    }
-    .verify {
-        background: #10b981;
-        color: white;
-    }
-    .unverify {
-        background: #cbd5e1;
-        color: #333;
-        margin-top: 10px;
-    }
-
-    #m-plan-select,
-    #m-rol-select {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 10px;
-        border-radius: 6px;
-        border: 1px solid #ccc;
-    }
-    .btn-save {
-        width: 100%;
-        background: #2563eb;
-        color: white;
-        padding: 10px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: bold;
-    }
-    .btn-delete-danger {
-        width: 100%;
-        background: #dc2626;
-        color: white;
-        padding: 10px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: bold;
-        margin-top: 10px;
-    }
-
-    .hidden {
-        display: none;
-    }
-
-    @media (max-width: 600px) {
-        .modal-grid {
-            grid-template-columns: 1fr;
-        }
-        .header-row {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-    }
-</style>
-

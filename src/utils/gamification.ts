@@ -1,9 +1,14 @@
 export const LEVELS = [
     { name: "Novato 🌱", threshold: 0, benefits: "Acceso básico" },
-    { name: "Aprendiz 🔨", threshold: 10, benefits: "Badge en perfil" },
-    { name: "Profesional 👷", threshold: 25, benefits: "+5% Boost en Ranking" },
-    { name: "Experto 🦁", threshold: 50, benefits: "+10% Boost + Descuento 10%" },
-    { name: "Maestro 👑", threshold: 100, benefits: "Destacado Home + Descuento 20%" }
+    { name: "Aprendiz 🔨", threshold: 50, benefits: "Badge en perfil" },
+    { name: "Iniciado 🛠️", threshold: 150, benefits: "Desbloquea estadísticas" },
+    { name: "Profesional 👷", threshold: 400, benefits: "+5% Boost en Ranking" },
+    { name: "Especialista 🥈", threshold: 750, benefits: "Descuento 5% en créditos" },
+    { name: "Experto 🦁", threshold: 1200, benefits: "+10% Boost + Descuento 10%" },
+    { name: "Socio 🤝", threshold: 1800, benefits: "Badge VIP + Descuento 15%" },
+    { name: "Maestro 👑", threshold: 2500, benefits: "Destacado Home + Descuento 20%" },
+    { name: "Líder 💎", threshold: 4000, benefits: "Soporte Prioritario + Descuento 25%" },
+    { name: "Leyenda 🔥", threshold: 6000, benefits: "Comisión 0% + Destacado Premium" }
 ];
 
 export const PUNTOS_RECOMPENSA = {

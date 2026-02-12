@@ -1,22 +1,24 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import LayoutAdmin from "../../layouts/LayoutAdmin.astro";
 ---
 
-<Layout title="Newsletter - Admin">
+<LayoutAdmin title="Newsletter - Admin">
     <div class="min-h-screen bg-slate-50 py-8 px-4 font-sans">
         <div class="max-w-4xl mx-auto">
             <!-- HEADER -->
             <header
-                class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 mb-8 flex items-center justify-between">
+                class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 mb-8 flex items-center justify-between"
+            >
                 <div class="flex items-center gap-4">
                     <a
                         href="/admin"
-                        class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors">
-                        
+                        class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
+                    >
                     </a>
                     <div>
                         <h1
-                            class="text-2xl font-black text-slate-800 tracking-tight">
+                            class="text-2xl font-black text-slate-800 tracking-tight"
+                        >
                             Newsletter
                         </h1>
                         <p class="text-slate-500 text-sm font-medium">
@@ -25,26 +27,31 @@ import Layout from "../../layouts/Layout.astro";
                     </div>
                 </div>
                 <div
-                    class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl">
-                    
+                    class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-2xl"
+                >
                 </div>
             </header>
 
             <!-- SEND MASS EMAIL CARD -->
             <section
-                class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-8 relative overflow-hidden">
+                class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-8 relative overflow-hidden"
+            >
                 <div class="relative z-10">
                     <h2
-                        class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"
+                    >
                         <span
-                            class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center text-sm"></span>
+                            class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center text-sm"
+                        ></span>
                         Enviar Email Masivo
                     </h2>
 
                     <div class="space-y-4">
                         <div>
                             <label
-                                class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Asunto</label>
+                                class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2"
+                                >Asunto</label
+                            >
                             <input
                                 type="text"
                                 id="mass-subject"
@@ -56,27 +63,37 @@ import Layout from "../../layouts/Layout.astro";
                         <div>
                             <div class="flex justify-between items-center mb-2">
                                 <label
-                                    class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Mensaje (Markdown) <span
-                                        class="text-[10px] text-slate-300 ml-1">Soporta **negrita**, - listas,
-                                        [links](url)</span></label>
+                                    class="block text-xs font-bold text-slate-400 uppercase tracking-wider"
+                                    >Mensaje (Markdown) <span
+                                        class="text-[10px] text-slate-300 ml-1"
+                                        >Soporta **negrita**, - listas,
+                                        [links](url)</span
+                                    ></label
+                                >
                                 <button
                                     id="btn-toggle-preview"
-                                    class="text-xs text-indigo-600 font-bold hover:underline">Ver Previsualizacin</button>
+                                    class="text-xs text-indigo-600 font-bold hover:underline"
+                                    >Ver Previsualizacin</button
+                                >
                             </div>
                             <div
-                                class="grid grid-cols-1 md:grid-cols-2 gap-4 h-80">
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 h-80"
+                            >
                                 <textarea
                                     id="mass-body"
                                     class="w-full h-full bg-slate-50 border border-slate-200 p-4 rounded-xl text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-mono text-sm resize-none"
                                     placeholder="Hola a todos,
 
-Esta es una **actualizacin importante**..."></textarea>
+Esta es una **actualizacin importante**..."
+                                ></textarea>
 
                                 <div
                                     id="preview-area"
-                                    class="h-full bg-white border border-slate-200 rounded-xl p-4 overflow-y-auto prose prose-sm max-w-none prose-indigo hidden md:block">
+                                    class="h-full bg-white border border-slate-200 rounded-xl p-4 overflow-y-auto prose prose-sm max-w-none prose-indigo hidden md:block"
+                                >
                                     <p
-                                        class="text-slate-400 italic text-center mt-10">
+                                        class="text-slate-400 italic text-center mt-10"
+                                    >
                                         Escribe para ver la vista previa...
                                     </p>
                                 </div>
@@ -86,20 +103,24 @@ Esta es una **actualizacin importante**..."></textarea>
                         <div class="flex items-center justify-between pt-2">
                             <p
                                 id="send-status"
-                                class="text-xs font-bold text-slate-400 hidden animate-pulse">
+                                class="text-xs font-bold text-slate-400 hidden animate-pulse"
+                            >
                                 Procesando...
                             </p>
                             <button
                                 id="btn-send-mass"
-                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-bold transition shadow-lg hover:shadow-indigo-500/30 flex items-center gap-2 transform active:scale-95">
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-bold transition shadow-lg hover:shadow-indigo-500/30 flex items-center gap-2 transform active:scale-95"
+                            >
                                 <span>Enviar Campaña</span>
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 20 20"
                                     fill="currentColor"
-                                    class="w-5 h-5">
+                                    class="w-5 h-5"
+                                >
                                     <path
-                                        d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z"></path>
+                                        d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z"
+                                    ></path>
                                 </svg>
                             </button>
                         </div>
@@ -107,22 +128,32 @@ Esta es una **actualizacin importante**..."></textarea>
                 </div>
                 <!-- Decorative Blob -->
                 <div
-                    class="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-orange-50 rounded-full blur-3xl opacity-50 pointer-events-none">
+                    class="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-orange-50 rounded-full blur-3xl opacity-50 pointer-events-none"
+                >
                 </div>
             </section>
 
             <!-- CAMPAIGN HISTORY -->
-            <section class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-8 overflow-hidden">
+            <section
+                class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-8 overflow-hidden"
+            >
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        <span class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-sm">📜</span>
+                    <h2
+                        class="text-lg font-bold text-slate-800 flex items-center gap-2"
+                    >
+                        <span
+                            class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-sm"
+                            >📜</span
+                        >
                         Historial de Campañas
                     </h2>
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
-                        <thead class="bg-slate-50 text-slate-500 font-bold uppercase text-xs">
+                        <thead
+                            class="bg-slate-50 text-slate-500 font-bold uppercase text-xs"
+                        >
                             <tr>
                                 <th class="p-4">Asunto</th>
                                 <th class="p-4">Fecha</th>
@@ -130,9 +161,16 @@ Esta es una **actualizacin importante**..."></textarea>
                                 <th class="p-4 text-right">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="campaigns-list" class="divide-y divide-slate-50">
+                        <tbody
+                            id="campaigns-list"
+                            class="divide-y divide-slate-50"
+                        >
                             <tr>
-                                <td colspan="4" class="p-8 text-center text-slate-400">Cargando historial...</td>
+                                <td
+                                    colspan="4"
+                                    class="p-8 text-center text-slate-400"
+                                    >Cargando historial...</td
+                                >
                             </tr>
                         </tbody>
                     </table>
@@ -141,20 +179,24 @@ Esta es una **actualizacin importante**..."></textarea>
 
             <!-- SUBSCRIBERS TABLE -->
             <div
-                class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden"
+            >
                 <div
-                    class="p-6 border-b border-slate-100 flex items-center justify-between">
+                    class="p-6 border-b border-slate-100 flex items-center justify-between"
+                >
                     <h3 class="font-bold text-slate-800">
                         Lista de Suscriptores
                     </h3>
                     <span
                         class="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs font-bold"
-                        id="sub-count">0</span>
+                        id="sub-count">0</span
+                    >
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead
-                            class="bg-slate-50 text-slate-500 font-bold uppercase text-xs">
+                            class="bg-slate-50 text-slate-500 font-bold uppercase text-xs"
+                        >
                             <tr>
                                 <th class="p-5">Email</th>
                                 <th class="p-5">Fecha</th>
@@ -164,11 +206,14 @@ Esta es una **actualizacin importante**..."></textarea>
                         </thead>
                         <tbody
                             id="subscribers-list"
-                            class="divide-y divide-slate-50">
+                            class="divide-y divide-slate-50"
+                        >
                             <tr>
                                 <td
                                     colspan="4"
-                                    class="p-10 text-center text-slate-400 font-medium">Cargando suscriptores...</td>
+                                    class="p-10 text-center text-slate-400 font-medium"
+                                    >Cargando suscriptores...</td
+                                >
                             </tr>
                         </tbody>
                     </table>
@@ -176,7 +221,7 @@ Esta es una **actualizacin importante**..."></textarea>
             </div>
         </div>
     </div>
-</Layout>
+</LayoutAdmin>
 
 <script>
     import { db, auth } from "../../firebase/client";
@@ -189,7 +234,7 @@ Esta es una **actualizacin importante**..."></textarea>
         addDoc,
         doc,
         where,
-        serverTimestamp
+        serverTimestamp,
     } from "firebase/firestore";
     import { onAuthStateChanged } from "firebase/auth";
     import { marked } from "marked";
@@ -210,9 +255,10 @@ Esta es una **actualizacin importante**..."></textarea>
 
         if (textArea && previewArea) {
             textArea.addEventListener("input", (e) => {
-                const md = e.target.value;
-                const html = marked.parse(md);
-                previewArea.innerHTML = html;
+                const target = e.target as HTMLTextAreaElement;
+                const md = target.value;
+                const html = marked.parse(md) as string;
+                if (previewArea) previewArea.innerHTML = html;
             });
         }
 
@@ -236,35 +282,33 @@ Esta es una **actualizacin importante**..."></textarea>
                     return;
                 }
 
-                subscribers = [];
-                list.innerHTML = "";
-                const countBadge = document.getElementById("sub-count");
-                if (countBadge) countBadge.innerText = snap.size.toString();
+                if (list) {
+                    snap.forEach((d) => {
+                        const data = d.data();
+                        subscribers.push({ id: d.id, ...data });
 
-                snap.forEach((d) => {
-                    const data = d.data();
-                    subscribers.push({ id: d.id, ...data });
-
-                    const tr = document.createElement("tr");
-                    tr.className = "border-b hover:bg-slate-50 transition";
-                    tr.innerHTML = `
-                        <td class="p-4 font-medium text-gray-900">${data.email}</td>
-                        <td class="p-4 text-gray-500">${data.fecha ? new Date(data.fecha.seconds * 1000).toLocaleDateString() : "-"}</td>
-                        <td class="p-4">
-                            ${data.activo ? '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Activo</span>' : '<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">Inactivo</span>'}
-                        </td>
-                        <td class="p-4 text-right">
-                            <button class="delete-sub text-red-500 hover:text-red-700 font-bold text-xs bg-red-50 px-3 py-1.5 rounded transition" data-id="${d.id}">Eliminar</button>
-                        </td>
-                    `;
-                    list.appendChild(tr);
-                });
+                        const tr = document.createElement("tr");
+                        tr.className = "border-b hover:bg-slate-50 transition";
+                        tr.innerHTML = `
+                            <td class="p-4 font-medium text-gray-900">${data.email}</td>
+                            <td class="p-4 text-gray-500">${data.fecha ? new Date(data.fecha.seconds * 1000).toLocaleDateString() : "-"}</td>
+                            <td class="p-4">
+                                ${data.activo ? '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Activo</span>' : '<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">Inactivo</span>'}
+                            </td>
+                            <td class="p-4 text-right">
+                                <button class="delete-sub text-red-500 hover:text-red-700 font-bold text-xs bg-red-50 px-3 py-1.5 rounded transition" data-id="${d.id}">Eliminar</button>
+                            </td>
+                        `;
+                        list.appendChild(tr);
+                    });
+                }
 
                 // Attach events
                 document.querySelectorAll(".delete-sub").forEach((btn) => {
-                    btn.addEventListener("click", (e) =>
-                        deleteSubscriber(e.target.dataset.id),
-                    );
+                    btn.addEventListener("click", (e) => {
+                        const target = e.target as HTMLElement;
+                        deleteSubscriber(target.dataset.id);
+                    });
                 });
             } catch (e) {
                 console.error(e);
@@ -273,73 +317,78 @@ Esta es una **actualizacin importante**..."></textarea>
         }
 
         async function loadCampaigns() {
-             try {
-                const q = query(collection(db, "newsletter_campaigns"), orderBy("fecha", "desc"));
+            try {
+                const q = query(
+                    collection(db, "newsletter_campaigns"),
+                    orderBy("fecha", "desc"),
+                );
                 const snap = await getDocs(q);
 
                 if (snap.empty) {
-                    campaignsList.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">No hay campañas enviadas.</td></tr>`;
+                    if (campaignsList)
+                        campaignsList.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500">No hay campañas enviadas.</td></tr>`;
                     return;
                 }
 
                 campaigns = [];
-                campaignsList.innerHTML = "";
+                if (campaignsList) campaignsList.innerHTML = "";
 
-                snap.forEach((d) => {
-                    const data = d.data();
-                    campaigns.push({ id: d.id, ...data });
+                if (campaignsList) {
+                    snap.forEach((d) => {
+                        const data = d.data();
+                        campaigns.push({ id: d.id, ...data });
 
-                    const tr = document.createElement("tr");
-                    tr.className = "border-b hover:bg-slate-50 transition";
-                    // Using encodeURIComponent to safely store data in attribute is risky for large body, usually better to look up by ID
-                    // We will look up by ID from the campaigns array
-                    tr.innerHTML = `
-                        <td class="p-4 font-bold text-gray-800">${data.asunto}</td>
-                        <td class="p-4 text-gray-500 text-xs">${data.fecha ? new Date(data.fecha.seconds * 1000).toLocaleString() : "-"}</td>
-                        <td class="p-4">
-                             <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">${data.enviados || 0} Emails</span>
-                        </td>
-                        <td class="p-4 text-right">
-                            <div class="flex items-center justify-end gap-2">
-                                <button class="reuse-camp p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition" title="Editar / Reutilizar" data-id="${d.id}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                                </button>
-                                <button class="resend-camp p-2 text-green-600 hover:bg-green-50 rounded-lg transition" title="Reenviar Ahora" data-id="${d.id}">
-                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                </button>
-                                <button class="delete-camp p-2 text-red-500 hover:bg-red-50 rounded-lg transition" title="Borrar Historial" data-id="${d.id}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                </button>
-                            </div>
-                        </td>
-                    `;
-                    campaignsList.appendChild(tr);
-                });
+                        const tr = document.createElement("tr");
+                        tr.className = "border-b hover:bg-slate-50 transition";
+                        // Using encodeURIComponent to safely store data in attribute is risky for large body, usually better to look up by ID
+                        // We will look up by ID from the campaigns array
+                        tr.innerHTML = `
+                            <td class="p-4 font-bold text-gray-800">${data.asunto}</td>
+                            <td class="p-4 text-gray-500 text-xs">${data.fecha ? new Date(data.fecha.seconds * 1000).toLocaleString() : "-"}</td>
+                            <td class="p-4">
+                                 <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">${data.enviados || 0} Emails</span>
+                            </td>
+                            <td class="p-4 text-right">
+                                <div class="flex items-center justify-end gap-2">
+                                    <button class="reuse-camp p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition" title="Editar / Reutilizar" data-id="${d.id}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                    </button>
+                                    <button class="resend-camp p-2 text-green-600 hover:bg-green-50 rounded-lg transition" title="Reenviar Ahora" data-id="${d.id}">
+                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                    </button>
+                                    <button class="delete-camp p-2 text-red-500 hover:bg-red-50 rounded-lg transition" title="Borrar Historial" data-id="${d.id}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        `;
+                        campaignsList.appendChild(tr);
+                    });
+                }
 
                 // Attach events
                 document.querySelectorAll(".reuse-camp").forEach((btn) => {
                     btn.addEventListener("click", (e) => {
-                        const id = e.target.closest('button').dataset.id;
+                        const id = e.target.closest("button").dataset.id;
                         reuseCampaign(id);
                     });
                 });
                 document.querySelectorAll(".resend-camp").forEach((btn) => {
                     btn.addEventListener("click", (e) => {
-                        const id = e.target.closest('button').dataset.id;
+                        const id = e.target.closest("button").dataset.id;
                         resendCampaign(id);
                     });
                 });
                 document.querySelectorAll(".delete-camp").forEach((btn) => {
                     btn.addEventListener("click", (e) => {
-                        const id = e.target.closest('button').dataset.id;
+                        const id = e.target.closest("button").dataset.id;
                         deleteCampaign(id);
                     });
                 });
-
-             } catch (e) {
+            } catch (e) {
                 console.error("Error loading campaigns:", e);
                 // Fail silently or show error in table
-             }
+            }
         }
 
         async function deleteSubscriber(id) {
@@ -353,50 +402,56 @@ Esta es una **actualizacin importante**..."></textarea>
             }
         }
 
-         async function deleteCampaign(id) {
-             if (!confirm("Se borrará este registro del historial. ¿Continuar?")) return;
-             try {
-                 const res = await fetch("/api/delete-campaign", {
-                     method: "DELETE",
-                     headers: { "Content-Type": "application/json" },
-                     body: JSON.stringify({ campaignId: id })
-                 });
-                 
-                 const data = await res.json();
-                 
-                 if (!res.ok) {
-                     throw new Error(data.error || "Error al borrar");
-                 }
-                 
-                 loadCampaigns();
-             } catch(e) {
-                 console.error("Delete error:", e);
-                 alert("Error al borrar campaña: " + e.message);
-             }
-         }
+        async function deleteCampaign(id) {
+            if (!confirm("Se borrará este registro del historial. ¿Continuar?"))
+                return;
+            try {
+                const res = await fetch("/api/delete-campaign", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ campaignId: id }),
+                });
 
-         function reuseCampaign(id) {
-             const camp = campaigns.find(c => c.id === id);
-             if(!camp) return;
+                const data = await res.json();
 
-             subjectInput.value = camp.asunto;
-             textArea.value = camp.cuerpoOriginal || ""; // Assuming we save original markdown
-             // Trigger preview
-             textArea.dispatchEvent(new Event('input'));
-             
-             window.scrollTo({ top: 0, behavior: 'smooth'});
-             alert("Contenido cargado en el editor.");
-         }
+                if (!res.ok) {
+                    throw new Error(data.error || "Error al borrar");
+                }
 
-         async function resendCampaign(id) {
-             const camp = campaigns.find(c => c.id === id);
-             if(!camp) return;
+                loadCampaigns();
+            } catch (e) {
+                console.error("Delete error:", e);
+                alert("Error al borrar campaña: " + e.message);
+            }
+        }
 
-             if(!confirm(`¿Reenviar la campaña "${camp.asunto}" a TODOS los ${subscribers.length} suscriptores?`)) return;
+        function reuseCampaign(id) {
+            const camp = campaigns.find((c) => c.id === id);
+            if (!camp) return;
 
-             // Call send logic with existing content
-             await sendEmails(camp.asunto, camp.cuerpoOriginal);
-         }
+            subjectInput.value = camp.asunto;
+            textArea.value = camp.cuerpoOriginal || ""; // Assuming we save original markdown
+            // Trigger preview
+            textArea.dispatchEvent(new Event("input"));
+
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            alert("Contenido cargado en el editor.");
+        }
+
+        async function resendCampaign(id) {
+            const camp = campaigns.find((c) => c.id === id);
+            if (!camp) return;
+
+            if (
+                !confirm(
+                    `¿Reenviar la campaña "${camp.asunto}" a TODOS los ${subscribers.length} suscriptores?`,
+                )
+            )
+                return;
+
+            // Call send logic with existing content
+            await sendEmails(camp.asunto, camp.cuerpoOriginal);
+        }
 
         // MASS EMAIL LOGIC
         btnSend?.addEventListener("click", async () => {
@@ -404,7 +459,7 @@ Esta es una **actualizacin importante**..."></textarea>
             const bodyMD = textArea.value;
 
             if (!subject || !bodyMD) return alert("Completá asunto y mensaje.");
-            
+
             if (subscribers.length === 0) return alert("No hay suscriptores.");
 
             if (
@@ -430,31 +485,34 @@ Esta es una **actualizacin importante**..."></textarea>
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         subject,
-                        markdownBody: bodyMD
-                    })
+                        markdownBody: bodyMD,
+                    }),
                 });
 
                 const result = await resp.json();
 
-                if (!resp.ok) throw new Error(result.error || "Error en el servidor");
+                if (!resp.ok)
+                    throw new Error(result.error || "Error en el servidor");
 
                 // Save to Campaign History (Client side or move to server? Server didn't do it in my code, preserving client logic for now or adding to server?)
-                // My server code didn't save the campaign to 'newsletter_campaigns'. 
-                // It's better if I do it here for now to keep it consistent with the existing UI logic, 
-                // OR I should have added it to the API. 
+                // My server code didn't save the campaign to 'newsletter_campaigns'.
+                // It's better if I do it here for now to keep it consistent with the existing UI logic,
+                // OR I should have added it to the API.
                 // Use client side save for now as the API responsiblity was sending.
-                
+
                 await addDoc(collection(db, "newsletter_campaigns"), {
                     asunto: subject,
                     cuerpoOriginal: bodyMD,
                     fecha: serverTimestamp(),
                     enviados: result.sent,
-                    errores: result.errors
+                    errores: result.errors,
                 });
-                
+
                 loadCampaigns();
 
-                alert(`Campaña finalizada.\nEnviados: ${result.sent}\nErrores: ${result.errors}`);
+                alert(
+                    `Campaña finalizada.\nEnviados: ${result.sent}\nErrores: ${result.errors}`,
+                );
                 statusText.innerText = "Envío exitoso.";
             } catch (e) {
                 console.error(e);
@@ -467,4 +525,3 @@ Esta es una **actualizacin importante**..."></textarea>
         }
     });
 </script>
-

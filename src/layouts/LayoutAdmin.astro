@@ -1,0 +1,437 @@
+---
+// src/layouts/LayoutAdmin.astro
+import Layout from "./Layout.astro";
+
+interface Props {
+    title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<Layout title={title} hideBottomNav={true} hideIA={true} hideFooter={true}>
+    <!-- Google Material Symbols -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet"
+    />
+
+    <div
+        class="flex flex-col md:flex-row min-h-screen bg-[var(--main-bg)] font-sans text-[var(--text-primary)]"
+    >
+        <!-- Sidebar Navigation -->
+        <aside
+            class="w-full md:w-72 flex-shrink-0 bg-[var(--sidebar-bg)] text-slate-300 flex flex-col z-20 shadow-xl md:sticky md:top-0 md:h-screen overflow-y-auto"
+        >
+            <div
+                class="p-8 flex items-center space-x-3 border-b border-white/10"
+            >
+                <div
+                    class="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-[var(--accent-gold)]"
+                >
+                    <span class="material-symbols-outlined !text-2xl"
+                        >analytics</span
+                    >
+                </div>
+                <div>
+                    <h1
+                        class="text-xs font-bold tracking-[0.2em] text-white uppercase"
+                    >
+                        Operaciones
+                    </h1>
+                    <p class="text-[10px] font-medium text-white/40">
+                        SISTEMA v2.4.0
+                    </p>
+                </div>
+            </div>
+
+            <nav class="flex-1 px-4 py-8 space-y-1 overflow-y-auto">
+                <p
+                    class="px-4 py-2 text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]"
+                >
+                    Menú Principal
+                </p>
+                <a
+                    class="sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-r-lg"
+                    href="/admin"
+                >
+                    <span class="material-symbols-outlined mr-4">dashboard</span
+                    >
+                    Panel
+                </a>
+                <a
+                    class="sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-r-lg"
+                    href="/admin/usuarios"
+                >
+                    <span class="material-symbols-outlined mr-4"
+                        >engineering</span
+                    >
+                    Profesionales
+                </a>
+                <a
+                    class="sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-r-lg"
+                    href="/admin/clientes"
+                >
+                    <span class="material-symbols-outlined mr-4">group</span>
+                    Clientes
+                </a>
+                <a
+                    class="sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-r-lg"
+                    href="/admin/validaciones"
+                >
+                    <span class="material-symbols-outlined mr-4">rule</span>
+                    Validaciones
+                </a>
+                <a
+                    class="sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-r-lg"
+                    href="/admin/denuncias"
+                >
+                    <span class="material-symbols-outlined mr-4">flag</span>
+                    Denuncias
+                </a>
+                <a
+                    id="admin-finanzas"
+                    class="sidebar-link hidden items-center px-4 py-3 text-sm font-medium rounded-r-lg"
+                    href="/admin/finanzas"
+                >
+                    <span class="material-symbols-outlined mr-4"
+                        >account_balance_wallet</span
+                    >
+                    Finanzas
+                </a>
+
+                <div class="pt-8 mt-8 border-t border-white/5">
+                    <p
+                        class="px-4 py-2 text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]"
+                    >
+                        Comunicaciones
+                    </p>
+                    <a
+                        class="sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-r-lg"
+                        href="/admin/newsletter"
+                    >
+                        <span class="material-symbols-outlined mr-4">mail</span>
+                        Newsletter
+                    </a>
+                    <a
+                        class="sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-r-lg"
+                        href="/admin/mensajes"
+                    >
+                        <span class="material-symbols-outlined mr-4"
+                            >chat_bubble</span
+                        >
+                        Soporte
+                    </a>
+                </div>
+            </nav>
+
+            <div class="p-6 border-t border-white/10 bg-black/10">
+                <a
+                    class="sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-lg mb-6"
+                    href="/admin/configuracion"
+                >
+                    <span class="material-symbols-outlined mr-4">settings</span>
+                    Ajustes
+                </a>
+                <div class="flex items-center px-4 space-x-4">
+                    <div class="relative">
+                        <img
+                            id="admin-avatar-img"
+                            alt="Admin Avatar"
+                            class="w-10 h-10 rounded-full border border-white/20 grayscale hover:grayscale-0 transition-all duration-300 object-cover"
+                            src="https://ui-avatars.com/api/?name=Admin&background=random"
+                        />
+                        <div
+                            class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[var(--sidebar-bg)] rounded-full"
+                        >
+                        </div>
+                    </div>
+                    <div class="overflow-hidden">
+                        <p
+                            class="text-xs font-bold text-white truncate"
+                            id="admin-user-name"
+                        >
+                            Administrador
+                        </p>
+                        <p class="text-[10px] text-white/50 tracking-wide">
+                            Panel de Control
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col overflow-y-auto overflow-x-hidden">
+            <header
+                class="h-20 flex items-center justify-between px-6 md:px-12 bg-white border-b border-[var(--border-color)] sticky top-0 z-10"
+            >
+                <div class="flex items-center space-x-6">
+                    <div class="relative hidden md:block">
+                        <span
+                            class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] !text-lg"
+                            >search</span
+                        >
+                        <input
+                            class="bg-[var(--main-bg)] border border-[var(--border-color)] rounded-lg px-11 py-2.5 text-xs focus:ring-1 focus:ring-[var(--accent-gold)] focus:border-[var(--accent-gold)] w-64 lg:w-96 transition-all outline-none"
+                            placeholder="Buscar datos operativos..."
+                            type="text"
+                        />
+                    </div>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <div
+                        class="flex items-center space-x-6 text-[var(--text-secondary)] border-r border-[var(--border-color)] pr-8"
+                    >
+                        <button
+                            class="hover:text-[var(--accent-gold)] transition-colors"
+                            onclick="window.location.reload()"
+                        >
+                            <span class="material-symbols-outlined"
+                                >refresh</span
+                            >
+                        </button>
+                        <button
+                            class="hover:text-[var(--accent-gold)] transition-colors relative"
+                        >
+                            <span class="material-symbols-outlined"
+                                >notifications</span
+                            >
+                            <span
+                                class="absolute top-0 right-0 w-2 h-2 bg-[var(--accent-gold)] rounded-full border-2 border-white"
+                            ></span>
+                        </button>
+                    </div>
+                    <div
+                        class="flex items-center space-x-3 cursor-pointer group"
+                    >
+                        <span
+                            class="text-xs font-bold text-[var(--text-primary)] tracking-wide group-hover:text-[var(--accent-gold)] transition-colors"
+                            >Centro de Operaciones</span
+                        >
+                        <span
+                            class="material-symbols-outlined text-[var(--text-secondary)] !text-base group-hover:translate-y-0.5 transition-transform"
+                            >keyboard_arrow_down</span
+                        >
+                    </div>
+                </div>
+            </header>
+
+            <div class="flex-1 p-6 md:p-12 max-w-7xl mx-auto w-full">
+                <slot />
+            </div>
+        </main>
+    </div>
+
+    <script>
+        import { auth, db } from "../firebase/client";
+        import { onAuthStateChanged } from "firebase/auth";
+        import { doc, getDoc } from "firebase/firestore";
+
+        // Global Security Guard
+        document.addEventListener("astro:page-load", () => {
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) {
+                    window.location.href = "/ingresar?error=sesion-requerida";
+                    return;
+                }
+
+                // Activar link activo en sidebar
+                const currentPath = window.location.pathname;
+                document.querySelectorAll(".sidebar-link").forEach((link) => {
+                    const href = link.getAttribute("href");
+                    if (href && href === currentPath) {
+                        link.classList.add("active");
+                    } else if (
+                        currentPath.startsWith(href) &&
+                        href !== "/admin" &&
+                        href !== "#"
+                    ) {
+                        link.classList.add("active");
+                    }
+                });
+
+                // Verificamos rol de admin
+                const docRef = doc(db, "profesionales", user.uid);
+                const docSnap = await getDoc(docRef);
+
+                if (!docSnap.exists()) {
+                    window.location.href = "/?error=no-autorizado";
+                    return;
+                }
+
+                const data = docSnap.data();
+                const role = (data.rol || data.role || "").toLowerCase();
+                const isAdmin = ["admin", "administrador", "staff"].includes(
+                    role,
+                );
+
+                if (!isAdmin) {
+                    window.location.href =
+                        "/mi-perfil?error=privilegios-insuficientes";
+                    return;
+                }
+
+                // Show admin-only items
+                if (role === "admin" || role === "administrador") {
+                    const finanzasLink =
+                        document.getElementById("admin-finanzas");
+                    if (finanzasLink) {
+                        finanzasLink.classList.remove("hidden");
+                        finanzasLink.classList.add("flex");
+                    }
+                }
+
+                // Update basic user info in sidebar
+                const nameEl = document.getElementById("admin-user-name");
+                const avatarEl = document.getElementById(
+                    "admin-avatar-img",
+                ) as HTMLImageElement;
+                if (nameEl) nameEl.textContent = data.nombre || "Admin";
+                if (avatarEl && data && data.foto_perfil)
+                    avatarEl.src = data.foto_perfil;
+            });
+
+            // "Centro de Operaciones" Dropdown logic (Imagen 2)
+            const opsHeader = document.querySelector(".cursor-pointer.group");
+            if (opsHeader) {
+                opsHeader.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const menu = document.createElement("div");
+                    menu.id = "ops-dropdown";
+                    menu.className =
+                        "absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200";
+                    menu.innerHTML = `
+                        <a href="/admin/configuracion" class="flex items-center px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined !text-lg mr-3">settings</span>
+                            Configuración
+                        </a>
+                        <a href="/" class="flex items-center px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors">
+                            <span class="material-symbols-outlined !text-lg mr-3">open_in_new</span>
+                            Ver Web Pública
+                        </a>
+                        <hr class="my-1 border-slate-50">
+                        <button id="admin-logout-btn" class="flex items-center w-full px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors">
+                            <span class="material-symbols-outlined !text-lg mr-3">logout</span>
+                            Cerrar Sesión
+                        </button>
+                    `;
+
+                    // Remove existing if any
+                    const existing = document.getElementById("ops-dropdown");
+                    if (existing) {
+                        existing.remove();
+                    } else {
+                        const header = opsHeader.closest("header");
+                        if (header) {
+                            const rightSide = header.querySelector(
+                                ".flex.items-center.space-x-6:last-child",
+                            );
+                            if (rightSide) {
+                                rightSide.style.position = "relative";
+                                rightSide.appendChild(menu);
+                            }
+                        }
+                    }
+
+                    // Logout listener
+                    document
+                        .getElementById("admin-logout-btn")
+                        ?.addEventListener("click", async () => {
+                            await auth.signOut();
+                            window.location.href = "/ingresar";
+                        });
+                });
+
+                // Close on click outside
+                document.addEventListener("click", () => {
+                    document.getElementById("ops-dropdown")?.remove();
+                });
+            }
+        });
+    </script>
+</Layout>
+
+<style is:global>
+    :root {
+        --sidebar-bg: #1a2f23;
+        --main-bg: #faf9f6;
+        --border-color: #e5e0d8;
+        --text-primary: #2d2a26;
+        --text-secondary: #6e6962;
+        --accent-gold: #c5a059;
+        --sidebar-active: #233e2f;
+    }
+
+    .material-symbols-outlined {
+        font-variation-settings:
+            "FILL" 0,
+            "wght" 300,
+            "GRAD" 0,
+            "opsz" 24;
+        font-size: 22px;
+    }
+
+    .sidebar-link {
+        transition: all 0.2s ease;
+        color: #d1d5db;
+    }
+    .sidebar-link:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: white;
+    }
+    .sidebar-link.active {
+        background-color: var(--sidebar-active);
+        color: var(--accent-gold);
+        border-right: 3px solid var(--accent-gold);
+    }
+
+    .metric-card {
+        border: 1px solid var(--border-color);
+        background: white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .metric-card:hover {
+        border-color: var(--accent-gold);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+    }
+
+    .table-row-enhanced {
+        border-bottom: 1px solid var(--border-color);
+        transition: background-color 0.2s;
+    }
+
+    .section-separator {
+        height: 1px;
+        background: linear-gradient(to right, var(--border-color), transparent);
+        margin: 2.5rem 0;
+    }
+    .accent-text {
+        color: var(--accent-gold);
+    }
+    .gold-border {
+        border-color: var(--accent-gold);
+    }
+
+    /* Estilos base para tablas de admin */
+    .admin-table-container {
+        @apply bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden;
+    }
+    .admin-table {
+        @apply w-full text-left border-collapse;
+    }
+    .admin-table thead {
+        @apply bg-slate-50 border-b border-slate-100;
+    }
+    /* Estilos del nuevo table-design manual si no usa tailwind @apply */
+    .new-table-head {
+        background-color: var(--main-bg);
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+    }
+</style>

@@ -1,0 +1,111 @@
+---
+import LayoutAdmin from "../../layouts/LayoutAdmin.astro";
+import { dbAdmin } from "../../firebase/admin";
+
+// Obtenemos los usuarios que son clientes
+// Nota: Usamos la colección 'clientes' que es la que se usa en el resto de la app
+const clientesSnap = await dbAdmin
+    .collection("clientes")
+    .orderBy("createdAt", "desc")
+    .limit(100)
+    .get();
+
+const clientes = clientesSnap.docs.map((doc) => {
+    const data = doc.data();
+    return {
+        id: doc.id,
+        ...data,
+        // Fallback para fechas
+        createdAt: data.createdAt?.toDate() || new Date(),
+    };
+});
+---
+
+<LayoutAdmin title="Gestión de Clientes">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-2xl font-black text-slate-800 tracking-tight">
+                Clientes Registrados
+            </h1>
+            <p class="text-slate-500 text-sm font-medium">
+                Usuarios que buscan servicios profesionales ({clientes.length})
+            </p>
+        </div>
+    </div>
+
+    <div class="admin-table-container">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Email / Contacto</th>
+                    <th>Registro</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {
+                    clientes.map((cliente) => (
+                        <tr>
+                            <td>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-xs">
+                                        👤
+                                    </div>
+                                    <span class="font-bold text-slate-700">
+                                        {cliente.nombre || "Sin nombre"}
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="text-xs font-medium text-slate-600">
+                                    {cliente.email}
+                                </div>
+                                {cliente.telefono && (
+                                    <div class="text-[10px] text-slate-400 font-bold">
+                                        {cliente.telefono}
+                                    </div>
+                                )}
+                            </td>
+                            <td>
+                                <span class="text-xs text-slate-500">
+                                    {cliente.createdAt.toLocaleDateString(
+                                        "es-AR",
+                                    )}
+                                </span>
+                            </td>
+                            <td>
+                                <button
+                                    class="px-3 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors"
+                                    onclick={`if(confirm('¿Eliminar cliente?')) deleteClient('${cliente.id}')`}
+                                >
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    ))
+                }
+            </tbody>
+        </table>
+    </div>
+
+    {
+        clientes.length === 0 && (
+            <div class="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200 mt-6">
+                <p class="text-slate-400 font-medium font-sans">
+                    No se encontraron clientes registrados aún.
+                </p>
+            </div>
+        )
+    }
+
+    <script is:inline>
+        async function deleteClient(id) {
+            // Implementación simplificada para el ejemplo
+            alert(
+                "Funcionalidad de borrado pendiente de implementar en backend seguro para ID: " +
+                    id,
+            );
+        }
+    </script>
+</LayoutAdmin>

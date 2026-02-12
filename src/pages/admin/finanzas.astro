@@ -1,157 +1,313 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import LayoutAdmin from "../../layouts/LayoutAdmin.astro";
 import { db } from "../../firebase/client";
 ---
 
-<Layout title="Finanzas - Admin Dashboard">
-    <div class="min-h-screen bg-slate-50 py-12 px-4 shadow-inner">
-        <div class="max-w-6xl mx-auto">
-            <!-- HEADER -->
-            <header class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
-                <div>
-                    <a href="/admin" class="text-slate-400 hover:text-slate-600 font-bold text-sm mb-3 flex items-center gap-2 transition-colors">
-                        <span>⬅</span> VOLVER AL PANEL
-                    </a>
-                    <h1 class="text-3xl font-black text-slate-900 tracking-tight text-center md:text-left">Finanzas de Plataforma 💰</h1>
-                    <p class="text-slate-500 font-medium mt-1 text-center md:text-left">Control de transacciones, ingresos y gastos operativos</p>
-                </div>
+<LayoutAdmin title="Finanzas - Admin Dashboard">
+    <header
+        class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6"
+    >
+        <div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">
+                Finanzas de Plataforma 💰
+            </h1>
+            <p class="text-slate-500 font-medium mt-1">
+                Control de transacciones, ingresos y gastos operativos
+            </p>
+        </div>
 
-                <div class="flex items-center gap-3 w-full md:w-auto">
-                    <button id="btn-add-income" class="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 text-white font-black px-6 py-3 rounded-2xl text-sm transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2">
-                        <span>➕</span> INGRESO
-                    </button>
-                    <button id="btn-add-expense" class="flex-1 md:flex-none bg-rose-600 hover:bg-rose-700 text-white font-black px-6 py-3 rounded-2xl text-sm transition-all shadow-lg shadow-rose-200 flex items-center justify-center gap-2">
-                        <span>➖</span> GASTO
-                    </button>
-                </div>
-            </header>
+        <div class="flex items-center gap-3 w-full md:w-auto">
+            <button
+                id="btn-add-income"
+                class="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 text-white font-black px-6 py-4 rounded-2xl text-xs uppercase tracking-widest transition-all shadow-lg shadow-emerald-100 flex items-center justify-center gap-2 active:scale-95"
+            >
+                <span>➕</span> Nuevo Ingreso
+            </button>
+            <button
+                id="btn-add-expense"
+                class="flex-1 md:flex-none bg-rose-600 hover:bg-rose-700 text-white font-black px-6 py-4 rounded-2xl text-xs uppercase tracking-widest transition-all shadow-lg shadow-rose-100 flex items-center justify-center gap-2 active:scale-95"
+            >
+                <span>➖</span> Registrar Gasto
+            </button>
+        </div>
+    </header>
 
-            <!-- KPIS -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                <!-- Ingresos Mensuales -->
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group">
-                    <div class="relative z-10">
-                        <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Este Mes</p>
-                        <p class="text-sm text-slate-400 font-bold mb-1 italic">Ingresos</p>
-                        <h3 id="kpi-month-inc" class="text-3xl font-black text-slate-800 tracking-tighter">$0</h3>
-                    </div>
-                    <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-emerald-50 rounded-full group-hover:scale-110 transition-transform"></div>
-                </div>
-
-                <!-- Gastos Mensuales -->
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group">
-                    <div class="relative z-10">
-                        <p class="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">Este Mes</p>
-                        <p class="text-sm text-slate-400 font-bold mb-1 italic">Gastos</p>
-                        <h3 id="kpi-month-exp" class="text-3xl font-black text-slate-800 tracking-tighter">$0</h3>
-                    </div>
-                    <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-rose-50 rounded-full group-hover:scale-110 transition-transform"></div>
-                </div>
-
-                <!-- Ingresos Históricos -->
-                <div class="bg-indigo-600 p-6 rounded-3xl shadow-xl border border-indigo-100 relative overflow-hidden group">
-                    <div class="relative z-10">
-                        <p class="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-1">Histórico</p>
-                        <p class="text-sm text-white/70 font-bold mb-1 italic">Ingresos Totales</p>
-                        <h3 id="kpi-total-inc" class="text-3xl font-black text-white tracking-tighter">$0</h3>
-                    </div>
-                    <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full group-hover:scale-110 transition-transform"></div>
-                </div>
-
-                <!-- Balance Neto -->
-                <div class="bg-slate-900 p-6 rounded-3xl shadow-xl border border-slate-800 relative overflow-hidden group">
-                    <div class="relative z-10">
-                        <p class="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1">Billetera</p>
-                        <p class="text-sm text-slate-400 font-bold mb-1 italic">Balance Neto</p>
-                        <h3 id="kpi-balance" class="text-3xl font-black text-white tracking-tighter">$0</h3>
-                    </div>
-                    <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white/5 rounded-full group-hover:scale-110 transition-transform"></div>
-                </div>
+    <!-- KPIS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <!-- Ingresos Mensuales -->
+        <div
+            class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-50 relative overflow-hidden group"
+        >
+            <p
+                class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1"
+            >
+                Este Mes
+            </p>
+            <p class="text-xs text-slate-400 font-bold mb-1">Ingresos</p>
+            <h3
+                id="kpi-month-inc"
+                class="text-3xl font-black text-slate-800 tracking-tighter"
+            >
+                $0
+            </h3>
+            <div
+                class="absolute -right-4 -bottom-4 w-20 h-20 bg-emerald-50/50 rounded-full group-hover:scale-110 transition-transform"
+            >
             </div>
+        </div>
 
-            <!-- TABLA DE MOVIMIENTOS -->
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                <header class="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
-                    <h3 class="font-black text-slate-800 uppercase tracking-wider text-sm">Transacciones Recientes</h3>
-                    <div class="flex items-center gap-2">
-                        <select id="filter-tipo" class="bg-white border border-slate-200 text-xs font-bold rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-slate-300">
-                            <option value="todos">Todos los tipos</option>
-                            <option value="ingreso">Ingresos</option>
-                            <option value="gasto">Gastos</option>
-                        </select>
-                    </div>
-                </header>
+        <!-- Gastos Mensuales -->
+        <div
+            class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-50 relative overflow-hidden group"
+        >
+            <p
+                class="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1"
+            >
+                Este Mes
+            </p>
+            <p class="text-xs text-slate-400 font-bold mb-1">Gastos</p>
+            <h3
+                id="kpi-month-exp"
+                class="text-3xl font-black text-slate-800 tracking-tighter"
+            >
+                $0
+            </h3>
+            <div
+                class="absolute -right-4 -bottom-4 w-20 h-20 bg-rose-50/50 rounded-full group-hover:scale-110 transition-transform"
+            >
+            </div>
+        </div>
 
-                <div id="movimientos-container" class="divide-y divide-slate-50 min-h-[400px]">
-                    <div class="flex items-center justify-center h-[400px] text-slate-300">
-                        <div class="text-center">
-                            <div class="text-5xl animate-pulse mb-4">💳</div>
-                            <p class="font-bold uppercase tracking-widest text-xs">Sincronizando datos...</p>
-                        </div>
-                    </div>
+        <!-- Ingresos Históricos -->
+        <div
+            class="bg-blue-600 p-6 rounded-[2rem] shadow-xl shadow-blue-100 relative overflow-hidden group"
+        >
+            <p
+                class="text-[10px] font-black text-blue-100 uppercase tracking-widest mb-1"
+            >
+                Histórico
+            </p>
+            <p class="text-xs text-white/70 font-bold mb-1">Ingresos Totales</p>
+            <h3
+                id="kpi-total-inc"
+                class="text-3xl font-black text-white tracking-tighter"
+            >
+                $0
+            </h3>
+            <div
+                class="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full group-hover:scale-110 transition-transform"
+            >
+            </div>
+        </div>
+
+        <!-- Balance Neto -->
+        <div
+            class="bg-slate-900 p-6 rounded-[2rem] shadow-xl shadow-slate-200 relative overflow-hidden group"
+        >
+            <p
+                class="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1"
+            >
+                Billetera
+            </p>
+            <p class="text-xs text-slate-400 font-bold mb-1">Balance Neto</p>
+            <h3
+                id="kpi-balance"
+                class="text-3xl font-black text-white tracking-tighter"
+            >
+                $0
+            </h3>
+            <div
+                class="absolute -right-4 -bottom-4 w-24 h-24 bg-white/5 rounded-full group-hover:scale-110 transition-transform"
+            >
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLA DE MOVIMIENTOS -->
+    <div
+        class="bg-white rounded-[2.5rem] shadow-sm border border-slate-50 overflow-hidden"
+    >
+        <header
+            class="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30"
+        >
+            <h3
+                class="font-black text-slate-800 uppercase tracking-widest text-[10px]"
+            >
+                Transacciones Recientes
+            </h3>
+            <select
+                id="filter-tipo"
+                class="bg-white border border-slate-100 text-[10px] font-black uppercase tracking-widest rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+            >
+                <option value="todos">Todos</option>
+                <option value="ingreso">Ingresos</option>
+                <option value="gasto">Gastos</option>
+            </select>
+        </header>
+
+        <div
+            id="movimientos-container"
+            class="divide-y divide-slate-50 min-h-[400px]"
+        >
+            <div
+                class="flex items-center justify-center h-[400px] text-slate-300"
+            >
+                <div class="text-center">
+                    <div class="text-4xl animate-bounce mb-4">💳</div>
+                    <p class="font-black uppercase tracking-widest text-[10px]">
+                        Sincronizando caja...
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- MODAL INGRESO -->
-    <div id="modal-ingreso" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4">
-        <div class="bg-white rounded-[2rem] shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100">
-            <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-emerald-50/50">
-                <h3 class="text-2xl font-black text-slate-900 tracking-tight">Cargar Ingreso</h3>
-                <button id="close-modal-ingreso" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/50 text-slate-400 hover:text-slate-600 transition-all text-2xl">&times;</button>
-            </div>
-            <form id="form-ingreso" class="p-8 space-y-5">
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Concepto</label>
-                    <input type="text" id="ingreso-concepto" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition-all" placeholder="Ej: Pago directo Publicidad">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Monto ($)</label>
-                        <input type="number" id="ingreso-monto" required min="0" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition-all" placeholder="0">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Fecha</label>
-                        <input type="date" id="ingreso-fecha" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
-                    </div>
-                </div>
-                <button type="submit" class="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all mt-4">Guardar Movimiento</button>
-            </form>
+    <dialog
+        id="modal-ingreso"
+        class="bg-white rounded-[2.5rem] shadow-2xl p-0 w-[95%] max-w-lg overflow-hidden backdrop:bg-slate-900/40 backdrop:backdrop-blur-sm border border-slate-100"
+    >
+        <div
+            class="p-8 border-b border-slate-50 flex justify-between items-center bg-emerald-50/30"
+        >
+            <h3 class="text-2xl font-black text-slate-900 tracking-tight">
+                Cargar Ingreso 💸
+            </h3>
+            <button
+                id="close-modal-ingreso"
+                class="w-10 h-10 flex items-center justify-center rounded-2xl bg-white text-slate-400 hover:text-slate-800 transition-all font-black text-xl"
+                >&times;</button
+            >
         </div>
-    </div>
+        <form id="form-ingreso" class="p-8 space-y-6">
+            <div>
+                <label
+                    class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2"
+                    >Concepto</label
+                >
+                <input
+                    type="text"
+                    id="ingreso-concepto"
+                    required
+                    class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                    placeholder="Ej: Pago publicidad"
+                />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label
+                        class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2"
+                        >Monto ($)</label
+                    >
+                    <input
+                        type="number"
+                        id="ingreso-monto"
+                        required
+                        min="0"
+                        class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                        placeholder="0"
+                    />
+                </div>
+                <div>
+                    <label
+                        class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2"
+                        >Fecha</label
+                    >
+                    <input
+                        type="date"
+                        id="ingreso-fecha"
+                        required
+                        class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                    />
+                </div>
+            </div>
+            <button
+                type="submit"
+                class="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all active:scale-95"
+                >Guardar Movimiento</button
+            >
+        </form>
+    </dialog>
 
     <!-- MODAL GASTO -->
-    <div id="modal-gasto" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4">
-        <div class="bg-white rounded-[2rem] shadow-2xl max-w-lg w-full overflow-hidden border border-slate-100">
-            <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-rose-50/50">
-                <h3 class="text-2xl font-black text-slate-900 tracking-tight">Cargar Gasto</h3>
-                <button id="close-modal-gasto" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/50 text-slate-400 hover:text-slate-600 transition-all text-2xl">&times;</button>
-            </div>
-            <form id="form-gasto" class="p-8 space-y-5">
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Concepto</label>
-                    <input type="text" id="gasto-concepto" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold focus:ring-2 focus:ring-rose-500 outline-none transition-all" placeholder="Ej: Pago de Servidores">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Monto ($)</label>
-                        <input type="number" id="gasto-monto" required min="0" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold focus:ring-2 focus:ring-rose-500 outline-none transition-all" placeholder="0">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Fecha</label>
-                        <input type="date" id="gasto-fecha" required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold focus:ring-2 focus:ring-rose-500 outline-none transition-all">
-                    </div>
-                </div>
-                <button type="submit" class="w-full py-4 bg-rose-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-rose-200 hover:bg-rose-700 transition-all mt-4">Registrar Gasto</button>
-            </form>
+    <dialog
+        id="modal-gasto"
+        class="bg-white rounded-[2.5rem] shadow-2xl p-0 w-[95%] max-w-lg overflow-hidden backdrop:bg-slate-900/40 backdrop:backdrop-blur-sm border border-slate-100"
+    >
+        <div
+            class="p-8 border-b border-slate-50 flex justify-between items-center bg-rose-50/30"
+        >
+            <h3 class="text-2xl font-black text-slate-900 tracking-tight">
+                Cargar Gasto 📉
+            </h3>
+            <button
+                id="close-modal-gasto"
+                class="w-10 h-10 flex items-center justify-center rounded-2xl bg-white text-slate-400 hover:text-slate-800 transition-all font-black text-xl"
+                >&times;</button
+            >
         </div>
-    </div>
-</Layout>
+        <form id="form-gasto" class="p-8 space-y-6">
+            <div>
+                <label
+                    class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2"
+                    >Concepto</label
+                >
+                <input
+                    type="text"
+                    id="gasto-concepto"
+                    required
+                    class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold focus:ring-2 focus:ring-rose-500 outline-none transition-all"
+                    placeholder="Ej: Pago servidores"
+                />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label
+                        class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2"
+                        >Monto ($)</label
+                    >
+                    <input
+                        type="number"
+                        id="gasto-monto"
+                        required
+                        min="0"
+                        class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold focus:ring-2 focus:ring-rose-500 outline-none transition-all"
+                        placeholder="0"
+                    />
+                </div>
+                <div>
+                    <label
+                        class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2"
+                        >Fecha</label
+                    >
+                    <input
+                        type="date"
+                        id="gasto-fecha"
+                        required
+                        class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold focus:ring-2 focus:ring-rose-500 outline-none transition-all"
+                    />
+                </div>
+            </div>
+            <button
+                type="submit"
+                class="w-full py-4 bg-rose-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-rose-100 hover:bg-rose-700 transition-all active:scale-95"
+                >Registrar Gasto</button
+            >
+        </form>
+    </dialog>
+</LayoutAdmin>
 
 <script>
     import { auth, db } from "../../firebase/client";
-    import { collection, query, getDocs, addDoc, Timestamp, doc, getDoc } from "firebase/firestore";
+    import {
+        collection,
+        query,
+        getDocs,
+        addDoc,
+        Timestamp,
+        doc,
+        getDoc,
+    } from "firebase/firestore";
     import { onAuthStateChanged } from "firebase/auth";
 
     const modalIngreso = document.getElementById("modal-ingreso");
@@ -163,9 +319,13 @@ import { db } from "../../firebase/client";
     document.addEventListener("astro:page-load", () => {
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const userDoc = await getDoc(doc(db, "profesionales", user.uid));
+                const userDoc = await getDoc(
+                    doc(db, "profesionales", user.uid),
+                );
                 const data = userDoc.data();
-                const rol = (data?.rol || data?.role || "").toLowerCase().trim();
+                const rol = (data?.rol || data?.role || "")
+                    .toLowerCase()
+                    .trim();
                 if (rol === "admin" || rol === "administrador") {
                     loadData();
                 } else {
@@ -178,101 +338,191 @@ import { db } from "../../firebase/client";
 
         // Listeners con null check
         btnAddIncome?.addEventListener("click", () => {
-            const input = document.getElementById("ingreso-fecha") as HTMLInputElement;
+            const input = document.getElementById(
+                "ingreso-fecha",
+            ) as HTMLInputElement;
             if (input) input.value = today;
-            if (modalIngreso) { modalIngreso.classList.remove("hidden"); modalIngreso.style.display = "flex"; }
+            if (modalIngreso) {
+                modalIngreso.classList.remove("hidden");
+                modalIngreso.style.display = "flex";
+            }
         });
         btnAddExpense?.addEventListener("click", () => {
-            const input = document.getElementById("gasto-fecha") as HTMLInputElement;
+            const input = document.getElementById(
+                "gasto-fecha",
+            ) as HTMLInputElement;
             if (input) input.value = today;
-            if (modalGasto) { modalGasto.classList.remove("hidden"); modalGasto.style.display = "flex"; }
+            if (modalGasto) {
+                modalGasto.classList.remove("hidden");
+                modalGasto.style.display = "flex";
+            }
         });
-        document.getElementById("close-modal-ingreso")?.addEventListener("click", () => {
-            if (modalIngreso) { modalIngreso.classList.add("hidden"); modalIngreso.style.display = "none"; }
-        });
-        document.getElementById("close-modal-gasto")?.addEventListener("click", () => {
-            if (modalGasto) { modalGasto.classList.add("hidden"); modalGasto.style.display = "none"; }
-        });
+        document
+            .getElementById("close-modal-ingreso")
+            ?.addEventListener("click", () => {
+                if (modalIngreso) {
+                    modalIngreso.classList.add("hidden");
+                    modalIngreso.style.display = "none";
+                }
+            });
+        document
+            .getElementById("close-modal-gasto")
+            ?.addEventListener("click", () => {
+                if (modalGasto) {
+                    modalGasto.classList.add("hidden");
+                    modalGasto.style.display = "none";
+                }
+            });
 
         // Form Submit
-        document.getElementById("form-ingreso")?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const concepto = (document.getElementById("ingreso-concepto") as HTMLInputElement)?.value;
-            const monto = parseFloat((document.getElementById("ingreso-monto") as HTMLInputElement)?.value);
-            const fechaVal = (document.getElementById("ingreso-fecha") as HTMLInputElement)?.value;
-            if (!concepto || isNaN(monto) || !fechaVal) return;
+        document
+            .getElementById("form-ingreso")
+            ?.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const concepto = (
+                    document.getElementById(
+                        "ingreso-concepto",
+                    ) as HTMLInputElement
+                )?.value;
+                const monto = parseFloat(
+                    (
+                        document.getElementById(
+                            "ingreso-monto",
+                        ) as HTMLInputElement
+                    )?.value,
+                );
+                const fechaVal = (
+                    document.getElementById("ingreso-fecha") as HTMLInputElement
+                )?.value;
+                if (!concepto || isNaN(monto) || !fechaVal) return;
 
-            try {
-                await addDoc(collection(db, "admin_finanzas"), {
-                    tipo: "ingreso", origen: "manual", concepto, monto,
-                    fecha: Timestamp.fromDate(new Date(fechaVal)),
-                    createdAt: Timestamp.now()
-                });
-                alert("✅ Ingreso guardado");
-                if (modalIngreso) { modalIngreso.classList.add("hidden"); modalIngreso.style.display = "none"; }
-                (e.target as HTMLFormElement).reset();
-                loadData();
-            } catch (error) { alert("Error al guardar"); }
-        });
+                try {
+                    await addDoc(collection(db, "admin_finanzas"), {
+                        tipo: "ingreso",
+                        origen: "manual",
+                        concepto,
+                        monto,
+                        fecha: Timestamp.fromDate(new Date(fechaVal)),
+                        createdAt: Timestamp.now(),
+                    });
+                    alert("✅ Ingreso guardado");
+                    if (modalIngreso) {
+                        modalIngreso.classList.add("hidden");
+                        modalIngreso.style.display = "none";
+                    }
+                    (e.target as HTMLFormElement).reset();
+                    loadData();
+                } catch (error) {
+                    alert("Error al guardar");
+                }
+            });
 
-        document.getElementById("form-gasto")?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const concepto = (document.getElementById("gasto-concepto") as HTMLInputElement)?.value;
-            const monto = parseFloat((document.getElementById("gasto-monto") as HTMLInputElement)?.value);
-            const fechaVal = (document.getElementById("gasto-fecha") as HTMLInputElement)?.value;
-            if (!concepto || isNaN(monto) || !fechaVal) return;
+        document
+            .getElementById("form-gasto")
+            ?.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const concepto = (
+                    document.getElementById(
+                        "gasto-concepto",
+                    ) as HTMLInputElement
+                )?.value;
+                const monto = parseFloat(
+                    (document.getElementById("gasto-monto") as HTMLInputElement)
+                        ?.value,
+                );
+                const fechaVal = (
+                    document.getElementById("gasto-fecha") as HTMLInputElement
+                )?.value;
+                if (!concepto || isNaN(monto) || !fechaVal) return;
 
-            try {
-                await addDoc(collection(db, "admin_finanzas"), {
-                    tipo: "gasto", origen: "manual", concepto, monto,
-                    fecha: Timestamp.fromDate(new Date(fechaVal)),
-                    createdAt: Timestamp.now()
-                });
-                alert("✅ Gasto guardado");
-                if (modalGasto) { modalGasto.classList.add("hidden"); modalGasto.style.display = "none"; }
-                (e.target as HTMLFormElement).reset();
-                loadData();
-            } catch (error) { alert("Error al guardar"); }
-        });
+                try {
+                    await addDoc(collection(db, "admin_finanzas"), {
+                        tipo: "gasto",
+                        origen: "manual",
+                        concepto,
+                        monto,
+                        fecha: Timestamp.fromDate(new Date(fechaVal)),
+                        createdAt: Timestamp.now(),
+                    });
+                    alert("✅ Gasto guardado");
+                    if (modalGasto) {
+                        modalGasto.classList.add("hidden");
+                        modalGasto.style.display = "none";
+                    }
+                    (e.target as HTMLFormElement).reset();
+                    loadData();
+                } catch (error) {
+                    alert("Error al guardar");
+                }
+            });
     });
 
     async function loadData() {
         try {
             const [snapAuto, snapManual] = await Promise.all([
                 getDocs(collection(db, "pagos_historial")),
-                getDocs(collection(db, "admin_finanzas"))
+                getDocs(collection(db, "admin_finanzas")),
             ]);
 
             const now = new Date();
             const thisMonth = now.getMonth();
             const thisYear = now.getFullYear();
 
-            const autos = snapAuto.docs.map(doc => {
-                const d = doc.data();
-                return { id: doc.id, tipo: "ingreso", origen: "auto", concepto: `Suscripción: ${d.plan || 'Plan'}`, detalle: d.usuarioEmail || 'Usuario Sistema', monto: Number(d.monto) || 0, fecha: d.fecha, estado: d.estado };
-            }).filter(i => i.estado === "approved");
+            const autos = snapAuto.docs
+                .map((doc) => {
+                    const d = doc.data();
+                    return {
+                        id: doc.id,
+                        tipo: "ingreso",
+                        origen: "auto",
+                        concepto: `Suscripción: ${d.plan || "Plan"}`,
+                        detalle: d.usuarioEmail || "Usuario Sistema",
+                        monto: Number(d.monto) || 0,
+                        fecha: d.fecha,
+                        estado: d.estado,
+                    };
+                })
+                .filter((i) => i.estado === "approved");
 
-            const manuals = snapManual.docs.map(doc => {
+            const manuals = snapManual.docs.map((doc) => {
                 const d = doc.data();
-                return { id: doc.id, tipo: d.tipo, origen: "manual", concepto: d.concepto, detalle: 'Operación Manual', monto: Number(d.monto) || 0, fecha: d.fecha };
+                return {
+                    id: doc.id,
+                    tipo: d.tipo,
+                    origen: "manual",
+                    concepto: d.concepto,
+                    detalle: "Operación Manual",
+                    monto: Number(d.monto) || 0,
+                    fecha: d.fecha,
+                };
             });
 
-            const all = [...autos, ...manuals].sort((a,b) => {
-                const fa = a.fecha?.seconds ? a.fecha.seconds * 1000 : new Date(a.fecha).getTime();
-                const fb = b.fecha?.seconds ? b.fecha.seconds * 1000 : new Date(b.fecha).getTime();
+            const all = [...autos, ...manuals].sort((a, b) => {
+                const fa = a.fecha?.seconds
+                    ? a.fecha.seconds * 1000
+                    : new Date(a.fecha).getTime();
+                const fb = b.fecha?.seconds
+                    ? b.fecha.seconds * 1000
+                    : new Date(b.fecha).getTime();
                 return fb - fa;
             });
 
-            let totalInc = 0, totalExp = 0, monthInc = 0, monthExp = 0;
-            all.forEach(m => {
-                const d = m.fecha?.seconds ? new Date(m.fecha.seconds * 1000) : new Date(m.fecha);
-                const isThisMonth = d.getMonth() === thisMonth && d.getFullYear() === thisYear;
-                if(m.tipo === "ingreso") {
+            let totalInc = 0,
+                totalExp = 0,
+                monthInc = 0,
+                monthExp = 0;
+            all.forEach((m) => {
+                const d = m.fecha?.seconds
+                    ? new Date(m.fecha.seconds * 1000)
+                    : new Date(m.fecha);
+                const isThisMonth =
+                    d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+                if (m.tipo === "ingreso") {
                     totalInc += m.monto;
-                    if(isThisMonth) monthInc += m.monto;
+                    if (isThisMonth) monthInc += m.monto;
                 } else {
                     totalExp += m.monto;
-                    if(isThisMonth) monthExp += m.monto;
+                    if (isThisMonth) monthExp += m.monto;
                 }
             });
 
@@ -281,29 +531,42 @@ import { db } from "../../firebase/client";
             const kpiTotalInc = document.getElementById("kpi-total-inc");
             const kpiBalance = document.getElementById("kpi-balance");
 
-            if (kpiMonthInc) kpiMonthInc.innerText = `$${monthInc.toLocaleString()}`;
-            if (kpiMonthExp) kpiMonthExp.innerText = `$${monthExp.toLocaleString()}`;
-            if (kpiTotalInc) kpiTotalInc.innerText = `$${totalInc.toLocaleString()}`;
-            if (kpiBalance) kpiBalance.innerText = `$${(totalInc - totalExp).toLocaleString()}`;
+            if (kpiMonthInc)
+                kpiMonthInc.innerText = `$${monthInc.toLocaleString()}`;
+            if (kpiMonthExp)
+                kpiMonthExp.innerText = `$${monthExp.toLocaleString()}`;
+            if (kpiTotalInc)
+                kpiTotalInc.innerText = `$${totalInc.toLocaleString()}`;
+            if (kpiBalance)
+                kpiBalance.innerText = `$${(totalInc - totalExp).toLocaleString()}`;
 
             renderList(all);
-        } catch (e) { console.error("Error loading finances", e); }
+        } catch (e) {
+            console.error("Error loading finances", e);
+        }
     }
 
     function renderList(items) {
         const container = document.getElementById("movimientos-container");
         if (!container) return;
-        container.innerHTML = items.length === 0 
-            ? '<div class="p-12 text-center text-slate-300">No hay movimientos registrados.</div>'
-            : items.map(item => {
-                const dateObj = item.fecha?.seconds ? new Date(item.fecha.seconds * 1000) : new Date(item.fecha);
-                const color = item.tipo === "ingreso" ? "text-emerald-600" : "text-rose-600";
-                const sign = item.tipo === "ingreso" ? "+" : "-";
-                return `
+        container.innerHTML =
+            items.length === 0
+                ? '<div class="p-12 text-center text-slate-300">No hay movimientos registrados.</div>'
+                : items
+                      .map((item) => {
+                          const dateObj = item.fecha?.seconds
+                              ? new Date(item.fecha.seconds * 1000)
+                              : new Date(item.fecha);
+                          const color =
+                              item.tipo === "ingreso"
+                                  ? "text-emerald-600"
+                                  : "text-rose-600";
+                          const sign = item.tipo === "ingreso" ? "+" : "-";
+                          return `
                 <div class="p-5 hover:bg-slate-50 transition-all flex items-center justify-between">
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-xl">
-                            ${item.tipo === "ingreso" ? '💵' : '💸'}
+                            ${item.tipo === "ingreso" ? "💵" : "💸"}
                         </div>
                         <div>
                             <p class="font-black text-slate-800 text-sm italic">${item.concepto}</p>
@@ -311,9 +574,10 @@ import { db } from "../../firebase/client";
                         </div>
                     </div>
                     <div class="font-black text-lg ${color} tracking-tighter">
-                        ${sign}$${item.monto.toLocaleString('es-AR')}
+                        ${sign}$${item.monto.toLocaleString("es-AR")}
                     </div>
                 </div>`;
-            }).join("");
+                      })
+                      .join("");
     }
 </script>
