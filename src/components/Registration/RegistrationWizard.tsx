@@ -379,7 +379,7 @@ export default function RegistrationWizard() {
                                     ENTENDIDO
                                 </button>
                                 <a
-                                    href="https://instagram.com/reddeoficio"
+                                    href="https://instagram.com/deoficiosargentina"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex-1 bg-white border-2 border-slate-200 text-slate-900 font-black py-4 rounded-xl uppercase tracking-widest hover:border-orange-500 hover:text-orange-600 transition-all text-center flex items-center justify-center gap-2 active:scale-95"
