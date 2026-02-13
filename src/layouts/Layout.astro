@@ -22,7 +22,7 @@ interface Props {
 
 const {
 	title,
-	description = "DeOficios - Conectando profesionales con vecinos. EncontrÃ¡ al experto que necesitÃ¡s o ofrecÃ© tus servicios.",
+	description = "DeOficios - Conectando profesionales con vecinos. Encontrá al experto que necesitás o ofrecés tus servicios.",
 	image = "/icon-512.png",
 	hideHeader = false,
 	hideFooter = false,
@@ -80,7 +80,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		<link
 			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
 			rel="stylesheet"
-			media="print" 
+			media="print"
 			onload="this.media='all'"
 		/>
 		<link
@@ -90,33 +90,40 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
 		<meta name="robots" content="index, follow" />
 		<meta name="author" content="DeOficios" />
-		<meta name="keywords" content="oficios, profesionales, plomero, electricista, gasista, argentina, servicios para el hogar" />
-		
+		<meta
+			name="keywords"
+			content="oficios, profesionales, plomero, electricista, gasista, argentina, servicios para el hogar"
+		/>
+
 		<title>{title}</title>
 		<ClientRouter />
 
-
 		<slot name="head" />
-		
+
 		<!-- SweetAlert2 -->
-		<script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-		
+		<script is:inline src="https://cdn.jsdelivr.net/npm/sweetalert2@11"
+		></script>
+
 		<!-- Structured Data -->
-		<script type="application/ld+json" is:inline set:html={JSON.stringify({
-			"@context": "https://schema.org",
-			"@type": "WebSite",
-			"name": "DeOficios",
-			"url": Astro.site,
-			"description": description,
-			"potentialAction": {
-				"@type": "SearchAction",
-				"target": {
-					"@type": "EntryPoint",
-					"urlTemplate": `${Astro.site}/resultados?q={search_term_string}`
+		<script
+			type="application/ld+json"
+			is:inline
+			set:html={JSON.stringify({
+				"@context": "https://schema.org",
+				"@type": "WebSite",
+				name: "DeOficios",
+				url: Astro.site,
+				description: description,
+				potentialAction: {
+					"@type": "SearchAction",
+					target: {
+						"@type": "EntryPoint",
+						urlTemplate: `${Astro.site}/resultados?q={search_term_string}`,
+					},
+					"query-input": "required name=search_term_string",
 				},
-				"query-input": "required name=search_term_string"
-			}
-		})} />
+			})}
+		/>
 	</head>
 	<body class="bg-white text-gray-900 transition-colors duration-300">
 		<!-- PREMIUM SPLASH SCREEN (Apple Music Style) -->
@@ -150,7 +157,9 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 				const splash = document.getElementById("custom-splash-screen");
 				if (splash) {
 					splash.classList.add("hidden");
-					setTimeout(() => { if(splash) splash.remove(); }, 600); 
+					setTimeout(() => {
+						if (splash) splash.remove();
+					}, 600);
 				}
 			}
 
@@ -170,7 +179,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 			document.addEventListener("astro:after-swap", hideSplash);
 		</script>
 
-        <script is:inline>
+		<script is:inline>
 			if ("serviceWorker" in navigator) {
 				window.addEventListener("load", () => {
 					navigator.serviceWorker
@@ -188,46 +197,62 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 			}
 		</script>
 
-        <script>
-            // Persist Auth State across View Transitions
-            import { auth } from "../firebase/client";
-            import { onAuthStateChanged } from "firebase/auth";
+		<script>
+			// Persist Auth State across View Transitions
+			import { auth } from "../firebase/client";
+			import { onAuthStateChanged } from "firebase/auth";
 
-            document.addEventListener("astro:page-load", () => {
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        window.currentUser = user;
-                        document.dispatchEvent(new CustomEvent("auth-state-ready", { detail: user }));
+			document.addEventListener("astro:page-load", () => {
+				onAuthStateChanged(auth, async (user) => {
+					if (user) {
+						window.currentUser = user;
+						document.dispatchEvent(
+							new CustomEvent("auth-state-ready", {
+								detail: user,
+							}),
+						);
 
-                        // Update Last Activity
-                        try {
-                            const { doc, updateDoc, serverTimestamp, getDoc } = await import("firebase/firestore");
-                            const { db } = await import("../firebase/client");
-                            
-                            // Check both collections (profesionales and clientes)
-                            // In a real app, you might know the role from the token, but here we can try-catch or check exists
-                            const proRef = doc(db, "profesionales", user.uid);
-                            const cliRef = doc(db, "clientes", user.uid);
-                            
-                            const [proSnap, cliSnap] = await Promise.all([getDoc(proRef), getDoc(cliRef)]);
-                            
-                            if (proSnap.exists()) {
-                                updateDoc(proRef, { lastActivity: serverTimestamp() }).catch(() => {});
-                            } else if (cliSnap.exists()) {
-                                updateDoc(cliRef, { lastActivity: serverTimestamp() }).catch(() => {});
-                            }
-                        } catch (e) {
-                            console.warn("Could not update lastActivity:", e);
-                        }
-                    } else {
-                         window.currentUser = null;
-                         document.dispatchEvent(new CustomEvent("auth-state-ready", { detail: null }));
-                    }
-                });
-            });
-        </script>
+						// Update Last Activity
+						try {
+							const { doc, updateDoc, serverTimestamp, getDoc } =
+								await import("firebase/firestore");
+							const { db } = await import("../firebase/client");
 
-        <NotificationToast />
+							// Check both collections (profesionales and clientes)
+							// In a real app, you might know the role from the token, but here we can try-catch or check exists
+							const proRef = doc(db, "profesionales", user.uid);
+							const cliRef = doc(db, "clientes", user.uid);
+
+							const [proSnap, cliSnap] = await Promise.all([
+								getDoc(proRef),
+								getDoc(cliRef),
+							]);
+
+							if (proSnap.exists()) {
+								updateDoc(proRef, {
+									lastActivity: serverTimestamp(),
+								}).catch(() => {});
+							} else if (cliSnap.exists()) {
+								updateDoc(cliRef, {
+									lastActivity: serverTimestamp(),
+								}).catch(() => {});
+							}
+						} catch (e) {
+							console.warn("Could not update lastActivity:", e);
+						}
+					} else {
+						window.currentUser = null;
+						document.dispatchEvent(
+							new CustomEvent("auth-state-ready", {
+								detail: null,
+							}),
+						);
+					}
+				});
+			});
+		</script>
+
+		<NotificationToast />
 	</body>
 </html>
 
@@ -361,5 +386,3 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 <script>
 	// No scripts for blocking right-click - improved UX
 </script>
-
-

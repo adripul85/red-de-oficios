@@ -387,7 +387,7 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                     >
                         <div
                             id="overlay-lock"
-                            class="absolute inset-0 bg-white/90 z-50 hidden flex flex-col items-center justify-center text-center p-6 backdrop-blur-sm"
+                            class="absolute inset-0 bg-white/90 z-50 hidden flex-col items-center justify-center text-center p-6 backdrop-blur-sm"
                         >
                             <div class="text-6xl mb-4">⏳</div>
                             <h3 class="text-2xl font-bold text-gray-800">
@@ -812,6 +812,58 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                                                 >🧾 Emite Factura</span
                                             >
                                         </label>
+
+                                        <!-- Invoice Types Selection (conditionally visible or always for simplicity now) -->
+                                        <div
+                                            id="invoice-types-container"
+                                            class="hidden flex gap-4 ml-4 px-3 border-l-2 border-orange-200"
+                                        >
+                                            <label
+                                                class="flex items-center gap-1.5 text-xs cursor-pointer"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    id="tipo_factura_a"
+                                                    class="invoice-type-check w-3.5 h-3.5 text-orange-600 rounded"
+                                                    value="A"
+                                                    data-allow-free
+                                                />
+                                                <span
+                                                    class="font-bold text-gray-600"
+                                                    >Tipo A</span
+                                                >
+                                            </label>
+                                            <label
+                                                class="flex items-center gap-1.5 text-xs cursor-pointer"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    id="tipo_factura_b"
+                                                    class="invoice-type-check w-3.5 h-3.5 text-orange-600 rounded"
+                                                    value="B"
+                                                    data-allow-free
+                                                />
+                                                <span
+                                                    class="font-bold text-gray-600"
+                                                    >Tipo B</span
+                                                >
+                                            </label>
+                                            <label
+                                                class="flex items-center gap-1.5 text-xs cursor-pointer"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    id="tipo_factura_c"
+                                                    class="invoice-type-check w-3.5 h-3.5 text-orange-600 rounded"
+                                                    value="C"
+                                                    data-allow-free
+                                                />
+                                                <span
+                                                    class="font-bold text-gray-600"
+                                                    >Tipo C</span
+                                                >
+                                            </label>
+                                        </div>
                                         <label
                                             class="flex items-center gap-2 text-sm cursor-pointer select-none"
                                         >
@@ -2177,6 +2229,7 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                 setupTabs();
                 setupButtons();
                 setupAIBio();
+                setupInvoiceToggles();
 
                 // Función helper para ocultar loading
                 function hideLoadingOverlay() {
@@ -2888,9 +2941,16 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                         const noEmiteFacturaCheck = document.getElementById(
                             "no_emite_factura",
                         ) as HTMLInputElement;
-                        if (emiteFacturaCheck)
+                        if (emiteFacturaCheck) {
                             emiteFacturaCheck.checked =
                                 data.emite_factura || false;
+
+                            if (emiteFacturaCheck.checked) {
+                                document
+                                    .getElementById("invoice-types-container")
+                                    ?.classList.remove("hidden");
+                            }
+                        }
                         if (noEmiteFacturaCheck)
                             noEmiteFacturaCheck.checked = !data.emite_factura;
 
@@ -2900,6 +2960,15 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                                 .forEach((chk) => {
                                     // @ts-ignore
                                     if (data.formas_pago.includes(chk.value))
+                                        chk.checked = true;
+                                });
+                        }
+
+                        if (data.tipo_factura) {
+                            document
+                                .querySelectorAll(".invoice-type-check")
+                                .forEach((chk: any) => {
+                                    if (data.tipo_factura.includes(chk.value))
                                         chk.checked = true;
                                 });
                         }
@@ -3045,19 +3114,73 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                     document
                         .getElementById("btn-ai-bio")
                         ?.addEventListener("click", () => {
-                            const rubro =
-                                document.getElementById("rubro_principal")
-                                    ?.value || "Profesional";
                             const nombre =
                                 document.getElementById("nombre")?.value ||
                                 "Soy profesional";
-                            const zona =
-                                document.getElementById("zona")?.value ||
-                                "su zona";
-                            // @ts-ignore
-                            document.getElementById("descripcion").value =
-                                `¡Hola! Soy ${nombre}, especialista en ${rubro} con experiencia brindando servicios de calidad en ${zona}. Me caracterizo por la puntualidad, el compromiso y la garantía en mis trabajos. Realizo presupuestos sin cargo y acepto diversos medios de pago. ¡Contáctame para solucionar tu problema!`;
+
+                            // Formatear listas de rubros y zonas
+                            const formatLista = (arr, singular, plural) => {
+                                if (!arr || arr.length === 0) return singular;
+                                if (arr.length === 1) return arr[0];
+                                const items = [...arr];
+                                const last = items.pop();
+                                return `${items.join(", ")} y ${last}`;
+                            };
+
+                            const rubrosTxt = formatLista(
+                                selectedRubros,
+                                "mi rubro",
+                                "mis rubros",
+                            );
+                            const zonasTxt = formatLista(
+                                selectedZonas,
+                                "mi zona",
+                                "mis zonas",
+                            );
+
+                            const bio = `¡Hola! Soy ${nombre}, especialista en ${rubrosTxt} con experiencia brindando servicios de calidad en ${zonasTxt}. Me caracterizo por la puntualidad, el compromiso y la excelencia en cada trabajo. Realizo presupuestos sin cargo y acepto diversos medios de pago. ¡Contáctame para brindarte la mejor solución!`;
+
+                            const descField = document.getElementById(
+                                "descripcion",
+                            ) as HTMLTextAreaElement;
+                            if (descField) {
+                                descField.value = bio;
+                                // Disparar input para auto-save si existiera o para que el navegador detecte el cambio
+                                descField.dispatchEvent(new Event("input"));
+                            }
                         });
+                }
+
+                function setupInvoiceToggles() {
+                    const emite = document.getElementById(
+                        "emite_factura",
+                    ) as HTMLInputElement;
+                    const noEmite = document.getElementById(
+                        "no_emite_factura",
+                    ) as HTMLInputElement;
+                    const container = document.getElementById(
+                        "invoice-types-container",
+                    );
+
+                    emite?.addEventListener("change", () => {
+                        if (emite.checked) {
+                            noEmite.checked = false;
+                            container?.classList.remove("hidden");
+                        } else {
+                            container?.classList.add("hidden");
+                        }
+                    });
+
+                    noEmite?.addEventListener("change", () => {
+                        if (noEmite.checked) {
+                            emite.checked = false;
+                            container?.classList.add("hidden");
+                            // Desmarcar tipos si marca que NO emite
+                            document
+                                .querySelectorAll(".invoice-type-check")
+                                .forEach((chk: any) => (chk.checked = false));
+                        }
+                    });
                 }
 
                 // --- GEO ---
@@ -3169,6 +3292,15 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                             document.getElementById("no_emite_factura").checked;
                         const finalFactura = noEmite ? false : emiteFactura;
 
+                        const selectedInvoiceTypes = [];
+                        if (finalFactura) {
+                            document
+                                .querySelectorAll(".invoice-type-check:checked")
+                                .forEach((chk: any) => {
+                                    selectedInvoiceTypes.push(chk.value);
+                                });
+                        }
+
                         // Datos nuevos
                         // @ts-ignore
                         const tieneEquipo =
@@ -3246,6 +3378,7 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                             // @ts-ignore
                             es_24hs: document.getElementById("es_24hs").checked,
                             emite_factura: finalFactura,
+                            tipo_factura: selectedInvoiceTypes,
                             formas_pago: pagos,
                             // @ts-ignore
                             foto: document.getElementById("foto-url").value,
@@ -4189,6 +4322,9 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                         document
                             .getElementById("overlay-lock")
                             ?.classList.add("hidden");
+                        document
+                            .getElementById("overlay-lock")
+                            ?.classList.remove("flex");
                         // @ts-ignore
                         document.getElementById("btn-top-save").disabled =
                             false;
@@ -4245,6 +4381,9 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                         document
                             .getElementById("overlay-lock")
                             ?.classList.add("hidden");
+                        document
+                            .getElementById("overlay-lock")
+                            ?.classList.remove("flex");
                         // @ts-ignore
                         document.getElementById("btn-top-save").disabled =
                             false;
@@ -4252,6 +4391,9 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                         document
                             .getElementById("overlay-lock")
                             ?.classList.remove("hidden");
+                        document
+                            .getElementById("overlay-lock")
+                            ?.classList.add("flex");
                         // @ts-ignore
                         document.getElementById("btn-top-save").disabled = true;
                     }

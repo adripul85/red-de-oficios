@@ -16,6 +16,12 @@ export default function Step1Identity({ data, onChange, onNext }: Step1Props) {
         onNext();
     };
 
+    const password = data.password || '';
+    const hasMinLength = password.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const isPasswordValid = hasMinLength && hasUpperCase && hasNumber;
+
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -101,22 +107,31 @@ export default function Step1Identity({ data, onChange, onNext }: Step1Props) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Contraseña (Mín. 6 caracteres) *</label>
+                        <label className="block text-sm font-medium text-gray-700">Contraseña *</label>
                         <input
                             type="password"
                             name="password"
                             required
-                            minLength={6}
+                            minLength={8}
                             value={data.password || ''}
                             onChange={handleChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border"
+                            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-orange-500 p-2 border ${isPasswordValid ? 'focus:border-green-500' : 'focus:border-orange-500'}`}
                             placeholder="******"
                         />
+                        <div className="mt-2 space-y-1">
+                            <p className={`text-[10px] flex items-center gap-1 ${hasMinLength ? 'text-green-600 font-bold' : 'text-gray-400'}`}>
+                                {hasMinLength ? '✅' : '⚪'} Mínimo 8 caracteres
+                            </p>
+                            <p className={`text-[10px] flex items-center gap-1 ${hasUpperCase ? 'text-green-600 font-bold' : 'text-gray-400'}`}>
+                                {hasUpperCase ? '✅' : '⚪'} Al menos una mayúscula
+                            </p>
+                            <p className={`text-[10px] flex items-center gap-1 ${hasNumber ? 'text-green-600 font-bold' : 'text-gray-400'}`}>
+                                {hasNumber ? '✅' : '⚪'} Al menos un número
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
-
-
 
             <div className="space-y-3 pt-4 border-t border-gray-100">
                 <label className="flex items-start space-x-3 cursor-pointer group">
@@ -149,8 +164,8 @@ export default function Step1Identity({ data, onChange, onNext }: Step1Props) {
             <div className="pt-6 flex justify-end">
                 <button
                     type="submit"
-                    disabled={!data.acceptedTerms || !data.acceptedPrivacy}
-                    className={`px-8 py-3 rounded-xl font-black text-sm uppercase tracking-widest transition-all shadow-lg ${data.acceptedTerms && data.acceptedPrivacy
+                    disabled={!data.acceptedTerms || !data.acceptedPrivacy || !isPasswordValid}
+                    className={`px-8 py-3 rounded-xl font-black text-sm uppercase tracking-widest transition-all shadow-lg ${data.acceptedTerms && data.acceptedPrivacy && isPasswordValid
                         ? 'bg-orange-600 text-white hover:bg-orange-700 hover:-translate-y-0.5 active:scale-95'
                         : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         }`}

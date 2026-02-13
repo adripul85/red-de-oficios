@@ -17,12 +17,7 @@ export default {
 				"background-light": "#FFFFFF",
 				"background-alt": "#F9F9F9",  // Gris muy clarito para secciones alternas
 				"muted-gray": "#6B7280",      // Gris para textos secundarios
-			},
-			/*colors: {
-				"primary": "#CC5500", // Burnt Orange
-				"primary-dark": "#A34400", // Darker Burnt Orange
-				"background-light": "#ffffff",
-				"background-dark": "#121212",
+				"primary-dark": "#A34400",
 				"secondary-gray": "#F4F4F5",
 				"text-main": "#000000",
 				"verified-dark": "#0A0A0A",
@@ -32,10 +27,8 @@ export default {
 				"neutral-gray-dark": "#4B5563",
 				"neutral-gray": "#9CA3AF",
 				"neutral-gray-light": "#F3F4F6",
-
-				// Keeping existing just in case, mapped to new or similar
-				secondary: '#2c3e50',
-			}*/
+				"secondary": '#2c3e50',
+			},
 			borderRadius: {
 				"DEFAULT": "0.375rem",
 				"lg": "0.5rem",

@@ -68,21 +68,26 @@ function filterNormal(
     if (ubi || rub) {
       let match = true;
       if (ubi) {
-        const zonaPro = (pro.zona || "").toLowerCase();
         const targetZona = ubi.toLowerCase();
-        // Match exacto o si la zona del pro contiene la ubi (o viceversa para provincias)
-        if (!zonaPro.includes(targetZona) && !targetZona.includes(zonaPro)) {
+        const zonasPro = [pro.zona, ...(pro.zonas || [])]
+          .filter(Boolean)
+          .map((z: string) => z.toLowerCase());
+
+        const matchFound = zonasPro.some((zp) => {
+          // Match exacto o si la zona del pro contiene la ubi (o viceversa para provincias)
+          if (zp.includes(targetZona) || targetZona.includes(zp)) return true;
+
           // Check if the pro is in a zone that belongs to the group 'ubi'
           const groupObj = LOCATIONS.find(
             (g) => g.group.toLowerCase() === targetZona,
           );
           if (groupObj) {
-            if (!groupObj.zones.some((z) => z.toLowerCase() === zonaPro))
-              match = false;
-          } else {
-            match = false;
+            if (groupObj.zones.some((z) => z.toLowerCase() === zp)) return true;
           }
-        }
+          return false;
+        });
+
+        if (!matchFound) match = false;
       }
       if (rub) {
         const rubros = [pro.rubro_principal, ...(pro.rubros || [])]
@@ -117,8 +122,10 @@ function filterNormal(
         Boolean,
       );
       const matchRubro = rubros.some((r) => r.toLowerCase().includes(palabra));
-      const zonaLower = pro.zona?.toLowerCase() || "";
-      const matchZona = zonaLower.includes(palabra);
+      const zonas = [pro.zona, ...(pro.zonas || [])].filter(Boolean);
+      const matchZona = zonas.some((z: string) =>
+        z.toLowerCase().includes(palabra),
+      );
       const matchTags = pro.etiquetas?.some((t: string) =>
         t.toLowerCase().includes(palabra),
       );
@@ -426,7 +433,7 @@ const tradesJson = JSON.stringify(ALL_TRADES);
         {
           resultados.map((p: any) => (
             <div
-              class="card-professional-item bg-slate-200 rounded-2xl soft-shadow card-hover border border-transparent hover:border-primary/10 flex flex-col p-6 h-full relative"
+              class="card-professional-item bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col p-6 h-full relative group"
               data-verified={p.verificado ? "true" : "false"}
               data-zona={p.zona}
               data-rating={p.promedio || 0}
@@ -441,6 +448,11 @@ const tradesJson = JSON.stringify(ALL_TRADES);
                   : "false"
               }
             >
+              {p.is_fake && (
+                <div class="absolute top-0 left-0 right-0 bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest py-1.5 px-4 text-center rounded-t-2xl z-20">
+                  Perfil de Demostración
+                </div>
+              )}
               <div class="flex justify-between items-start mb-6">
                 <div class="relative">
                   <img
@@ -571,7 +583,7 @@ const tradesJson = JSON.stringify(ALL_TRADES);
       Cargar más resultados
     </button>
     <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-      Mostrando {resultados.length} profesionales
+      Mostrando <span id="count-display">{resultados.length}</span> profesionales
     </p>
   </div>
 </Layout>

@@ -28,7 +28,7 @@ export async function getAuthRedirect(user: any): Promise<string> {
         }
 
         if (premiumPlans.includes(plan)) {
-            return "/panel";
+            return "/mi-perfil";
         }
 
         // Free tier goes to basic Profile editing

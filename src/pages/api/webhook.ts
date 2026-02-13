@@ -83,7 +83,22 @@ export const POST: APIRoute = async ({ request }) => {
                     updatedAt: new Date(),
                 });
 
-                // Guardar registro del pago (Historial)
+                // Guardar en la colección 'pagos' para el panel de facturación (ARCA)
+                await dbAdmin.collection("pagos").doc(dataId.toString()).set({
+                    transaction_amount: monto,
+                    status: "approved",
+                    date_created: new Date().toISOString(), // O usar paymentData.date_created si viene de MP
+                    payer: {
+                        email: paymentData.payer?.email || "Sin email",
+                        id: paymentData.payer?.id || ""
+                    },
+                    description: description,
+                    facturado: false,
+                    external_reference: userId,
+                    createdAt: new Date()
+                }, { merge: true });
+
+                // Guardar registro del pago (Historial - LEGACY)
                 await dbAdmin.collection("pagos_historial").add({
                     usuarioId: userId,
                     monto: monto,

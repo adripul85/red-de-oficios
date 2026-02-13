@@ -16,6 +16,7 @@ interface Props {
     idPro?: string;
     idName?: string;
     isBlocked?: boolean;
+    isFake?: boolean;
 }
 
 const {
@@ -36,12 +37,21 @@ const {
     idName = "",
     isBlocked = false,
     blockReason = "", // trial_expired or limit_reached
+    isFake = false,
 } = Astro.props;
 ---
 
 <div
     class="max-w-[360px] w-full mx-auto bg-white rounded-[40px] overflow-hidden shadow-2xl font-sans relative border-slate-100 border-[1px] my-4"
 >
+    {
+        isFake && (
+            <div class="bg-orange-600 text-white text-[10px] font-black uppercase tracking-[0.2em] py-2 px-4 text-center sticky top-0 z-[60] shadow-md">
+                ⚠️ Perfil de Demostración (Ficticio)
+            </div>
+        )
+    }
+
     <!-- Contenedor de Imagen -->
     <div
         class="relative w-full h-[320px] max-h-[320px] overflow-hidden bg-slate-200"

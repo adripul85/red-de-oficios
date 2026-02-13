@@ -27,7 +27,7 @@ export default defineConfig({
 
   // PERFORMANCE
   prefetch: true,
-  compressHTML: false,
+  compressHTML: true,
 
   // VITE: Configuraciones extra del empaquetador (limpio por ahora)
   vite: {
