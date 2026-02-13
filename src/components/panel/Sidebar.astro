@@ -146,27 +146,20 @@ const isActive = (path) => {
         const levelProgressEl = document.getElementById("level-progress");
         const levelNextEl = document.getElementById("level-next");
 
-        let deferredPrompt;
+        const syncLevel = (user: any) => {
+            if (!user || !db) return;
 
-        const syncLevel = (user) => {
-            if (!user) {
-                console.log("⚠️ [SIDEBAR] syncLevel: No user found");
-                return;
+            // Limpiar listener previo si existe para este usuario (prevención de fugas)
+            if ((window as any).unsubscribeSidebar) {
+                (window as any).unsubscribeSidebar();
             }
-            if (!db) {
-                console.error("❌ [SIDEBAR] Firestore 'db' is not initialized");
-                return;
-            }
-            onSnapshot(
+
+            (window as any).unsubscribeSidebar = onSnapshot(
                 doc(db, `profesionales/${user.uid}`),
                 (snap) => {
                     if (snap.exists()) {
                         const data = snap.data();
                         const xp = data.puntos || 0;
-                        console.log(
-                            "✨ [SIDEBAR] Level data received. Points:",
-                            xp,
-                        );
 
                         const { current, next } = calculateLevel(xp);
                         const progress = getLevelProgress(xp);
@@ -186,39 +179,22 @@ const isActive = (path) => {
                                     "¡Nivel Máximo alcanzado! 👑";
                             }
                         }
-                    } else {
-                        console.warn(
-                            "❓ [SIDEBAR] syncLevel: Document does not exist for",
-                            user.uid,
-                        );
                     }
                 },
-                (err) => {
-                    console.error("💥 [SIDEBAR] syncLevel error:", err);
-                },
+                (err) => console.error("💥 [SIDEBAR] syncLevel error:", err),
             );
         };
 
-        // Immediate check + listener
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-            console.log(
-                "✅ [SIDEBAR] User found immediately:",
-                currentUser.uid,
-            );
-            syncLevel(currentUser);
-        } else {
-            console.log(
-                "⏳ [SIDEBAR] No immediate user, waiting for state change...",
-            );
-        }
+        // Immediate check
+        if (auth.currentUser) syncLevel(auth.currentUser);
 
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                console.log("🔄 [SIDEBAR] Auth state ready:", user.uid);
-                syncLevel(user);
-            }
-        });
+        // Auth state change (only once globally)
+        if (!(window as any).authListenerStarted) {
+            (window as any).authListenerStarted = true;
+            auth.onAuthStateChanged((user: any) => {
+                if (user) syncLevel(user);
+            });
+        }
 
         // Logout
         if (logoutBtn) {
@@ -234,28 +210,24 @@ const isActive = (path) => {
         }
 
         // PWA Install
-        window.addEventListener("beforeinstallprompt", (e) => {
+        window.addEventListener("beforeinstallprompt", (e: any) => {
             e.preventDefault();
-            deferredPrompt = e;
+            (window as any).deferredPrompt = e;
             if (installBtn) installBtn.classList.remove("hidden");
         });
 
         if (installBtn) {
             installBtn.onclick = async () => {
-                if (!deferredPrompt) return;
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                deferredPrompt = null;
+                const dp = (window as any).deferredPrompt;
+                if (!dp) return;
+                dp.prompt();
+                (window as any).deferredPrompt = null;
                 installBtn.classList.add("hidden");
             };
         }
-
-        window.addEventListener("appinstalled", () => {
-            if (installBtn) installBtn.classList.add("hidden");
-        });
     }
 
-    // --- INITIALIZATION ---
+    // --- SIDEBAR SINGLETON LOGIC ---
     if (!(window as any).sidebarInitialized) {
         (window as any).sidebarInitialized = true;
         setupSidebar();

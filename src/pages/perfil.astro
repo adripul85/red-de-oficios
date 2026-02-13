@@ -344,11 +344,31 @@ const schemaData = {
                                             </span>
                                             
                                             <!-- Gamification Icons -->
-                                            <div class="flex items-center -space-x-1">
-                                                {hasFullProfile && <div class="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center border-2 border-white shadow-sm" title="Perfil Completo">🏅</div>}
-                                                {hasPortfolio && <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center border-2 border-white shadow-sm" title="Portfolio Destacado">🎨</div>}
-                                                {hasGoodRating && <div class="w-8 h-8 rounded-full bg-yellow-50 flex items-center justify-center border-2 border-white shadow-sm" title="Excelente Reputación">⭐</div>}
-                                                {profesional.verificado && <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center border-2 border-white shadow-sm" title="Identidad Verificada">🛡️</div>}
+                                            <div class="flex flex-wrap gap-2 items-start">
+                                                {hasFullProfile && (
+                                                    <div class="flex flex-col items-center group">
+                                                        <div class="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center border-2 border-white shadow-sm transition-transform group-hover:scale-110" title="Perfil Completo">🏅</div>
+                                                        <span class="text-[8px] font-black text-amber-600 uppercase tracking-tighter text-center leading-[1] mt-1">Perfil<br/>Completo</span>
+                                                    </div>
+                                                )}
+                                                {hasPortfolio && (
+                                                    <div class="flex flex-col items-center group">
+                                                        <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center border-2 border-white shadow-sm transition-transform group-hover:scale-110" title="Portfolio Destacado">🎨</div>
+                                                        <span class="text-[8px] font-black text-orange-600 uppercase tracking-tighter text-center leading-[1] mt-1">Portfolio<br/>Destacado</span>
+                                                    </div>
+                                                )}
+                                                {hasGoodRating && (
+                                                    <div class="flex flex-col items-center group">
+                                                        <div class="w-8 h-8 rounded-full bg-yellow-50 flex items-center justify-center border-2 border-white shadow-sm transition-transform group-hover:scale-110" title="Excelente Reputación">⭐</div>
+                                                        <span class="text-[8px] font-black text-yellow-600 uppercase tracking-tighter text-center leading-[1] mt-1">Excelente<br/>Reputación</span>
+                                                    </div>
+                                                )}
+                                                {profesional.verificado && (
+                                                    <div class="flex flex-col items-center group">
+                                                        <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center border-2 border-white shadow-sm transition-transform group-hover:scale-110" title="Identidad Verificada">🛡️</div>
+                                                        <span class="text-[8px] font-black text-blue-600 uppercase tracking-tighter text-center leading-[1] mt-1">Identidad<br/>Verificada</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -526,7 +546,9 @@ const schemaData = {
                                         <span class="font-black text-neutral-black">
                                             {
                                                 profesional.emite_factura 
-                                                    ? `Sí ${profesional.tipo_factura?.length > 0 ? `(${profesional.tipo_factura.join("/")})` : "(A/B/C)"}`
+                                                    ? `Sí ${Array.isArray(profesional.tipo_factura) 
+                                                        ? (profesional.tipo_factura.length > 0 ? `(${profesional.tipo_factura.join("/")})` : "(A/B/C)")
+                                                        : (profesional.tipo_factura ? `(${profesional.tipo_factura})` : "(A/B/C)")}`
                                                     : "No especificado"
                                             }
                                         </span>

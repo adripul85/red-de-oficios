@@ -67,10 +67,10 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                                 class="w-full h-full rounded-full overflow-hidden border-4 border-orange-100 shadow-xl relative"
                             >
                                 <img
-                                    id="avatar-img"
-                                    src="/img/worker-placeholder.png"
-                                    alt="Avatar"
-                                    class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                    id="profile-img"
+                                    src="/icon-512.png"
+                                    alt="Foto de perfil"
+                                    class="w-full h-full object-cover"
                                 />
                                 <div
                                     class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px]"
@@ -3008,8 +3008,13 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                         }
 
                         // @ts-ignore
-                        document.getElementById("presupuestos_activo").checked =
-                            data.presupuestos_config?.activo || false;
+                        const presupuestosActivoEl = document.getElementById(
+                            "presupuestos_activo",
+                        );
+                        if (presupuestosActivoEl) {
+                            (presupuestosActivoEl as any).checked =
+                                data.presupuestos_config?.activo || false;
+                        }
 
                         renderServices();
                         renderGallery(data.portfolio || []);
@@ -3920,21 +3925,53 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
 
                     const handleUpload = async (file, type) => {
                         if (!file) return;
+                        console.log(
+                            `[UPLOAD] Iniciando subida para tipo: ${type}`,
+                            file,
+                        );
+
+                        if (!currentUserUid) {
+                            console.error(
+                                "[UPLOAD] Error: No hay currentUserUid disponible",
+                            );
+                            // @ts-ignore
+                            Swal.fire(
+                                "Error",
+                                "No se detectó sesión activa. Recarga la página.",
+                                "error",
+                            );
+                            return;
+                        }
+
                         // @ts-ignore
                         Swal.fire({
                             title: "Subiendo...",
+                            text: "Esto puede demorar unos segundos",
                             didOpen: () => Swal.showLoading(),
                         });
+
                         try {
+                            const extension = file.name.split(".").pop();
+                            let fileName = `${Date.now()}.${extension}`;
+
                             let path =
                                 type === "avatar"
-                                    ? `profesionales/${currentUserUid}/avatar_${Date.now()}`
-                                    : `profesionales/${currentUserUid}/docs/${type}_${Date.now()}`;
+                                    ? `profesionales/${currentUserUid}/avatar_${fileName}`
+                                    : `profesionales/${currentUserUid}/docs/${type}_${fileName}`;
+
                             if (type === "portfolio")
-                                path = `profesionales/${currentUserUid}/portfolio/${Date.now()}`;
+                                path = `profesionales/${currentUserUid}/portfolio/${fileName}`;
+
+                            console.log(
+                                `[UPLOAD] Ruta de almacenamiento: ${path}`,
+                            );
+
                             const refS = ref(storage, path);
                             await uploadBytes(refS, file);
                             const url = await getDownloadURL(refS);
+
+                            console.log(`[UPLOAD] Éxito. URL obtenida: ${url}`);
+
                             if (type === "dni" || type === "ant") {
                                 await handleVerificationUpload(file, type);
                                 return;
@@ -3943,9 +3980,10 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                             if (type === "avatar") {
                                 // @ts-ignore
                                 document.getElementById("foto-url").value = url;
-                                document.getElementById("avatar-img").src = url;
+                                document.getElementById("profile-img").src =
+                                    url;
                                 document
-                                    .getElementById("avatar-img")
+                                    .getElementById("profile-img")
                                     ?.classList.remove("hidden");
                             } else if (type === "portfolio") {
                                 Swal.close();
@@ -4062,11 +4100,14 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                             docAntUrl = freshSnap.data().doc_antecedentes;
                             checkLockStatus();
                         } catch (e) {
+                            console.error("[UPLOAD] Error crítico:", e);
                             // @ts-ignore
                             Swal.fire({
                                 icon: "error",
-                                title: "Error",
-                                text: "Hubo un error al subir el archivo",
+                                title: "Error al subir",
+                                text:
+                                    "Hubo un problema: " +
+                                    (e.message || "Error de red o permisos"),
                                 confirmButtonColor: "#ea580c",
                             });
                         }
