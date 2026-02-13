@@ -28,11 +28,11 @@ export async function getAuthRedirect(user: any): Promise<string> {
         }
 
         if (premiumPlans.includes(plan)) {
-            return "/mi-perfil";
+            return "/panel";
         }
 
-        // Free tier goes to basic Profile editing
-        return "/mi-perfil";
+        // Free tier goes to dashboard too, but they might have limited features
+        return "/panel";
     }
 
     // 2. Check if user is a Client
