@@ -5,8 +5,12 @@ import MobileSidebar from "../../components/panel/MobileSidebar.astro";
 import Layout from "../../layouts/Layout.astro";
 ---
 
-<Layout title="Oportunidades - DeOficios Pro" hideHeader={true} hideIA={true} hideBottomNav={true}>
-
+<Layout
+    title="Oportunidades - DeOficios Pro"
+    hideHeader={true}
+    hideIA={true}
+    hideBottomNav={true}
+>
     <style>
         /* Custom scrollbar for better look */
         .overflow-y-auto::-webkit-scrollbar {
@@ -80,518 +84,628 @@ import Layout from "../../layouts/Layout.astro";
         <MobileSidebar currentPath={Astro.url.pathname} />
 
         <!-- MAIN CONTENT -->
-        <main class="flex-1 flex flex-col h-screen relative overflow-hidden bg-slate-50">
+        <main
+            class="flex-1 flex flex-col h-screen relative overflow-hidden bg-slate-50"
+        >
             <!-- Header Panel -->
-            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-30 relative shrink-0">
+            <header
+                class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-30 relative shrink-0"
+            >
                 <div class="flex items-center gap-4">
-                    <button id="open-sidebar" class="md:hidden text-2xl mr-2">☰</button>
-                    <h2 class="text-lg font-bold text-slate-800">Oportunidades</h2>
+                    <button id="open-sidebar" class="md:hidden text-2xl mr-2"
+                        >☰</button
+                    >
+                    <h2 class="text-lg font-bold text-slate-800">
+                        Oportunidades
+                    </h2>
                 </div>
             </header>
 
             <div class="flex-1 overflow-y-auto">
                 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <!-- HEADER -->
-                <div
-                    class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                    <div>
-                        <h1 class="text-2xl font-bold text-slate-900">
-                            Oportunidades de Trabajo
-                        </h1>
-                        <p class="text-slate-500 mt-1">
-                            Solicitudes de clientes que coinciden con tu
-                            perfil
+                    <!-- HEADER -->
+                    <div
+                        class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4"
+                    >
+                        <div>
+                            <h1 class="text-2xl font-bold text-slate-900">
+                                Oportunidades de Trabajo
+                            </h1>
+                            <p class="text-slate-500 mt-1">
+                                Solicitudes de clientes que coinciden con tu
+                                perfil
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- TABS -->
+                    <div class="border-b border-slate-200 mb-6 overflow-x-auto">
+                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                            <button
+                                id="tab-nuevas"
+                                class="tab-btn active border-orange-500 text-orange-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+                            >
+                                Nuevas
+                            </button>
+                            <button
+                                id="tab-contactadas"
+                                class="tab-btn border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+                            >
+                                Contactadas
+                            </button>
+                            <button
+                                id="tab-descartadas"
+                                class="tab-btn border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
+                            >
+                                Descartadas
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- LOADING STATE -->
+                    <div id="loading" class="text-center py-12">
+                        <div
+                            class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"
+                        >
+                        </div>
+                        <p class="text-slate-400 mt-4">
+                            Buscando oportunidades en tu zona...
                         </p>
                     </div>
-                </div>
 
-                <!-- TABS -->
-                <div class="border-b border-slate-200 mb-6 overflow-x-auto">
-                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                        <button
-                            id="tab-nuevas"
-                            class="tab-btn active border-orange-500 text-orange-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-                            Nuevas
-                        </button>
-                        <button
-                            id="tab-contactadas"
-                            class="tab-btn border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-                            Contactadas
-                        </button>
-                        <button
-                            id="tab-descartadas"
-                            class="tab-btn border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
-                            Descartadas
-                        </button>
-                    </nav>
-                </div>
+                    <!-- ERROR STATE -->
+                    <div id="error-state" class="hidden text-center py-12">
+                        <div class="text-5xl mb-4">⚠️</div>
+                        <p class="text-slate-500">
+                            Ocurrió un error al cargar las oportunidades.
+                        </p>
+                        <p class="text-xs text-slate-400 mt-2">
+                            Si es la primera vez, es posible que se esté creando
+                            el índice de base de datos.
+                        </p>
+                    </div>
 
-                <!-- LOADING STATE -->
-                <div id="loading" class="text-center py-12">
+                    <!-- EMPTY STATE -->
                     <div
-                        class="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto">
+                        id="empty-state"
+                        class="hidden text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300"
+                    >
+                        <div class="mx-auto h-12 w-12 text-slate-300 mb-4">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                                ></path>
+                            </svg>
+                        </div>
+                        <h3
+                            id="empty-title"
+                            class="mt-2 text-sm font-medium text-slate-900"
+                        >
+                            No hay nuevas oportunidades
+                        </h3>
+                        <p id="empty-desc" class="mt-1 text-sm text-slate-500">
+                            Te avisaremos cuando alguien busque un servicio en
+                            tu zona.
+                        </p>
                     </div>
-                    <p class="text-slate-400 mt-4">
-                        Buscando oportunidades en tu zona...
-                    </p>
-                </div>
 
-                <!-- ERROR STATE -->
-                <div id="error-state" class="hidden text-center py-12">
-                    <div class="text-5xl mb-4">⚠️</div>
-                    <p class="text-slate-500">
-                        Ocurrió un error al cargar las oportunidades.
-                    </p>
-                    <p class="text-xs text-slate-400 mt-2">
-                        Si es la primera vez, es posible que se esté creando
-                        el índice de base de datos.
-                    </p>
-                </div>
-
-                <!-- EMPTY STATE -->
-                <div
-                    id="empty-state"
-                    class="hidden text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300">
-                    <div class="mx-auto h-12 w-12 text-slate-300 mb-4">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-                        </svg>
+                    <!-- GRID OPORTUNIDADES -->
+                    <div
+                        id="oportunidades-grid"
+                        class="grid grid-cols-1 gap-6"
+                        style="display: none;"
+                    >
+                        <!-- Cards will be injected here -->
                     </div>
-                    <h3
-                        id="empty-title"
-                        class="mt-2 text-sm font-medium text-slate-900">
-                        No hay nuevas oportunidades
-                    </h3>
-                    <p id="empty-desc" class="mt-1 text-sm text-slate-500">
-                        Te avisaremos cuando alguien busque un servicio en
-                        tu zona.
-                    </p>
-                </div>
-
-                <!-- GRID OPORTUNIDADES -->
-                <div
-                    id="oportunidades-grid"
-                    class="grid grid-cols-1 gap-6"
-                    style="display: none;">
-                    <!-- Cards will be injected here -->
                 </div>
             </div>
         </main>
-    </div>
 
-    <!-- MODAL ALERTA -->
-    <div id="custom-alert" class="modal-overlay">
-        <div class="modal-container text-center">
-            <div id="alert-icon" class="text-5xl mb-4"></div>
-            <h3
-                id="alert-title"
-                class="text-xl font-bold text-slate-900 mb-2">
-            </h3>
-            <p id="alert-message" class="text-slate-600 mb-6"></p>
-            <button
-                onclick="closeAlert()"
-                class="w-full bg-slate-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-slate-800 transition shadow-lg active:scale-95">
-                Entendido
-            </button>
-        </div>
-    </div>
-
-    <!-- MODAL COTIZACIÓN -->
-    <div id="modal-cotizacion" class="modal-overlay">
-        <div class="modal-container text-left">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-slate-900">
-                    Enviar Presupuesto
+        <!-- MODAL ALERTA -->
+        <div id="custom-alert" class="modal-overlay">
+            <div class="modal-container text-center">
+                <div id="alert-icon" class="text-5xl mb-4"></div>
+                <h3
+                    id="alert-title"
+                    class="text-xl font-bold text-slate-900 mb-2"
+                >
                 </h3>
+                <p id="alert-message" class="text-slate-600 mb-6"></p>
                 <button
-                    onclick="cerrarModalCotizacion()"
-                    class="text-slate-400 hover:text-slate-600">✕</button>
+                    onclick="closeAlert()"
+                    class="w-full bg-slate-900 text-white font-bold py-3 px-6 rounded-xl hover:bg-slate-800 transition shadow-lg active:scale-95"
+                >
+                    Entendido
+                </button>
             </div>
+        </div>
 
-            <p class="text-sm text-slate-500 mb-4">
-                Estás cotizando para <b id="cot-cliente-nombre">Cliente</b>.
-            </p>
-
-            <form
-                id="form-cotizacion"
-                onsubmit="event.preventDefault(); enviarCotizacion();">
-                <div class="mb-4">
-                    <label
-                        class="block text-sm font-medium text-slate-700 mb-1">Precio Estimado ($)</label>
-                    <input
-                        type="number"
-                        id="cot-precio"
-                        class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
-                        placeholder="Ej: 15000"
-                        required
-                        min="1">
+        <!-- MODAL COTIZACIÓN -->
+        <div id="modal-cotizacion" class="modal-overlay">
+            <div class="modal-container text-left">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-slate-900">
+                        Enviar Presupuesto
+                    </h3>
+                    <button
+                        onclick="cerrarModalCotizacion()"
+                        class="text-slate-400 hover:text-slate-600">✕</button
+                    >
                 </div>
 
-                <div class="mb-6">
-                    <label
-                        class="block text-sm font-medium text-slate-700 mb-1">Mensaje / Detalle</label>
-                    <textarea
-                        id="cot-mensaje"
-                        rows="3"
-                        class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
-                        placeholder="Hola, puedo realizar el trabajo. Incluye materiales..."
-                        required></textarea>
-                </div>
-
-                <p
-                    class="text-xs text-slate-400 mb-4 bg-yellow-50 p-2 rounded border border-yellow-100">
-                    ⚠️ Tu presupuesto se mostrará al cliente junto con otros
-                    para que pueda comparar.
+                <p class="text-sm text-slate-500 mb-4">
+                    Estás cotizando para <b id="cot-cliente-nombre">Cliente</b>.
                 </p>
 
-                <div class="flex gap-3">
-                    <button
-                        type="button"
-                        onclick="cerrarModalCotizacion()"
-                        class="flex-1 bg-white border border-slate-300 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition">
-                        Cancelar
-                    </button>
-                    <button
-                        type="submit"
-                        id="btn-enviar-cotizacion"
-                        class="flex-1 bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg active:scale-95 flex justify-center items-center gap-2">
-                        <span>💰</span> Enviar
-                    </button>
-                </div>
-            </form>
+                <form
+                    id="form-cotizacion"
+                    onsubmit="event.preventDefault(); enviarCotizacion();"
+                >
+                    <div class="mb-4">
+                        <label
+                            class="block text-sm font-medium text-slate-700 mb-1"
+                            >Precio Estimado ($)</label
+                        >
+                        <input
+                            type="number"
+                            id="cot-precio"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
+                            placeholder="Ej: 15000"
+                            required
+                            min="1"
+                        />
+                    </div>
+
+                    <div class="mb-6">
+                        <label
+                            class="block text-sm font-medium text-slate-700 mb-1"
+                            >Mensaje / Detalle</label
+                        >
+                        <textarea
+                            id="cot-mensaje"
+                            rows="3"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
+                            placeholder="Hola, puedo realizar el trabajo. Incluye materiales..."
+                            required></textarea>
+                    </div>
+
+                    <p
+                        class="text-xs text-slate-400 mb-4 bg-yellow-50 p-2 rounded border border-yellow-100"
+                    >
+                        ⚠️ Tu presupuesto se mostrará al cliente junto con otros
+                        para que pueda comparar.
+                    </p>
+
+                    <div class="flex gap-3">
+                        <button
+                            type="button"
+                            onclick="cerrarModalCotizacion()"
+                            class="flex-1 bg-white border border-slate-300 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            id="btn-enviar-cotizacion"
+                            class="flex-1 bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg active:scale-95 flex justify-center items-center gap-2"
+                        >
+                            <span>💰</span> Enviar
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
 
-    <script>
-        import { auth, app, db } from "../../firebase/client";
-        import { 
-            getFirestore, collection, query, where, getDocs, orderBy, limit, 
-            doc, updateDoc, arrayUnion, getDoc, deleteField, 
-            onSnapshot, addDoc, increment 
-        } from "firebase/firestore";
-        import { onAuthStateChanged } from "firebase/auth";
-        import Swal from 'sweetalert2';
-        import { getAuthRedirect } from "../../utils/auth-redirects";
+        <script>
+            import { auth, app, db } from "../../firebase/client";
+            import {
+                getFirestore,
+                collection,
+                query,
+                where,
+                getDocs,
+                orderBy,
+                limit,
+                doc,
+                updateDoc,
+                arrayUnion,
+                getDoc,
+                deleteField,
+                onSnapshot,
+                addDoc,
+                increment,
+            } from "firebase/firestore";
+            import { onAuthStateChanged } from "firebase/auth";
+            import Swal from "sweetalert2";
+            import { getAuthRedirect } from "../../utils/auth-redirects";
 
-        // const db = getFirestore(app); // Standardized to use singleton from client.js
-        console.log("🔥 [DEBUG] Global db from client.js:", db?.constructor?.name);
+            // const db = getFirestore(app); // Standardized to use singleton from client.js
+            console.log(
+                "🔥 [DEBUG] Global db from client.js:",
+                db?.constructor?.name,
+            );
 
-        let currentUser: any = null;
-        let todasSolicitudes: any[] = [];
+            let currentUser: any = null;
+            let todasSolicitudes: any[] = [];
 
-        // Execute immediately - IIFE pattern
-        (function () {
-            console.log("🚀 [OPORTUNIDADES] Ejecutando inicialización...");
+            // Execute immediately - IIFE pattern
+            (function () {
+                console.log("🚀 [OPORTUNIDADES] Ejecutando inicialización...");
 
-            // Referencias DOM
-            const grid = document.getElementById("oportunidades-grid");
-            const loading = document.getElementById("loading");
-            const errorState = document.getElementById("error-state");
-            const emptyState = document.getElementById("empty-state");
-            const emptyTitle = document.getElementById("empty-title");
-            const emptyDesc = document.getElementById("empty-desc");
-            const tabs = document.querySelectorAll(".tab-btn");
+                // Referencias DOM
+                const grid = document.getElementById("oportunidades-grid");
+                const loading = document.getElementById("loading");
+                const errorState = document.getElementById("error-state");
+                const emptyState = document.getElementById("empty-state");
+                const emptyTitle = document.getElementById("empty-title");
+                const emptyDesc = document.getElementById("empty-desc");
+                const tabs = document.querySelectorAll(".tab-btn");
 
-            // Estado local
-            let activeTab = "nuevas"; // nuevas | contactadas | descartadas
-            // Variable global para almacenar los unsubscribe de los listeners
-            let unsubscribers: any[] = [];
-            let clientNames = new Map(); // Cache para nombres reales de clientes
+                // Estado local
+                let activeTab = "nuevas"; // nuevas | contactadas | descartadas
+                // Variable global para almacenar los unsubscribe de los listeners
+                let unsubscribers: any[] = [];
+                let clientNames = new Map(); // Cache para nombres reales de clientes
 
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    const redirectUrl = await getAuthRedirect(user);
-                    if (redirectUrl !== "/panel") {
-                        window.location.href = redirectUrl;
-                        return;
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        const redirectUrl = await getAuthRedirect(user);
+                        if (redirectUrl !== "/panel") {
+                            window.location.href = redirectUrl;
+                            return;
+                        }
+                        currentUser = user;
+                        await loadOportunidades();
+                    } else {
+                        window.location.href = "/ingresar-profesional";
                     }
-                    currentUser = user;
-                    await loadOportunidades();
-                } else {
-                    window.location.href = "/ingresar-profesional";
-                }
-            });
-
-            // LOGOUT
-            document
-                .getElementById("btn-logout")
-                ?.addEventListener("click", () => {
-                    auth.signOut().then(() => (window.location.href = "/"));
                 });
 
-            // TABS
-            tabs.forEach((btn) => {
-                btn.addEventListener("click", () => {
-                    // Update UI
-                    tabs.forEach((t) => {
-                        t.classList.remove(
+                // LOGOUT
+                document
+                    .getElementById("btn-logout")
+                    ?.addEventListener("click", () => {
+                        auth.signOut().then(() => (window.location.href = "/"));
+                    });
+
+                // TABS
+                tabs.forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        // Update UI
+                        tabs.forEach((t) => {
+                            t.classList.remove(
+                                "border-orange-500",
+                                "text-orange-600",
+                                "active",
+                            );
+                            t.classList.add(
+                                "border-transparent",
+                                "text-slate-500",
+                            );
+                        });
+                        btn.classList.add(
                             "border-orange-500",
                             "text-orange-600",
                             "active",
                         );
-                        t.classList.add(
+                        btn.classList.remove(
                             "border-transparent",
                             "text-slate-500",
                         );
-                    });
-                    btn.classList.add(
-                        "border-orange-500",
-                        "text-orange-600",
-                        "active",
-                    );
-                    btn.classList.remove(
-                        "border-transparent",
-                        "text-slate-500",
-                    );
 
-                    // Update Logic
-                    activeTab = btn.id.split("-")[1]; // nuevas, contactadas, descartadas
-                    renderOportunidades();
-                });
-            });
-
-
-            async function loadOportunidades() {
-                console.log(
-                    "🚀 [OPORTUNIDADES] Iniciando carga en tiempo real...",
-                );
-                console.log("📡 [OPORTUNIDADES] db instance:", db?.constructor?.name);
-
-                // Limpiar listeners anteriores si existen
-                unsubscribers.forEach((unsub) => unsub());
-                unsubscribers = [];
-
-                // Ocultar todo inicialmente
-                [loading, grid, emptyState, errorState].forEach((el) => {
-                    if (el) {
-                        el.style.display = "none";
-                        el.classList.add("hidden");
-                    }
-                });
-
-                try {
-                    if (loading) loading.style.display = "block";
-                    if (loading) loading.classList.remove("hidden");
-
-                    console.log(
-                        "🔍 [OPORTUNIDADES] Consultando Firestore para UID:",
-                        currentUser?.uid,
-                    );
-
-                    // 1. Primero, obtener el perfil del profesional para saber su rubro y zona
-                    const profDoc = await getDoc(
-                        doc(db, "profesionales", currentUser.uid),
-                    );
-
-                    if (!profDoc.exists()) {
-                        console.error(
-                            "❌ No se encontró el perfil del profesional",
-                        );
-                        if (errorState) errorState.style.display = "block";
-                        if (errorState)
-                            errorState.classList.remove("hidden");
-                        return;
-                    }
-
-                    const profData = profDoc.data();
-
-                    // OBTENER TODOS LOS RUBROS Y ZONAS DISPONIBLES DEL PERFIL
-                    const misRubros =
-                        profData.rubros?.length > 0
-                            ? profData.rubros
-                            : profData.rubro_principal
-                              ? [profData.rubro_principal]
-                              : [];
-
-                    const misZonas =
-                        profData.zonas?.length > 0
-                            ? profData.zonas
-                            : profData.zona
-                              ? [profData.zona]
-                              : [];
-
-                    // 2. CONFIGURAR LISTENERS EN TIEMPO REAL
-                    const updateUI = async () => {
-                        // Convertir Map a Array and sort
-                        const arr = Array.from(allSolicitudes.values());
-                        
-                        // Resolver nombres
-                        const namePromises = arr.map(async (sol: any) => {
-                            if (sol.clienteId && !clientNames.has(sol.clienteId)) {
-                                const isGeneric = !sol.clienteNombre || sol.clienteNombre.toLowerCase().includes('cliente') || sol.clienteNombre.includes('@');
-                                if (isGeneric) {
-                                    try {
-                                        const cSnap = await getDoc(doc(db, "clientes", sol.clienteId));
-                                        if (cSnap.exists()) {
-                                            const cData = cSnap.data();
-                                            if (cData.nombre) {
-                                                clientNames.set(sol.clienteId, cData.nombre);
-                                                return;
-                                            }
-                                        }
-                                        clientNames.set(sol.clienteId, sol.clienteNombre || 'Cliente');
-                                    } catch (e) {
-                                        clientNames.set(sol.clienteId, sol.clienteNombre || 'Cliente');
-                                    }
-                                } else {
-                                    clientNames.set(sol.clienteId, sol.clienteNombre);
-                                }
-                            }
-                        });
-
-                        await Promise.all(namePromises);
-
-                        todasSolicitudes = arr.sort((a, b) => {
-                            const fechaA =
-                                a.fecha?.toDate?.() ||
-                                new Date(a.fecha || 0);
-                            const fechaB =
-                                b.fecha?.toDate?.() ||
-                                new Date(b.fecha || 0);
-                            //@ts-ignore
-                            return fechaB - fechaA;
-                        });
-
+                        // Update Logic
+                        activeTab = btn.id.split("-")[1]; // nuevas, contactadas, descartadas
                         renderOportunidades();
-                        if (loading) loading.style.display = "none";
-                    };
+                    });
+                });
 
-                    const allSolicitudes = new Map();
-
-                    // Listener 1: Donde soy candidato (el sistema me seleccionó)
-                    const qCandidato = query(
-                        collection(db, "solicitudes"),
-                        where(
-                            "candidatos",
-                            "array-contains",
-                            currentUser.uid,
-                        ),
-                        orderBy("fecha", "desc"),
-                        limit(50),
+                async function loadOportunidades() {
+                    console.log(
+                        "🚀 [OPORTUNIDADES] Iniciando carga en tiempo real...",
+                    );
+                    console.log(
+                        "📡 [OPORTUNIDADES] db instance:",
+                        db?.constructor?.name,
                     );
 
-                    console.log("📡 [OPORTUNIDADES] Iniciando Listener 1 (Candidato)...");
-                    const unsub1 = onSnapshot(qCandidato, (snapshot) => {
-                        console.log("📥 [OPORTUNIDADES] Listener 1 recibió datos:", snapshot.size);
-                        snapshot.docChanges().forEach((change) => {
-                            if (change.type === "removed") {
-                                allSolicitudes.delete(change.doc.id);
-                            } else {
-                                const data = change.doc.data();
-                                if (!data.eliminadosPor?.includes(currentUser.uid)) {
-                                    allSolicitudes.set(change.doc.id, {
-                                        id: change.doc.id,
-                                        ...data,
-                                    });
-                                }
-                            }
-                        });
-                        updateUI();
-                    });
-                    unsubscribers.push(unsub1);
+                    // Limpiar listeners anteriores si existen
+                    unsubscribers.forEach((unsub) => unsub());
+                    unsubscribers = [];
 
-                    // Listener 2: Coincidencia por Rubro (Multi-Rubro)
-                    if (misRubros.length > 0) {
-                        const qRubros = query(
+                    // Ocultar todo inicialmente
+                    [loading, grid, emptyState, errorState].forEach((el) => {
+                        if (el) {
+                            el.style.display = "none";
+                            el.classList.add("hidden");
+                        }
+                    });
+
+                    try {
+                        if (loading) loading.style.display = "block";
+                        if (loading) loading.classList.remove("hidden");
+
+                        console.log(
+                            "🔍 [OPORTUNIDADES] Consultando Firestore para UID:",
+                            currentUser?.uid,
+                        );
+
+                        // 1. Primero, obtener el perfil del profesional para saber su rubro y zona
+                        const profDoc = await getDoc(
+                            doc(db, "profesionales", currentUser.uid),
+                        );
+
+                        if (!profDoc.exists()) {
+                            console.error(
+                                "❌ No se encontró el perfil del profesional",
+                            );
+                            if (errorState) errorState.style.display = "block";
+                            if (errorState)
+                                errorState.classList.remove("hidden");
+                            return;
+                        }
+
+                        const profData = profDoc.data();
+
+                        // OBTENER TODOS LOS RUBROS Y ZONAS DISPONIBLES DEL PERFIL
+                        const misRubros =
+                            profData.rubros?.length > 0
+                                ? profData.rubros
+                                : profData.rubro_principal
+                                  ? [profData.rubro_principal]
+                                  : [];
+
+                        const misZonas =
+                            profData.zonas?.length > 0
+                                ? profData.zonas
+                                : profData.zona
+                                  ? [profData.zona]
+                                  : [];
+
+                        // 2. CONFIGURAR LISTENERS EN TIEMPO REAL
+                        const updateUI = async () => {
+                            // Convertir Map a Array and sort
+                            const arr = Array.from(allSolicitudes.values());
+
+                            // Resolver nombres
+                            const namePromises = arr.map(async (sol: any) => {
+                                if (
+                                    sol.clienteId &&
+                                    !clientNames.has(sol.clienteId)
+                                ) {
+                                    const isGeneric =
+                                        !sol.clienteNombre ||
+                                        sol.clienteNombre
+                                            .toLowerCase()
+                                            .includes("cliente") ||
+                                        sol.clienteNombre.includes("@");
+                                    if (isGeneric) {
+                                        try {
+                                            const cSnap = await getDoc(
+                                                doc(
+                                                    db,
+                                                    "clientes",
+                                                    sol.clienteId,
+                                                ),
+                                            );
+                                            if (cSnap.exists()) {
+                                                const cData = cSnap.data();
+                                                if (cData.nombre) {
+                                                    clientNames.set(
+                                                        sol.clienteId,
+                                                        cData.nombre,
+                                                    );
+                                                    return;
+                                                }
+                                            }
+                                            clientNames.set(
+                                                sol.clienteId,
+                                                sol.clienteNombre || "Cliente",
+                                            );
+                                        } catch (e) {
+                                            clientNames.set(
+                                                sol.clienteId,
+                                                sol.clienteNombre || "Cliente",
+                                            );
+                                        }
+                                    } else {
+                                        clientNames.set(
+                                            sol.clienteId,
+                                            sol.clienteNombre,
+                                        );
+                                    }
+                                }
+                            });
+
+                            await Promise.all(namePromises);
+
+                            todasSolicitudes = arr.sort((a, b) => {
+                                const fechaA =
+                                    a.fecha?.toDate?.() ||
+                                    new Date(a.fecha || 0);
+                                const fechaB =
+                                    b.fecha?.toDate?.() ||
+                                    new Date(b.fecha || 0);
+                                //@ts-ignore
+                                return fechaB - fechaA;
+                            });
+
+                            renderOportunidades();
+                            if (loading) loading.style.display = "none";
+                        };
+
+                        const allSolicitudes = new Map();
+
+                        // Listener 1: Donde soy candidato (el sistema me seleccionó)
+                        const qCandidato = query(
                             collection(db, "solicitudes"),
-                            where("rubro", "in", misRubros),
-                            where("status", "==", "nueva"),
-                            // orderBy("fecha", "desc"), // Requires composite index: https://console.firebase.google.com/
+                            where(
+                                "candidatos",
+                                "array-contains",
+                                currentUser.uid,
+                            ),
+                            orderBy("fecha", "desc"),
                             limit(50),
                         );
 
-                        const unsub2 = onSnapshot(
-                            qRubros,
-                            (snapshot) => {
-                                snapshot.docChanges().forEach((change) => {
-                                    if (change.type === "removed") {
-                                        allSolicitudes.delete(change.doc.id);
-                                    } else if (!allSolicitudes.has(change.doc.id)) {
-                                        const data = change.doc.data();
-                                        const zonaMatch = misZonas.length === 0 || misZonas.includes(data.zona);
-                                        const notDeleted = !data.eliminadosPor?.includes(currentUser.uid);
-
-                                        if (zonaMatch && notDeleted) {
-                                            allSolicitudes.set(change.doc.id, {
-                                                id: change.doc.id,
-                                                ...data,
-                                            });
-                                        }
-                                    }
-                                });
-                                updateUI();
-                            },
-                            (error) => {
-                                console.warn(
-                                    "⚠️ Listener multi-rubro falló (puede ser falta de permisos):",
-                                    error,
-                                );
-                            },
+                        console.log(
+                            "📡 [OPORTUNIDADES] Iniciando Listener 1 (Candidato)...",
                         );
-                        unsubscribers.push(unsub2);
-                    }
-
-                    // Listener 3: Mis Presupuestos / Aceptados
-                    const qAceptados = query(
-                        collection(db, "solicitudes"),
-                        where("profesionalId", "==", currentUser.uid),
-                        orderBy("fecha", "desc"),
-                    );
-
-                    const unsub3 = onSnapshot(qAceptados, (snapshot) => {
-                        snapshot.docChanges().forEach((change) => {
-                            if (change.type === "removed") {
-                                allSolicitudes.delete(change.doc.id);
-                            } else {
-                                allSolicitudes.set(change.doc.id, {
-                                    id: change.doc.id,
-                                    ...change.doc.data(),
-                                });
-                            }
+                        const unsub1 = onSnapshot(qCandidato, (snapshot) => {
+                            console.log(
+                                "📥 [OPORTUNIDADES] Listener 1 recibió datos:",
+                                snapshot.size,
+                            );
+                            snapshot.docChanges().forEach((change) => {
+                                if (change.type === "removed") {
+                                    allSolicitudes.delete(change.doc.id);
+                                } else {
+                                    const data = change.doc.data();
+                                    if (
+                                        !data.eliminadosPor?.includes(
+                                            currentUser.uid,
+                                        )
+                                    ) {
+                                        allSolicitudes.set(change.doc.id, {
+                                            id: change.doc.id,
+                                            ...data,
+                                        });
+                                    }
+                                }
+                            });
+                            updateUI();
                         });
-                        updateUI();
-                    });
-                    unsubscribers.push(unsub3);
+                        unsubscribers.push(unsub1);
 
-                    // Listener 4: Notifications for auto-modal display
-                    const qNotifications = query(
-                        collection(db, "profesionales", currentUser.uid, "notificaciones"),
-                        orderBy("fecha", "desc"),
-                        limit(20)
-                    );
+                        // Listener 2: Coincidencia por Rubro (Multi-Rubro)
+                        if (misRubros.length > 0) {
+                            const qRubros = query(
+                                collection(db, "solicitudes"),
+                                where("rubro", "in", misRubros),
+                                where("status", "==", "nueva"),
+                                // orderBy("fecha", "desc"), // Requires composite index: https://console.firebase.google.com/
+                                limit(50),
+                            );
 
-                    let isFirstNotifLoad = true;
-                    
-                    const unsub4 = onSnapshot(qNotifications, async (snapshot) => {
-                        console.log("🔔 [NOTIFICATIONS] Snapshot received");
-                        
-                        for (const change of snapshot.docChanges()) {
-                            if (isFirstNotifLoad) continue;
-                            if (change.type !== "added") continue;
+                            const unsub2 = onSnapshot(
+                                qRubros,
+                                (snapshot) => {
+                                    snapshot.docChanges().forEach((change) => {
+                                        if (change.type === "removed") {
+                                            allSolicitudes.delete(
+                                                change.doc.id,
+                                            );
+                                        } else if (
+                                            !allSolicitudes.has(change.doc.id)
+                                        ) {
+                                            const data = change.doc.data();
+                                            const zonaMatch =
+                                                misZonas.length === 0 ||
+                                                misZonas.includes(data.zona);
+                                            const notDeleted =
+                                                !data.eliminadosPor?.includes(
+                                                    currentUser.uid,
+                                                );
 
-                            const notif = change.doc.data();
-                            
-                            // 1. Budget Accepted
-                            if (notif.tipo === "presupuesto_aceptado") {
-                                const nombre = notif.clienteNombre || "Cliente";
-                                const foto = notif.clienteFoto || "/default-avatar.png";
-                                const tel = notif.clienteTelefono || "";
-                                const email = notif.clienteEmail || "";
-                                 const rubro = notif.mensaje?.match(/para "([^"]+)"/)?.[1] || "el trabajo";
-                                 const codigo = notif.codigoSeguridad || "000000";
+                                            if (zonaMatch && notDeleted) {
+                                                allSolicitudes.set(
+                                                    change.doc.id,
+                                                    {
+                                                        id: change.doc.id,
+                                                        ...data,
+                                                    },
+                                                );
+                                            }
+                                        }
+                                    });
+                                    updateUI();
+                                },
+                                (error) => {
+                                    console.warn(
+                                        "⚠️ Listener multi-rubro falló (puede ser falta de permisos):",
+                                        error,
+                                    );
+                                },
+                            );
+                            unsubscribers.push(unsub2);
+                        }
 
-                                 // Swal.fire call
-                                 Swal.fire({
-                                     title: "✅ ¡Presupuesto Aceptado!",
-                                     html: `
+                        // Listener 3: Mis Presupuestos / Aceptados
+                        const qAceptados = query(
+                            collection(db, "solicitudes"),
+                            where("profesionalId", "==", currentUser.uid),
+                            orderBy("fecha", "desc"),
+                        );
+
+                        const unsub3 = onSnapshot(qAceptados, (snapshot) => {
+                            snapshot.docChanges().forEach((change) => {
+                                if (change.type === "removed") {
+                                    allSolicitudes.delete(change.doc.id);
+                                } else {
+                                    allSolicitudes.set(change.doc.id, {
+                                        id: change.doc.id,
+                                        ...change.doc.data(),
+                                    });
+                                }
+                            });
+                            updateUI();
+                        });
+                        unsubscribers.push(unsub3);
+
+                        // Listener 4: Notifications for auto-modal display
+                        const qNotifications = query(
+                            collection(
+                                db,
+                                "profesionales",
+                                currentUser.uid,
+                                "notificaciones",
+                            ),
+                            orderBy("fecha", "desc"),
+                            limit(20),
+                        );
+
+                        let isFirstNotifLoad = true;
+
+                        const unsub4 = onSnapshot(
+                            qNotifications,
+                            async (snapshot) => {
+                                console.log(
+                                    "🔔 [NOTIFICATIONS] Snapshot received",
+                                );
+
+                                for (const change of snapshot.docChanges()) {
+                                    if (isFirstNotifLoad) continue;
+                                    if (change.type !== "added") continue;
+
+                                    const notif = change.doc.data();
+
+                                    // 1. Budget Accepted
+                                    if (notif.tipo === "presupuesto_aceptado") {
+                                        const nombre =
+                                            notif.clienteNombre || "Cliente";
+                                        const foto =
+                                            notif.clienteFoto ||
+                                            "/default-avatar.png";
+                                        const tel = notif.clienteTelefono || "";
+                                        const email = notif.clienteEmail || "";
+                                        const rubro =
+                                            notif.mensaje?.match(
+                                                /para "([^"]+)"/,
+                                            )?.[1] || "el trabajo";
+                                        const codigo =
+                                            notif.codigoSeguridad || "000000";
+
+                                        // Swal.fire call
+                                        Swal.fire({
+                                            title: "✅ ¡Presupuesto Aceptado!",
+                                            html: `
                                          <div class="text-left space-y-4 pt-2">
                                              <div class="bg-indigo-600 text-white p-5 rounded-2xl shadow-lg text-center mb-6 relative overflow-hidden group">
                                                  <div class="absolute top-0 left-0 w-full h-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -609,809 +723,832 @@ import Layout from "../../layouts/Layout.astro";
                                              </div>
 
                                              <div class="grid grid-cols-1 gap-2 text-sm px-1">
-                                                 ${tel ? `<div class="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl">
+                                                 ${
+                                                     tel
+                                                         ? `<div class="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl">
                                                      <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600">📱</div>
                                                      <div class="flex-1 min-w-0">
                                                          <p class="text-[10px] text-slate-400 font-bold uppercase">Teléfono</p>
                                                          <span class="font-bold text-slate-700 truncate block">${tel}</span>
                                                      </div>
-                                                 </div>` : ''}
-                                                 ${email ? `<div class="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl">
+                                                 </div>`
+                                                         : ""
+                                                 }
+                                                 ${
+                                                     email
+                                                         ? `<div class="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl">
                                                      <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">📧</div>
                                                      <div class="flex-1 min-w-0">
                                                          <p class="text-[10px] text-slate-400 font-bold uppercase">Email</p>
                                                          <span class="font-bold text-slate-700 truncate block">${email}</span>
                                                      </div>
-                                                 </div>` : ''}
+                                                 </div>`
+                                                         : ""
+                                                 }
                                              </div>
-                                             ${tel ? `<a href="https://wa.me/549${tel.replace(/[^0-9]/g, '')}" target="_blank" class="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white font-black py-4 px-6 rounded-2xl transition-all shadow-lg active:scale-95">💬 Contactar por WhatsApp</a>` : ''}
+                                             ${tel ? `<a href="https://wa.me/549${tel.replace(/[^0-9]/g, "")}" target="_blank" class="flex items-center justify-center gap-2 w-full bg-[#25D366] text-white font-black py-4 px-6 rounded-2xl transition-all shadow-lg active:scale-95">💬 Contactar por WhatsApp</a>` : ""}
                                          </div>`,
-                                    width: "450px",
-                                    confirmButtonText: "Entendido",
-                                    confirmButtonColor: "#16a34a",
-                                    customClass: {
-                                        popup: 'rounded-3xl shadow-2xl border border-slate-100',
-                                        confirmButton: 'rounded-xl font-black px-8 py-3 uppercase tracking-widest text-sm'
+                                            width: "450px",
+                                            confirmButtonText: "Entendido",
+                                            confirmButtonColor: "#16a34a",
+                                            customClass: {
+                                                popup: "rounded-3xl shadow-2xl border border-slate-100",
+                                                confirmButton:
+                                                    "rounded-xl font-black px-8 py-3 uppercase tracking-widest text-sm",
+                                            },
+                                        });
                                     }
-                                });
-                            }
-                            
-                            // 2. Budget Rejected
-                            if (notif.tipo === "presupuesto_rechazado") {
-                                const rubro = notif.mensaje?.match(/para "([^"]+)"/)?.[1] || "esta oportunidad";
-                                // Swal.fire call
-                                Swal.fire({
-                                    title: "Presupuesto No Seleccionado",
-                                    html: `<div class="text-center py-4"><span class="text-4xl block mb-4">😔</span><p class="text-slate-700 mb-2">Tu presupuesto para <strong>${rubro}</strong> no fue seleccionado.</p><p class="text-sm text-slate-500">No te desanimes, ¡la próxima será!</p></div>`,
-                                    icon: "info",
-                                    confirmButtonText: "Entendido",
-                                    confirmButtonColor: "#64748b",
-                                    customClass: { popup: 'rounded-3xl shadow-2xl border border-slate-100' }
-                                });
-                            }
-                        }
-                        isFirstNotifLoad = false;
-                    }, (error) => {
-                        console.error("❌ [NOTIFICATIONS] Error:", error);
-                    });
-                    unsubscribers.push(unsub4);
-                } catch (error) {
-                    console.error("❌ [OPORTUNIDADES] Error configurando listeners:", error);
-                    if (errorState) errorState.style.display = "block";
-                    if (errorState) errorState.classList.remove("hidden");
+
+                                    // 2. Budget Rejected
+                                    if (
+                                        notif.tipo === "presupuesto_rechazado"
+                                    ) {
+                                        const rubro =
+                                            notif.mensaje?.match(
+                                                /para "([^"]+)"/,
+                                            )?.[1] || "esta oportunidad";
+                                        // Swal.fire call
+                                        Swal.fire({
+                                            title: "Presupuesto No Seleccionado",
+                                            html: `<div class="text-center py-4"><span class="text-4xl block mb-4">😔</span><p class="text-slate-700 mb-2">Tu presupuesto para <strong>${rubro}</strong> no fue seleccionado.</p><p class="text-sm text-slate-500">No te desanimes, ¡la próxima será!</p></div>`,
+                                            icon: "info",
+                                            confirmButtonText: "Entendido",
+                                            confirmButtonColor: "#64748b",
+                                            customClass: {
+                                                popup: "rounded-3xl shadow-2xl border border-slate-100",
+                                            },
+                                        });
+                                    }
+                                }
+                                isFirstNotifLoad = false;
+                            },
+                            (error) => {
+                                console.error(
+                                    "❌ [NOTIFICATIONS] Error:",
+                                    error,
+                                );
+                            },
+                        );
+                        unsubscribers.push(unsub4);
+                    } catch (error) {
+                        console.error(
+                            "❌ [OPORTUNIDADES] Error configurando listeners:",
+                            error,
+                        );
+                        if (errorState) errorState.style.display = "block";
+                        if (errorState) errorState.classList.remove("hidden");
+                    }
                 }
-            }
 
-            function renderOportunidades() {
-                console.log("🔄 [RENDER] Iniciando renderOportunidades...");
-                console.log(
-                    "📊 [RENDER] Total solicitudes:",
-                    todasSolicitudes.length,
-                );
-                console.log("🏷️ [RENDER] Tab activo:", activeTab);
-
-                // Filtrar según Tab
-                const filtered = todasSolicitudes.filter((sol) => {
-                    const contactado = sol.contactadosPor?.includes(
-                        currentUser.uid,
+                function renderOportunidades() {
+                    console.log("🔄 [RENDER] Iniciando renderOportunidades...");
+                    console.log(
+                        "📊 [RENDER] Total solicitudes:",
+                        todasSolicitudes.length,
                     );
-                    const descartado = sol.descartadosPor?.includes(
-                        currentUser.uid,
-                    );
-                    // Check if this professional has an accepted budget
-                    const miTrabajoAceptado = sol.trabajoAceptadoPor === currentUser.uid;
+                    console.log("🏷️ [RENDER] Tab activo:", activeTab);
 
-                    if (activeTab === "nuevas") {
-                        return (
-                            !contactado &&
-                            !descartado &&
-                            !miTrabajoAceptado &&
-                            sol.status === "nueva"
+                    // Filtrar y Ordenar según Tab
+                    const filtered = todasSolicitudes
+                        .filter((sol) => {
+                            const contactado = sol.contactadosPor?.includes(
+                                currentUser.uid,
+                            );
+                            const descartado = sol.descartadosPor?.includes(
+                                currentUser.uid,
+                            );
+                            // Check if this professional has an accepted budget
+                            const miTrabajoAceptado =
+                                sol.trabajoAceptadoPor === currentUser.uid;
+
+                            if (activeTab === "nuevas") {
+                                return (
+                                    !contactado &&
+                                    !descartado &&
+                                    !miTrabajoAceptado &&
+                                    sol.status === "nueva"
+                                );
+                            }
+                            // Show in contactadas if: they contacted OR their budget was accepted
+                            if (activeTab === "contactadas")
+                                return contactado || miTrabajoAceptado;
+                            if (activeTab === "descartadas") return descartado;
+                            return false;
+                        })
+                        .sort((a, b) => {
+                            // PRIORIZACIÓN: Trabajos Aceptados primero
+                            const aActivo =
+                                a.status === "aceptada" &&
+                                a.trabajoAceptadoPor === currentUser.uid;
+                            const bActivo =
+                                b.status === "aceptada" &&
+                                b.trabajoAceptadoPor === currentUser.uid;
+                            if (aActivo && !bActivo) return -1;
+                            if (!aActivo && bActivo) return 1;
+                            // Luego por fecha descendente
+                            const aTime = a.fecha?.seconds || 0;
+                            const bTime = b.fecha?.seconds || 0;
+                            return bTime - aTime;
+                        });
+
+                    console.log(
+                        "✅ [RENDER] Solicitudes filtradas y ordenadas:",
+                        filtered.length,
+                    );
+                    console.log("📦 [RENDER] Datos filtrados:", filtered);
+                    if (filtered.length === 0) {
+                        console.log(
+                            "📭 [RENDER] No hay solicitudes filtradas - mostrando empty state",
                         );
                     }
-                    // Show in contactadas if: they contacted OR their budget was accepted
-                    if (activeTab === "contactadas") return contactado || miTrabajoAceptado;
-                    if (activeTab === "descartadas") return descartado;
-                    return false;
-                });
 
-                console.log(
-                    "✅ [RENDER] Solicitudes filtradas:",
-                    filtered.length,
-                );
-                console.log("📦 [RENDER] Datos filtrados:", filtered);
-                if (filtered.length === 0) {
-                    console.log(
-                        "📭 [RENDER] No hay solicitudes filtradas - mostrando empty state",
+                    // Update count badge
+                    const nuevasCount = todasSolicitudes.filter(
+                        (s) =>
+                            !s.contactadosPor?.includes(currentUser.uid) &&
+                            !s.descartadosPor?.includes(currentUser.uid),
+                    ).length;
+
+                    const badge = document.getElementById(
+                        "badge-oportunidades",
                     );
-                }
-
-                // Update count badge
-                const nuevasCount = todasSolicitudes.filter(
-                    (s) =>
-                        !s.contactadosPor?.includes(currentUser.uid) &&
-                        !s.descartadosPor?.includes(currentUser.uid),
-                ).length;
-
-                const badge = document.getElementById(
-                    "badge-oportunidades",
-                );
-                if (badge) {
-                    badge.innerText = nuevasCount.toString();
-                    if (nuevasCount > 0) {
-                        badge.style.display = "inline-block";
-                        badge.classList.remove("hidden");
-                    } else {
-                        badge.style.display = "none";
-                        badge.classList.add("hidden");
-                    }
-                }
-
-                // Empty State Logic
-                if (filtered.length === 0) {
-                    console.log("📭 [RENDER] Mostrando empty state");
-                    if (grid) grid.style.display = "none";
-                    if (emptyState) {
-                        emptyState.style.display = "flex";
-                        emptyState.classList.remove("hidden");
-                        emptyState.className = "flex flex-col items-center justify-center py-20 px-4 text-center bg-white/50 backdrop-blur-sm rounded-[3rem] border-2 border-dashed border-slate-200";
-                        
-                        let icon = "✨", title = "Todo al día", desc = "Vuelve más tarde para ver nuevas oportunidades.";
-                        
-                        if (activeTab === "nuevas") {
-                            icon = "🔍";
-                            title = "Buscando oportunidades...";
-                            desc = "Te avisaremos apenas un cliente solicite un experto de tu rubro en tu zona.";
-                        } else if (activeTab === "contactadas") {
-                            icon = "📱";
-                            title = "Sin contactos aún";
-                            desc = "Aquí verás los clientes con los que ya iniciaste una conversación.";
-                        } else if (activeTab === "descartadas") {
-                            icon = "🗑️";
-                            title = "Papelera vacía";
-                            desc = "Las oportunidades que decidas no tomar aparecerán aquí.";
+                    if (badge) {
+                        badge.innerText = nuevasCount.toString();
+                        if (nuevasCount > 0) {
+                            badge.style.display = "inline-block";
+                            badge.classList.remove("hidden");
+                        } else {
+                            badge.style.display = "none";
+                            badge.classList.add("hidden");
                         }
+                    }
 
-                        emptyState.innerHTML = `
+                    // Empty State Logic
+                    if (filtered.length === 0) {
+                        console.log("📭 [RENDER] Mostrando empty state");
+                        if (grid) grid.style.display = "none";
+                        if (emptyState) {
+                            emptyState.style.display = "flex";
+                            emptyState.classList.remove("hidden");
+                            emptyState.className =
+                                "flex flex-col items-center justify-center py-20 px-4 text-center bg-white/50 backdrop-blur-sm rounded-[3rem] border-2 border-dashed border-slate-200";
+
+                            let icon = "✨",
+                                title = "Todo al día",
+                                desc =
+                                    "Vuelve más tarde para ver nuevas oportunidades.";
+
+                            if (activeTab === "nuevas") {
+                                icon = "🔍";
+                                title = "Buscando oportunidades...";
+                                desc =
+                                    "Te avisaremos apenas un cliente solicite un experto de tu rubro en tu zona.";
+                            } else if (activeTab === "contactadas") {
+                                icon = "📱";
+                                title = "Sin contactos aún";
+                                desc =
+                                    "Aquí verás los clientes con los que ya iniciaste una conversación.";
+                            } else if (activeTab === "descartadas") {
+                                icon = "🗑️";
+                                title = "Papelera vacía";
+                                desc =
+                                    "Las oportunidades que decidas no tomar aparecerán aquí.";
+                            }
+
+                            emptyState.innerHTML = `
                             <div class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center text-4xl mb-6 shadow-inner">
                                 ${icon}
                             </div>
                             <h3 class="text-2xl font-black text-slate-800 mb-2">${title}</h3>
                             <p class="text-sm text-slate-500 max-w-xs font-medium">${desc}</p>
                         `;
+                        }
+                        return;
                     }
-                    return;
-                }
 
-                // Hide empty state and show grid when there are results
-                if (loading) loading.style.display = "none";
-                if (emptyState) {
-                    emptyState.style.display = "none";
-                    emptyState.classList.add("hidden");
-                }
-                if (grid) {
-                    grid.style.display = "grid";
-                    grid.classList.remove("hidden");
-                    grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6";
-                }
+                    // Hide empty state and show grid when there are results
+                    if (loading) loading.style.display = "none";
+                    if (emptyState) {
+                        emptyState.style.display = "none";
+                        emptyState.classList.add("hidden");
+                    }
+                    if (grid) {
+                        grid.style.display = "grid";
+                        grid.classList.remove("hidden");
+                        grid.className =
+                            "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6";
+                    }
 
-                console.log(
-                    "🎨 [RENDER] Generando HTML para",
-                    filtered.length,
-                    "items",
-                );
-                if (grid)
-                    grid.innerHTML = filtered
-                        .map((sol) => {
-                            // Formatear fecha
-                            let fechaStr = "Reciente";
-                            if (sol.fecha && sol.fecha.seconds) {
-                                const date = new Date(sol.fecha.seconds * 1000);
-                                fechaStr = new Intl.DateTimeFormat("es-AR", {
-                                    day: "numeric",
-                                    month: "short",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                }).format(date);
-                            }
-
-                            // Badges
-                            const urgenteBadge = sol.urgente
-                                ? `<span class="bg-red-500 text-white text-[10px] font-black px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-lg shadow-red-100 animate-pulse uppercase tracking-wider">🚨 Urgente</span>`
-                                : "";
-
-                            const nuevoBadge = !sol.leidoPor?.includes(currentUser.uid) && activeTab === "nuevas"
-                                ? `<span class="bg-indigo-600 text-white text-[10px] font-black px-3 py-1.5 rounded-xl shadow-lg shadow-indigo-100 uppercase tracking-wider">Nuevo</span>`
-                                : "";
-
-                            const isAcceptedByMe = sol.profesionalId === currentUser.uid;
-                            const acceptedBadge = isAcceptedByMe
-                                ? `<span class="bg-emerald-500 text-white text-[10px] font-black px-3 py-1.5 rounded-xl border border-white shadow-lg shadow-emerald-100 uppercase tracking-wider">🎯 Seleccionado</span>`
-                                : "";
-
-                            const yaCotice = sol.presupuestadosPor?.includes(currentUser.uid);
-                            const cotizadoBadge = yaCotice
-                                ? `<span class="bg-blue-500 text-white text-[10px] font-black px-3 py-1.5 rounded-xl shadow-lg shadow-blue-100 uppercase tracking-wider">💼 Cotizado</span>`
-                                : "";
-
-                            const nameFromCache = clientNames.get(sol.clienteId);
-                            let nombre = nameFromCache || sol.clienteNombre || 'Cliente';
-                            if (nombre.includes('@')) {
-                                nombre = nombre.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                            }
-
-                            return `
-                        <div class="bg-white rounded-[2.5rem] shadow-sm border-2 ${nuevoBadge ? 'border-indigo-500 ring-4 ring-indigo-50' : 'border-slate-100'} p-8 transition-all hover:shadow-2xl hover:scale-[1.01] group relative overflow-hidden">
-                            <div class="flex flex-col lg:flex-row gap-8">
-                                <!-- Columna Izquierda: Info Cliente -->
-                                <div class="flex-1">
-                                    <div class="flex flex-wrap gap-2 mb-6">
-                                        <span class="bg-slate-100 text-slate-500 text-[10px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest border border-slate-200">${sol.rubro}</span>
-                                        ${urgenteBadge}
-                                        ${nuevoBadge}
-                                        ${acceptedBadge}
-                                        ${cotizadoBadge}
-                                    </div>
-                                    }
-                                    ${
-                                        sol.profesionalId === currentUser.uid
-                                            ? `<span class="text-purple-600 font-bold text-xs bg-purple-50 px-2 py-1 rounded border border-purple-100">💼 Presupuestando</span>`
-                                            : ""
-                                    }
-                                </div>
-                            </div>
-
-                            <!-- Acciones -->
-                            <div class="flex flex-col gap-3 justify-center min-w-[220px] border-t md:border-t-0 md:border-l border-slate-100 pt-5 md:pt-0 md:pl-6">
-                                ${
-                                    activeTab === "nuevas"
-                                        ? `
-                                    ${
-                                        yaCotice
-                                            ? `
-                                    <button
-                                        disabled
-                                        class="w-full bg-indigo-50 border border-indigo-100 text-indigo-400 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 cursor-not-allowed opacity-80">
-                                        <span>✔️</span> Ya Cotizaste
-                                    </button>
-                                    `
-                                            : sol.presupuestadosPor?.length >= 3
-                                            ? `
-                                    <button
-                                        disabled
-                                        class="w-full bg-slate-100 text-slate-400 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 cursor-not-allowed border border-slate-200">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                                        Cupo de presupuestos lleno
-                                    </button>
-                                    `
-                                            : `
-                                    <button
-                                        onclick="abrirModalCotizacion('${sol.id}', '${sol.clienteNombre}')"
-                                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm hover:shadow active:scale-95">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                                        Cotizar Ahora
-                                    </button>
-                                    `
-                                }
-
-                                <button
-                                        onclick="descartarSolicitud('${sol.id}')"
-                                        class="w-full text-slate-500 hover:text-red-600 hover:bg-red-50 font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition text-sm">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-                                        Descartar
-                                    </button>
-                                    `
-                                        : ""
-                                }
-
-                                ${
-                                    activeTab === "descartadas"
-                                        ? `
-                                    <button onclick="eliminarOportunidad('${sol.id}')" class="w-full px-4 py-2 border border-red-200 text-red-600 font-bold rounded-lg hover:bg-red-50 transition flex items-center justify-center gap-2">
-                                        🗑️ Eliminar permanentemente
-                                    </button>
-                                    `
-                                        : ""
-                                }
-
-                                ${
-                                    activeTab === "contactadas"
-                                        ? `
-                                    ${
-                                        sol.status === "aceptada" && sol.trabajoAceptadoPor === currentUser.uid
-                                            ?  `
-                                    <!-- TRABAJO ACTIVO CARD -->
-                                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-4 border-green-500 rounded-2xl p-4 shadow-lg">
-                                        <div class="bg-green-600 text-white rounded-xl px-4 py-2 text-center mb-4">
-                                            <span class="text-lg font-black">🚀 TRABAJO ACTIVO</span>
-                                        </div>
-                                        
-                                        <!-- Client Info -->
-                                        <div class="bg-white rounded-xl p-4 mb-3 border border-green-200 shadow-sm">
-                                            <p class="text-xs font-bold text-green-800 uppercase mb-2">👤 Cliente</p>
-                                            <p class="font-bold text-slate-900 text-lg mb-1">${sol.clienteNombre || 'Cliente'}</p>
-                                            ${sol.clienteEmail ? `<p class="text-sm text-slate-600">📧 ${sol.clienteEmail}</p>` : ''}
-                                            ${sol.telefono ? `<p class="text-sm text-slate-600">📱 ${sol.telefono}</p>` : ''}
-                                        </div>
-                                        
-                                        <!-- Security Code -->
-                                        ${sol.codigoSeguridad ? `
-                                        <div class="bg-black text-white p-3 rounded-xl mb-3 border border-slate-700 shadow-inner">
-                                            <p class="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] mb-1">Cód. Seguridad</p>
-                                            <p class="text-2xl font-black font-mono tracking-widest text-center">${sol.codigoSeguridad}</p>
-                                        </div>
-                                        ` : ''}
-                                        
-                                        
-                                        <!-- Contact Button -->
-                                        ${sol.telefono ? `
-                                        <a href="https://wa.me/549${sol.telefono?.replace(/\\D/g, "")}" target="_blank" 
-                                           class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition shadow-md active:scale-95 mb-2">
-                                            💬 Contactar Cliente
-                                        </a>
-                                        ` : ''}
-                                        
-                                        <!-- Cancel Button -->
-                                        <button onclick="liberarOportunidad('${sol.id}')" 
-                                                class="w-full px-4 py-2 border border-red-200 text-red-600 font-bold rounded-lg hover:bg-red-50 transition flex items-center justify-center gap-2 text-xs">
-                                            ❌ Cancelar Trabajo
-                                        </button>
-                                    </div>
-                                    `
-                                            : `
-                                    <!-- REGULAR CONTACTED CARD -->  
-                                    ${
-                                        sol.profesionalId === currentUser.uid
-                                            ? `<button onclick="liberarOportunidad('${sol.id}')" class="w-full mb-2 px-4 py-2 border border-orange-200 text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition flex items-center justify-center gap-2 text-xs">
-                                        ❌ Cancelar / Liberar
-                                    </button>`
-                                            : ""
-                                    }
-                                    <div class="text-center py-4 bg-green-50 rounded-lg border border-green-100">
-                                        <span class="block text-2xl mb-1">✅</span>
-                                        <p class="text-green-800 font-bold text-sm">Conversación Iniciada</p>
-                                        <a href="https://wa.me/549${sol.telefono?.replace(/\D/g, "")}" target="_blank" class="text-xs text-green-600 hover:underline mt-1 block">Abrir WhatsApp de nuevo</a>
-                                        
-                                        ${sol.token ? `
-                                        <div class="mt-3 pt-3 border-t border-green-200">
-                                            <p class="text-[9px] font-bold text-green-600 uppercase tracking-widest">Cód. Seguridad</p>
-                                            <p class="text-xl font-black font-mono text-slate-900">${sol.token}</p>
-                                        </div>
-                                        ` : ''}
-                                    </div>
-                                    `
-                                    }
-                                    `
-                                        : ""
-                                }
-                            </div>
-                        </div>
-                    `;
-                        })
-                        .join("");
-
-                console.log(
-                    "✅ [RENDER] HTML generado, longitud:",
-                    grid.innerHTML.length,
-                );
-                console.log("🎉 [RENDER] Grid renderizado exitosamente");
-            }
-
-            // ACCIONES
-            async function contactarCliente(id, nombre, telefono) {
-                if (!currentUser) return;
-
-                if (!telefono) {
-                    alert(
-                        "Este cliente no dejó teléfono (versión antigua de solicitud).",
-                    );
-                    return;
-                }
-
-                try {
-                    // 0. Generar Token de Seguridad
-                    const token = Math.floor(
-                        100000 + Math.random() * 900000,
-                    ).toString();
-                    console.log("🔐 [CONTACTAR] Generando token:", token);
-
-                    // 1. Guardar en Colección 'contactos' (Para que ambos vean el código)
-                    const solData = todasSolicitudes.find(
-                        (s) => s.id === id,
-                    );
                     console.log(
-                        "📋 [CONTACTAR] Datos de solicitud encontrados:",
-                        solData,
+                        "🎨 [RENDER] Generando HTML para",
+                        filtered.length,
+                        "items",
                     );
+                    if (grid)
+                        grid.innerHTML = filtered
+                            .map((sol) => {
+                                // v2 - Refactored for stability
+                                console.log("🎨 [RENDER] Item:", sol.id);
 
-                    if (!solData) {
-                        console.error(
-                            "❌ [CONTACTAR] No se encontró solData para ID:",
-                            id,
-                        );
+                                // Formatear fecha
+                                let fechaStr = "Reciente";
+                                if (sol.fecha && sol.fecha.seconds) {
+                                    const date = new Date(
+                                        sol.fecha.seconds * 1000,
+                                    );
+                                    fechaStr = new Intl.DateTimeFormat(
+                                        "es-AR",
+                                        {
+                                            day: "numeric",
+                                            month: "short",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                        },
+                                    ).format(date);
+                                }
+
+                                // Badges
+                                const urgenteBadge = sol.urgente
+                                    ? `<span class="bg-red-500 text-white text-[10px] font-black px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-lg shadow-red-100 animate-pulse uppercase tracking-wider">🚨 Urgente</span>`
+                                    : "";
+                                const nuevoBadge =
+                                    !sol.leidoPor?.includes(currentUser.uid) &&
+                                    activeTab === "nuevas"
+                                        ? `<span class="bg-indigo-600 text-white text-[10px] font-black px-3 py-1.5 rounded-xl shadow-lg shadow-indigo-100 uppercase tracking-wider">Nuevo</span>`
+                                        : "";
+                                const isAcceptedByMe =
+                                    sol.profesionalId === currentUser.uid;
+                                const acceptedBadge = isAcceptedByMe
+                                    ? `<span class="bg-emerald-500 text-white text-[10px] font-black px-3 py-1.5 rounded-xl border border-white shadow-lg shadow-emerald-100 uppercase tracking-wider">🎯 Seleccionado</span>`
+                                    : "";
+                                const yaCotice =
+                                    sol.presupuestadosPor?.includes(
+                                        currentUser.uid,
+                                    );
+                                const cotizadoBadge = yaCotice
+                                    ? `<span class="bg-blue-500 text-white text-[10px] font-black px-3 py-1.5 rounded-xl shadow-lg shadow-blue-100 uppercase tracking-wider">💼 Cotizado</span>`
+                                    : "";
+
+                                // Nombre Cliente
+                                const nameFromCache = clientNames.get(
+                                    sol.clienteId,
+                                );
+                                let nombre =
+                                    nameFromCache ||
+                                    sol.clienteNombre ||
+                                    "Cliente";
+                                if (nombre.includes("@")) {
+                                    nombre = nombre
+                                        .split("@")[0]
+                                        .replace(/[._-]/g, " ")
+                                        .replace(/\b\w/g, (l) =>
+                                            l.toUpperCase(),
+                                        );
+                                }
+
+                                // Security Code Normalization
+                                const securityCode =
+                                    sol.codigoSeguridad || sol.token;
+
+                                // --- BLOQUE DE ACCIONES SEGÚN TAB ---
+                                let htmlAcciones = "";
+                                if (activeTab === "nuevas") {
+                                    if (yaCotice) {
+                                        htmlAcciones = `<button disabled class="w-full bg-indigo-50 border border-indigo-100 text-indigo-400 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 cursor-not-allowed opacity-80"><span>✔️</span> Ya Cotizaste</button>`;
+                                    } else if (
+                                        sol.presupuestadosPor?.length >= 3
+                                    ) {
+                                        htmlAcciones = `<button disabled class="w-full bg-slate-100 text-slate-400 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 cursor-not-allowed border border-slate-200">Cupo lleno</button>`;
+                                    } else {
+                                        htmlAcciones = `<button onclick="abrirModalCotizacion('${sol.id}', '${nombre.replace(/'/g, "\\'")}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm active:scale-95">Cotizar Ahora</button>`;
+                                    }
+                                    htmlAcciones += `<button onclick="descartarSolicitud('${sol.id}')" class="w-full mt-2 text-slate-500 hover:text-red-600 hover:bg-red-50 font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition text-sm">Descartar</button>`;
+                                } else if (activeTab === "descartadas") {
+                                    htmlAcciones = `<button onclick="eliminarOportunidad('${sol.id}')" class="w-full px-4 py-2 border border-red-200 text-red-600 font-bold rounded-lg hover:bg-red-50 transition flex items-center justify-center gap-2">🗑️ Eliminar</button>`;
+                                } else if (activeTab === "contactadas") {
+                                    if (
+                                        sol.status === "aceptada" &&
+                                        sol.trabajoAceptadoPor ===
+                                            currentUser.uid
+                                    ) {
+                                        htmlAcciones = `
+                                            <div class="bg-gradient-to-br from-indigo-50 to-indigo-100/30 border-2 border-indigo-500 rounded-3xl p-5 shadow-xl ring-4 ring-indigo-50">
+                                                <div class="bg-indigo-600 text-white rounded-2xl px-4 py-2 text-center mb-4 leading-none"><span class="text-[10px] font-black tracking-[0.2em] uppercase">🚀 TRABAJO ACTIVO</span></div>
+                                                <div class="bg-white rounded-2xl p-4 mb-4 border border-indigo-100 shadow-sm relative overflow-hidden group/card">
+                                                     <div class="absolute top-0 right-0 w-16 h-16 bg-indigo-50 rotate-45 translate-x-8 -translate-y-8 opacity-0 group-hover/card:opacity-100 transition-opacity"></div>
+                                                    <p class="font-bold text-slate-900 leading-tight mb-1 text-lg">${nombre}</p>
+                                                    ${sol.telefono ? `<p class="text-sm text-indigo-600 font-black">📱 ${sol.telefono}</p>` : ""}
+                                                </div>
+                                                ${securityCode ? `<div class="bg-slate-900 text-white p-4 rounded-2xl mb-4 text-center border-b-4 border-indigo-500 shadow-inner"><p class="text-[9px] text-indigo-400 uppercase font-black mb-1 tracking-[0.2em]">Cód. Seguridad</p><p class="text-3xl font-black font-mono tracking-[0.2em] text-white select-all">${securityCode}</p></div>` : ""}
+                                                ${sol.telefono ? `<a href="https://wa.me/549${sol.telefono.replace(/\D/g, "")}" target="_blank" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 px-4 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-lg hover:scale-[1.02] active:scale-95 mb-3">💬 WhatsApp</a>` : ""}
+                                                <button onclick="liberarOportunidad('${sol.id}')" class="w-full px-4 py-2 text-slate-400 hover:text-red-600 font-bold transition text-[10px] uppercase tracking-widest">❌ Cancelar Trabajo</button>
+                                            </div>`;
+                                    } else {
+                                        htmlAcciones = `
+                                            <div class="text-center py-6 bg-slate-50 rounded-[2rem] border-2 border-slate-100">
+                                                <span class="block text-3xl mb-2">✅</span>
+                                                <p class="text-slate-800 font-bold text-sm">Conversación Iniciada</p>
+                                                ${sol.telefono ? `<a href="https://wa.me/549${sol.telefono.replace(/\D/g, "")}" target="_blank" class="text-xs text-indigo-600 font-bold hover:underline mt-2 block">Reabrir WhatsApp</a>` : ""}
+                                                ${securityCode ? `<div class="mt-4 pt-4 border-t border-slate-200"><p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Cód. Seguridad</p><p class="text-2xl font-black font-mono text-slate-900 tracking-widest">${securityCode}</p></div>` : ""}
+                                            </div>
+                                            ${sol.profesionalId === currentUser.uid ? `<button onclick="liberarOportunidad('${sol.id}')" class="w-full mt-3 px-4 py-2 border border-slate-200 text-slate-400 hover:text-orange-600 font-bold rounded-xl hover:bg-orange-50 transition text-xs uppercase tracking-tighter">❌ Abandonar</button>` : ""}`;
+                                    }
+                                }
+
+                                return `
+                                    <div class="bg-white rounded-[2.5rem] shadow-sm border-2 ${nuevoBadge ? "border-indigo-500 ring-4 ring-indigo-50" : "border-slate-100"} p-8 transition-all hover:shadow-2xl hover:scale-[1.01] group relative overflow-hidden">
+                                        <div class="flex flex-col lg:flex-row gap-8">
+                                            <div class="flex-1">
+                                                <div class="flex flex-wrap gap-2 mb-6">
+                                                    <span class="bg-slate-100 text-slate-500 text-[10px] font-black px-3 py-1.5 rounded-xl uppercase tracking-widest border border-slate-200">${sol.rubro}</span>
+                                                    ${urgenteBadge} ${nuevoBadge} ${acceptedBadge} ${cotizadoBadge}
+                                                </div>
+                                                <div class="space-y-4">
+                                                    <div class="flex items-center gap-4">
+                                                        <div class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-xl shadow-inner group-hover:bg-indigo-50 transition-colors">👤</div>
+                                                        <div>
+                                                            <h3 class="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">${nombre}</h3>
+                                                            <p class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-500"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                                                ${sol.zona || "Zona no especificada"}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 group-hover:border-indigo-100 group-hover:bg-indigo-50/30 transition-all">
+                                                        <p class="text-slate-600 leading-relaxed font-medium">${sol.detalle || "Sin descripción detallada."}</p>
+                                                    </div>
+                                                    <div class="flex items-center gap-6 text-[11px] font-black text-slate-400 uppercase tracking-[0.15em] px-1">
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="w-2 h-2 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.5)]"></span>
+                                                            ${fechaStr}
+                                                        </div>
+                                                        ${sol.candidatos?.length > 0 ? `<div class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span> ${sol.candidatos.length} Notificados</div>` : ""}
+                                                    </div>
+                                                </div>
+                                                ${isAcceptedByMe ? `<div class="mt-4"><span class="text-purple-600 font-bold text-xs bg-purple-50 px-3 py-1.5 rounded-xl border border-purple-100 inline-flex items-center gap-2"><span>💼</span> Presupuestando</span></div>` : ""}
+                                            </div>
+                                            <div class="flex flex-col gap-3 justify-center min-w-[220px] border-t md:border-t-0 md:border-l border-slate-100 pt-5 md:pt-0 md:pl-6">
+                                                ${htmlAcciones}
+                                            </div>
+                                        </div>
+                                    </div>`;
+                            })
+                            .join("");
+
+                    console.log(
+                        "✅ [RENDER] HTML generado, longitud:",
+                        grid.innerHTML.length,
+                    );
+                    console.log("🎉 [RENDER] Grid renderizado exitosamente");
+                }
+
+                // ACCIONES
+                async function contactarCliente(id, nombre, telefono) {
+                    if (!currentUser) return;
+
+                    if (!telefono) {
                         alert(
-                            "Error interno: No se encontraron datos de la solicitud.",
+                            "Este cliente no dejó teléfono (versión antigua de solicitud).",
                         );
                         return;
                     }
 
-                    const contactoData = {
-                        clienteId: solData.clienteId || "unknown",
-                        clienteNombre: nombre,
-                        clienteTelefono: telefono, // Added phone for "Responder" feature
-                        proId: currentUser.uid,
-                        proNombre: currentUser.displayName || "Profesional",
-                        rubro: solData.rubro || "Servicio",
-                        fecha: new Date(),
-                        token: token,
-                        solicitudId: id,
-                    };
-                    console.log(
-                        "💾 [CONTACTAR] Intentando crear contacto:",
-                        contactoData,
-                    );
-
                     try {
-                        const contactRef = await addDoc(
-                            collection(db, "contactos"),
-                            contactoData,
+                        // 0. Generar Token de Seguridad
+                        const token = Math.floor(
+                            100000 + Math.random() * 900000,
+                        ).toString();
+                        console.log("🔐 [CONTACTAR] Generando token:", token);
+
+                        // 1. Guardar en Colección 'contactos' (Para que ambos vean el código)
+                        const solData = todasSolicitudes.find(
+                            (s) => s.id === id,
                         );
                         console.log(
-                            "✅ [CONTACTAR] Contacto creado con ID:",
-                            contactRef.id,
+                            "📋 [CONTACTAR] Datos de solicitud encontrados:",
+                            solData,
                         );
-                    } catch (docError) {
-                        console.error(
-                            "❌ [CONTACTAR] Error creando documento en 'contactos':",
-                            docError,
-                        );
-                        alert(
-                            "Error al generar código de seguridad. Revisa la consola.",
-                        );
-                        // Continue anyway to open WhatsApp but warn user
-                    }
 
-                    // 2. Marcar como contactado en DB Y Bloquear para mi (status: aceptada)
-                    const solRef = doc(db, "solicitudes", id);
-                    await updateDoc(solRef, {
-                        contactadosPor: arrayUnion(currentUser.uid),
-                        status: "aceptada",
-                        profesionalId: currentUser.uid,
-                        profesionalNombre:
-                            currentUser.displayName || "Profesional",
-                        profesionalFoto: currentUser.photoURL || "",
-                        fechaAceptacion: new Date(),
-                    });
-
-                    // Actualizar estado local
-                    todasSolicitudes = todasSolicitudes.map((s) => {
-                        if (s.id === id) {
-                            const prev = s.contactadosPor || [];
-                            return {
-                                ...s,
-                                contactadosPor: [...prev, currentUser.uid],
-                                status: "aceptada",
-                                profesionalId: currentUser.uid,
-                            };
+                        if (!solData) {
+                            console.error(
+                                "❌ [CONTACTAR] No se encontró solData para ID:",
+                                id,
+                            );
+                            alert(
+                                "Error interno: No se encontraron datos de la solicitud.",
+                            );
+                            return;
                         }
-                        return s;
-                    });
 
-                    renderOportunidades();
+                        const contactoData = {
+                            clienteId: solData.clienteId || "unknown",
+                            clienteNombre: nombre,
+                            clienteTelefono: telefono, // Added phone for "Responder" feature
+                            proId: currentUser.uid,
+                            proNombre: currentUser.displayName || "Profesional",
+                            rubro: solData.rubro || "Servicio",
+                            fecha: new Date(),
+                            token: token,
+                            solicitudId: id,
+                        };
+                        console.log(
+                            "💾 [CONTACTAR] Intentando crear contacto:",
+                            contactoData,
+                        );
 
-                    // 3. Enviar Email Notificación (Simulado)
-                    if (solData?.clienteEmail) {
-                        fetch("/api/send-email", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                to: solData.clienteEmail,
-                                subject: `${currentUser.displayName || "Un profesional"} ha aceptado tu solicitud! `,
-                                html: `
+                        try {
+                            const contactRef = await addDoc(
+                                collection(db, "contactos"),
+                                contactoData,
+                            );
+                            console.log(
+                                "✅ [CONTACTAR] Contacto creado con ID:",
+                                contactRef.id,
+                            );
+                        } catch (docError) {
+                            console.error(
+                                "❌ [CONTACTAR] Error creando documento en 'contactos':",
+                                docError,
+                            );
+                            alert(
+                                "Error al generar código de seguridad. Revisa la consola.",
+                            );
+                            // Continue anyway to open WhatsApp but warn user
+                        }
+
+                        // 2. Marcar como contactado en DB Y Bloquear para mi (status: aceptada)
+                        const solRef = doc(db, "solicitudes", id);
+                        await updateDoc(solRef, {
+                            contactadosPor: arrayUnion(currentUser.uid),
+                            status: "aceptada",
+                            profesionalId: currentUser.uid,
+                            profesionalNombre:
+                                currentUser.displayName || "Profesional",
+                            profesionalFoto: currentUser.photoURL || "",
+                            fechaAceptacion: new Date(),
+                        });
+
+                        // Actualizar estado local
+                        todasSolicitudes = todasSolicitudes.map((s) => {
+                            if (s.id === id) {
+                                const prev = s.contactadosPor || [];
+                                return {
+                                    ...s,
+                                    contactadosPor: [...prev, currentUser.uid],
+                                    status: "aceptada",
+                                    profesionalId: currentUser.uid,
+                                };
+                            }
+                            return s;
+                        });
+
+                        renderOportunidades();
+
+                        // 3. Enviar Email Notificación (Simulado)
+                        if (solData?.clienteEmail) {
+                            fetch("/api/send-email", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    to: solData.clienteEmail,
+                                    subject: `${currentUser.displayName || "Un profesional"} ha aceptado tu solicitud! `,
+                                    html: `
                                         <h2>Buenas noticias, ${nombre}!</h2>
                                         <p>El profesional <strong>${currentUser.displayName || "DeOficios Pro"}</strong> ha visto tu solicitud para <strong>${solData.rubro}</strong> y quiere contactarte.</p>
                                         <p>Te escribirá por WhatsApp a la brevedad.</p>
                                     `,
-                                type: "Solicitud Aceptada",
-                            }),
-                        }).catch((err) =>
-                            console.error("Error enviando email:", err),
-                        );
-                    }
-
-                    // 4. Abrir WhatsApp
-                    const mensaje = `Hola ${nombre}, soy ${currentUser.displayName || "profesional"} de DeOficios. Vi tu pedido de ${solData?.rubro || "trabajo"}. Me interesa pasarte un presupuesto.`;
-                    const url = `https://wa.me/549${telefono}?text=${encodeURIComponent(mensaje)}`;
-                    window.open(url, "_blank");
-                } catch (e) {
-                    console.error(e);
-                    alert("Error al procesar contacto");
-                }
-            }
-
-            async function descartarSolicitud(id) {
-                if (
-                    !confirm(
-                        "¿Seguro que quieres descartar esta oportunidad?",
-                    )
-                )
-                    return;
-
-                try {
-                    const solRef = doc(db, "solicitudes", id);
-                    await updateDoc(solRef, {
-                        descartadosPor: arrayUnion(currentUser.uid),
-                    });
-
-                    // Actualizar local
-                    todasSolicitudes = todasSolicitudes.map((s) => {
-                        if (s.id === id) {
-                            const prev = s.descartadosPor || [];
-                            return {
-                                ...s,
-                                descartadosPor: [...prev, currentUser.uid],
-                            };
-                        }
-                        return s;
-                    });
-
-                    renderOportunidades();
-                } catch (e) {
-                    console.error(e);
-                    alert("Error al descartar");
-                }
-            }
-
-            async function eliminarOportunidad(id) {
-                if (
-                    !confirm(
-                        "¿Eliminar de la lista? No podrás recuperarla.",
-                    )
-                )
-                    return;
-
-                try {
-                    const solRef = doc(db, "solicitudes", id);
-                    await updateDoc(solRef, {
-                        eliminadosPor: arrayUnion(currentUser.uid),
-                    });
-
-                    // Actualizar local
-                    todasSolicitudes = todasSolicitudes.map((s) => {
-                        if (s.id === id) {
-                            const prev = s.eliminadosPor || [];
-                            return {
-                                ...s,
-                                eliminadosPor: [...prev, currentUser.uid],
-                            };
-                        }
-                        return s;
-                    });
-
-                    renderOportunidades();
-                } catch (error) {
-                    console.error("Error eliminando:", error);
-                    alert("No se pudo eliminar la oportunidad");
-                }
-            }
-
-            async function liberarOportunidad(id) {
-                if (
-                    !confirm(
-                        "¿Liberar esta oportunidad? Volverá a estar disponible para otros profesionales.",
-                    )
-                )
-                    return;
-
-                try {
-                    const solRef = doc(db, "solicitudes", id);
-
-                    await updateDoc(solRef, {
-                        status: "nueva",
-                        profesionalId: deleteField(),
-                        profesionalNombre: deleteField(),
-                        profesionalFoto: deleteField(),
-                        fechaAceptacion: deleteField(),
-                    });
-
-                    // Update local state and remove from view if needed
-                    todasSolicitudes = todasSolicitudes.map((s) => {
-                        if (s.id === id) {
-                            const copy = { ...s };
-                            delete copy.profesionalId;
-                            copy.status = "nueva";
-                            return copy;
-                        }
-                        return s;
-                    });
-
-                    renderOportunidades();
-                    alert("Oportunidad liberada correctamente.");
-                } catch (e) {
-                    console.error(e);
-                    alert("Error al liberar oportunidad");
-                }
-            }
-
-            // MODAL SYSTEM
-            function showAlert(title, message, icon = "ℹ️") {
-                document.getElementById("alert-title").innerText = title;
-                document.getElementById("alert-message").innerText =
-                    message;
-                document.getElementById("alert-icon").innerText = icon;
-                document
-                    .getElementById("custom-alert")
-                    .classList.add("active");
-            }
-
-            window.closeAlert = () => {
-                document
-                    .getElementById("custom-alert")
-                    .classList.remove("active");
-            };
-
-            // Exponer funciones globales
-            window.contactarCliente = contactarCliente;
-            window.descartarSolicitud = descartarSolicitud;
-            window.eliminarOportunidad = eliminarOportunidad;
-            (window as any).liberarOportunidad = liberarOportunidad;
-            (window as any).abrirModalCotizacion =
-                window.abrirModalCotizacion;
-            (window as any).cerrarModalCotizacion =
-                window.cerrarModalCotizacion;
-            (window as any).enviarCotizacion = window.enviarCotizacion;
-            // --- LÓGICA DE COTIZACIÓN ---
-            let cotizacionActual = { id: null, clienteNombre: null };
-
-            window.abrirModalCotizacion = (id, nombre) => {
-                cotizacionActual = { id, clienteNombre: nombre };
-
-                const spanNombre =
-                    document.getElementById("cot-cliente-nombre");
-                if (spanNombre) spanNombre.innerText = nombre;
-
-                // Limpiar form
-                (
-                    document.getElementById(
-                        "form-cotizacion",
-                    ) as HTMLFormElement
-                )?.reset();
-
-                document
-                    .getElementById("modal-cotizacion")
-                    ?.classList.add("active");
-            };
-
-            window.cerrarModalCotizacion = () => {
-                document
-                    .getElementById("modal-cotizacion")
-                    ?.classList.remove("active");
-                cotizacionActual = { id: null, clienteNombre: null };
-            };
-
-            window.enviarCotizacion = async () => {
-                if (!currentUser || !cotizacionActual.id) return;
-
-                const precioInput = document.getElementById(
-                    "cot-precio",
-                ) as HTMLInputElement;
-                const mensajeInput = document.getElementById(
-                    "cot-mensaje",
-                ) as HTMLTextAreaElement;
-                const btnEnviar = document.getElementById(
-                    "btn-enviar-cotizacion",
-                ) as HTMLButtonElement;
-
-                const precio = precioInput.value;
-                const mensaje = mensajeInput.value;
-
-                if (!precio || !mensaje) {
-                    alert("Por favor completa el precio y el mensaje.");
-                    return;
-                }
-
-                try {
-                    btnEnviar.disabled = true;
-                    btnEnviar.innerText = "Enviando...";
-
-                    // 1. Guardar propuesta en subcolección
-                    const propuestaData = {
-                        proId: currentUser.uid,
-                        proNombre: currentUser.displayName || "Profesional",
-                        proFoto: currentUser.photoURL || "",
-                        precio: Number(precio),
-                        mensaje: mensaje,
-                        fecha: new Date(),
-                        estado: "enviada", // enviada | aceptada | rechazada
-                    };
-
-                    // Referencia a la subcolección: solicitudes/{solicitudId}/propuestas
-                    await addDoc(
-                        collection(
-                            db,
-                            `solicitudes/${cotizacionActual.id}/propuestas`,
-                        ),
-                        propuestaData,
-                    );
-
-                    console.log("✅ Propuesta enviada exitosamente");
-
-                    // 1.5 Crear Notificación para el cliente
-                    const currentSol = todasSolicitudes.find(s => s.id === cotizacionActual.id);
-                    if (currentSol && currentSol.clienteId) {
-                        try {
-                            await addDoc(
-                                collection(db, `clientes/${currentSol.clienteId}/notificaciones`),
-                                {
-                                    titulo: "¡Nuevo presupuesto recibido! 💰",
-                                    mensaje: `${currentUser.displayName || 'Un profesional'} te envió una propuesta por $${Number(precio).toLocaleString('es-AR')} para tu pedido de ${currentSol.rubro || 'servicio'}.`,
-                                    tipo: "presupuesto",
-                                    solicitudId: cotizacionActual.id,
-                                    proId: currentUser.uid,
-                                    proNombre: currentUser.displayName || "Profesional",
-                                    fecha: new Date(),
-                                    leida: false
-                                }
+                                    type: "Solicitud Aceptada",
+                                }),
+                            }).catch((err) =>
+                                console.error("Error enviando email:", err),
                             );
-                            console.log("🔔 [NOTIF] Notificación al cliente creada");
-                        } catch (notifErr) {
-                            console.error("❌ Error creando notificación:", notifErr);
                         }
+
+                        // 4. Abrir WhatsApp
+                        const mensaje = `Hola ${nombre}, soy ${currentUser.displayName || "profesional"} de DeOficios. Vi tu pedido de ${solData?.rubro || "trabajo"}. Me interesa pasarte un presupuesto.`;
+                        const url = `https://wa.me/549${telefono}?text=${encodeURIComponent(mensaje)}`;
+                        window.open(url, "_blank");
+                    } catch (e) {
+                        console.error(e);
+                        alert("Error al procesar contacto");
+                    }
+                }
+
+                async function descartarSolicitud(id) {
+                    if (
+                        !confirm(
+                            "¿Seguro que quieres descartar esta oportunidad?",
+                        )
+                    )
+                        return;
+
+                    try {
+                        const solRef = doc(db, "solicitudes", id);
+                        await updateDoc(solRef, {
+                            descartadosPor: arrayUnion(currentUser.uid),
+                        });
+
+                        // Actualizar local
+                        todasSolicitudes = todasSolicitudes.map((s) => {
+                            if (s.id === id) {
+                                const prev = s.descartadosPor || [];
+                                return {
+                                    ...s,
+                                    descartadosPor: [...prev, currentUser.uid],
+                                };
+                            }
+                            return s;
+                        });
+
+                        renderOportunidades();
+                    } catch (e) {
+                        console.error(e);
+                        alert("Error al descartar");
+                    }
+                }
+
+                async function eliminarOportunidad(id) {
+                    if (
+                        !confirm(
+                            "¿Eliminar de la lista? No podrás recuperarla.",
+                        )
+                    )
+                        return;
+
+                    try {
+                        const solRef = doc(db, "solicitudes", id);
+                        await updateDoc(solRef, {
+                            eliminadosPor: arrayUnion(currentUser.uid),
+                        });
+
+                        // Actualizar local
+                        todasSolicitudes = todasSolicitudes.map((s) => {
+                            if (s.id === id) {
+                                const prev = s.eliminadosPor || [];
+                                return {
+                                    ...s,
+                                    eliminadosPor: [...prev, currentUser.uid],
+                                };
+                            }
+                            return s;
+                        });
+
+                        renderOportunidades();
+                    } catch (error) {
+                        console.error("Error eliminando:", error);
+                        alert("No se pudo eliminar la oportunidad");
+                    }
+                }
+
+                async function liberarOportunidad(id) {
+                    if (
+                        !confirm(
+                            "¿Liberar esta oportunidad? Volverá a estar disponible para otros profesionales.",
+                        )
+                    )
+                        return;
+
+                    try {
+                        const solRef = doc(db, "solicitudes", id);
+
+                        await updateDoc(solRef, {
+                            status: "nueva",
+                            profesionalId: deleteField(),
+                            profesionalNombre: deleteField(),
+                            profesionalFoto: deleteField(),
+                            fechaAceptacion: deleteField(),
+                        });
+
+                        // Update local state and remove from view if needed
+                        todasSolicitudes = todasSolicitudes.map((s) => {
+                            if (s.id === id) {
+                                const copy = { ...s };
+                                delete copy.profesionalId;
+                                copy.status = "nueva";
+                                return copy;
+                            }
+                            return s;
+                        });
+
+                        renderOportunidades();
+                        alert("Oportunidad liberada correctamente.");
+                    } catch (e) {
+                        console.error(e);
+                        alert("Error al liberar oportunidad");
+                    }
+                }
+
+                // MODAL SYSTEM
+                function showAlert(title, message, icon = "ℹ️") {
+                    document.getElementById("alert-title").innerText = title;
+                    document.getElementById("alert-message").innerText =
+                        message;
+                    document.getElementById("alert-icon").innerText = icon;
+                    document
+                        .getElementById("custom-alert")
+                        .classList.add("active");
+                }
+
+                window.closeAlert = () => {
+                    document
+                        .getElementById("custom-alert")
+                        .classList.remove("active");
+                };
+
+                // Exponer funciones globales
+                window.contactarCliente = contactarCliente;
+                window.descartarSolicitud = descartarSolicitud;
+                window.eliminarOportunidad = eliminarOportunidad;
+                (window as any).liberarOportunidad = liberarOportunidad;
+                (window as any).abrirModalCotizacion =
+                    window.abrirModalCotizacion;
+                (window as any).cerrarModalCotizacion =
+                    window.cerrarModalCotizacion;
+                (window as any).enviarCotizacion = window.enviarCotizacion;
+                // --- LÓGICA DE COTIZACIÓN ---
+                let cotizacionActual = { id: null, clienteNombre: null };
+
+                window.abrirModalCotizacion = (id, nombre) => {
+                    cotizacionActual = { id, clienteNombre: nombre };
+
+                    const spanNombre =
+                        document.getElementById("cot-cliente-nombre");
+                    if (spanNombre) spanNombre.innerText = nombre;
+
+                    // Limpiar form
+                    (
+                        document.getElementById(
+                            "form-cotizacion",
+                        ) as HTMLFormElement
+                    )?.reset();
+
+                    document
+                        .getElementById("modal-cotizacion")
+                        ?.classList.add("active");
+                };
+
+                window.cerrarModalCotizacion = () => {
+                    document
+                        .getElementById("modal-cotizacion")
+                        ?.classList.remove("active");
+                    cotizacionActual = { id: null, clienteNombre: null };
+                };
+
+                window.enviarCotizacion = async () => {
+                    if (!currentUser || !cotizacionActual.id) return;
+
+                    const precioInput = document.getElementById(
+                        "cot-precio",
+                    ) as HTMLInputElement;
+                    const mensajeInput = document.getElementById(
+                        "cot-mensaje",
+                    ) as HTMLTextAreaElement;
+                    const btnEnviar = document.getElementById(
+                        "btn-enviar-cotizacion",
+                    ) as HTMLButtonElement;
+
+                    const precio = precioInput.value;
+                    const mensaje = mensajeInput.value;
+
+                    if (!precio || !mensaje) {
+                        alert("Por favor completa el precio y el mensaje.");
+                        return;
                     }
 
-                    // 2. Marcar solicitud como "Presupuestada" por este PRO (para feedback visual)
-                    // Podemos usar 'presupuestadosPor' arrayUnion en la solicitud padre
-                    await updateDoc(
-                        doc(db, "solicitudes", cotizacionActual.id),
-                        {
-                            presupuestadosPor: arrayUnion(currentUser.uid),
-                        },
-                    );
+                    try {
+                        btnEnviar.disabled = true;
+                        btnEnviar.innerText = "Enviando...";
 
-                    // Actualizar UI Local
-                    todasSolicitudes = todasSolicitudes.map((s) => {
-                        if (s.id === cotizacionActual.id) {
-                            const prev = s.presupuestadosPor || []; // Ojo: hay que agregar este campo en la render logic para mostrar badge
-                            return {
-                                ...s,
-                                presupuestadosPor: [
-                                    ...prev,
-                                    currentUser.uid,
-                                ],
-                                // NO cambiamos status global a "aceptada" todavía, sigue en "nueva" para otros
-                            };
+                        // 1. Guardar propuesta en subcolección
+                        const propuestaData = {
+                            proId: currentUser.uid,
+                            proNombre: currentUser.displayName || "Profesional",
+                            proFoto: currentUser.photoURL || "",
+                            precio: Number(precio),
+                            mensaje: mensaje,
+                            fecha: new Date(),
+                            estado: "enviada", // enviada | aceptada | rechazada
+                        };
+
+                        // Referencia a la subcolección: solicitudes/{solicitudId}/propuestas
+                        await addDoc(
+                            collection(
+                                db,
+                                `solicitudes/${cotizacionActual.id}/propuestas`,
+                            ),
+                            propuestaData,
+                        );
+
+                        console.log("✅ Propuesta enviada exitosamente");
+
+                        // 1.5 Crear Notificación para el cliente
+                        const currentSol = todasSolicitudes.find(
+                            (s) => s.id === cotizacionActual.id,
+                        );
+                        if (currentSol && currentSol.clienteId) {
+                            try {
+                                await addDoc(
+                                    collection(
+                                        db,
+                                        `clientes/${currentSol.clienteId}/notificaciones`,
+                                    ),
+                                    {
+                                        titulo: "¡Nuevo presupuesto recibido! 💰",
+                                        mensaje: `${currentUser.displayName || "Un profesional"} te envió una propuesta por $${Number(precio).toLocaleString("es-AR")} para tu pedido de ${currentSol.rubro || "servicio"}.`,
+                                        tipo: "presupuesto",
+                                        solicitudId: cotizacionActual.id,
+                                        proId: currentUser.uid,
+                                        proNombre:
+                                            currentUser.displayName ||
+                                            "Profesional",
+                                        fecha: new Date(),
+                                        leida: false,
+                                    },
+                                );
+                                console.log(
+                                    "🔔 [NOTIF] Notificación al cliente creada",
+                                );
+                            } catch (notifErr) {
+                                console.error(
+                                    "❌ Error creando notificación:",
+                                    notifErr,
+                                );
+                            }
                         }
-                        return s;
-                    });
 
-                    window.cerrarModalCotizacion();
-                    renderOportunidades(); // Re-render para mostrar badge "Presupuestando"
+                        // 2. Marcar solicitud como "Presupuestada" por este PRO (para feedback visual)
+                        // Podemos usar 'presupuestadosPor' arrayUnion en la solicitud padre
+                        await updateDoc(
+                            doc(db, "solicitudes", cotizacionActual.id),
+                            {
+                                presupuestadosPor: arrayUnion(currentUser.uid),
+                            },
+                        );
+
+                        // Actualizar UI Local
+                        todasSolicitudes = todasSolicitudes.map((s) => {
+                            if (s.id === cotizacionActual.id) {
+                                const prev = s.presupuestadosPor || []; // Ojo: hay que agregar este campo en la render logic para mostrar badge
+                                return {
+                                    ...s,
+                                    presupuestadosPor: [
+                                        ...prev,
+                                        currentUser.uid,
+                                    ],
+                                    // NO cambiamos status global a "aceptada" todavía, sigue en "nueva" para otros
+                                };
+                            }
+                            return s;
+                        });
+
+                        window.cerrarModalCotizacion();
+                        renderOportunidades(); // Re-render para mostrar badge "Presupuestando"
+                        showAlert(
+                            "Presupuesto Enviado!",
+                            "El cliente recibirá tu propuesta. Si le interesa, te contactará.",
+                            "✅",
+                        );
+
+                        // Opcional: Abrir WhatsApp con aviso
+                        // const sol = todasSolicitudes.find(s => s.id === cotizacionActual.id);
+                        // if(sol && sol.telefono) {
+                        //    if(confirm("¿Querés avisarle por WhatsApp también?")) {
+                        //        const text = `Hola ${sol.clienteNombre}, te envié un presupuesto de $${precio} por DeOficios. Avisame si te sirve.`;
+                        //        window.open(`https://wa.me/549${sol.telefono.replace(/\D/g, "")}?text=${encodeURIComponent(text)}`, "_blank");
+                        //    }
+                        // }
+                    } catch (error) {
+                        console.error("Error enviando cotización:", error);
+                        alert(
+                            "Error al enviar el presupuesto. Intenta nuevamente.",
+                        );
+                    } finally {
+                        btnEnviar.disabled = false;
+                        btnEnviar.innerHTML = "<span>💰</span> Enviar";
+                    }
+                };
+
+                window.restaurarSolicitud = async function (id: any) {
                     showAlert(
-                        "Presupuesto Enviado!",
-                        "El cliente recibirá tu propuesta. Si le interesa, te contactará.",
-                        "✅",
+                        "Próximamente",
+                        "La funcionalidad de restaurar estará disponible pronto.",
+                        "ℹ️",
                     );
-
-                    // Opcional: Abrir WhatsApp con aviso
-                    // const sol = todasSolicitudes.find(s => s.id === cotizacionActual.id);
-                    // if(sol && sol.telefono) {
-                    //    if(confirm("¿Querés avisarle por WhatsApp también?")) {
-                    //        const text = `Hola ${sol.clienteNombre}, te envié un presupuesto de $${precio} por DeOficios. Avisame si te sirve.`;
-                    //        window.open(`https://wa.me/549${sol.telefono.replace(/\D/g, "")}?text=${encodeURIComponent(text)}`, "_blank");
-                    //    }
-                    // }
-                } catch (error) {
-                    console.error("Error enviando cotización:", error);
-                    alert(
-                        "Error al enviar el presupuesto. Intenta nuevamente.",
-                    );
-                } finally {
-                    btnEnviar.disabled = false;
-                    btnEnviar.innerHTML = "<span>💰</span> Enviar";
-                }
-            };
-
-            window.restaurarSolicitud = async function (id: any) {
-                showAlert(
-                    "Próximamente",
-                    "La funcionalidad de restaurar estará disponible pronto.",
-                    "ℹ️",
-                );
-            };
-        })(); // End of IIFE
-    </script>
-
-                </div> <!-- max-w-5xl -->
-            </div> <!-- flex-1 overflow-y-auto -->
-        </main>
-    </div> <!-- outer flex -->
-
-    <script>
-        // Sidebar Mobile Toggle
-        const btnOpenSidebar = document.getElementById("open-sidebar");
-        
-        btnOpenSidebar?.addEventListener("click", () => {
-            document.dispatchEvent(new CustomEvent("toggle-sidebar"));
-        });
-    </script>
+                };
+            })(); // End of IIFE
+        </script>
+    </div>
+    <!-- max-w-5xl -->
 </Layout>
+<!-- flex-1 overflow-y-auto -->
+
+<!-- outer flex -->
+
+<script>
+    // Sidebar Mobile Toggle
+    const btnOpenSidebar = document.getElementById("open-sidebar");
+
+    btnOpenSidebar?.addEventListener("click", () => {
+        document.dispatchEvent(new CustomEvent("toggle-sidebar"));
+    });
+</script>
