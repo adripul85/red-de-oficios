@@ -25,8 +25,11 @@ import { House, Search, Sparkles, Map, User } from "lucide-astro";
             <span class="label">Mapa</span>
         </a>
 
-        <a href="/ingresar-derivador" class="nav-item flat-item" id="nav-profile">
-
+        <a
+            href="/ingresar-derivador"
+            class="nav-item flat-item"
+            id="nav-profile"
+        >
             <User class="icon" />
             <span class="label">Perfil</span>
         </a>
@@ -128,9 +131,13 @@ import { House, Search, Sparkles, Map, User } from "lucide-astro";
 </style>
 
 <script>
-    import { auth, db } from "../firebase/client";
-    import { onAuthStateChanged } from "firebase/auth";
-    import { doc, getDoc } from "firebase/firestore";
+    import {
+        auth,
+        db,
+        doc,
+        getDoc,
+        onAuthStateChanged,
+    } from "../firebase/client";
 
     function initBottomNav() {
         // Active State Logic
@@ -184,4 +191,3 @@ import { House, Search, Sparkles, Map, User } from "lucide-astro";
     initBottomNav();
     document.addEventListener("astro:page-load", initBottomNav);
 </script>
-

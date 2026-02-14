@@ -35,7 +35,7 @@ const isActive = (path) => {
         </a>
         <button
             id="close-sidebar"
-class="text-2xl text-gray-400 hover:text-white"
+            class="text-2xl text-gray-400 hover:text-white"
         >
             ✕
         </button>
@@ -52,7 +52,7 @@ class="text-2xl text-gray-400 hover:text-white"
                             isActive(item.path)
                                 ? "bg-orange-900/20 text-orange-500"
                                 : "text-gray-400 hover:bg-slate-800 hover:text-white",
-]}
+                        ]}
                     >
                         <span class="text-xl">{item.icon}</span>
                         <span
@@ -60,7 +60,7 @@ class="text-2xl text-gray-400 hover:text-white"
                                 isActive(item.path)
                                     ? "font-semibold text-sm"
                                     : "font-medium text-sm"
-}
+                            }
                         >
                             {item.label}
                         </span>
@@ -84,8 +84,8 @@ class="text-2xl text-gray-400 hover:text-white"
             <span>👤</span>
             <span class="font-medium text-sm">Mi Perfil</span>
         </a>
-        <a 
-            href="/ingresar-derivador" 
+        <a
+            href="/ingresar-derivador"
             class="flex items-center gap-3 px-3 py-2 w-full text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors mb-1"
         >
             <span>🔄</span>
@@ -93,7 +93,7 @@ class="text-2xl text-gray-400 hover:text-white"
         </a>
         <button
             id="btn-logout-mobile"
-class="flex items-center gap-3 px-3 py-2 w-full text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors text-left"
+            class="flex items-center gap-3 px-3 py-2 w-full text-gray-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors text-left"
         >
             <span>🚪</span>
             <span class="font-medium text-sm">Cerrar Sesión</span>
@@ -101,7 +101,7 @@ class="flex items-center gap-3 px-3 py-2 w-full text-gray-400 hover:text-white h
     </div>
     <button
         id="btn-install-pwa-mobile"
-class="hidden flex items-center gap-3 px-3 py-2 w-full text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors mt-2"
+        class="hidden flex items-center gap-3 px-3 py-2 w-full text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors mt-2"
     >
         <span>📲</span>
         <span class="font-medium text-sm">Instalar App</span>
@@ -111,13 +111,12 @@ class="hidden flex items-center gap-3 px-3 py-2 w-full text-indigo-600 bg-indigo
 <!-- Mobile Sidebar Overlay -->
 <div
     id="sidebar-overlay"
-class="sidebar-overlay fixed inset-0 bg-black/50 z-40 hidden opacity-0 transition-opacity duration-300 md:hidden"
+    class="sidebar-overlay fixed inset-0 bg-black/50 z-40 hidden opacity-0 transition-opacity duration-300 md:hidden"
 >
 </div>
 
 <script>
-    import { auth } from "../../firebase/client";
-    import { signOut } from "firebase/auth";
+    import { auth, signOut } from "../../firebase/client";
 
     function setupMobileSidebar() {
         const mobileSidebar = document.getElementById("mobile-sidebar");
@@ -167,7 +166,7 @@ class="sidebar-overlay fixed inset-0 bg-black/50 z-40 hidden opacity-0 transitio
                     await signOut(auth);
                     window.location.href = "/ingresar";
                 } catch (error) {
-console.error("Error al cerrar sesión:", error);
+                    console.error("Error al cerrar sesión:", error);
                 }
             };
         }

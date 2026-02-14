@@ -199,8 +199,15 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
 		<script>
 			// Persist Auth State across View Transitions
-			import { auth } from "../firebase/client";
-			import { onAuthStateChanged } from "firebase/auth";
+			import {
+				auth,
+				onAuthStateChanged,
+				db,
+				doc,
+				updateDoc,
+				serverTimestamp,
+				getDoc,
+			} from "../firebase/client";
 
 			document.addEventListener("astro:page-load", () => {
 				onAuthStateChanged(auth, async (user) => {
@@ -214,9 +221,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
 						// Update Last Activity
 						try {
-							const { doc, updateDoc, serverTimestamp, getDoc } =
-								await import("firebase/firestore");
-							const { db } = await import("../firebase/client");
+							// db, doc, updateDoc, serverTimestamp, getDoc are already imported from client.js
 
 							// Check both collections (profesionales and clientes)
 							// In a real app, you might know the role from the token, but here we can try-catch or check exists

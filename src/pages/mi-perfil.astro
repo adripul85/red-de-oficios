@@ -1496,13 +1496,22 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                 arrayUnion,
                 arrayRemove,
                 deleteDoc,
+                onAuthStateChanged,
+                signOut,
+                deleteUser,
+                sendEmailVerification,
+                reauthenticateWithPopup,
+                GoogleAuthProvider,
+                ref,
+                uploadBytes,
+                getDownloadURL,
             } from "../firebase/client";
-            import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
             import { CATEGORIES } from "../data/categories";
             import {
                 recompensarAccion,
                 PUNTOS_RECOMPENSA,
             } from "../utils/gamification";
+            import { getAuthRedirect } from "../utils/auth-redirects";
 
             async function getIP() {
                 try {

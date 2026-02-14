@@ -234,9 +234,13 @@ const { title } = Astro.props;
     </div>
 
     <script>
-        import { auth, db } from "../firebase/client";
-        import { onAuthStateChanged } from "firebase/auth";
-        import { doc, getDoc } from "firebase/firestore";
+        import {
+            auth,
+            db,
+            doc,
+            getDoc,
+            onAuthStateChanged,
+        } from "../firebase/client";
 
         // Global Security Guard
         document.addEventListener("astro:page-load", () => {

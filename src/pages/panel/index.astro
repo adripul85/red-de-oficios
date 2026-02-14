@@ -607,8 +607,9 @@ import Layout from "../../layouts/Layout.astro";
             onSnapshot,
             deleteDoc,
             updateDoc,
+            onAuthStateChanged,
+            signOut,
         } from "../../firebase/client";
-        import { onAuthStateChanged } from "firebase/auth";
         import { registerPushNotifications } from "../../utils/push-notifications";
         import { getAuthRedirect } from "../../utils/auth-redirects";
 

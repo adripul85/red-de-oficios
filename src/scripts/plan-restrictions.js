@@ -5,7 +5,7 @@
  * Versión Modulo ES
  */
 
-import { auth, db } from '../firebase/client';
+import { auth, db, onAuthStateChanged } from '../firebase/client';
 import { doc, getDoc } from 'firebase/firestore';
 
 // Configuración de límites por plan
@@ -192,7 +192,7 @@ export async function initPlanRestrictions() {
 
     // Esperar auth
     await new Promise(resolve => {
-        const unsubscribe = auth.onAuthStateChanged(user => {
+        const unsubscribe = onAuthStateChanged(auth, user => {
             unsubscribe();
             resolve(user);
         });

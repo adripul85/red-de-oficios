@@ -323,8 +323,9 @@ import Layout from "../../layouts/Layout.astro";
                 arrayUnion,
                 increment,
                 deleteField,
+                onAuthStateChanged,
+                signOut,
             } from "../../firebase/client";
-            import { onAuthStateChanged } from "firebase/auth";
             import Swal from "sweetalert2";
             import { getAuthRedirect } from "../../utils/auth-redirects";
 

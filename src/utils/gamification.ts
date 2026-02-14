@@ -42,18 +42,17 @@ export const penalizarPuntos = (puntosActuales: number, penalizacion: number): n
  */
 export const recompensarAccion = async (userId: string, puntos: number) => {
     try {
-        const { db } = await import('../firebase/client');
-        const { doc, updateDoc, increment } = await import('firebase/firestore');
+        const { db, doc, updateDoc, increment } = await import("../firebase/client");
 
         const userRef = doc(db, "profesionales", userId);
         await updateDoc(userRef, {
-            puntos: increment(puntos)
+            puntos: increment(puntos),
         });
 
-        console.log(`⭐ [GAMIFICATION] +${puntos} puntos para ${userId}`);
+        console.log(`⭐ [GAMIFICATION] +${puntos} puntos for ${userId}`);
         return true;
     } catch (e) {
-        console.error("❌ [GAMIFICATION] Error penalizando/recompensando:", e);
+        console.error("❌ [GAMIFICATION] Error penalizing/rewarding:", e);
         return false;
     }
 };

@@ -1,5 +1,4 @@
-import { db } from "../firebase/client";
-import { doc, getDoc } from "firebase/firestore";
+import { db, doc, getDoc } from "../firebase/client";
 
 /**
  * Determines the correct dashboard URL for a user based on their role and subscription plan.

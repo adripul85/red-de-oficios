@@ -63,9 +63,15 @@ import {
 </div>
 
 <script>
-  import { auth, db } from "../firebase/client";
-  import { onAuthStateChanged, signOut } from "firebase/auth";
-  import { doc, getDoc, onSnapshot } from "firebase/firestore";
+  import {
+    auth,
+    db,
+    doc,
+    getDoc,
+    onSnapshot,
+    onAuthStateChanged,
+    signOut,
+  } from "../firebase/client";
 
   let currentUser: any = null; // Variable global para el usuario actual
 

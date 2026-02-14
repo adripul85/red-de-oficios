@@ -128,8 +128,14 @@ const isActive = (path) => {
 </aside>
 
 <script>
-    import { auth, db, doc, onSnapshot } from "../../firebase/client";
-    import { signOut } from "firebase/auth";
+    import {
+        auth,
+        db,
+        doc,
+        onSnapshot,
+        onAuthStateChanged,
+        signOut,
+    } from "../../firebase/client";
     import { calculateLevel, getLevelProgress } from "../../utils/gamification";
 
     function setupSidebar() {
@@ -187,7 +193,7 @@ const isActive = (path) => {
         // Auth state change (only once globally)
         if (!(window as any).authListenerStarted) {
             (window as any).authListenerStarted = true;
-            auth.onAuthStateChanged((user: any) => {
+            onAuthStateChanged(auth, (user: any) => {
                 if (user) syncLevel(user);
             });
         }

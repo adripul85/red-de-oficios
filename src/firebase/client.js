@@ -25,7 +25,16 @@ export const storage = getStorage(app);
 export const messaging = typeof window !== "undefined" ? getMessaging(app) : null;
 export { app };
 
-// Centralized Firestore exports to avoid "invalid argument" errors
+export {
+  onAuthStateChanged,
+  signOut,
+  deleteUser,
+  sendEmailVerification,
+  reauthenticateWithPopup,
+  GoogleAuthProvider,
+} from "firebase/auth";
+
+// Centralized Firestore exports
 export {
   doc,
   getDoc,
@@ -47,4 +56,7 @@ export {
   collectionGroup,
   deleteField
 } from "firebase/firestore";
+
+// Centralized Storage exports
+export { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 

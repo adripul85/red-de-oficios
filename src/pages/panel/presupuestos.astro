@@ -371,8 +371,6 @@ import Layout from "../../layouts/Layout.astro";
     </div>
 
     <script>
-        import { onAuthStateChanged } from "firebase/auth";
-        import { getAuthRedirect } from "../../utils/auth-redirects";
         import {
             db,
             auth,
@@ -388,7 +386,10 @@ import Layout from "../../layouts/Layout.astro";
             onSnapshot,
             collectionGroup,
             limit,
+            onAuthStateChanged,
+            signOut,
         } from "../../firebase/client";
+        import { getAuthRedirect } from "../../utils/auth-redirects";
 
         // Add jsPDF type definition to window
         declare global {
