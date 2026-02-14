@@ -6,7 +6,6 @@ import ProfileCardPreview from './ProfileCardPreview';
 import { auth, db } from '../../firebase/client';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { calcularPuntosIniciales } from '../../utils/gamification';
 
 export default function RegistrationWizard() {
     const [step, setStep] = useState(1);
@@ -141,8 +140,8 @@ export default function RegistrationWizard() {
             profileData.rol = 'profesional';
 
             // Initial score and usage limits
-            profileData.puntos = calcularPuntosIniciales(profileData); // 👈 Calculamos puntos iniciales
-            profileData.promedio = 3.0; // Request: start at 3.0
+            profileData.puntos = 0; // Se inicia en 0 por requerimiento
+            profileData.promedio = 0.0; // Se inicia en 0.0 por requerimiento
             profileData.total_votos = 0;
             profileData.whatsapp_restantes = 60; // Lifetime base 60
             profileData.contactos_whatsapp_total = 0;

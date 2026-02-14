@@ -24,13 +24,7 @@ export const PUNTAJE_MINIMO = 0;
  * @param userData El objeto del usuario de Firestore
  */
 export const calcularPuntosIniciales = (userData: any): number => {
-    let totalPuntos = 0;
-
-    if (userData.emailVerified) totalPuntos += PUNTOS_RECOMPENSA.VERIFICAR_EMAIL;
-    if (userData.portfolio && userData.portfolio.length > 0) totalPuntos += PUNTOS_RECOMPENSA.PRIMERA_FOTO_PORTFOLIO;
-    if (userData.descripcion && userData.descripcion.length > 50) totalPuntos += PUNTOS_RECOMPENSA.PERFIL_COMPLETO;
-
-    return totalPuntos;
+    return 0; // Se inicia en 0.0 puntos por requerimiento
 };
 
 /**

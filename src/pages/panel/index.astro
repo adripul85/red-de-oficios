@@ -593,8 +593,9 @@ import Layout from "../../layouts/Layout.astro";
     </div>
 
     <script>
-        import { db, auth } from "../../firebase/client";
         import {
+            db,
+            auth,
             doc,
             getDoc,
             collection,
@@ -606,7 +607,7 @@ import Layout from "../../layouts/Layout.astro";
             onSnapshot,
             deleteDoc,
             updateDoc,
-        } from "firebase/firestore";
+        } from "../../firebase/client";
         import { onAuthStateChanged } from "firebase/auth";
         import { registerPushNotifications } from "../../utils/push-notifications";
         import { getAuthRedirect } from "../../utils/auth-redirects";

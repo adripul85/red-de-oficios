@@ -1,6 +1,14 @@
-import { messaging, db } from "../firebase/client";
+import {
+    messaging,
+    db,
+    collection,
+    doc,
+    setDoc,
+    query,
+    where,
+    getDocs
+} from "../firebase/client";
 import { getToken } from "firebase/messaging";
-import { collection, doc, setDoc, query, where, getDocs } from "firebase/firestore";
 
 /**
  * Verifica si ya tenemos permiso

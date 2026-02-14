@@ -1484,36 +1484,38 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
         </style>
 
         <script>
-            import { auth, db, storage } from "../firebase/client";
             import {
-                onAuthStateChanged,
-                signOut,
-                deleteUser,
-                sendEmailVerification,
-                reauthenticateWithPopup,
-                GoogleAuthProvider,
-            } from "firebase/auth";
-            import {
-                getAuthRedirect,
-                validateCUIT,
-            } from "../utils/auth-redirects";
-            import Swal from "sweetalert2";
-            import { jsPDF } from "jspdf";
-            import {
+                db,
+                auth,
+                storage,
                 doc as fireDoc,
                 getDoc,
+                setDoc,
                 onSnapshot,
                 updateDoc,
                 arrayUnion,
                 arrayRemove,
                 deleteDoc,
-            } from "firebase/firestore";
+            } from "../firebase/client";
             import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
             import { CATEGORIES } from "../data/categories";
             import {
                 recompensarAccion,
                 PUNTOS_RECOMPENSA,
             } from "../utils/gamification";
+
+            async function getIP() {
+                try {
+                    const res = await fetch(
+                        "https://api.ipify.org?format=json",
+                    );
+                    const data = await res.json();
+                    return data.ip;
+                } catch (e) {
+                    console.error("Error obteniendo IP:", e);
+                    return null;
+                }
+            }
 
             // --- 0. ESTADO GLOBAL (Movido al inicio) ---
             let userPlan = "gratuito";
@@ -2477,10 +2479,12 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                         }
 
                         let data = snap.data();
-                        console.log("✅ [FIRESTORE] Datos recibidos:", {
-                            nombre: data.nombre,
-                            plan: data.plan,
-                            verificado: data.verificado,
+                        console.log("✅ [FIRESTORE] Perfil cargado:", {
+                            uid: uid,
+                            nombre: data?.nombre,
+                            foto: data?.foto ? "CONTIENE URL" : "SIN FOTO",
+                            plan: data?.plan,
+                            verificado: data?.verificado,
                         });
                         userData = data;
 
@@ -2707,20 +2711,22 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                         docDniUrl = data.doc_dni;
                         docAntUrl = data.doc_antecedentes;
 
-                        // SIDEBAR
+                        // SIDEBAR & PROFILE IMAGE
                         setText("sidebar-name", data.nombre);
                         setText(
                             "sidebar-cuit",
                             data.cuit ? `CUIT/CUIL: ${data.cuit}` : "",
                         );
-                        setSrc(
-                            "avatar-img",
-                            data.foto ||
-                                `https://ui-avatars.com/api/?name=${encodeURIComponent(data.nombre)}&background=ea580c&color=fff`,
-                        );
-                        document
-                            .getElementById("avatar-img")
-                            ?.classList.remove("hidden");
+
+                        const profileImgEl = document.getElementById(
+                            "profile-img",
+                        ) as HTMLImageElement;
+                        if (profileImgEl) {
+                            profileImgEl.src =
+                                data.foto ||
+                                `https://ui-avatars.com/api/?name=${encodeURIComponent(data.nombre)}&background=ea580c&color=fff`;
+                            profileImgEl.classList.remove("hidden");
+                        }
 
                         renderPlanInfo(userPlan);
                         renderBadges(data);
@@ -2854,10 +2860,10 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
 
                         // NEW FIELDS
                         // Equipo
+                        const tieneEquipoCheck = document.getElementById(
+                            "tiene_equipo",
+                        ) as HTMLInputElement;
                         if (data.equipo?.tiene) {
-                            // @ts-ignore
-                            const tieneEquipoCheck =
-                                document.getElementById("tiene_equipo");
                             if (tieneEquipoCheck)
                                 tieneEquipoCheck.checked = true;
                             setVal("equipo_cantidad", data.equipo.cantidad);
@@ -2865,19 +2871,18 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                                 .getElementById("equipo-options")
                                 ?.classList.remove("hidden");
                         } else {
-                            // @ts-ignore
-                            document.getElementById("tiene_equipo").checked =
-                                false;
+                            if (tieneEquipoCheck)
+                                tieneEquipoCheck.checked = false;
                             document
                                 .getElementById("equipo-options")
                                 ?.classList.add("hidden");
                         }
 
                         // Matricula
+                        const matriculadoCheck = document.getElementById(
+                            "matriculado",
+                        ) as HTMLInputElement;
                         if (data.matricula?.es_matriculado) {
-                            // @ts-ignore
-                            const matriculadoCheck =
-                                document.getElementById("matriculado");
                             if (matriculadoCheck)
                                 matriculadoCheck.checked = true;
                             setVal("matricula_texto", data.matricula.texto);
@@ -2887,17 +2892,15 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                                 ?.classList.remove("hidden");
                         } else if (data.numero_matricula) {
                             // Legacy support
-                            // @ts-ignore
-                            document.getElementById("matriculado").checked =
-                                true;
+                            if (matriculadoCheck)
+                                matriculadoCheck.checked = true;
                             setVal("matricula_texto", data.numero_matricula);
                             document
                                 .getElementById("matricula-options")
                                 ?.classList.remove("hidden");
                         } else {
-                            // @ts-ignore
-                            document.getElementById("matriculado").checked =
-                                false;
+                            if (matriculadoCheck)
+                                matriculadoCheck.checked = false;
                             document
                                 .getElementById("matricula-options")
                                 ?.classList.add("hidden");
@@ -3446,10 +3449,15 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                                 .replace(/^-|-$/g, "");
                         }
 
+                        console.log(
+                            "💾 [SAVE] Iniciando guardado total...",
+                            updates,
+                        );
                         await updateDoc(
                             fireDoc(db, "profesionales", currentUserUid),
                             updates,
                         );
+                        console.log("✅ [SAVE] Perfil guardado exitosamente");
 
                         // ⭐ [GAMIFICATION] Recompensa por Descripción
                         if (
@@ -3819,6 +3827,27 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
 
                                     const giftcardConfig = giftcardDoc.data();
 
+                                    // 🚀 Verificar restricción por IP
+                                    const userIP = await getIP();
+                                    if (userIP) {
+                                        const ipCheckDoc = await getDoc(
+                                            fireDoc(
+                                                db,
+                                                "usos_giftcards_ip",
+                                                userIP,
+                                            ),
+                                        );
+                                        if (ipCheckDoc.exists()) {
+                                            // @ts-ignore
+                                            Swal.fire({
+                                                icon: "warning",
+                                                title: "Límite Alcanzado",
+                                                text: "Este dispositivo o red ya ha utilizado un código promocional.",
+                                            });
+                                            return;
+                                        }
+                                    }
+
                                     // Validar código
                                     if (
                                         codigo.trim().toUpperCase() !==
@@ -3888,6 +3917,24 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                                                 (giftcardConfig.usos || 0) + 1,
                                         },
                                     );
+
+                                    // Registrar uso por IP
+                                    if (userIP) {
+                                        await setDoc(
+                                            fireDoc(
+                                                db,
+                                                "usos_giftcards_ip",
+                                                userIP,
+                                            ),
+                                            {
+                                                uid: currentUserUid,
+                                                codigo: codigo
+                                                    .trim()
+                                                    .toUpperCase(),
+                                                fecha: new Date(),
+                                            },
+                                        );
+                                    }
 
                                     // @ts-ignore
                                     Swal.fire({
@@ -3985,6 +4032,22 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                                 document
                                     .getElementById("profile-img")
                                     ?.classList.remove("hidden");
+
+                                // ⭐ [AUTO-SAVE] Persistir la foto inmediatamente
+                                console.log(
+                                    "💾 [UPLOAD] Auto-guardando foto en Firestore...",
+                                );
+                                await updateDoc(
+                                    fireDoc(
+                                        db,
+                                        "profesionales",
+                                        currentUserUid,
+                                    ),
+                                    {
+                                        foto: url,
+                                    },
+                                );
+                                console.log("✅ [UPLOAD] Foto persistida.");
                             } else if (type === "portfolio") {
                                 Swal.close();
 

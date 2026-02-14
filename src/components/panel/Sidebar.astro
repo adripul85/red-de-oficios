@@ -128,13 +128,9 @@ const isActive = (path) => {
 </aside>
 
 <script>
-    import { auth, app, db } from "../../firebase/client";
+    import { auth, db, doc, onSnapshot } from "../../firebase/client";
     import { signOut } from "firebase/auth";
-    import { getFirestore, doc, onSnapshot } from "firebase/firestore";
     import { calculateLevel, getLevelProgress } from "../../utils/gamification";
-
-    // const db = getFirestore(app); // Standardized to use singleton from client.js
-    // db is imported from "../../firebase/client";
 
     function setupSidebar() {
         const logoutBtn = document.getElementById("btn-logout");

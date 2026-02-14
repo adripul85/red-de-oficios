@@ -305,24 +305,25 @@ import Layout from "../../layouts/Layout.astro";
         </div>
 
         <script>
-            import { auth, app, db } from "../../firebase/client";
             import {
-                getFirestore,
+                db,
+                auth,
+                doc,
+                getDoc,
+                onSnapshot,
                 collection,
                 query,
                 where,
                 getDocs,
+                updateDoc,
+                addDoc,
+                deleteDoc,
                 orderBy,
                 limit,
-                doc,
-                updateDoc,
                 arrayUnion,
-                getDoc,
-                deleteField,
-                onSnapshot,
-                addDoc,
                 increment,
-            } from "firebase/firestore";
+                deleteField,
+            } from "../../firebase/client";
             import { onAuthStateChanged } from "firebase/auth";
             import Swal from "sweetalert2";
             import { getAuthRedirect } from "../../utils/auth-redirects";

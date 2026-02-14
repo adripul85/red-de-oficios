@@ -28,10 +28,10 @@ export async function getAuthRedirect(user: any): Promise<string> {
         }
 
         if (premiumPlans.includes(plan)) {
-            return "/mi-perfil";
+            return "/panel";
         }
 
-        // Free tier goes to profile as well
+        // Free tier goes to profile
         return "/mi-perfil";
     }
 
