@@ -46,14 +46,14 @@ if (!profesional.web_propia) {
 const esExperto =
     profesional.plan === "experto" || profesional.plan === "semestral";
 const mostrarComoLanding = esExperto && profesional.web_propia;
-const promedio = profesional.promedio || 3.0; // Standardized fallback to 3.0
+const promedio = profesional.promedio || 0.0; // Standardized fallback to 0.0
 const votos = profesional.total_votos || 0;
 const ubicacion = profesional.zona || "Argentina";
 
 const portfolioJson = JSON.stringify(profesional.portfolio || []);
 const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
 
-const seoTitle = profesional.seo_nombre || `${profesional.nombre} | DeOficios`;
+const seoTitle = profesional.seo_nombre || `${profesional.nombre} | deOficiosArgentina`;
 const seoDescription =
     profesional.seo_profesion ||
     `Contacta a ${profesional.nombre}, ${profesional.rubro_principal} en ${ubicacion}. Ver perfil, fotos y opiniones.`;
@@ -170,7 +170,7 @@ import ModernProfileCard from "../components/ModernProfileCard.astro";
                     idPro={idProfesional}
                     idName={profesional.nombre}
                     isBlocked={isBlocked}
-                    whatsappUrl={`https://wa.me/549${profesional.telefono}?text=Hola, vi tu perfil en Red de Oficio y quería hacerte una consulta.`}
+                    whatsappUrl={`https://wa.me/549${profesional.telefono}?text=Hola, vi tu perfil en deOficiosArgentina y quería hacerte una consulta.`}
                 />
             </div>
         ) : (

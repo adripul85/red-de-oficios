@@ -1,19 +1,19 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
 ---
 
-<Layout title="Contáctanos - DeOficios">
-  
-
+<Layout title="Contáctanos - deOficiosArgentina">
   <main class="contact-container">
     <div class="content-wrapper">
-      
       <div class="contact-info">
-<h1>Hablemos 💬</h1>
-        <p>¿Tienes dudas sobre cómo funciona la plataforma? ¿Eres profesional y necesitas ayuda con tu plan?</p>
-        
+        <h1>Hablemos 💬</h1>
+        <p>
+          ¿Tienes dudas sobre cómo funciona la plataforma? ¿Eres profesional y
+          necesitas ayuda con tu plan?
+        </p>
+
         <div class="info-item">
           <span class="icon">📧</span>
           <div>
@@ -23,7 +23,7 @@ import Footer from '../components/Footer.astro';
         </div>
 
         <div class="info-item">
-<span class="icon">📍</span>
+          <span class="icon">📍</span>
           <div>
             <strong>Oficinas</strong>
             <p>Buenos Aires, Argentina</p>
@@ -33,7 +33,7 @@ import Footer from '../components/Footer.astro';
         <div class="faq-box">
           <h3>Preguntas Frecuentes</h3>
           <details>
-<summary>¿Es gratis registrarse?</summary>
+            <summary>¿Es gratis registrarse?</summary>
             <p>Sí, el plan básico es 100% gratuito.</p>
           </details>
           <details>
@@ -44,83 +44,93 @@ import Footer from '../components/Footer.astro';
       </div>
 
       <div class="form-box">
-<h2>Envíanos un mensaje</h2>
+        <h2>Envíanos un mensaje</h2>
         <form id="contact-form">
-            <div class="input-group">
-                <label>Nombre Completo</label>
-                <input type="text" id="nombre" placeholder="Ej: Maria Gonzalez" required />
-            </div>
+          <div class="input-group">
+            <label>Nombre Completo</label>
+            <input
+              type="text"
+              id="nombre"
+              placeholder="Ej: Maria Gonzalez"
+              required
+            />
+          </div>
 
-            <div class="input-group">
-                <label>Tu Email</label>
-                <input type="email" id="email" placeholder="maria@email.com" required />
-            </div>
+          <div class="input-group">
+            <label>Tu Email</label>
+            <input
+              type="email"
+              id="email"
+              placeholder="maria@email.com"
+              required
+            />
+          </div>
 
-            <div class="input-group">
-                <label>Asunto</label>
-                <select id="asunto">
-                    <option>Consulta General</option>
-<option>Soporte Técnico</option>
-                    <option>Facturación / Pagos</option>
-                    <option>Reportar un problema</option>
-                </select>
-            </div>
+          <div class="input-group">
+            <label>Asunto</label>
+            <select id="asunto">
+              <option>Consulta General</option>
+              <option>Soporte Técnico</option>
+              <option>Facturación / Pagos</option>
+              <option>Reportar un problema</option>
+            </select>
+          </div>
 
-            <div class="input-group">
-                <label>Mensaje</label>
-<textarea id="mensaje" rows="5" placeholder="¿En qué podemos ayudarte?" required></textarea>
-            </div>
+          <div class="input-group">
+            <label>Mensaje</label>
+            <textarea
+              id="mensaje"
+              rows="5"
+              placeholder="¿En qué podemos ayudarte?"
+              required></textarea>
+          </div>
 
-            <button type="submit" class="btn-send">Enviar Mensaje 🚀</button>
-            <p id="status-msg" class="status-msg"></p>
+          <button type="submit" class="btn-send">Enviar Mensaje 🚀</button>
+          <p id="status-msg" class="status-msg"></p>
         </form>
       </div>
-
     </div>
   </main>
-
-  
 </Layout>
 
 <script>
- import { db } from '../firebase/client';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-  const form = document.getElementById('contact-form');
-  const btn = form.querySelector('.btn-send');
-  const status = document.getElementById('status-msg');
+  import { db } from "../firebase/client";
+  import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+  const form = document.getElementById("contact-form");
+  const btn = form.querySelector(".btn-send");
+  const status = document.getElementById("status-msg");
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     btn.disabled = true;
     btn.textContent = "Enviando...";
 
     try {
-        const nombre = document.getElementById('nombre').value;
-        const email = document.getElementById('email').value;
-        const asunto = document.getElementById('asunto').value;
-        const mensaje = document.getElementById('mensaje').value;
+      const nombre = document.getElementById("nombre").value;
+      const email = document.getElementById("email").value;
+      const asunto = document.getElementById("asunto").value;
+      const mensaje = document.getElementById("mensaje").value;
 
-// Guardar en la colección que lee el Admin
-        await addDoc(collection(db, "mensajes_web"), {
-            nombre,
-            email,
-            asunto,
-            mensaje,
-            fecha: serverTimestamp(),
-            leido: false
-        });
+      // Guardar en la colección que lee el Admin
+      await addDoc(collection(db, "mensajes_web"), {
+        nombre,
+        email,
+        asunto,
+        mensaje,
+        fecha: serverTimestamp(),
+        leido: false,
+      });
 
-status.textContent = "¡Mensaje enviado! Te responderemos pronto. ✅";
-        status.style.color = "green";
-        form.reset();
-
+      status.textContent = "¡Mensaje enviado! Te responderemos pronto. ✅";
+      status.style.color = "green";
+      form.reset();
     } catch (error) {
-        console.error(error);
-        status.textContent = "Hubo un error. Intenta nuevamente.";
-        status.style.color = "red";
+      console.error(error);
+      status.textContent = "Hubo un error. Intenta nuevamente.";
+      status.style.color = "red";
     } finally {
-        btn.disabled = false;
-btn.textContent = "Enviar Mensaje 🚀";
+      btn.disabled = false;
+      btn.textContent = "Enviar Mensaje 🚀";
     }
   });
 </script>
@@ -129,7 +139,7 @@ btn.textContent = "Enviar Mensaje 🚀";
   .contact-container {
     background: #f3f4f6;
     padding: 60px 20px;
-    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-family: "Segoe UI", system-ui, sans-serif;
     min-height: 80vh;
   }
 
@@ -143,32 +153,95 @@ btn.textContent = "Enviar Mensaje 🚀";
   }
 
   /* COLUMNA INFO */
-  .contact-info h1 { font-size: 2.5rem; color: #1f2937; margin-bottom: 10px; }
-  .contact-info p { color: #6b7280; font-size: 1.1rem; margin-bottom: 30px; }
+  .contact-info h1 {
+    font-size: 2.5rem;
+    color: #1f2937;
+    margin-bottom: 10px;
+  }
+  .contact-info p {
+    color: #6b7280;
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+  }
 
-  .info-item { display: flex; gap: 15px; margin-bottom: 25px; align-items: center; }
-  .info-item .icon { font-size: 1.5rem; background: #e0f2fe; color: #0284c7; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
-  .info-item strong { display: block; color: #1f2937; }
-  .info-item p { margin: 0; font-size: 1rem; }
+  .info-item {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 25px;
+    align-items: center;
+  }
+  .info-item .icon {
+    font-size: 1.5rem;
+    background: #e0f2fe;
+    color: #0284c7;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  .info-item strong {
+    display: block;
+    color: #1f2937;
+  }
+  .info-item p {
+    margin: 0;
+    font-size: 1rem;
+  }
 
-  .faq-box { margin-top: 40px; background: white; padding: 25px; border-radius: 12px; border: 1px solid #e5e7eb; }
-  .faq-box h3 { margin-top: 0; color: #ea580c; }
-  details { margin-bottom: 10px; border-bottom: 1px solid #f3f4f6; padding-bottom: 10px; cursor: pointer; }
-  summary { font-weight: 600; color: #374151; outline: none; }
-  details p { margin: 10px 0 0; font-size: 0.95rem; }
+  .faq-box {
+    margin-top: 40px;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+  }
+  .faq-box h3 {
+    margin-top: 0;
+    color: #ea580c;
+  }
+  details {
+    margin-bottom: 10px;
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 10px;
+    cursor: pointer;
+  }
+  summary {
+    font-weight: 600;
+    color: #374151;
+    outline: none;
+  }
+  details p {
+    margin: 10px 0 0;
+    font-size: 0.95rem;
+  }
 
   /* COLUMNA FORMULARIO */
   .form-box {
     background: white;
     padding: 40px;
     border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
   }
-  .form-box h2 { margin-top: 0; margin-bottom: 25px; color: #1f2937; }
+  .form-box h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    color: #1f2937;
+  }
 
-  .input-group { margin-bottom: 20px; }
-  .input-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #4b5563; }
-  .input-group input, .input-group select, .input-group textarea {
+  .input-group {
+    margin-bottom: 20px;
+  }
+  .input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #4b5563;
+  }
+  .input-group input,
+  .input-group select,
+  .input-group textarea {
     width: 100%;
     padding: 12px;
     border: 1px solid #d1d5db;
@@ -178,7 +251,12 @@ btn.textContent = "Enviar Mensaje 🚀";
     font-family: inherit;
     transition: 0.2s;
   }
-  .input-group input:focus, .input-group textarea:focus { border-color: #ea580c; outline: none; ring: 2px solid #ea580c; }
+  .input-group input:focus,
+  .input-group textarea:focus {
+    border-color: #ea580c;
+    outline: none;
+    ring: 2px solid #ea580c;
+  }
 
   .btn-send {
     width: 100%;
@@ -192,12 +270,23 @@ btn.textContent = "Enviar Mensaje 🚀";
     cursor: pointer;
     transition: 0.2s;
   }
-  .btn-send:hover { background: #ea580c; transform: translateY(-2px); }
+  .btn-send:hover {
+    background: #ea580c;
+    transform: translateY(-2px);
+  }
 
-  .status-msg { text-align: center; margin-top: 15px; font-weight: bold; }
+  .status-msg {
+    text-align: center;
+    margin-top: 15px;
+    font-weight: bold;
+  }
 
   @media (max-width: 768px) {
-    .content-wrapper { grid-template-columns: 1fr; }
-    .form-box { padding: 25px; }
+    .content-wrapper {
+      grid-template-columns: 1fr;
+    }
+    .form-box {
+      padding: 25px;
+    }
   }
 </style>

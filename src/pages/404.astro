@@ -1,31 +1,29 @@
-
 ---
-import Layout from '../layouts/Layout.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
+import Layout from "../layouts/Layout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
 ---
 
-<Layout title="Página no encontrada - DeOficios">
-  
-
+<Layout title="404 - No Encontrado | deOficiosArgentina">
   <main class="error-container">
     <div class="content-box">
-      
       <div class="icon-animation">🏗️</div>
-      
+
       <h1>404</h1>
       <h2>¡Ups! Se nos perdió el plano.</h2>
-      <p>La página que buscas no existe o se encuentra en construcción. <br>Volvamos a buscar un profesional.</p>
+      <p>
+        La página que buscas no existe o se encuentra en construcción. <br
+        />Volvamos a buscar un profesional.
+      </p>
 
       <div class="actions">
         <a href="/" class="btn-primary">Volver al Inicio 🏠</a>
-        <a href="/resultados?q=todos" class="btn-outline">Ver Profesionales 🔍</a>
+        <a href="/resultados?q=todos" class="btn-outline"
+          >Ver Profesionales 🔍</a
+        >
       </div>
-
     </div>
   </main>
-
-  
 </Layout>
 
 <style>
@@ -37,14 +35,14 @@ import Footer from '../components/Footer.astro';
     background-color: #f3f4f6;
     text-align: center;
     padding: 20px;
-    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-family: "Segoe UI", system-ui, sans-serif;
   }
 
   .content-box {
     background: white;
     padding: 50px;
     border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
     max-width: 500px;
     width: 100%;
     border: 1px solid #e5e7eb;
@@ -113,9 +111,19 @@ import Footer from '../components/Footer.astro';
   }
 
   @keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-    40% {transform: translateY(-20px);}
-    60% {transform: translateY(-10px);}
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-20px);
+    }
+    60% {
+      transform: translateY(-10px);
+    }
   }
 
   @media (min-width: 600px) {
@@ -125,4 +133,3 @@ import Footer from '../components/Footer.astro';
     }
   }
 </style>
-

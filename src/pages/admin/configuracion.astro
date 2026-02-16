@@ -214,6 +214,83 @@ import LayoutAdmin from "../../layouts/LayoutAdmin.astro";
                 </div>
             </footer>
         </div>
+
+        <!-- Founder Seal Card -->
+        <div
+            class="bg-white rounded-[2.5rem] shadow-sm border border-slate-50 overflow-hidden flex flex-col h-fit"
+        >
+            <header class="p-8 border-b border-slate-50 bg-orange-50/30">
+                <h3
+                    class="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2"
+                >
+                    <span class="text-2xl">🏅</span> Sello de Fundador
+                </h3>
+                <p
+                    class="text-xs text-slate-500 font-bold mt-1 uppercase tracking-widest"
+                >
+                    Insignia "Pionero 2026" para los primeros profesionales
+                </p>
+            </header>
+
+            <form id="form-pionero" class="p-8 space-y-6">
+                <div
+                    class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100"
+                >
+                    <input
+                        type="checkbox"
+                        id="pioneer-enabled"
+                        class="w-6 h-6 rounded-lg text-orange-600 focus:ring-orange-500 border-slate-300 transition-all"
+                    />
+                    <label
+                        for="pioneer-enabled"
+                        class="text-sm font-black text-slate-700 uppercase tracking-tight cursor-pointer"
+                        >Activar Sello en Perfiles</label
+                    >
+                </div>
+
+                <div>
+                    <label
+                        class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2"
+                        >Límite de Usuarios (Hasta el ID #...)</label
+                    >
+                    <input
+                        type="number"
+                        id="pioneer-threshold"
+                        placeholder="20"
+                        min="1"
+                        class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                        required
+                    />
+                    <p class="text-[10px] text-slate-400 font-medium mt-2 px-1">
+                        * Los profesionales con un número de registro menor o
+                        igual a este valor mostrarán el sello.
+                    </p>
+                </div>
+
+                <div
+                    class="bg-blue-50/30 p-4 rounded-2xl border border-blue-50 text-center"
+                >
+                    <p
+                        class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1"
+                    >
+                        Contador Global Actual
+                    </p>
+                    <p
+                        id="global-registration-counter"
+                        class="text-2xl font-black text-slate-800"
+                    >
+                        -
+                    </p>
+                </div>
+
+                <button
+                    type="submit"
+                    class="w-full py-4 bg-orange-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-orange-100 hover:bg-orange-700 transition-all active:scale-95"
+                >
+                    🏅 Guardar Configuración Pionera
+                </button>
+            </form>
+        </div>
     </div>
 </LayoutAdmin>
 
@@ -284,11 +361,29 @@ import LayoutAdmin from "../../layouts/LayoutAdmin.astro";
                     const semestralInput = document.getElementById(
                         "price-semestral",
                     ) as HTMLInputElement;
+                    const pioneerEnabledInput = document.getElementById(
+                        "pioneer-enabled",
+                    ) as HTMLInputElement;
+                    const pioneerThresholdInput = document.getElementById(
+                        "pioneer-threshold",
+                    ) as HTMLInputElement;
+                    const counterEl = document.getElementById(
+                        "global-registration-counter",
+                    );
 
                     if (monthlyInput && data.price_monthly)
                         monthlyInput.value = data.price_monthly;
                     if (semestralInput && data.price_semestral)
                         semestralInput.value = data.price_semestral;
+
+                    if (pioneerEnabledInput)
+                        pioneerEnabledInput.checked =
+                            data.pioneer_badge_enabled || false;
+                    if (pioneerThresholdInput)
+                        pioneerThresholdInput.value =
+                            data.pioneer_threshold || 20;
+                    if (counterEl)
+                        counterEl.innerText = data.last_registration_index || 0;
                 }
             } catch (e) {
                 console.error("Error loading admin config:", e);
@@ -388,6 +483,37 @@ import LayoutAdmin from "../../layouts/LayoutAdmin.astro";
                 } catch (e) {
                     console.error(e);
                     alert("Error al guardar los precios.");
+                }
+            });
+        // Guardar Pionero
+        document
+            .getElementById("form-pionero")
+            ?.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const enabled = (
+                    document.getElementById(
+                        "pioneer-enabled",
+                    ) as HTMLInputElement
+                ).checked;
+                const threshold = (
+                    document.getElementById(
+                        "pioneer-threshold",
+                    ) as HTMLInputElement
+                ).value;
+
+                try {
+                    await setDoc(
+                        doc(db, "configuracion", "general"),
+                        {
+                            pioneer_badge_enabled: enabled,
+                            pioneer_threshold: parseInt(threshold),
+                        },
+                        { merge: true },
+                    );
+                    alert("✅ Configuración de Fundadores guardada.");
+                } catch (e) {
+                    console.error(e);
+                    alert("Error al guardar la configuración de pioneros.");
                 }
             });
     });

@@ -30,7 +30,6 @@ const profesionales = snapshot.docs
       lng = data.ubicacion_exacta.lng;
     }
     // 2. Barrio Genérico (Fallback)
-
     else if (BARRIOS_COORDENADAS && BARRIOS_COORDENADAS[zona]) {
       const coords = BARRIOS_COORDENADAS[zona];
       const noise = () => (Math.random() - 0.5) * 0.008;
@@ -48,7 +47,6 @@ const profesionales = snapshot.docs
     else if (esPro) nivel = "pro";
     else return null; // Eliminar pines azules (básicos)
 
-
     return {
       id: doc.id,
       nombre: data.nombre,
@@ -60,17 +58,17 @@ const profesionales = snapshot.docs
   })
   .filter((p) => p !== null && p.coords.lat !== null); // Filtramos nulos y sin coords
 
-const mapData = profesionales.map(p => ({
+const mapData = profesionales.map((p) => ({
   i: p.id,
   n: p.nombre,
   c: p.categoria,
   f: p.foto,
   l: p.nivel,
-  g: [p.coords.lat, p.coords.lng]
+  g: [p.coords.lat, p.coords.lng],
 }));
 ---
 
-<Layout title="Mapa de Profesionales - DeOficios" hideFooter={true}>
+<Layout title="Mapa de Profesionales - deOficiosArgentina" hideFooter={true}>
   <div class="map-page">
     <div class="map-sidebar">
       <div class="flex items-center gap-2 mb-4 md:mb-4">
@@ -134,7 +132,6 @@ const mapData = profesionales.map(p => ({
     </div>
 
     <div id="map" class="map-container touch-none"></div>
-
   </div>
 </Layout>
 
@@ -154,12 +151,20 @@ const mapData = profesionales.map(p => ({
   />
 
   <!-- Scripts de Leaflet (is:inline ensures they stay as globals in head) -->
-  <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script is:inline src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+  <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  ></script>
+  <script
+    is:inline
+    src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"
+  ></script>
 </Fragment>
 
-
-<script is:inline id="map-data" type="application/json" set:html={JSON.stringify(mapData)}></script>
+<script
+  is:inline
+  id="map-data"
+  type="application/json"
+  set:html={JSON.stringify(mapData)}
+/>
 
 <script is:inline>
   // Variable global para limpiar el mapa anterior (scoped to module or window)
@@ -194,14 +199,21 @@ const mapData = profesionales.map(p => ({
 
     function attemptInit() {
       // @ts-ignore
-      if (typeof L !== "undefined" && typeof L.markerClusterGroup !== "undefined") {
+      if (
+        typeof L !== "undefined" &&
+        typeof L.markerClusterGroup !== "undefined"
+      ) {
         initMap();
       } else if (retryCount < maxRetries) {
         retryCount++;
-        console.log(`⏳ [MAPA] Esperando Leaflet... (${retryCount}/${maxRetries})`);
+        console.log(
+          `⏳ [MAPA] Esperando Leaflet... (${retryCount}/${maxRetries})`,
+        );
         setTimeout(attemptInit, 200);
       } else {
-        console.error("❌ [MAPA] No se pudo cargar Leaflet tras múltiples intentos.");
+        console.error(
+          "❌ [MAPA] No se pudo cargar Leaflet tras múltiples intentos.",
+        );
       }
     }
 
@@ -212,10 +224,10 @@ const mapData = profesionales.map(p => ({
       const L = window.L;
       if (!L) return;
 
-      mapInstance = L.map("map", { 
+      mapInstance = L.map("map", {
         zoomControl: false,
         fadeAnimation: true,
-        markerZoomAnimation: true
+        markerZoomAnimation: true,
       }).setView([-34.6037, -58.3816], 6);
 
       L.control.zoom({ position: "bottomright" }).addTo(mapInstance);
@@ -231,7 +243,8 @@ const mapData = profesionales.map(p => ({
       const IconFactory = (color) =>
         L.icon({
           iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png`,
-          shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+          shadowUrl:
+            "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
           iconSize: [25, 41],
           iconAnchor: [12, 41],
           popupAnchor: [1, -34],
@@ -250,7 +263,7 @@ const mapData = profesionales.map(p => ({
         chunkedLoading: true,
         maxClusterRadius: 50,
         spiderfyOnMaxZoom: true,
-        showCoverageOnHover: false
+        showCoverageOnHover: false,
       });
 
       pros.forEach((p) => {
@@ -282,7 +295,7 @@ const mapData = profesionales.map(p => ({
           icon: iconToUse,
           zIndexOffset: zIndex,
         }).bindPopup(popupContent);
-        
+
         markerCluster.addLayer(marker);
       });
 
@@ -291,15 +304,19 @@ const mapData = profesionales.map(p => ({
       if (pros.length > 0) {
         try {
           mapInstance.fitBounds(markerCluster.getBounds(), {
-              padding: [50, 50],
-              maxZoom: 15,
+            padding: [50, 50],
+            maxZoom: 15,
           });
-        } catch(e) {}
+        } catch (e) {}
       }
 
       // 🛰️ AUTO-UBICACIÓN: Intentar centrar en el usuario al entrar
       console.log("🛰️ [MAPA] Intentando auto-ubicación...");
-      mapInstance.locate({ setView: true, maxZoom: 14, enableHighAccuracy: true });
+      mapInstance.locate({
+        setView: true,
+        maxZoom: 14,
+        enableHighAccuracy: true,
+      });
 
       // Geolocalización (Botón Manual)
       const btnLocate = document.getElementById("btn-locate");
@@ -380,10 +397,13 @@ const mapData = profesionales.map(p => ({
       align-items: center;
       gap: 8px;
     }
-    .map-sidebar h1, .map-sidebar .text-3xl {
+    .map-sidebar h1,
+    .map-sidebar .text-3xl {
       font-size: 1rem;
     }
-    .map-sidebar .map-sidebar-info, .map-sidebar .map-sidebar-references, .map-sidebar .mt-auto {
+    .map-sidebar .map-sidebar-info,
+    .map-sidebar .map-sidebar-references,
+    .map-sidebar .mt-auto {
       display: none; /* Hide non-essential info on mobile top bar */
     }
     .map-sidebar #btn-locate {
@@ -392,8 +412,7 @@ const mapData = profesionales.map(p => ({
       font-size: 0.75rem;
     }
     .map-sidebar .back-link {
-        margin-left: auto;
+      margin-left: auto;
     }
   }
 </style>
-

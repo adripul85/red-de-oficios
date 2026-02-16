@@ -11,6 +11,8 @@ import {
   limit,
   orderBy,
   getCountFromServer,
+  doc,
+  getDoc,
 } from "firebase/firestore";
 import {
   Search,
@@ -46,25 +48,36 @@ const qTrends = query(
 );
 
 // 2. EJECUCIÓN PARALELA (Optimización clave)
-const [snapDest, snapTop, snapTrends, totalCountSnap] = await Promise.all([
-  getDocs(qDestacados),
-  getDocs(qTop).catch((e) => {
-    console.warn("Error TopRated", e);
-    return { docs: [] };
-  }), // Fail-safe
-  getDocs(qTrends).catch((e) => {
-    console.warn("Error Trends", e);
-    return { docs: [] };
-  }), // Fail-safe
-  getCountFromServer(collection(db, "profesionales")).catch(() => ({ data: () => ({ count: 0 }) })),
-]);
+const [snapDest, snapTop, snapTrends, totalCountSnap, configSnap] =
+  await Promise.all([
+    getDocs(qDestacados),
+    getDocs(qTop).catch((e) => {
+      console.warn("Error TopRated", e);
+      return { docs: [] };
+    }), // Fail-safe
+    getDocs(qTrends).catch((e) => {
+      console.warn("Error Trends", e);
+      return { docs: [] };
+    }), // Fail-safe
+    getCountFromServer(collection(db, "profesionales")).catch(() => ({
+      data: () => ({ count: 0 }),
+    })),
+    getDoc(doc(db, "configuracion", "general")).catch(() => null),
+  ]);
+
+const configPionero = configSnap?.exists() ? configSnap.data() : {};
+const pioneerEnabled = configPionero.pioneer_badge_enabled || false;
+const pioneerThreshold = configPionero.pioneer_threshold || 20;
 
 const totalWorkers = totalCountSnap.data().count;
 
 // 3. PROCESAMIENTO DE DATOS
 
 // --- Destacados ---
-let destacados = snapDest.docs.map((doc) => ({ id: doc.id, ...doc.data() as any }));
+let destacados = snapDest.docs.map((doc) => ({
+  id: doc.id,
+  ...(doc.data() as any),
+}));
 
 // Ordenar manualmente: Experto > Impulso
 destacados.sort((a: any, b: any) => {
@@ -76,7 +89,7 @@ destacados = destacados.slice(0, 4);
 
 // --- Top Rated ---
 let topRated = snapTop.docs
-  .map((doc) => ({ id: doc.id, ...doc.data() as any }))
+  .map((doc) => ({ id: doc.id, ...(doc.data() as any) }))
   .filter((p: any) => p.promedio > 0)
   .slice(0, 4);
 
@@ -96,7 +109,7 @@ if (trendingTags.length === 0) {
 }
 ---
 
-<Layout title="DeOficios - Encontrá profesionales de confianza">
+<Layout title="deOficiosArgentina - Encontrá profesionales de confianza">
   <main>
     <HeroSearch trends={trendingTags} totalWorkers={totalWorkers} />
 
@@ -138,7 +151,6 @@ if (trendingTags.length === 0) {
             </div>
             <h3>4. Calificá ⭐</h3>
             <p>Valorá al trabajador. ¡Ayudá a los honestos a crecer!</p>
-
           </div>
         </div>
       </div>
@@ -148,7 +160,8 @@ if (trendingTags.length === 0) {
       <div class="map-content-wrapper relative overflow-hidden">
         <div class="map-text relative z-10">
           <h3>
-            <MapPin class="w-8 h-8 inline-block text-yellow-500 mr-2" /> Mapa Interactivo 📍
+            <MapPin class="w-8 h-8 inline-block text-yellow-500 mr-2" /> Mapa Interactivo
+            📍
           </h3>
           <p>Fijate quién está trabajando cerca de tu casa ahora mismo.</p>
           <a href="/mapa" class="btn-map">Explorar Mapa en Vivo</a>
@@ -156,7 +169,6 @@ if (trendingTags.length === 0) {
         <MapIcon
           class="absolute -right-10 -bottom-10 w-64 h-64 text-white/10 rotate-12 pointer-events-none"
         />
-
       </div>
     </section>
 
@@ -188,17 +200,23 @@ if (trendingTags.length === 0) {
                     </div>
                   )}
                   <span class="badge-pro">DESTACADO</span>
+                  {pioneerEnabled &&
+                    (pro.registration_index || 0) > 0 &&
+                    (pro.registration_index || 0) <= pioneerThreshold && (
+                      <div class="absolute top-[42px] right-2 bg-gradient-to-br from-orange-500 to-orange-700 text-white text-[7px] font-black uppercase tracking-tighter py-1 px-2 rounded-lg shadow-md border border-white/20 z-10 animate-pulse">
+                        Pionero 2026
+                      </div>
+                    )}
                 </div>
                 <div class="pro-info">
                   <h3>{pro.nombre} ✅</h3>
                   <span class="category">{pro.categoria}</span>
                   <p class="zona">📍 {pro.zona || "Zona no disp."}</p>
                   <div class="rating">
-                    {"★".repeat(Math.round(pro.promedio || 5))}{" "}
+                    {"★".repeat(Math.round(pro.promedio || 0))}{" "}
                     <span class="num">({pro.total_votos || 0})</span>
                   </div>
-
-                  </div>
+                </div>
               </a>
             ))}
           </div>
@@ -208,9 +226,12 @@ if (trendingTags.length === 0) {
 
     <section class="cta-pro section-pad">
       <div class="container">
-        <h2>¿Sos Profesional? <Briefcase class="w-8 h-8 inline-block text-gray-400" /></h2>
+        <h2>
+          ¿Sos Profesional? <Briefcase
+            class="w-8 h-8 inline-block text-gray-400"
+          />
+        </h2>
         <p>Sumate a la red y conseguí clientes nuevos.</p>
-
 
         <div class="cta-buttons">
           <a href="/ingresar" class="btn-join">Crear Perfil Gratis</a>
@@ -221,9 +242,9 @@ if (trendingTags.length === 0) {
           <span style="color: #cbd5e1;">¿Sos un vecino buscando ayuda?</span>
           <a
             href="/ingresar-cliente"
-            style="color: #fbbf24; font-weight: bold; text-decoration: underline; margin-left: 5px;">
+            style="color: #fbbf24; font-weight: bold; text-decoration: underline; margin-left: 5px;"
+          >
             Ingresa como Cliente aquí
-
           </a>
         </div>
       </div>
@@ -275,7 +296,6 @@ if (trendingTags.length === 0) {
     flex-direction: column;
     /* Ensure background follows theme */
     @apply bg-white transition-colors duration-300;
-
   }
   .container {
     width: 100%;

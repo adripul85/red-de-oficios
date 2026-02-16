@@ -9,7 +9,13 @@ interface Props {
 const { title } = Astro.props;
 ---
 
-<Layout title={title} hideBottomNav={true} hideIA={true} hideFooter={true}>
+<Layout
+    title={title}
+    hideBottomNav={true}
+    hideIA={true}
+    hideFooter={true}
+    hideHeader={true}
+>
     <!-- Google Material Symbols -->
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
@@ -114,8 +120,17 @@ const { title } = Astro.props;
                     <p
                         class="px-4 py-2 text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]"
                     >
-                        Comunicaciones
+                        Contenidos y Web
                     </p>
+                    <a
+                        class="sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-r-lg"
+                        href="/admin/blog"
+                    >
+                        <span class="material-symbols-outlined mr-4"
+                            >article</span
+                        >
+                        Blog / Noticias
+                    </a>
                     <a
                         class="sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-r-lg"
                         href="/admin/newsletter"

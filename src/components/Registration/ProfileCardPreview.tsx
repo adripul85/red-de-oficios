@@ -85,7 +85,7 @@ export default function ProfileCardPreview({ data }: ProfileCardPreviewProps) {
                         </span>
                     </div>
                     <div style={{ background: '#fffbeb', color: '#b45309', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                        ⭐ 5.0
+                        ⭐ {(data as any).promedio || 0.0}
                     </div>
                 </div>
 

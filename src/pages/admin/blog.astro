@@ -276,7 +276,9 @@ import { collection, getDocs } from "firebase/firestore";
             ?.addEventListener("click", addKeyword);
 
         function addKeyword() {
-            const val = (keywordInput as HTMLInputElement).value.trim();
+            const val = (keywordInput as HTMLInputElement).value
+                .replace(/,/g, "") // Limpiar comas por si acaso
+                .trim();
             if (val && !keywords.includes(val)) {
                 keywords.push(val);
                 renderKeywords();

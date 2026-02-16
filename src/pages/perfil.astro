@@ -39,7 +39,7 @@ if (profesional.slug && profesional.web_propia) {
 const esExperto =
     profesional.plan === "experto" || profesional.plan === "semestral";
 const mostrarComoLanding = esExperto && profesional.web_propia;
-const promedio = profesional.puntuacion || profesional.promedio || 3.0; // Standardized fallback to 3.0
+const promedio = profesional.puntuacion || profesional.promedio || 0.0; // Standardized fallback to 0.0
 const votos = profesional.total_valoraciones || profesional.total_votos || 0;
 const ubicacion = profesional.zona || "Argentina";
 
@@ -48,10 +48,10 @@ const serviciosJson = JSON.stringify(profesional.servicios_lista || []);
 const profesionalJson = JSON.stringify(profesional);
 
 
-const seoTitle = profesional.seo_nombre || `${profesional.nombre} | ${profesional.rubro_principal} en ${ubicacion} | DeOficios`;
+const seoTitle = profesional.seo_nombre || `${profesional.nombre} | ${profesional.rubro_principal} en ${ubicacion} | deOficiosArgentina`;
 const seoDescription =
     profesional.seo_profesion ||
-    `Contactá a ${profesional.nombre}, experto en ${profesional.rubro_principal} en ${ubicacion}. ⭐️ ${promedio.toFixed(1)}/5 (${votos} opiniones). Encontrá el mejor servicio en Red de Oficios.`;
+    `Contactá a ${profesional.nombre}, experto en ${profesional.rubro_principal} en ${ubicacion}. ⭐️ ${promedio.toFixed(1)}/5 (${votos} opiniones). Encontrá el mejor servicio en deOficiosArgentina.`;
 
 const seoImage = profesional.foto && !profesional.foto.includes("ui-avatars") 
     ? profesional.foto 
@@ -262,7 +262,7 @@ const schemaData = {
                     
                     /* Security Feature props */
                     isFake={profesional.is_fake}
-                    whatsappUrl={`https://wa.me/549${profesional.telefono}?text=${encodeURIComponent(`Hola ${profesional.nombre}, te contacto desde DeOficios.`)}`}
+                    whatsappUrl={`https://wa.me/549${profesional.telefono}?text=${encodeURIComponent(`Hola ${profesional.nombre}, te contacto desde deOficiosArgentina.`)}`}
                 />
                 <div class="max-w-[360px] w-full mx-auto mt-8 bg-white/50 backdrop-blur-sm rounded-3xl p-6 border border-white/40 shadow-xl">
                    <ProfileReviews client:visible idProfesional={idProfesional} />
@@ -614,7 +614,7 @@ const schemaData = {
                             <div class="bg-primary/5 rounded-2xl p-8 border border-primary/20">
                                 <h4 class="font-black text-primary mb-3 flex items-center gap-2 uppercase text-xs tracking-[0.15em]">
                                     <span class="material-symbols-outlined text-xl">shield</span>
-                                    Garantía Oficios
+                                    Garantía deOficiosArgentina
                                 </h4>
                                 <p class="text-sm text-neutral-gray-dark leading-relaxed font-semibold">
                                     Los trabajos realizados cuentan con el respaldo de nuestra comunidad. Verifica siempre la identidad del profesional.
@@ -738,7 +738,7 @@ const schemaData = {
                         const tracked = await registrarClickWhatsApp(proId);
                         if (!tracked) return;
 
-                        const waUrl = `https://wa.me/549${whatsapp}?text=${encodeURIComponent(`Hola ${proName}, te contacto desde DeOficios.`)}`;
+                        const waUrl = `https://wa.me/549${whatsapp}?text=${encodeURIComponent(`Hola ${proName}, te contacto desde deOficiosArgentina.`)}`;
                         window.open(waUrl, "_blank");
 
                         // Feedback Modal logic follows...

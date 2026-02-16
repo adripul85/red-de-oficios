@@ -8,7 +8,7 @@ import Header from "../components/Header.astro";
 
     <main class="editor-container">
         <div class="editor-header">
-<h1>✍️ Editor de Contenidos SEO</h1>
+            <h1>✍️ Editor de Contenidos SEO</h1>
             <p>Redacta con Markdown y define tus palabras clave.</p>
         </div>
 
@@ -21,7 +21,7 @@ import Header from "../components/Header.astro";
             <section class="form-section">
                 <form id="blog-form">
                     <div class="form-group">
-<label>Título del Artículo (H1)</label>
+                        <label>Título del Artículo (H1)</label>
                         <input
                             type="text"
                             id="titulo"
@@ -43,7 +43,7 @@ import Header from "../components/Header.astro";
 
                     <div class="form-row">
                         <div class="form-group">
-<label>Categoría</label>
+                            <label>Categoría</label>
                             <select id="categoria">
                                 <option value="Consejos">💡 Consejos</option>
                                 <option value="Noticias">📰 Noticias</option>
@@ -74,7 +74,7 @@ import Header from "../components/Header.astro";
                     </div>
 
                     <div class="form-group">
-<label>🔑 Keywords / Palabras Clave (SEO)</label>
+                        <label>🔑 Keywords / Palabras Clave (SEO)</label>
                         <small
                             >Escribe y presiona ENTER. Ej: "plomero precios",
                             "tarifario 2026".</small
@@ -85,7 +85,7 @@ import Header from "../components/Header.astro";
                                 id="keyword-input"
                                 placeholder="Agregar keyword..."
                             />
-<button type="button" id="btn-add-keyword"
+                            <button type="button" id="btn-add-keyword"
                                 >➕</button
                             >
                         </div>
@@ -98,13 +98,13 @@ import Header from "../components/Header.astro";
                             id="resumen"
                             rows="2"
                             maxlength="160"
-placeholder="Lo que aparece en Google debajo del título..."
+                            placeholder="Lo que aparece en Google debajo del título..."
                         ></textarea>
                     </div>
 
                     <div class="form-group">
                         <div class="label-row">
-<label>Contenido (Markdown Activo 📝)</label>
+                            <label>Contenido (Markdown Activo 📝)</label>
                             <a
                                 href="https://www.markdownguide.org/cheat-sheet/"
                                 target="_blank"
@@ -114,7 +114,7 @@ placeholder="Lo que aparece en Google debajo del título..."
                         <textarea
                             id="contenido"
                             rows="15"
-placeholder="# Usa numeral para títulos
+                            placeholder="# Usa numeral para títulos
 **Usa asteriscos para negrita**
 - Usa guiones para listas"
                         ></textarea>
@@ -147,7 +147,7 @@ placeholder="# Usa numeral para títulos
                 </div>
 
                 <div class="posts-list-box">
-<h3>📚 Artículos Publicados</h3>
+                    <h3>📚 Artículos Publicados</h3>
                     <div id="posts-list" class="posts-list">
                         <p class="text-muted">Cargando...</p>
                     </div>
@@ -176,7 +176,7 @@ placeholder="# Usa numeral para títulos
     import { marked } from "marked";
 
     document.addEventListener("astro:page-load", () => {
-console.log("🚀 [BLOG-EDITOR] Página cargada/navegada");
+        console.log("🚀 [BLOG-EDITOR] Página cargada/navegada");
 
         const loadingState = document.getElementById("loading-state");
         const editorContent = document.getElementById("editor-content");
@@ -270,7 +270,7 @@ console.log("🚀 [BLOG-EDITOR] Página cargada/navegada");
                     keywords = data.keywords || [];
                     renderKeywords();
 
-btnSubmit.textContent = "💾 Actualizar Artículo";
+                    btnSubmit.textContent = "💾 Actualizar Artículo";
                     statusMsg.innerText = "Modo Edición Activado";
                 } else {
                     statusMsg.innerText = "Post no encontrado.";
@@ -281,7 +281,7 @@ btnSubmit.textContent = "💾 Actualizar Artículo";
             }
         }
 
-// 2. SLUG AUTOMÁTICO (Solo si no estamos editando o si el usuario lo fuerza)
+        // 2. SLUG AUTOMÁTICO (Solo si no estamos editando o si el usuario lo fuerza)
         titleInput.addEventListener("input", (e) => {
             if (!isEditing) {
                 const val = e.target.value;
@@ -311,35 +311,35 @@ btnSubmit.textContent = "💾 Actualizar Artículo";
             mdPreview.innerHTML = html;
         });
 
-// 5. LÓGICA DE KEYWORDS (FIX COMA)
+        // 5. LÓGICA DE KEYWORDS (FIX COMA)
         function renderKeywords() {
             keywordsList.innerHTML = "";
             keywords.forEach((k, index) => {
                 const span = document.createElement("span");
                 span.className = "tag-pill";
-span.innerHTML = `${k} <button type="button" onclick="window.removeKeyword(${index})">×</button>`;
+                span.innerHTML = `${k} <button type="button" onclick="window.removeKeyword(${index})">×</button>`;
                 keywordsList.appendChild(span);
             });
         }
         function addKeyword() {
             // Limpiamos comas si se pegaron o escribieron
-            const val = keywordInput.value
-                .replace(",", "")
+            const val = (keywordInput as HTMLInputElement).value
+                .replace(/,/g, "")
                 .trim()
                 .toLowerCase();
             if (val && !keywords.includes(val)) {
                 if (keywords.length >= 10) {
-alert("Máximo 10 keywords");
+                    alert("Máximo 10 keywords");
                     return;
                 }
                 keywords.push(val);
                 renderKeywords();
-                keywordInput.value = "";
+                (keywordInput as HTMLInputElement).value = "";
             }
         }
 
         // Soporte para Enter y Coma
-        keywordInput.addEventListener("keyup", (e) => {
+        keywordInput?.addEventListener("keydown", (e: any) => {
             if (e.key === "Enter" || e.key === ",") {
                 e.preventDefault();
                 addKeyword();
@@ -381,7 +381,7 @@ alert("Máximo 10 keywords");
                         ...postData,
                         ultima_actualizacion: new Date(),
                     });
-statusMsg.textContent = "✅ ¡Actualizado correctamente!";
+                    statusMsg.textContent = "✅ ¡Actualizado correctamente!";
                 } else {
                     // CREATE
                     await addDoc(collection(db, "blog"), {
@@ -389,7 +389,7 @@ statusMsg.textContent = "✅ ¡Actualizado correctamente!";
                         fecha: new Date(),
                         vistas: 0,
                     });
-statusMsg.textContent = "✅ ¡Publicado!";
+                    statusMsg.textContent = "✅ ¡Publicado!";
                     form.reset();
                     keywords = [];
                     renderKeywords();
@@ -402,12 +402,12 @@ statusMsg.textContent = "✅ ¡Publicado!";
                 cargarPosts();
             } catch (error) {
                 console.error(error);
-statusMsg.textContent = "❌ Error: " + error.message;
+                statusMsg.textContent = "❌ Error: " + error.message;
                 statusMsg.style.color = "red";
             } finally {
                 btn.disabled = false;
                 btn.textContent = isEditing
-? "💾 Actualizar Artículo"
+                    ? "💾 Actualizar Artículo"
                     : "🚀 Publicar Artículo";
             }
         });
@@ -424,7 +424,7 @@ statusMsg.textContent = "❌ Error: " + error.message;
                 const snapshot = await getDocs(q);
 
                 if (snapshot.empty) {
-postsList.innerHTML = `<div style="text-align: center; padding: 20px; background: #f1f5f9; border-radius: 8px;"><p>📭 Sin artículos.</p></div>`;
+                    postsList.innerHTML = `<div style="text-align: center; padding: 20px; background: #f1f5f9; border-radius: 8px;"><p>📭 Sin artículos.</p></div>`;
                     return;
                 }
 
@@ -454,7 +454,7 @@ postsList.innerHTML = `<div style="text-align: center; padding: 20px; background
         }
 
         window.borrarPost = async (id) => {
-if (!confirm("¿Borrar artículo?")) return;
+            if (!confirm("¿Borrar artículo?")) return;
             try {
                 await deleteDoc(doc(db, "blog", id));
                 cargarPosts();
@@ -604,7 +604,7 @@ if (!confirm("¿Borrar artículo?")) return;
         border-radius: 8px;
     }
 
-/* PROSE PREVIEW (Simula el artículo real) */
+    /* PROSE PREVIEW (Simula el artículo real) */
     .prose-preview {
         font-family: "Georgia", serif;
         line-height: 1.6;

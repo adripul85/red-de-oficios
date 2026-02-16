@@ -63,7 +63,7 @@ export const POST: APIRoute = async ({ request }) => {
 
       try {
         const data = await resend.emails.send({
-          from: 'DeOficios <onboarding@resend.dev>', // Testing domain
+          from: 'deOficiosArgentina <newsletter@deoficiosargentina.com.ar>', // Updated domain
           to: sub.email,
           subject: subject,
           html: finalHtml
@@ -117,7 +117,7 @@ function getNewsletterTemplate(name, contentHtml, unsubscribe_link) {
 <body>
   <div class="container">
     <div class="header">
-      <h2 style="color: #ffffff; margin: 0; letter-spacing: 2px; font-size: 20px;">DEOFICIOS</h2>
+      <h2 style="color: #ffffff; margin: 0; letter-spacing: 2px; font-size: 20px;">deOficiosArgentina</h2>
       <p style="color: #94A3B8; margin: 5px 0 0 0; font-size: 10px; text-transform: uppercase;">Profesionales de confianza</p>
     </div>
 
@@ -136,7 +136,7 @@ function getNewsletterTemplate(name, contentHtml, unsubscribe_link) {
     </div>
 
     <div class="footer">
-      <p>Estás recibiendo este correo porque sos parte de la comunidad DeOficios.</p>
+      <p>Estás recibiendo este correo porque sos parte de la comunidad deOficiosArgentina.</p>
       <p>Buenos Aires, Argentina | 2026</p>
       <p><a href="${unsubscribe_link}" style="color: #94A3B8;">Darse de baja</a></p>
     </div>

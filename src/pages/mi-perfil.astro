@@ -813,6 +813,22 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                                             >
                                         </label>
 
+                                        <div
+                                            class="flex items-center gap-2 ml-auto"
+                                        >
+                                            <label
+                                                class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+                                                >Etiqueta de Precio:</label
+                                            >
+                                            <input
+                                                type="text"
+                                                id="precio_etiqueta"
+                                                class="bg-slate-100 border border-slate-200 rounded px-2 py-1 text-xs font-bold text-slate-700 outline-none focus:ring-1 focus:ring-orange-500 w-24"
+                                                placeholder="ej: visita, hora, día"
+                                                data-allow-free
+                                            />
+                                        </div>
+
                                         <!-- Invoice Types Selection (conditionally visible or always for simplicity now) -->
                                         <div
                                             id="invoice-types-container"
@@ -2868,6 +2884,11 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                         renderZonas();
 
                         // NEW FIELDS
+                        setVal(
+                            "precio_etiqueta",
+                            data.precio_etiqueta || "visita",
+                        );
+
                         // Equipo
                         const tieneEquipoCheck = document.getElementById(
                             "tiene_equipo",
@@ -3255,6 +3276,28 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                 }
 
                 // --- SAVE ---
+                // Utility for CUIT validation inlined to avoid scoping issues in large file
+                function validateCUIT(cuit) {
+                    const cleanCUIT = cuit.replace(/[^\d]/g, "");
+                    if (cleanCUIT.length !== 11) return false;
+
+                    const factors = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+                    let sum = 0;
+                    for (let i = 0; i < 10; i++) {
+                        sum += parseInt(cleanCUIT[i]) * factors[i];
+                    }
+
+                    const remainder = sum % 11;
+                    let calculatedDigit = 11 - remainder;
+
+                    if (calculatedDigit === 11) calculatedDigit = 0;
+                    if (calculatedDigit === 10) {
+                        calculatedDigit = 9;
+                    }
+
+                    return calculatedDigit === parseInt(cleanCUIT[10]);
+                }
+
                 async function saveProfile() {
                     // VALIDACIÓN CUIT
                     // @ts-ignore
@@ -3413,6 +3456,9 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                                 kick: document.getElementById("kick").value,
                                 web: document.getElementById("website").value,
                             },
+                            precio_etiqueta:
+                                document.getElementById("precio_etiqueta")
+                                    .value || "visita",
                             // @ts-ignore
                             web_propia:
                                 document.getElementById("web_propia").checked,

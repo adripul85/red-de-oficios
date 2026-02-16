@@ -54,7 +54,8 @@ export {
   increment,
   serverTimestamp,
   collectionGroup,
-  deleteField
+  deleteField,
+  runTransaction
 } from "firebase/firestore";
 
 // Centralized Storage exports

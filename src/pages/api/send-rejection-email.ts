@@ -39,15 +39,15 @@ export const POST: APIRoute = async ({ request }) => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                from: 'DeOficios <noreply@deoficios.com>',
+                from: 'deOficiosArgentina <noreply@deoficiosargentina.com>',
                 to: email,
-                subject: 'Validación de Documentos - DeOficios',
+                subject: 'Validación de Documentos - deOficiosArgentina',
                 html: `
                     <h2>Hola ${nombre},</h2>
                     <p>Lamentamos informarte que tus documentos de verificación fueron rechazados.</p>
                     <p><strong>Motivo:</strong> Los documentos no son legibles o no cumplen con los requisitos.</p>
                     <p>Por favor, vuelve a subir documentos claros y legibles desde tu perfil.</p>
-                    <p>Saludos,<br>Equipo DeOficios</p>
+                    <p>Saludos,<br>Equipo deOficiosArgentina</p>
                 `
             })
         });

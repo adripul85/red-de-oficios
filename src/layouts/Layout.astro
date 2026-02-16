@@ -22,7 +22,7 @@ interface Props {
 
 const {
 	title,
-	description = "DeOficios - Conectando profesionales con vecinos. Encontrá al experto que necesitás o ofrecés tus servicios.",
+	description = "deOficiosArgentina - Conectando profesionales con vecinos. Encontrá al experto que necesitás o ofrecés tus servicios.",
 	image = "/icon-512.png",
 	hideHeader = false,
 	hideFooter = false,
@@ -89,7 +89,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		/>
 
 		<meta name="robots" content="index, follow" />
-		<meta name="author" content="DeOficios" />
+		<meta name="author" content="deOficiosArgentina" />
 		<meta
 			name="keywords"
 			content="oficios, profesionales, plomero, electricista, gasista, argentina, servicios para el hogar"
@@ -111,7 +111,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 			set:html={JSON.stringify({
 				"@context": "https://schema.org",
 				"@type": "WebSite",
-				name: "DeOficios",
+				name: "deOficiosArgentina",
 				url: Astro.site,
 				description: description,
 				potentialAction: {
@@ -130,7 +130,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 		<div id="custom-splash-screen">
 			<img
 				src="/icon-512.png"
-				alt="Logo DeOficios"
+				alt="Logo deOficiosArgentina"
 				width="512"
 				height="512"
 			/>

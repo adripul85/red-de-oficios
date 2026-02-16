@@ -5,7 +5,7 @@ import Step3Showcase from './Step3Showcase';
 import ProfileCardPreview from './ProfileCardPreview';
 import { auth, db } from '../../firebase/client';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, runTransaction } from 'firebase/firestore';
 
 export default function RegistrationWizard() {
     const [step, setStep] = useState(1);
@@ -155,18 +155,30 @@ export default function RegistrationWizard() {
             profileData.plan = "prueba";
             profileData.trialEndsAt = fechaVencimientoPrueba;
 
-            // 3. Save to Firestore
-            console.log("💾 [FIRESTORE] Guardando perfil...");
-            console.log("📊 [FIRESTORE] Datos a guardar:", {
-                uid: user.uid,
-                nombre: profileData.nombre,
-                descripcion: profileData.descripcion,
-                telefono: profileData.telefono,
-                plan: profileData.plan,
-                totalCampos: Object.keys(profileData).length
+            // 3. Save to Firestore with Registration Indexing
+            console.log("💾 [FIRESTORE] Guardando perfil con indexación...");
+
+            await runTransaction(db, async (transaction) => {
+                const configRef = doc(db, "configuracion", "general");
+                const configSnap = await transaction.get(configRef);
+
+                let nextIndex = 1;
+                if (configSnap.exists()) {
+                    nextIndex = (configSnap.data().last_registration_index || 0) + 1;
+                }
+
+                // Update global counter
+                transaction.set(configRef, { last_registration_index: nextIndex }, { merge: true });
+
+                // Add index to profile data
+                profileData.registration_index = nextIndex;
+
+                // Save professional doc
+                const proRef = doc(db, "profesionales", user.uid);
+                transaction.set(proRef, profileData);
             });
-            await setDoc(doc(db, "profesionales", user.uid), profileData);
-            console.log("✅ [FIRESTORE] Perfil guardado exitosamente");
+
+            console.log("✅ [FIRESTORE] Perfil guardado exitosamente con indexación");
 
             // 3.5 SEND WELCOME EMAIL (Background)
             try {
@@ -339,7 +351,7 @@ export default function RegistrationWizard() {
                         <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-8 text-center text-white">
                             <div className="text-6xl mb-4">🎉</div>
                             <h2 className="text-3xl font-black mb-2 uppercase tracking-tight">¡Registro completado!</h2>
-                            <p className="text-orange-100 font-medium">Ya sos parte de la comunidad de DeOficios.</p>
+                            <p className="text-orange-100 font-medium">Ya sos parte de la comunidad de deOficiosArgentina.</p>
                         </div>
 
                         {/* Content */}
