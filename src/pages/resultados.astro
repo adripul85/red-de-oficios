@@ -1,7 +1,16 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { db } from "../firebase/client";
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  getDoc,
+  query,
+  where,
+  limit,
+  orderBy,
+} from "firebase/firestore";
 import { LOCATIONS } from "../data/locations";
 import { CATEGORIES, ALL_TRADES } from "../data/categories";
 import { findProfessionalsByDescription } from "../firebase/semanticSearch";
@@ -13,17 +22,85 @@ const useAI = searchParams.get("ai") === "true";
 const urlUbicacion = searchParams.get("ubicacion") || "";
 const urlRubro = searchParams.get("rubro") || "";
 
+// Helper para resolver Rubro a Title Case
+function resolveRubro(urlRub: string): string | null {
+  if (!urlRub) return null;
+  const lowerRub = urlRub.toLowerCase();
+  // Buscar en ALL_TRADES (que son strings simples)
+  const exactMatch = ALL_TRADES.find((t) => t.toLowerCase() === lowerRub);
+  if (exactMatch) return exactMatch;
+  return null;
+}
+
+// Helper para resolver Ubicación a Zona o Grupo
+function resolveLocation(
+  urlUbi: string,
+): { type: "zona" | "provincia"; value: string } | null {
+  if (!urlUbi) return null;
+  const lowerUbi = urlUbi.toLowerCase();
+
+  // 1. Check Zones
+  for (const group of LOCATIONS) {
+    const zoneMatch = group.zones.find((z) => z.toLowerCase() === lowerUbi);
+    if (zoneMatch) return { type: "zona", value: zoneMatch };
+  }
+
+  // 2. Check Groups
+  const groupMatch = LOCATIONS.find((g) => g.group.toLowerCase() === lowerUbi);
+  if (groupMatch) return { type: "provincia", value: groupMatch.group };
+
+  return null;
+}
+
 // 2. BUSCAR EN FIREBASE
 let resultadosFinales: any[] = [];
 let aiResults: any[] = [];
 let isNearbySearch = false;
 let fallbackZoneName = "";
 
-const snapshot = await getDocs(collection(db, "profesionales"));
-const todosLosPros = snapshot.docs.map((doc) => ({
-  id: doc.id,
-  ...doc.data(),
-}));
+// Función optimizada para buscar profesionales (fallback o estándar)
+async function fetchOptimizedPros(
+  qText: string,
+  ubi: string,
+  rub: string,
+): Promise<any[]> {
+  const resolvedRubro = resolveRubro(rub);
+  const resolvedLoc = resolveLocation(ubi);
+
+  let qFirestore = query(
+    collection(db, "profesionales"),
+    where("rol", "==", "profesional"),
+  );
+
+  // Apply Rubro Filter if exact match found
+  if (resolvedRubro) {
+    qFirestore = query(
+      qFirestore,
+      where("rubro_principal", "==", resolvedRubro),
+    );
+  }
+
+  // Apply Location Filter if exact match found
+  if (resolvedLoc) {
+    if (resolvedLoc.type === "zona") {
+      qFirestore = query(qFirestore, where("zona", "==", resolvedLoc.value));
+    } else {
+      qFirestore = query(
+        qFirestore,
+        where("provincia", "==", resolvedLoc.value),
+      );
+    }
+  }
+
+  // Always apply limit and sort
+  qFirestore = query(qFirestore, orderBy("promedio", "desc"), limit(100));
+
+  const snapshot = await getDocs(qFirestore);
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+}
 
 if (useAI && q && q !== "todos") {
   try {
@@ -33,22 +110,61 @@ if (useAI && q && q !== "todos") {
     resultadosFinales = filterNormal(aiResults, q, urlUbicacion, urlRubro);
   } catch (error) {
     console.error("❌ [AI SEARCH] Error:", error);
-    resultadosFinales = filterNormal(todosLosPros, q, urlUbicacion, urlRubro);
+    // Fallback optimizado
+    const pros = await fetchOptimizedPros(q, urlUbicacion, urlRubro);
+    resultadosFinales = filterNormal(pros, q, urlUbicacion, urlRubro);
   }
 } else {
-  resultadosFinales = filterNormal(todosLosPros, q, urlUbicacion, urlRubro);
+  // Búsqueda estándar optimizada
+  const pros = await fetchOptimizedPros(q, urlUbicacion, urlRubro);
+  resultadosFinales = filterNormal(pros, q, urlUbicacion, urlRubro);
 }
 
 // 3. FALLBACK CERCANO: Si no hay resultados y habia una zona especifica
 if (resultadosFinales.length === 0 && urlUbicacion) {
-  const zoneObj = LOCATIONS.find((g) =>
-    g.zones.some((z) => z.toLowerCase() === urlUbicacion.toLowerCase()),
-  );
-  if (zoneObj) {
-    isNearbySearch = true;
-    fallbackZoneName = zoneObj.group;
-    // Buscar todos en la misma PROVINCIA/GRUPO que coincidan con el rubro
-    resultadosFinales = filterNormal(todosLosPros, q, zoneObj.group, urlRubro);
+  const resolvedLoc = resolveLocation(urlUbicacion);
+
+  // Si la búsqueda original fue por ZONA, intentamos ampliar a PROVINCIA (Grupo)
+  if (resolvedLoc && resolvedLoc.type === "zona") {
+    const zoneObj = LOCATIONS.find((g) =>
+      g.zones.includes(resolvedLoc.value),
+    );
+
+    if (zoneObj) {
+      isNearbySearch = true;
+      fallbackZoneName = zoneObj.group;
+
+      // Hacemos una nueva query optimizada pero buscando por PROVINCIA
+      const resolvedRubro = resolveRubro(urlRubro);
+      let qFallback = query(
+        collection(db, "profesionales"),
+        where("rol", "==", "profesional"),
+        where("provincia", "==", zoneObj.group),
+      );
+
+      if (resolvedRubro) {
+        qFallback = query(
+          qFallback,
+          where("rubro_principal", "==", resolvedRubro),
+        );
+      }
+
+      qFallback = query(qFallback, orderBy("promedio", "desc"), limit(100));
+
+      const snapFallback = await getDocs(qFallback);
+      const fallbackPros = snapFallback.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      // Filtrar de nuevo con filterNormal para asegurar consistencia
+      resultadosFinales = filterNormal(
+        fallbackPros,
+        q,
+        zoneObj.group,
+        urlRubro,
+      );
+    }
   }
 }
 
