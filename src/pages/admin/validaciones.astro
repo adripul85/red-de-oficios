@@ -1,225 +1,383 @@
 ---
 import LayoutAdmin from "../../layouts/LayoutAdmin.astro";
+import { dbAdmin } from "../../firebase/admin";
+
+// Definimos la interfaz para el profesional
+interface Profesional {
+    id: string;
+    nombre?: string;
+    apellido?: string;
+    email?: string;
+    foto?: string;
+    rubro_principal?: string;
+    estado_dni?: string;
+    estado_antecedentes?: string;
+    validacion_estado?: string;
+    url_dni_frente?: string;
+    doc_dni?: string;
+    url_dni_dorso?: string;
+    url_antecedentes?: string;
+    doc_antecedentes?: string;
+    rechazado_url_dni_frente?: string;
+    rechazado_url_dni_dorso?: string;
+    motivo_rechazo_dni?: string;
+    rechazado_url_ant?: string;
+    motivo_rechazo_antecedentes?: string;
+}
+
+// Traemos a los profesionales.
+// Filtramos los que tienen algún trámite pendiente.
+const snapshot = await dbAdmin.collection("profesionales").get();
+
+const profesionalesPendientes = snapshot.docs
+    .map((doc) => ({ id: doc.id, ...doc.data() }) as Profesional)
+    .filter(
+        (p) =>
+            p.estado_dni === "pendiente" ||
+            p.estado_antecedentes === "pendiente" ||
+            p.validacion_estado === "pendiente", // Compatibilidad con el sistema anterior
+    );
 ---
 
-<LayoutAdmin title="Validaciones de Identidad - Admin">
-    <header class="mb-8 flex justify-between items-center">
-        <div>
-            <h1 class="text-3xl font-black text-slate-800 tracking-tight">
-                Solicitudes de Blindaje 🛡️
-            </h1>
-            <p class="text-slate-500 font-medium mt-1">
-                Revisa la documentación y otorga el Sello de Confianza.
-            </p>
-        </div>
-        <div
-            class="bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-100"
-        >
-            <span
-                class="text-xs font-bold text-slate-400 uppercase tracking-widest"
-                >Cola de Trabajo:</span
+<LayoutAdmin title="Validaciones | DeOficios">
+    <div class="p-8">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-black text-slate-800 tracking-tight">
+                    Centro de Validaciones 🛡️
+                </h1>
+                <p class="text-slate-500 font-medium mt-1">
+                    Aprobá la identidad y los antecedentes por separado.
+                </p>
+            </div>
+            <div
+                class="bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-100"
             >
-            <span class="text-emerald-600 font-black ml-1 uppercase text-xs"
-                >Sistema Activo 🟢</span
-            >
+                <span
+                    class="text-xs font-bold text-slate-400 uppercase tracking-widest"
+                    >Estado:</span
+                >
+                <span class="text-emerald-600 font-black ml-1 uppercase text-xs"
+                    >Sistema SSR Activo 🟢</span
+                >
+            </div>
         </div>
-    </header>
 
-    <div
-        id="loading"
-        class="text-center py-20 bg-white rounded-[2rem] border border-slate-50 shadow-sm"
-    >
-        <div class="inline-block animate-spin text-4xl text-blue-600 mb-4">
-            🌀
-        </div>
-        <p class="text-slate-400 font-bold uppercase tracking-widest text-xs">
-            Buscando solicitudes pendientes...
-        </p>
-    </div>
+        {
+            profesionalesPendientes.length === 0 ? (
+                <div class="bg-white p-12 text-center rounded-[2rem] shadow-sm border border-slate-50 text-gray-500">
+                    <div class="text-5xl mb-4">✅</div>
+                    <h3 class="font-black text-xl text-slate-800">
+                        Todo al día
+                    </h3>
+                    <p class="mt-2 font-medium text-slate-400">
+                        No hay validaciones pendientes. ¡Buen trabajo!
+                    </p>
+                </div>
+            ) : (
+                <div class="grid gap-6">
+                    {profesionalesPendientes.map((prof) => (
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden transition-all hover:shadow-md">
+                            <div class="bg-slate-50 p-6 border-b border-slate-100 flex justify-between items-center">
+                                <div class="flex items-center gap-4">
+                                    <img
+                                        src={
+                                            prof.foto ||
+                                            `https://ui-avatars.com/api/?name=${prof.nombre}`
+                                        }
+                                        class="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-sm"
+                                    />
+                                    <div>
+                                        <h2 class="text-lg font-black text-slate-900 leading-tight">
+                                            {prof.nombre} {prof.apellido || ""}
+                                        </h2>
+                                        <p class="text-xs text-slate-500 font-bold uppercase tracking-wide">
+                                            {prof.email} |{" "}
+                                            {prof.rubro_principal}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
 
-    <div
-        id="empty-state"
-        class="hidden text-center py-20 bg-white rounded-[2rem] shadow-sm border border-slate-50"
-    >
-        <div class="text-5xl mb-4">✅</div>
-        <h3 class="font-black text-xl text-slate-800">Todo al día</h3>
-        <p class="text-slate-500 mt-2 font-medium">
-            No hay profesionales pendientes de validación en este momento.
-        </p>
-    </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+                                <div class="p-8">
+                                    <h3 class="font-black text-slate-800 mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
+                                        👤 Validación de DNI
+                                        {prof.estado_dni === "aprobado" ? (
+                                            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-1 rounded-full uppercase flex items-center gap-1">
+                                                ✅ Aprobado
+                                            </span>
+                                        ) : prof.estado_dni === "rechazado" ? (
+                                            <span class="bg-red-100 text-red-800 text-[10px] font-black px-2 py-1 rounded-full uppercase flex items-center gap-1">
+                                                ❌ Rechazado
+                                            </span>
+                                        ) : prof.estado_dni === "pendiente" ||
+                                          prof.validacion_estado ===
+                                              "pendiente" ? (
+                                            <span class="bg-yellow-100 text-yellow-800 text-[10px] font-black px-2 py-1 rounded-full uppercase flex items-center gap-1">
+                                                ⏳ Pendiente
+                                            </span>
+                                        ) : (
+                                            <span class="text-[10px] font-black text-slate-400 uppercase">
+                                                {prof.estado_dni || "Sin subir"}
+                                            </span>
+                                        )}
+                                    </h3>
 
-    <div
-        id="cards-container"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-    >
+                                    {(prof.estado_dni === "pendiente" ||
+                                        prof.validacion_estado ===
+                                            "pendiente") && (
+                                        <div>
+                                            <div class="flex gap-3 mb-6">
+                                                {prof.url_dni_frente ||
+                                                prof.doc_dni ? (
+                                                    <a
+                                                        href={
+                                                            prof.url_dni_frente ||
+                                                            prof.doc_dni
+                                                        }
+                                                        target="_blank"
+                                                        class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl text-xs font-black border border-blue-100 hover:bg-blue-100 transition flex items-center gap-2"
+                                                    >
+                                                        👁️ Ver Frente
+                                                    </a>
+                                                ) : (
+                                                    <span class="text-xs text-slate-400 font-bold italic">
+                                                        Frente no disponible
+                                                    </span>
+                                                )}
+
+                                                {prof.url_dni_dorso && (
+                                                    <a
+                                                        href={
+                                                            prof.url_dni_dorso
+                                                        }
+                                                        target="_blank"
+                                                        class="bg-blue-50 text-blue-700 px-4 py-2 rounded-xl text-xs font-black border border-blue-100 hover:bg-blue-100 transition flex items-center gap-2"
+                                                    >
+                                                        👁️ Ver Dorso
+                                                    </a>
+                                                )}
+                                            </div>
+
+                                            {prof.rechazado_url_dni_frente && (
+                                                <div class="mt-4 pt-4 border-t border-slate-100 overflow-hidden">
+                                                    <p class="text-[10px] font-black text-red-500 uppercase mb-2 tracking-widest flex items-center gap-1">
+                                                        🚫 Anterior Rechazado
+                                                    </p>
+                                                    <div class="flex flex-wrap gap-2">
+                                                        <a
+                                                            href={
+                                                                prof.rechazado_url_dni_frente
+                                                            }
+                                                            target="_blank"
+                                                            class="text-[10px] bg-slate-50 text-slate-500 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 transition font-bold"
+                                                        >
+                                                            👁️ Ver Frente
+                                                            (Rechazado)
+                                                        </a>
+                                                        {prof.rechazado_url_dni_dorso && (
+                                                            <a
+                                                                href={
+                                                                    prof.rechazado_url_dni_dorso
+                                                                }
+                                                                target="_blank"
+                                                                class="text-[10px] bg-slate-50 text-slate-500 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 transition font-bold"
+                                                            >
+                                                                👁️ Ver Dorso
+                                                                (Rechazado)
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                    <p class="text-[10px] text-slate-400 italic mt-2 font-medium">
+                                                        Motivo: "
+                                                        {
+                                                            prof.motivo_rechazo_dni
+                                                        }
+                                                        "
+                                                    </p>
+                                                </div>
+                                            )}
+
+                                            {prof.estado_dni !== "aprobado" && (
+                                                <div class="flex gap-2 mt-6">
+                                                    <button
+                                                        onclick={`gestionarDocumento('${prof.id}', 'dni', 'aprobado')`}
+                                                        class="flex-1 bg-emerald-600 text-white px-4 py-3 rounded-xl text-xs font-black hover:bg-emerald-700 transition shadow-lg shadow-emerald-100"
+                                                    >
+                                                        APROBAR DNI
+                                                    </button>
+                                                    <button
+                                                        onclick={`gestionarDocumento('${prof.id}', 'dni', 'rechazado')`}
+                                                        class="bg-slate-100 text-slate-600 px-4 py-3 rounded-xl text-xs font-black hover:bg-slate-200 transition"
+                                                    >
+                                                        RECHAZAR
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div class="p-8">
+                                    <h3 class="font-black text-slate-800 mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
+                                        🌟 Antecedentes Penales
+                                        {prof.estado_antecedentes ===
+                                        "aprobado" ? (
+                                            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2 py-1 rounded-full uppercase flex items-center gap-1">
+                                                ✅ Aprobado (ORO)
+                                            </span>
+                                        ) : prof.estado_antecedentes ===
+                                          "rechazado" ? (
+                                            <span class="bg-red-100 text-red-800 text-[10px] font-black px-2 py-1 rounded-full uppercase flex items-center gap-1">
+                                                ❌ Rechazado
+                                            </span>
+                                        ) : prof.estado_antecedentes ===
+                                          "pendiente" ? (
+                                            <span class="bg-amber-100 text-amber-800 text-[10px] font-black px-2 py-1 rounded-full uppercase flex items-center gap-1">
+                                                ⏳ Pendiente
+                                            </span>
+                                        ) : (
+                                            <span class="text-[10px] font-black text-slate-400 uppercase">
+                                                {prof.estado_antecedentes ||
+                                                    "Sin subir"}
+                                            </span>
+                                        )}
+                                    </h3>
+
+                                    <div class="mb-6">
+                                        {prof.url_antecedentes ||
+                                        prof.doc_antecedentes ? (
+                                            <a
+                                                href={
+                                                    prof.url_antecedentes ||
+                                                    prof.doc_antecedentes
+                                                }
+                                                target="_blank"
+                                                class="bg-purple-50 text-purple-700 px-4 py-2 rounded-xl text-xs font-black border border-purple-100 hover:bg-purple-100 transition flex items-center gap-2 inline-flex"
+                                            >
+                                                👁️ Ver Certificado (PDF/IMG)
+                                            </a>
+                                        ) : (
+                                            <p class="text-xs text-slate-400 font-bold italic py-2">
+                                                Sin documento adjunto
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {prof.rechazado_url_ant && (
+                                        <div class="mb-6 pt-4 border-t border-slate-100">
+                                            <p class="text-[10px] font-black text-red-500 uppercase mb-2 tracking-widest flex items-center gap-1">
+                                                🚫 Anterior Rechazado
+                                            </p>
+                                            <a
+                                                href={prof.rechazado_url_ant}
+                                                target="_blank"
+                                                class="text-[10px] bg-slate-50 text-slate-500 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 transition font-bold inline-flex"
+                                            >
+                                                👁️ Ver Certificado (Rechazado)
+                                            </a>
+                                            <p class="text-[10px] text-slate-400 italic mt-2 font-medium">
+                                                Motivo: "
+                                                {
+                                                    prof.motivo_rechazo_antecedentes
+                                                }
+                                                "
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {prof.estado_antecedentes !==
+                                        "aprobado" && (
+                                        <div class="flex gap-2">
+                                            <button
+                                                onclick={`gestionarDocumento('${prof.id}', 'antecedentes', 'aprobado')`}
+                                                class={`flex-1 px-4 py-3 rounded-xl text-xs font-black transition shadow-lg uppercase ${prof.url_antecedentes || prof.doc_antecedentes ? "bg-orange-500 text-white hover:bg-orange-600 shadow-orange-100" : "bg-slate-100 text-slate-400 cursor-not-allowed opacity-50"}`}
+                                                disabled={
+                                                    !(
+                                                        prof.url_antecedentes ||
+                                                        prof.doc_antecedentes
+                                                    )
+                                                }
+                                            >
+                                                Aprobar Oro
+                                            </button>
+                                            <button
+                                                onclick={`gestionarDocumento('${prof.id}', 'antecedentes', 'rechazado')`}
+                                                class="bg-slate-100 text-slate-600 px-4 py-3 rounded-xl text-xs font-black hover:bg-slate-200 transition"
+                                            >
+                                                RECHAZAR
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )
+        }
     </div>
 </LayoutAdmin>
 
-<script>
-    // 🔥 IMPORTANTE: Ajustamos las rutas aquí también (../../)
-    import { auth, db } from "../../firebase/client";
-    import { onAuthStateChanged } from "firebase/auth";
-    import {
-        collection,
-        query,
-        where,
-        getDocs,
-        doc,
-        updateDoc,
-        getDoc,
-    } from "firebase/firestore";
+<script is:inline>
+    async function gestionarDocumento(uid, tipo, accion) {
+        let motivoRechazo = "";
 
-    document.addEventListener("astro:page-load", () => {
-        console.log("🚀 [ADMIN-VALIDACIONES] Página cargada/navegada");
-
-        const container = document.getElementById("cards-container");
-        const loading = document.getElementById("loading");
-        const empty = document.getElementById("empty-state");
-
-        // 1. VERIFICAR ADMIN
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) return (window.location.href = "/");
-
-            const docRef = doc(db, "profesionales", user.uid);
-            const docSnap = await getDoc(docRef);
-
-            // AQUI DEFINES QUIÉN ES ADMIN (Reemplaza con tu lógica o mail si prefieres)
-            const data = docSnap.data();
-            const isAdmin =
-                data && (data.rol === "admin" || data.rol === "moderador");
-
-            if (isAdmin) {
-                cargarSolicitudes();
-            } else {
-                alert("⛔ Acceso Denegado: Solo personal autorizado.");
-                window.location.href = "/";
-            }
-        });
-
-        // 2. CARGAR SOLICITUDES
-        async function cargarSolicitudes() {
-            // Buscamos profesionales donde 'validacion_estado' sea 'pendiente'
-            const q = query(
-                collection(db, "profesionales"),
-                where("validacion_estado", "==", "pendiente"),
+        // Si es un rechazo, pedimos el motivo obligatorio
+        if (accion === "rechazado") {
+            motivoRechazo = prompt(
+                `¿Por qué rechazás este documento (${tipo})? \nEj: Foto borrosa, certificado vencido...`,
             );
 
-            try {
-                const querySnapshot = await getDocs(q);
-                if (loading) loading.classList.add("hidden");
-
-                if (querySnapshot.empty) {
-                    if (empty) empty.classList.remove("hidden");
-                    return;
-                }
-
-                if (container) {
-                    container.innerHTML = "";
-                    querySnapshot.forEach((docSnap) => {
-                        crearTarjeta(docSnap.id, docSnap.data());
-                    });
-                }
-            } catch (error) {
-                console.error(error);
-                if (loading)
-                    loading.innerHTML = `<div class="bg-red-100 text-red-700 p-4 rounded">Error cargando datos: ${error.message}</div>`;
+            // Si el admin cancela el prompt o lo deja vacío, frenamos todo
+            if (motivoRechazo === null) return;
+            if (motivoRechazo.trim() === "") {
+                alert(
+                    "⚠️ Tenés que escribir un motivo para poder rechazar el documento.",
+                );
+                return;
             }
+        } else {
+            // Si es aprobar, solo pedimos confirmación simple
+            const confirmar = confirm(
+                `¿Estás seguro de que querés marcar los ${tipo} como ${accion}?`,
+            );
+            if (!confirmar) return;
         }
 
-        // 3. RENDERIZAR TARJETA
-        function crearTarjeta(uid, data) {
-            const card = document.createElement("div");
-            card.className =
-                "bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden flex flex-col hover:shadow-lg transition";
+        try {
+            const res = await fetch("/api/admin/validar-doc", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    uid,
+                    tipo,
+                    accion,
+                    motivo: motivoRechazo,
+                }),
+            });
 
-            card.innerHTML = `
-            <div class="p-5 border-b border-gray-100 flex items-center gap-4 bg-gray-50">
-                <img src="${data.foto || `https://ui-avatars.com/api/?name=${data.nombre}`}" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm">
-                <div>
-                    <h3 class="font-bold text-gray-800 text-sm leading-tight">${data.nombre}</h3>
-                    <p class="text-xs text-gray-500 uppercase font-bold tracking-wide">${data.rubro_principal}</p>
-                </div>
-            </div>
-
-            <div class="p-5 space-y-4 flex-1">
-                
-                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-<p class="text-xs font-bold text-blue-800 uppercase mb-1">🪪 Documento DNI</p>
-                    ${
-                        data.doc_dni
-                            ? `<a href="${data.doc_dni}" target="_blank" class="text-sm text-blue-600 hover:underline flex items-center gap-1">👁️ Ver Documento</a>`
-                            : '<span class="text-red-500 text-xs font-bold">❌ No subido</span>'
-                    }
-                </div>
-
-                <div class="bg-purple-50 p-3 rounded-lg border border-purple-100">
-<p class="text-xs font-bold text-purple-800 uppercase mb-1">⚖️ Antecedentes</p>
-                    ${
-                        data.doc_antecedentes
-                            ? `<a href="${data.doc_antecedentes}" target="_blank" class="text-sm text-purple-600 hover:underline flex items-center gap-1">👁️ Ver Documento</a>`
-                            : '<span class="text-red-500 text-xs font-bold">❌ No subido</span>'
-                    }
-                </div>
-
-            </div>
-
-            <div class="p-4 border-t border-gray-100 grid grid-cols-2 gap-3 bg-gray-50">
-                <button class="btn-reject w-full py-2 bg-white border border-red-200 text-red-600 rounded-lg font-bold text-xs hover:bg-red-50 transition">
-                    Rechazar
-                </button>
-                <button class="btn-approve w-full py-2 bg-green-600 text-white rounded-lg font-bold text-xs hover:bg-green-700 shadow-sm transition">
-✅ Aprobar
-                </button>
-            </div>
-        `;
-
-            // Lógica Botones
-            const btnApprove = card.querySelector(".btn-approve");
-            const btnReject = card.querySelector(".btn-reject");
-
-            btnApprove.onclick = async () => {
-                if (
-                    !confirm(
-                        `¿Confirmas que los documentos de ${data.nombre} son válidos?`,
-                    )
-                )
-                    return;
-                try {
-                    await updateDoc(doc(db, "profesionales", uid), {
-                        verificado: true,
-                        validacion_estado: "aprobado",
-                    });
-                    animarSalida(card);
-                } catch (e) {
-                    alert("Error: " + e.message);
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                const contentType = res.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    const errorData = await res.json();
+                    alert(
+                        `❌ Error del servidor: ${errorData.error || "Desconocido"}`,
+                    );
+                } else {
+                    const errorText = await res.text();
+                    console.error("Respuesta no-JSON del servidor:", errorText);
+                    alert(
+                        `💥 Error crítico del servidor (500). Revisá los logs de Node.`,
+                    );
                 }
-            };
-
-            btnReject.onclick = async () => {
-                if (!confirm(`¿Rechazar documentación de ${data.nombre}?`))
-                    return;
-                try {
-                    await updateDoc(doc(db, "profesionales", uid), {
-                        verificado: false,
-                        validacion_estado: "rechazado",
-                    });
-                    animarSalida(card);
-                } catch (e) {
-                    alert("Error: " + e.message);
-                }
-            };
-
-            container.appendChild(card);
+            }
+        } catch (error) {
+            console.error("Error en gestionarDocumento:", error);
+            alert(`💥 Error de conexión o crítico: ${error.message}`);
         }
-
-        function animarSalida(element) {
-            element.style.transform = "scale(0.9)";
-            element.style.opacity = "0";
-            setTimeout(() => {
-                element.remove();
-                if (container.children.length === 0 && empty)
-                    empty.classList.remove("hidden");
-            }, 300);
-        }
-    }); // End of astro:page-load
+    }
 </script>

@@ -319,6 +319,49 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                             </div>
                         </div>
 
+                        <!-- BANNERS DE RECHAZO PERSISTENTES -->
+                        <div
+                            id="perfil-banner-dni-rechazado"
+                            class="hidden bg-red-50 border border-red-200 rounded-xl p-4 mb-4"
+                        >
+                            <div class="flex items-start gap-3">
+                                <span class="text-xl">⚠️</span>
+                                <div>
+                                    <p
+                                        class="text-xs font-bold text-red-800 uppercase tracking-tight"
+                                    >
+                                        DNI Rechazado
+                                    </p>
+                                    <p
+                                        id="perfil-motivo-dni"
+                                        class="text-[10px] text-red-700 font-semibold mt-0.5 Italics"
+                                    >
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            id="perfil-banner-ant-rechazado"
+                            class="hidden bg-red-50 border border-red-200 rounded-xl p-4 mb-4"
+                        >
+                            <div class="flex items-start gap-3">
+                                <span class="text-xl">⚠️</span>
+                                <div>
+                                    <p
+                                        class="text-xs font-bold text-red-800 uppercase tracking-tight"
+                                    >
+                                        Antecedentes Rechazados
+                                    </p>
+                                    <p
+                                        id="perfil-motivo-ant"
+                                        class="text-[10px] text-red-700 font-semibold mt-0.5 Italics"
+                                    >
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-2 gap-4">
                             <!-- DNI Upload Card -->
                             <div
@@ -1521,6 +1564,11 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                 ref,
                 uploadBytes,
                 getDownloadURL,
+                deleteObject,
+                collection,
+                query,
+                orderBy,
+                limit,
             } from "../firebase/client";
             import { CATEGORIES } from "../data/categories";
             import {
@@ -2179,9 +2227,16 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                 "San Luis": ["San Luis Capital", "Villa Mercedes", "Merlo"],
                 Neuquén: [
                     "Neuquén Capital",
-                    "Cutral Có",
+                    "Centenario",
+                    "Plottier",
+                    "San Patricio del Chañar",
                     "San Martín de los Andes",
                     "Villa La Angostura",
+                    "Zapala",
+                    "Cutral-Có",
+                    "Plaza Huincul",
+                    "Junín de los Andes",
+                    "Chos Malal",
                 ],
                 "Río Negro": [
                     "San Carlos de Bariloche",
@@ -2345,6 +2400,7 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                                 "📥 [DATA] Cargando perfil desde Firestore...",
                             );
                             await loadUserProfile(user.uid);
+                            loadNotifications(user.uid);
                             console.log(
                                 "✅ [DATA] Perfil cargado exitosamente",
                             );
@@ -2371,6 +2427,48 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                         });
                     }
                 });
+
+                let notificationsUnsub = null;
+                async function loadNotifications(uid) {
+                    console.log(
+                        "🔔 [PERFIL] Configurando notificaciones en tiempo real:",
+                        uid,
+                    );
+                    if (notificationsUnsub) notificationsUnsub();
+
+                    const q = query(
+                        collection(db, "profesionales", uid, "notificaciones"),
+                        orderBy("fecha", "desc"),
+                        limit(5),
+                    );
+
+                    let isInitialLoad = true;
+                    notificationsUnsub = onSnapshot(q, (snapshot) => {
+                        if (!isInitialLoad) {
+                            snapshot.docChanges().forEach((change) => {
+                                if (change.type === "added") {
+                                    const n = change.doc.data();
+                                    if (!n.leido) {
+                                        // @ts-ignore
+                                        Swal.fire({
+                                            title:
+                                                n.titulo ||
+                                                "Nueva Notificación",
+                                            text: n.mensaje || "",
+                                            icon: "info",
+                                            toast: true,
+                                            position: "top-end",
+                                            showConfirmButton: false,
+                                            timer: 5000,
+                                            timerProgressBar: true,
+                                        });
+                                    }
+                                }
+                            });
+                        }
+                        isInitialLoad = false;
+                    });
+                }
 
                 function initSelects() {
                     const selRubro = document.getElementById("rubro_select");
@@ -2549,6 +2647,41 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                             if (snap.exists()) {
                                 const freshData = snap.data();
                                 userData = freshData;
+
+                                // BANNERS DE RECHAZO EN MI PERFIL
+                                const bannerDni = document.getElementById(
+                                    "perfil-banner-dni-rechazado",
+                                );
+                                const motivoDni =
+                                    document.getElementById(
+                                        "perfil-motivo-dni",
+                                    );
+                                const bannerAnt = document.getElementById(
+                                    "perfil-banner-ant-rechazado",
+                                );
+                                const motivoAnt =
+                                    document.getElementById(
+                                        "perfil-motivo-ant",
+                                    );
+
+                                if (freshData.estado_dni === "rechazado") {
+                                    bannerDni?.classList.remove("hidden");
+                                    if (motivoDni)
+                                        motivoDni.innerText = `Motivo: "${freshData.motivo_rechazo_dni || "El documento no es legible."}"`;
+                                } else {
+                                    bannerDni?.classList.add("hidden");
+                                }
+
+                                if (
+                                    freshData.estado_antecedentes ===
+                                    "rechazado"
+                                ) {
+                                    bannerAnt?.classList.remove("hidden");
+                                    if (motivoAnt)
+                                        motivoAnt.innerText = `Motivo: "${freshData.motivo_rechazo_antecedentes || "Documento inválido."}"`;
+                                } else {
+                                    bannerAnt?.classList.add("hidden");
+                                }
 
                                 // Actualizar también el plan por si cambió en tiempo real
                                 let nPlan = (
@@ -3709,127 +3842,178 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                             window.location.href = "/";
                         });
 
-                    // 🔥 ELIMINAR CUENTA FUNCIONA
+                    // 🔥 ELIMINAR CUENTA COMPLETO
                     document
                         .getElementById("btn-delete-account")
                         ?.addEventListener("click", async () => {
                             // @ts-ignore
                             const res = await Swal.fire({
-                                title: "¿Estás seguro?",
-                                text: "No podrás revertir esto. Tu perfil se borrará.",
+                                title: "¿Eliminar tu cuenta?",
+                                text: "Esta acción borrará permanentemente tu perfil, fotos y documentos. No se puede deshacer.",
                                 icon: "warning",
                                 showCancelButton: true,
                                 confirmButtonColor: "#d33",
-                                cancelButtonColor: "#3085d6",
-                                confirmButtonText: "Sí, eliminar",
+                                cancelButtonColor: "#64748b",
+                                confirmButtonText: "Sí, eliminar todo",
+                                cancelButtonText: "Cancelar",
                             });
-                            if (res.isConfirmed) {
-                                const user = auth.currentUser;
-                                try {
-                                    await deleteDoc(
-                                        fireDoc(
-                                            db,
-                                            "profesionales",
-                                            currentUserUid,
-                                        ),
+
+                            if (!res.isConfirmed) return;
+
+                            const user = auth.currentUser;
+                            if (!user) return;
+
+                            // @ts-ignore
+                            Swal.fire({
+                                title: "Eliminando cuenta...",
+                                text: "Estamos borrando todos tus datos. Por favor espera.",
+                                allowOutsideClick: false,
+                                didOpen: () => Swal.showLoading(),
+                            });
+
+                            try {
+                                console.log(
+                                    "🗑️ [DELETE] Iniciando limpieza total...",
+                                );
+
+                                // 1. STORAGE CLEANUP
+                                const storageItems = [];
+
+                                // Avatar
+                                if (
+                                    userData.foto &&
+                                    userData.foto.includes("firebasestorage")
+                                ) {
+                                    storageItems.push(userData.foto);
+                                }
+
+                                // Documentación
+                                if (
+                                    userData.doc_dni &&
+                                    userData.doc_dni.includes("firebasestorage")
+                                ) {
+                                    storageItems.push(userData.doc_dni);
+                                }
+                                if (
+                                    userData.doc_antecedentes &&
+                                    userData.doc_antecedentes.includes(
+                                        "firebasestorage",
+                                    )
+                                ) {
+                                    storageItems.push(
+                                        userData.doc_antecedentes,
                                     );
+                                }
+
+                                // Portfolio
+                                if (
+                                    userData.portfolio &&
+                                    Array.isArray(userData.portfolio)
+                                ) {
+                                    userData.portfolio.forEach((item) => {
+                                        const url =
+                                            typeof item === "string"
+                                                ? item
+                                                : item.url;
+                                        if (
+                                            url &&
+                                            url.includes("firebasestorage")
+                                        ) {
+                                            storageItems.push(url);
+                                        }
+                                    });
+                                }
+
+                                console.log(
+                                    `📦 [DELETE] Encontrados ${storageItems.length} archivos para borrar en Storage`,
+                                );
+
+                                // Borrar archivos en paralelo (sin fallar si uno falla)
+                                await Promise.all(
+                                    storageItems.map(async (url) => {
+                                        try {
+                                            const fileRef = ref(storage, url);
+                                            await deleteObject(fileRef);
+                                        } catch (err) {
+                                            console.warn(
+                                                "⚠️ [DELETE] Error al borrar archivo:",
+                                                url,
+                                                err,
+                                            );
+                                        }
+                                    }),
+                                );
+
+                                // 2. FIRESTORE CLEANUP
+                                await deleteDoc(
+                                    fireDoc(db, "profesionales", user.uid),
+                                );
+                                console.log(
+                                    "✅ [DELETE] Documento Firestore eliminado",
+                                );
+
+                                // 3. AUTH CLEANUP
+                                try {
                                     await deleteUser(user);
+                                    console.log(
+                                        "✅ [DELETE] Usuario Auth eliminado",
+                                    );
+
+                                    // @ts-ignore
+                                    await Swal.fire({
+                                        title: "Cuenta eliminada",
+                                        text: "Tus datos han sido borrados con éxito.",
+                                        icon: "success",
+                                        confirmButtonColor: "#ea580c",
+                                    });
                                     window.location.href = "/";
-                                } catch (e) {
-                                    console.error("Error deleting:", e);
+                                } catch (authErr) {
+                                    console.warn(
+                                        "⚠️ [DELETE] Error en deleteUser (posible re-auth necesaria):",
+                                        authErr,
+                                    );
+
                                     if (
-                                        e.code === "auth/requires-recent-login"
+                                        authErr.code ===
+                                        "auth/requires-recent-login"
                                     ) {
+                                        // Manejar re-autenticación
                                         // @ts-ignore
                                         const reauthRes = await Swal.fire({
-                                            title: "Re-autenticación requerida",
-                                            text: "Por seguridad, confirma tu identidad para eliminar la cuenta.",
-                                            icon: "warning",
+                                            title: "Confirmación requerida",
+                                            text: "Por seguridad, para borrar tu email de nuestros registros debes volver a ingresar.",
+                                            icon: "info",
                                             showCancelButton: true,
-                                            confirmButtonText: "Re-autenticar",
-                                            confirmButtonColor: "#3085d6",
+                                            confirmButtonText:
+                                                "Ingresar de nuevo",
+                                            cancelButtonText: "Hacerlo luego",
+                                            confirmButtonColor: "#ea580c",
                                         });
 
                                         if (reauthRes.isConfirmed) {
-                                            try {
-                                                // Check provider
-                                                // @ts-ignore
-                                                const providerId =
-                                                    user.providerData[0]
-                                                        ?.providerId;
-
-                                                if (
-                                                    providerId === "google.com"
-                                                ) {
-                                                    const provider =
-                                                        new GoogleAuthProvider();
-                                                    await reauthenticateWithPopup(
-                                                        user,
-                                                        provider,
-                                                    );
-                                                } else {
-                                                    // Email/Password - Simplify by asking to relogin manually or handle password prompt
-                                                    // For now, simple fallback
-                                                    await Swal.fire(
-                                                        "Atención",
-                                                        "Por favor cierra sesión e ingresa nuevamente para realizar esta acción.",
-                                                        "info",
-                                                    );
-                                                    return;
-                                                }
-
-                                                // Cleanup newsletter
-                                                try {
-                                                    await fetch(
-                                                        "/api/newsletter",
-                                                        {
-                                                            method: "DELETE",
-                                                            body: JSON.stringify(
-                                                                {
-                                                                    email: user.email,
-                                                                },
-                                                            ),
-                                                        },
-                                                    );
-                                                } catch (e) {
-                                                    console.warn(
-                                                        "Newsletter cleanup failed:",
-                                                        e,
-                                                    );
-                                                }
-
-                                                // Retry delete
-                                                await deleteDoc(
-                                                    fireDoc(
-                                                        db,
-                                                        "profesionales",
-                                                        currentUserUid,
-                                                    ),
-                                                );
-                                                await deleteUser(user);
-                                                window.location.href = "/";
-                                            } catch (reauthError) {
-                                                console.error(
-                                                    "Re-auth failed:",
-                                                    reauthError,
-                                                );
-                                                Swal.fire(
-                                                    "Error",
-                                                    "No se pudo verificar la identidad.",
-                                                    "error",
-                                                );
-                                            }
+                                            await signOut(auth);
+                                            window.location.href =
+                                                "/ingresar?redirect=/mi-perfil";
+                                        } else {
+                                            // Si no quiere re-auth, al menos los datos ya se borraron de firestore/storage
+                                            await signOut(auth);
+                                            window.location.href = "/";
                                         }
                                     } else {
-                                        // @ts-ignore
-                                        Swal.fire({
-                                            icon: "error",
-                                            title: "Error",
-                                            text: "Error al eliminar. Intenta más tarde.",
-                                            confirmButtonColor: "#ea580c",
-                                        });
+                                        // Otro error de Auth
+                                        await signOut(auth);
+                                        window.location.href = "/";
                                     }
                                 }
+                            } catch (e) {
+                                console.error("❌ [DELETE] Error crítico:", e);
+                                // @ts-ignore
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Error al eliminar",
+                                    text: "Hubo un problema. Por favor contacta a soporte si persiste.",
+                                    confirmButtonColor: "#ea580c",
+                                });
                             }
                         });
 
@@ -4311,9 +4495,8 @@ import IdentityWarning from "../components/profile/IdentityWarning.astro";
                 const handleVerificationUpload = async (file, type = null) => {
                     if (!userData || !userData.uid) return;
 
-                    // Validar tamaño < 5MB
+                    // Validar tamaño < 10MB
                     if (file.size > 10 * 1024 * 1024) {
-                        // Aumentamos a 10MB para mayor flexibilidad
                         // @ts-ignore
                         Swal.fire({
                             icon: "warning",

@@ -1,0 +1,100 @@
+﻿
+                // --- VERIFICATION UPLOAD ---
+                const handleVerificationUpload = async (file, type = null) => {
+                    if (!userData || !userData.uid) return;
+
+                    // Validar tamaÃ±o < 5MB
+                    if (file.size > 10 * 1024 * 1024) {
+                        // Aumentamos a 10MB para mayor flexibilidad
+                        // @ts-ignore
+                        Swal.fire({
+                            icon: "warning",
+                            text: "El documento debe pesar menos de 10MB",
+                            confirmButtonColor: "#ea580c",
+                        });
+                        return;
+                    }
+
+                    try {
+                        // @ts-ignore
+                        Swal.fire({
+                            title: "Subiendo documento...",
+                            text: "Por favor espera",
+                            allowOutsideClick: false,
+                            didOpen: () => Swal.showLoading(),
+                        });
+
+                        // Subir a Storage
+                        const storagePath = `profesionales/${userData.uid}/documentacion/${Date.now()}_${file.name}`;
+                        const storageRef = ref(storage, storagePath);
+                        await uploadBytes(storageRef, file);
+                        const url = await getDownloadURL(storageRef);
+
+                        // Actualizar Firestore
+                        const userRef = fireDoc(
+                            db,
+                            "profesionales",
+                            userData.uid,
+                        );
+
+                        // Determinar quÃ© campo actualizar
+                        let fieldToUpdate = "doc_dni"; // default
+                        if (type === "ant") {
+                            fieldToUpdate = "doc_antecedentes";
+                        } else if (type === "dni") {
+                            fieldToUpdate = "doc_dni";
+                        } else {
+                            // Auto-detectar si no se pasÃ³ tipo (desde el botÃ³n general)
+                            fieldToUpdate = userData.doc_dni
+                                ? "doc_antecedentes"
+                                : "doc_dni";
+                        }
+
+                        await updateDoc(userRef, {
+                            [fieldToUpdate]: url,
+                            validacion_estado: "pendiente",
+                            verificacion_pendiente: true,
+                            fecha_solicitud_verificacion:
+                                new Date().toISOString(),
+                        });
+
+                        // @ts-ignore
+                        Swal.fire({
+                            icon: "success",
+                            title: "Solicitud enviada",
+                            text: "Tu documentaciÃ³n estÃ¡ en revisiÃ³n. Te avisaremos cuando tu perfil sea verificado.",
+                            confirmButtonColor: "#ea580c",
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } catch (error) {
+                        console.error("Error upload verificacion:", error);
+                        // @ts-ignore
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: "No se pudo subir el documento. Intenta nuevamente.",
+                            confirmButtonColor: "#d33",
+                        });
+                    }
+                };
+
+                // --- MANEJO DE IMAGENES PORTFOLIO ---
+                document
+                    .getElementById("btn-generate-pdf")
+                    ?.addEventListener("click", () => {
+                        if (userServices.length === 0)
+                            // @ts-ignore
+                            return Swal.fire({
+                                icon: "warning",
+                                text: "Agrega servicios primero",
+                                confirmButtonColor: "#ea580c",
+                            });
+                        // @ts-ignore
+                        if (!window.jspdf)
+                            return Swal.fire({
+                                icon: "info",
+                                text: "Cargando librerÃ­a PDF...",
+                                toast: true,
+                                position: "bottom-end",
+                                timer: 2000,

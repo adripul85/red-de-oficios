@@ -198,8 +198,8 @@ export const LOCATIONS = [
         group: "Neuquén",
         zones: [
             "Neuquén Capital", "Centenario", "Plottier",
-            "San Martín de los Andes", "Villa La Angostura",
-            "Zapala", "Cutral-Có", "Plaza Huincul",
+            "San Patricio del Chañar", "San Martín de los Andes",
+            "Villa La Angostura", "Zapala", "Cutral-Có", "Plaza Huincul",
             "Junín de los Andes", "Chos Malal"
         ]
     },

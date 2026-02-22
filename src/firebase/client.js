@@ -59,5 +59,5 @@ export {
 } from "firebase/firestore";
 
 // Centralized Storage exports
-export { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+export { ref, uploadBytes, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 

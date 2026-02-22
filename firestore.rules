@@ -25,6 +25,11 @@ service cloud.firestore {
        );
     }
 
+    // --- 0. USUARIOS (Global/Móvil) ---
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) || isStaff();
+    }
+
     // --- 1. PERFILES DE PROFESIONALES ---
     match /profesionales/{userId} {
       // Todo el mundo puede ver los perfiles
@@ -126,6 +131,14 @@ service cloud.firestore {
     }
 
     // --- 3. FORO (COMUNIDAD) ---
+    // Reseñas de Profesionales (Legacy App Móvil)
+    match /reviews_profesionales/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isStaff() || (isSignedIn() && request.auth.uid == resource.data.idUsuario);
+    }
+
+    // Threads (Temas principales)
     // Threads (Temas principales)
     match /foro_threads/{threadId} {
       allow read: if true; // Todos ven (sin orderBy para permitir posts viejos)
@@ -188,11 +201,16 @@ service cloud.firestore {
     
     // Configuración del sistema (incluye giftcard)
     match /configuracion/{docId} { 
-      allow read: if true; // Lectura pública para giftcard
+      allow read: if true; 
       allow write: if isStaff() || (
         docId == 'giftcard' && 
         isSignedIn() && 
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usos'])
+      ) || (
+        docId == 'general' &&
+        isSignedIn() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['last_registration_index']) &&
+        request.resource.data.last_registration_index == (resource.data != null ? resource.data.get('last_registration_index', 0) + 1 : 1)
       ); 
     }
     

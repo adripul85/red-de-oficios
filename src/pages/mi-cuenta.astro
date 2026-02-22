@@ -5,22 +5,43 @@ import { sendEmailVerification } from "firebase/auth";
 ---
 
 <Layout title="Mi Cuenta - Cliente" hideBottomNav={true} hideIA={true}>
-    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script
+        is:inline
+        src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+    ></script>
+    <script
+        is:inline
+        src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+    ></script>
 
-    <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 py-8 px-4">
+    <div
+        class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 py-8 px-4"
+    >
         <div class="max-w-5xl mx-auto">
             <!-- Banner de Verificación de Email -->
-            <div id="email-verification-banner" class="hidden bg-orange-50 border border-orange-100 p-4 rounded-2xl mb-6">
-                <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div
+                id="email-verification-banner"
+                class="hidden bg-orange-50 border border-orange-100 p-4 rounded-2xl mb-6"
+            >
+                <div
+                    class="flex flex-col md:flex-row items-center justify-between gap-4"
+                >
                     <div class="flex items-center gap-3">
                         <span class="text-2xl">📧</span>
                         <div>
-                            <p class="text-sm font-bold text-orange-800">Tu correo no está verificado</p>
-                            <p class="text-xs text-orange-600">Verifica tu email para mayor seguridad y recibir alertas de tus pedidos.</p>
+                            <p class="text-sm font-bold text-orange-800">
+                                Tu correo no está verificado
+                            </p>
+                            <p class="text-xs text-orange-600">
+                                Verifica tu email para mayor seguridad y recibir
+                                alertas de tus pedidos.
+                            </p>
                         </div>
                     </div>
-                    <button id="btn-resend-verification" class="bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-orange-700 transition">
+                    <button
+                        id="btn-resend-verification"
+                        class="bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-orange-700 transition"
+                    >
                         Reenviar Email
                     </button>
                 </div>
@@ -37,7 +58,7 @@ import { sendEmailVerification } from "firebase/auth";
             <!-- Dashboard Search Bar -->
             <div class="mb-10">
                 <div
-class="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 max-w-2xl mx-auto"
+                    class="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 max-w-2xl mx-auto"
                 >
                     <form
                         id="pro-search-form"
@@ -48,13 +69,13 @@ class="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 max-w-2xl mx-a
                                 class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
                                 fill="none"
                                 stroke="currentColor"
-viewBox="0 0 24 24"
+                                viewBox="0 0 24 24"
                             >
                                 <path
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     stroke-width="2"
-d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                                 ></path>
                             </svg>
                             <input
@@ -66,7 +87,7 @@ d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                         </div>
                         <button
                             type="submit"
-class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-2xl transition-all shadow-lg shadow-blue-200"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-2xl transition-all shadow-lg shadow-blue-200"
                         >
                             Buscar Profesionales
                         </button>
@@ -77,7 +98,7 @@ class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-2xl 
             <!-- Loading State -->
             <div id="loading" class="flex justify-center items-center py-20">
                 <div
-class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
+                    class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
                 >
                 </div>
             </div>
@@ -85,13 +106,13 @@ class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
             <!-- Content Grid -->
             <div
                 id="client-info"
-class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6"
+                class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6"
             >
                 <!-- Sidebar - Perfil -->
                 <div class="lg:col-span-1 space-y-6">
                     <!-- Card Perfil -->
                     <div
-class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
+                        class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
                     >
                         <div class="text-center">
                             <div class="relative w-28 h-28 mx-auto mb-4 group">
@@ -102,7 +123,7 @@ class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
                                     alt="Foto de perfil"
                                 />
                                 <div
-class="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 border-4 border-white rounded-full"
+                                    class="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 border-4 border-white rounded-full"
                                 >
                                 </div>
 
@@ -115,19 +136,19 @@ class="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 border-4 border-white ro
                                         class="w-8 h-8 text-white"
                                         fill="none"
                                         stroke="currentColor"
-viewBox="0 0 24 24"
+                                        viewBox="0 0 24 24"
                                     >
                                         <path
                                             stroke-linecap="round"
                                             stroke-linejoin="round"
                                             stroke-width="2"
-d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
                                         ></path>
                                         <path
                                             stroke-linecap="round"
                                             stroke-linejoin="round"
                                             stroke-width="2"
-d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
                                         ></path>
                                     </svg>
                                 </label>
@@ -141,24 +162,23 @@ d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
 
                             <h2
                                 id="c-nombre"
-class="text-xl font-bold text-slate-900 mb-1"
+                                class="text-xl font-bold text-slate-900 mb-1"
                             >
                                 Usuario
                             </h2>
                             <p id="c-email" class="text-sm text-slate-500 mb-4">
                                 email@ejemplo.com
                             </p>
-
                         </div>
 
                         <hr class="my-6 border-slate-100" />
 
-<!-- Estadísticas rápidas -->
+                        <!-- Estadísticas rápidas -->
                         <div class="grid grid-cols-2 gap-4 mb-6">
                             <div class="text-center p-3 bg-blue-50 rounded-2xl">
                                 <p
                                     class="text-2xl font-bold text-blue-600"
-id="favorites-count"
+                                    id="favorites-count"
                                 >
                                     0
                                 </p>
@@ -167,7 +187,7 @@ id="favorites-count"
                                 </p>
                             </div>
                             <div
-class="text-center p-3 bg-purple-50 rounded-2xl"
+                                class="text-center p-3 bg-purple-50 rounded-2xl"
                             >
                                 <p
                                     id="reviews-count"
@@ -181,7 +201,7 @@ class="text-center p-3 bg-purple-50 rounded-2xl"
                             </div>
                         </div>
 
-<!-- Botón Cerrar Sesión -->
+                        <!-- Botón Cerrar Sesión -->
                         <button
                             id="btn-logout"
                             class="w-full py-3 px-4 bg-red-50 hover:bg-red-100 text-red-600 font-semibold rounded-2xl transition-all flex items-center justify-center gap-2 group"
@@ -190,27 +210,41 @@ class="text-center p-3 bg-purple-50 rounded-2xl"
                                 class="w-5 h-5 group-hover:rotate-12 transition-transform"
                                 fill="none"
                                 stroke="currentColor"
-viewBox="0 0 24 24"
+                                viewBox="0 0 24 24"
                             >
                                 <path
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     stroke-width="2"
-d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                                 ></path>
                             </svg>
                             Cerrar Sesión
                         </button>
 
                         <!-- Zona de Peligro -->
-                        <div class="mt-8 pt-6 border-t border-dashed border-red-200">
-                             <p class="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-3">Zona de Peligro</p>
-                             <button
+                        <div
+                            class="mt-8 pt-6 border-t border-dashed border-red-200"
+                        >
+                            <p
+                                class="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-3"
+                            >
+                                Zona de Peligro
+                            </p>
+                            <button
                                 id="btn-delete-account"
                                 class="w-full py-2.5 px-4 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-xl transition-all text-xs flex items-center justify-center gap-2 border border-red-100"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    class="w-4 h-4"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                >
+                                    <path
+                                        fill-rule="evenodd"
+                                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                        clip-rule="evenodd"></path>
                                 </svg>
                                 Eliminar mi cuenta
                             </button>
@@ -222,311 +256,318 @@ d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3
                 <div class="lg:col-span-2 space-y-6">
                     <!-- Tab Navigation -->
                     <div
-class="flex flex-wrap gap-2 p-1 bg-slate-100 rounded-2xl"
+                        class="flex flex-wrap gap-2 p-1 bg-slate-100 rounded-2xl"
                     >
-                    <button
-                        data-tab="solicitudes"
-                        class="tab-btn active flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all relative flex items-center justify-center gap-2"
-                    >
-                        📋 Mis Pedidos
-                        <span id="notif-badge-pedidos" class="hidden w-2 h-2 bg-red-500 rounded-full"></span>
-                    </button>
-                    <button
-                        data-tab="favoritos"
-                        class="tab-btn flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-white/50"
-                    >
-                        ❤️ Mis Favoritos
-                    </button>
-                    <button
-                        data-tab="comentarios"
-                        class="tab-btn flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-white/50"
-                    >
-                        ⭐ Mis Valoraciones
-                    </button>
-                </div>
-
-                <div class="mt-8 border-t border-slate-200 pt-6">
-                    <div id="tab-solicitudes" class="tab-panel space-y-6">
-                        <!-- Card Solicitar Presupuesto (DESTACADA) -->
-                        <div
-class="bg-gradient-to-br from-orange-500 to-red-600 rounded-3xl p-8 shadow-xl border-2 border-orange-400 relative overflow-hidden"
+                        <button
+                            data-tab="solicitudes"
+                            class="tab-btn active flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all relative flex items-center justify-center gap-2"
                         >
-                            <!-- Decoración de fondo -->
-                            <div
-                                class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"
-                            >
-                            </div>
-                            <div
-                                class="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full -ml-16 -mb-16 blur-2xl"
-                            >
-                            </div>
-
-                            <div class="relative z-10">
-                                <div
-class="flex items-start justify-between mb-4"
-                                >
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-3xl"
-                                        >
-                                            🚀
-                                        </div>
-                                        <div>
-                                            <h3
-                                                class="text-2xl font-bold text-white mb-1"
-                                            >
-                                                ¿Necesitas un profesional?
-                                            </h3>
-                                            <p class="text-orange-100 text-sm">
-                                                Recibe presupuestos de los
-                                                mejores
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <span
-class="bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/30"
-                                    >
-                                        GRATIS
-                                    </span>
-                                </div>
-
-                                <p
-class="text-white/90 mb-6 text-sm leading-relaxed"
-                                >
-                                    Contanos qué necesitas y nosotros avisamos a
-                                    los
-                                    <strong
-                                        >profesionales mejor calificados</strong
-                                    > de tu zona. Ellos te contactarán directamente
-                                    con sus presupuestos.
-                                </p>
-
-                                <div
-class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6"
-                                >
-                                    <div
-                                        class="flex items-center gap-2 text-white text-sm"
-                                    >
-                                        <svg
-                                            class="w-5 h-5 text-green-300"
-                                            fill="currentColor"
-                                            viewBox="0 0 20 20"
-                                        >
-                                            <path
-                                                fill-rule="evenodd"
-                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                clip-rule="evenodd"></path>
-                                        </svg>
-                                        <span>Sin compromiso</span>
-                                    </div>
-                                    <div
-class="flex items-center gap-2 text-white text-sm"
-                                    >
-                                        <svg
-                                            class="w-5 h-5 text-green-300"
-                                            fill="currentColor"
-                                            viewBox="0 0 20 20"
-                                        >
-                                            <path
-                                                fill-rule="evenodd"
-                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                clip-rule="evenodd"></path>
-                                        </svg>
-<span>Respuesta rápida</span>
-                                    </div>
-                                    <div
-                                        class="flex items-center gap-2 text-white text-sm"
-                                    >
-                                        <svg
-                                            class="w-5 h-5 text-green-300"
-                                            fill="currentColor"
-                                            viewBox="0 0 20 20"
-                                        >
-                                            <path
-                                                fill-rule="evenodd"
-                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                clip-rule="evenodd"></path>
-                                        </svg>
-                                        <span>Solo expertos</span>
-                                    </div>
-                                </div>
-
-                                <a
-                                    href="/solicitar"
-class="block w-full bg-white hover:bg-orange-50 text-orange-600 font-bold py-4 px-6 rounded-2xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] text-center"
-                                >
-                                    📝 Solicitar Presupuesto Ahora
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Lista de Solicitudes (Ya implementada anteriormente) -->
-                        <div
-class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
+                            📋 Mis Pedidos
+                            <span
+                                id="notif-badge-pedidos"
+                                class="hidden w-2 h-2 bg-red-500 rounded-full"
+                            ></span>
+                        </button>
+                        <button
+                            data-tab="favoritos"
+                            class="tab-btn flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-white/50"
                         >
-                            <div class="flex items-center gap-3 mb-6">
-                                <div
-                                    class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl"
-                                >
-                                    📋
-                                </div>
-                                <div>
-                                    <h3
-                                        class="text-xl font-bold text-slate-900"
-                                    >
-                                        Historial de Solicitudes
-                                    </h3>
-                                    <p class="text-sm text-slate-500">
-                                        Tus pedidos de presupuesto
-                                    </p>
-                                </div>
-                            </div>
-                            <div
-                                id="solicitudes-loading"
-class="flex justify-center py-10"
-                            >
-                                <div
-                                    class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"
-                                >
-                                </div>
-                            </div>
-                            <div id="solicitudes-list" class="grid gap-4"></div>
-                            <div
-                                id="solicitudes-empty"
-class="hidden text-center py-10"
-                            >
-                                <p class="text-slate-500">
-                                    Aún no has enviado ninguna solicitud.
-                                </p>
-                            </div>
-                        </div>
+                            ❤️ Mis Favoritos
+                        </button>
+                        <button
+                            data-tab="comentarios"
+                            class="tab-btn flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-white/50"
+                        >
+                            ⭐ Mis Valoraciones
+                        </button>
                     </div>
 
-                    <div id="tab-favoritos" class="tab-panel hidden space-y-6">
-                        <!-- Card Favoritos -->
-                        <div
-class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
-                        >
-                            <div class="flex items-center justify-between mb-6">
-                                <div class="flex items-center gap-3">
+                    <div class="mt-8 border-t border-slate-200 pt-6">
+                        <div id="tab-solicitudes" class="tab-panel space-y-6">
+                            <!-- Card Solicitar Presupuesto (DESTACADA) -->
+                            <div
+                                class="bg-gradient-to-br from-orange-500 to-red-600 rounded-3xl p-8 shadow-xl border-2 border-orange-400 relative overflow-hidden"
+                            >
+                                <!-- Decoración de fondo -->
+                                <div
+                                    class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"
+                                >
+                                </div>
+                                <div
+                                    class="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full -ml-16 -mb-16 blur-2xl"
+                                >
+                                </div>
+
+                                <div class="relative z-10">
                                     <div
-                                        class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center"
+                                        class="flex items-start justify-between mb-4"
                                     >
-                                        <svg
-                                            class="w-6 h-6 text-red-600"
-                                            fill="currentColor"
-                                            viewBox="0 0 20 20"
+                                        <div class="flex items-center gap-3">
+                                            <div
+                                                class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-3xl"
+                                            >
+                                                🚀
+                                            </div>
+                                            <div>
+                                                <h3
+                                                    class="text-2xl font-bold text-white mb-1"
+                                                >
+                                                    ¿Necesitas un profesional?
+                                                </h3>
+                                                <p
+                                                    class="text-orange-100 text-sm"
+                                                >
+                                                    Recibe presupuestos de los
+                                                    mejores
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span
+                                            class="bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/30"
                                         >
-                                            <path
-                                                fill-rule="evenodd"
-                                                d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                                                clip-rule="evenodd"></path>
-                                        </svg>
+                                            GRATIS
+                                        </span>
+                                    </div>
+
+                                    <p
+                                        class="text-white/90 mb-6 text-sm leading-relaxed"
+                                    >
+                                        Contanos qué necesitas y nosotros
+                                        avisamos a los
+                                        <strong
+                                            >profesionales mejor calificados</strong
+                                        > de tu zona. Ellos te contactarán directamente
+                                        con sus presupuestos.
+                                    </p>
+
+                                    <div
+                                        class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6"
+                                    >
+                                        <div
+                                            class="flex items-center gap-2 text-white text-sm"
+                                        >
+                                            <svg
+                                                class="w-5 h-5 text-green-300"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                            >
+                                                <path
+                                                    fill-rule="evenodd"
+                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                            <span>Sin compromiso</span>
+                                        </div>
+                                        <div
+                                            class="flex items-center gap-2 text-white text-sm"
+                                        >
+                                            <svg
+                                                class="w-5 h-5 text-green-300"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                            >
+                                                <path
+                                                    fill-rule="evenodd"
+                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                            <span>Respuesta rápida</span>
+                                        </div>
+                                        <div
+                                            class="flex items-center gap-2 text-white text-sm"
+                                        >
+                                            <svg
+                                                class="w-5 h-5 text-green-300"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                            >
+                                                <path
+                                                    fill-rule="evenodd"
+                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                            <span>Solo expertos</span>
+                                        </div>
+                                    </div>
+
+                                    <a
+                                        href="/solicitar"
+                                        class="block w-full bg-white hover:bg-orange-50 text-orange-600 font-bold py-4 px-6 rounded-2xl transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] text-center"
+                                    >
+                                        📝 Solicitar Presupuesto Ahora
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Lista de Solicitudes (Ya implementada anteriormente) -->
+                            <div
+                                class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
+                            >
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div
+                                        class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-xl"
+                                    >
+                                        📋
                                     </div>
                                     <div>
                                         <h3
-class="text-xl font-bold text-slate-900"
+                                            class="text-xl font-bold text-slate-900"
                                         >
-                                            Mis Profesionales
+                                            Historial de Solicitudes
                                         </h3>
                                         <p class="text-sm text-slate-500">
-                                            Tus favoritos guardados
+                                            Tus pedidos de presupuesto
                                         </p>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- Lista de Favoritos -->
-                            <div id="favorites-list" class="grid gap-4">
-<!-- Se llena dinámicamente -->
-                            </div>
-
-                            <!-- Empty State -->
-                            <div
-                                id="empty-favorites"
-class="hidden text-center py-12"
-                            >
                                 <div
-                                    class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                                    id="solicitudes-loading"
+                                    class="flex justify-center py-10"
                                 >
-                                    <svg
-                                        class="w-10 h-10 text-slate-400"
-                                        fill="none"
-                                        stroke="currentColor"
-viewBox="0 0 24 24"
+                                    <div
+                                        class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"
                                     >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                                        ></path>
-                                    </svg>
+                                    </div>
                                 </div>
-                                <h4 class="font-bold text-slate-900 mb-2">
-                                    No hay favoritos aún
-                                </h4>
-                                <p class="text-slate-500 text-sm mb-4">
-                                    Explora profesionales y guárdalos como
-                                    favoritos
-                                </p>
-                                <a
-                                    href="/"
-class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-all"
-                                >
-                                    Explorar Profesionales
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-
-
-
-                    <!-- Tab Panels -->
-
-
-                    <div
-                        id="tab-comentarios"
-class="tab-panel hidden space-y-6"
-                    >
-                        <!-- Card Mis Reseñas -->
-                        <div
-                            class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
-                        >
-                            <div class="flex items-center gap-3 mb-6">
+                                <div id="solicitudes-list" class="grid gap-4">
+                                </div>
                                 <div
-                                    class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center text-xl"
+                                    id="solicitudes-empty"
+                                    class="hidden text-center py-10"
                                 >
-                                    ⭐
-                                </div>
-                                <div>
-                                    <h3
-                                        class="text-xl font-bold text-slate-900"
-                                    >
-                                        Mis Valoraciones
-                                    </h3>
-                                    <p class="text-sm text-slate-500">
-                                        Reseñas que has dejado
+                                    <p class="text-slate-500">
+                                        Aún no has enviado ninguna solicitud.
                                     </p>
                                 </div>
                             </div>
+                        </div>
 
-                            <div id="reviews-list" class="grid gap-6">
-<!-- Se llena dinámicamente -->
-                            </div>
-
+                        <div
+                            id="tab-favoritos"
+                            class="tab-panel hidden space-y-6"
+                        >
+                            <!-- Card Favoritos -->
                             <div
-                                id="empty-reviews"
-class="hidden text-center py-12"
+                                class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
                             >
-                                <p class="text-slate-500">
-                                    Aún no has valorado a ningún profesional.
-                                </p>
+                                <div
+                                    class="flex items-center justify-between mb-6"
+                                >
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center"
+                                        >
+                                            <svg
+                                                class="w-6 h-6 text-red-600"
+                                                fill="currentColor"
+                                                viewBox="0 0 20 20"
+                                            >
+                                                <path
+                                                    fill-rule="evenodd"
+                                                    d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3
+                                                class="text-xl font-bold text-slate-900"
+                                            >
+                                                Mis Profesionales
+                                            </h3>
+                                            <p class="text-sm text-slate-500">
+                                                Tus favoritos guardados
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Lista de Favoritos -->
+                                <div id="favorites-list" class="grid gap-4">
+                                    <!-- Se llena dinámicamente -->
+                                </div>
+
+                                <!-- Empty State -->
+                                <div
+                                    id="empty-favorites"
+                                    class="hidden text-center py-12"
+                                >
+                                    <div
+                                        class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                                    >
+                                        <svg
+                                            class="w-10 h-10 text-slate-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                                            ></path>
+                                        </svg>
+                                    </div>
+                                    <h4 class="font-bold text-slate-900 mb-2">
+                                        No hay favoritos aún
+                                    </h4>
+                                    <p class="text-slate-500 text-sm mb-4">
+                                        Explora profesionales y guárdalos como
+                                        favoritos
+                                    </p>
+                                    <a
+                                        href="/"
+                                        class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-all"
+                                    >
+                                        Explorar Profesionales
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
+                        <!-- Tab Panels -->
+
+                        <div
+                            id="tab-comentarios"
+                            class="tab-panel hidden space-y-6"
+                        >
+                            <!-- Card Mis Reseñas -->
+                            <div
+                                class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100"
+                            >
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div
+                                        class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center text-xl"
+                                    >
+                                        ⭐
+                                    </div>
+                                    <div>
+                                        <h3
+                                            class="text-xl font-bold text-slate-900"
+                                        >
+                                            Mis Valoraciones
+                                        </h3>
+                                        <p class="text-sm text-slate-500">
+                                            Reseñas que has dejado
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div id="reviews-list" class="grid gap-6">
+                                    <!-- Se llena dinámicamente -->
+                                </div>
+
+                                <div
+                                    id="empty-reviews"
+                                    class="hidden text-center py-12"
+                                >
+                                    <p class="text-slate-500">
+                                        Aún no has valorado a ningún
+                                        profesional.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -568,7 +609,7 @@ class="hidden text-center py-12"
                 try {
                     const solRef = doc(db, "solicitudes", id);
                     await updateDoc(solRef, {
-                        leidoPorCliente: arrayUnion(currentUser.uid)
+                        leidoPorCliente: arrayUnion(currentUser.uid),
                     });
                     unreadSolicitudes.set(id, 0);
                     // Refresh local UI if needed or let onSnapshot handle it
@@ -578,9 +619,8 @@ class="hidden text-center py-12"
             }
         };
 
-
         document.addEventListener("astro:page-load", () => {
-console.log("🚀 [MI-CUENTA] Página cargada/navegada");
+            console.log("🚀 [MI-CUENTA] Página cargada/navegada");
 
             // Cleanup previous listener if exists (though astro usually handles scripts well, good practice)
             if (unsubscribe) unsubscribe();
@@ -601,32 +641,45 @@ console.log("🚀 [MI-CUENTA] Página cargada/navegada");
                     }
 
                     // Email Verification Banner
-                    const banner = document.getElementById("email-verification-banner");
+                    const banner = document.getElementById(
+                        "email-verification-banner",
+                    );
                     if (banner) {
-                        if (!user.emailVerified) banner.classList.remove("hidden");
+                        if (!user.emailVerified)
+                            banner.classList.remove("hidden");
                         else banner.classList.add("hidden");
                     }
 
-                    document.getElementById("btn-resend-verification")?.addEventListener("click", async () => {
-                        try {
-                            await sendEmailVerification(user);
-                            // @ts-ignore
-                            Swal.fire("Enviado", "Revisa tu casilla de correo", "success");
-                        } catch (e) {
-                             // @ts-ignore
-                            Swal.fire("Error", "Intenta de nuevo más tarde", "error");
-                        }
-                    });
+                    document
+                        .getElementById("btn-resend-verification")
+                        ?.addEventListener("click", async () => {
+                            try {
+                                await sendEmailVerification(user);
+                                // @ts-ignore
+                                Swal.fire(
+                                    "Enviado",
+                                    "Revisa tu casilla de correo",
+                                    "success",
+                                );
+                            } catch (e) {
+                                // @ts-ignore
+                                Swal.fire(
+                                    "Error",
+                                    "Intenta de nuevo más tarde",
+                                    "error",
+                                );
+                            }
+                        });
 
                     await initClientDashboard(user);
                     // Registrar para push con colección 'clientes'
-                    registerPushNotifications(user.uid, 'clientes');
+                    registerPushNotifications(user.uid, "clientes");
                 } else if (
                     window.location.pathname === "/mi-cuenta" ||
                     window.location.pathname.startsWith("/mi-cuenta")
                 ) {
                     console.log(
-"⚠️ [MI-CUENTA] No autenticado, redirigiendo...",
+                        "⚠️ [MI-CUENTA] No autenticado, redirigiendo...",
                     );
                     window.location.href = "/ingresar-cliente";
                 }
@@ -634,7 +687,7 @@ console.log("🚀 [MI-CUENTA] Página cargada/navegada");
 
             // If we already have a user from previous state (fast navigation), trigger init immediately
             if (auth.currentUser) {
-console.log("⚡ [MI-CUENTA] Auth pre-existente detecado");
+                console.log("⚡ [MI-CUENTA] Auth pre-existente detecado");
                 initClientDashboard(auth.currentUser);
             }
 
@@ -645,13 +698,13 @@ console.log("⚡ [MI-CUENTA] Auth pre-existente detecado");
                 .getElementById("btn-logout")
                 ?.addEventListener("click", async () => {
                     const result = await Swal.fire({
-title: "¿Cerrar Sesión?",
+                        title: "¿Cerrar Sesión?",
                         text: "¿Estás seguro de que quieres salir?",
                         icon: "warning",
                         showCancelButton: true,
                         confirmButtonColor: "#ef4444",
                         cancelButtonColor: "#64748b",
-confirmButtonText: "Sí, cerrar sesión",
+                        confirmButtonText: "Sí, cerrar sesión",
                         cancelButtonText: "Cancelar",
                         reverseButtons: true,
                     });
@@ -743,7 +796,7 @@ confirmButtonText: "Sí, cerrar sesión",
                         }
 
                         Swal.fire({
-title: "¡Foto Actualizada!",
+                            title: "¡Foto Actualizada!",
                             icon: "success",
                             timer: 2000,
                             showConfirmButton: false,
@@ -802,18 +855,24 @@ title: "¡Foto Actualizada!",
                             data.foto ||
                             `https://ui-avatars.com/api/?name=${data.nombre}`;
 
-// SECURITY CODE LOGIC
-                    const secContainer = document.getElementById("security-code-container");
-                    const secValue = document.getElementById("security-code-value");
+                    // SECURITY CODE LOGIC
+                    const secContainer = document.getElementById(
+                        "security-code-container",
+                    );
+                    const secValue = document.getElementById(
+                        "security-code-value",
+                    );
                     if (secContainer && secValue) {
-                        const dateStr = new Date().toISOString().split('T')[0];
+                        const dateStr = new Date().toISOString().split("T")[0];
                         const seed = user.uid + dateStr;
                         let hash = 0;
                         for (let i = 0; i < seed.length; i++) {
-                            hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+                            hash = (hash << 5) - hash + seed.charCodeAt(i);
                             hash |= 0;
                         }
-                        const code = Math.abs(hash % 1000000).toString().padStart(6, '0');
+                        const code = Math.abs(hash % 1000000)
+                            .toString()
+                            .padStart(6, "0");
                         secValue.textContent = code;
                         secContainer.classList.remove("hidden");
                     }
@@ -830,9 +889,9 @@ title: "¡Foto Actualizada!",
                             favs = favSnap.data().profesionales || [];
                         }
                     } catch (e) {
-                         console.error("Error loading favs:", e);
+                        console.error("Error loading favs:", e);
                     }
-                    
+
                     if (favCount) favCount.innerText = favs.length.toString();
 
                     if (favList && emptyState) {
@@ -841,13 +900,13 @@ title: "¡Foto Actualizada!",
                             favList.innerHTML = "";
                         } else {
                             emptyState.classList.add("hidden");
-                            
-                            // Since we store the full object in 'profesionales' array in favorites, 
+
+                            // Since we store the full object in 'profesionales' array in favorites,
                             // we usually don't need to re-fetch, but let's be safe and use what we have.
                             // If the stored data is minimal (just ID), we would need to fetch.
                             // Based on perfil.astro, we likely store { id, nombre, etc... }
                             // Let's assume the stored data is sufficient for display.
-                            
+
                             favList.innerHTML = favs
                                 .map(
                                     (fav: any) => `
@@ -1000,7 +1059,7 @@ title="Quitar de favoritos"
 
                         list.innerHTML = reviewsData
                             .map((r: any) => {
-const stars = "⭐".repeat(
+                                const stars = "⭐".repeat(
                                     r.estrellas || r.puntuacion || 0,
                                 );
                                 const fecha = r.fecha?.toDate
@@ -1045,7 +1104,7 @@ const stars = "⭐".repeat(
                     }
                 }
             } catch (e: any) {
-console.error("DEBUG - Error cargando reseñas:", e);
+                console.error("DEBUG - Error cargando reseñas:", e);
                 if (e.code === "failed-precondition") {
                     console.warn(
                         "⚠️ FALTA ÍNDICE COMPUESTO. Haz clic en el enlace de arriba para crearlo.",
@@ -1074,7 +1133,7 @@ console.error("DEBUG - Error cargando reseñas:", e);
             try {
                 const { collection, query, where, onSnapshot, orderBy, limit } =
                     await import("firebase/firestore");
-                
+
                 const q = query(
                     collection(db, "solicitudes"),
                     where("clienteId", "==", userId),
@@ -1082,38 +1141,56 @@ console.error("DEBUG - Error cargando reseñas:", e);
                     limit(20),
                 );
 
-                unsubSolicitudes = onSnapshot(q, async (snap) => {
-                    console.log("📡 [MI-CUENTA] Solicitudes actualizadas en tiempo real");
-                    loading?.classList.add("hidden");
-
-                    if (snap.empty) {
-                        empty?.classList.remove("hidden");
-                        list.innerHTML = "";
-                    } else {
-                        empty?.classList.add("hidden");
-                        
-                        // Cargar solicitudes y sus propuestas
-                        const solicitudesWithPropuestas = await Promise.all(
-                            snap.docs.map(async (docSnap) => {
-                                const s = docSnap.data();
-                                // Cargar propuestas para esta solicitud
-                                const { collection: subCollection, getDocs: getSubDocs } = await import("firebase/firestore");
-                                const propuestasSnap = await getSubDocs(
-                                    subCollection(db, "solicitudes", docSnap.id, "propuestas")
-                                );
-                                const propuestas = propuestasSnap.docs.map(p => ({ id: p.id, ...p.data() }));
-                                
-                                return { id: docSnap.id, ...s, propuestas };
-                            })
+                unsubSolicitudes = onSnapshot(
+                    q,
+                    async (snap) => {
+                        console.log(
+                            "📡 [MI-CUENTA] Solicitudes actualizadas en tiempo real",
                         );
-                        
-                        renderSolicitudes(solicitudesWithPropuestas, list);
-                    }
-                }, (err) => {
-                    console.error("❌ [MI-CUENTA] Error en onSnapshot solicitudes:", err);
-                    loading?.classList.add("hidden");
-                });
+                        loading?.classList.add("hidden");
 
+                        if (snap.empty) {
+                            empty?.classList.remove("hidden");
+                            list.innerHTML = "";
+                        } else {
+                            empty?.classList.add("hidden");
+
+                            // Cargar solicitudes y sus propuestas
+                            const solicitudesWithPropuestas = await Promise.all(
+                                snap.docs.map(async (docSnap) => {
+                                    const s = docSnap.data();
+                                    // Cargar propuestas para esta solicitud
+                                    const {
+                                        collection: subCollection,
+                                        getDocs: getSubDocs,
+                                    } = await import("firebase/firestore");
+                                    const propuestasSnap = await getSubDocs(
+                                        subCollection(
+                                            db,
+                                            "solicitudes",
+                                            docSnap.id,
+                                            "propuestas",
+                                        ),
+                                    );
+                                    const propuestas = propuestasSnap.docs.map(
+                                        (p) => ({ id: p.id, ...p.data() }),
+                                    );
+
+                                    return { id: docSnap.id, ...s, propuestas };
+                                }),
+                            );
+
+                            renderSolicitudes(solicitudesWithPropuestas, list);
+                        }
+                    },
+                    (err) => {
+                        console.error(
+                            "❌ [MI-CUENTA] Error en onSnapshot solicitudes:",
+                            err,
+                        );
+                        loading?.classList.add("hidden");
+                    },
+                );
             } catch (e) {
                 console.error("Error iniciando sync de solicitudes:", e);
             }
@@ -1121,20 +1198,20 @@ console.error("DEBUG - Error cargando reseñas:", e);
 
         function renderSolicitudes(solicitudes, list) {
             list.innerHTML = solicitudes
-                        .map((sol) => {
-                            const s = sol;
-                            const fecha = s.fecha?.toDate
-                                ? s.fecha.toDate().toLocaleDateString("es-AR")
-                                : "Reciente";
-                            const contactados = s.contactados?.length || 0;
-                            const candidatos = s.candidatos?.length || 0;
-                            const propuestas = s.propuestas || [];
+                .map((sol) => {
+                    const s = sol;
+                    const fecha = s.fecha?.toDate
+                        ? s.fecha.toDate().toLocaleDateString("es-AR")
+                        : "Reciente";
+                    const contactados = s.contactados?.length || 0;
+                    const candidatos = s.candidatos?.length || 0;
+                    const propuestas = s.propuestas || [];
 
-                            let statusLabel = "Nueva",
-                                statusClass = "bg-slate-100 text-slate-600",
-                                icon = "📝";
+                    let statusLabel = "Nueva",
+                        statusClass = "bg-slate-100 text-slate-600",
+                        icon = "📝";
 
-                            let actionsHTML = `
+                    let actionsHTML = `
                                 <button 
                                     onclick="borrarSolicitud('${s.id}')"
                                     class="text-[10px] bg-red-50 text-red-500 font-black px-3 py-1.5 rounded-xl hover:bg-red-100 transition-all uppercase tracking-widest border border-red-100"
@@ -1143,20 +1220,21 @@ console.error("DEBUG - Error cargando reseñas:", e);
                                 </button>
                             `;
 
-                            if (s.status === "completada") {
-                                statusLabel = "Finalizada";
-                                statusClass = "bg-slate-100 text-slate-400";
-                                icon = "🏁";
-                            } else if (
-                                s.status === "aceptada" ||
-                                s.status === "en_progreso"
-                            ) {
-                                const proName = s.profesionalNombre || "El profesional";
-                                statusLabel = `Trabajando con ${proName}`;
-                                statusClass = "bg-emerald-50 text-emerald-600 border-emerald-100";
-                                icon = "🚀";
+                    if (s.status === "completada") {
+                        statusLabel = "Finalizada";
+                        statusClass = "bg-slate-100 text-slate-400";
+                        icon = "🏁";
+                    } else if (
+                        s.status === "aceptada" ||
+                        s.status === "en_progreso"
+                    ) {
+                        const proName = s.profesionalNombre || "El profesional";
+                        statusLabel = `Trabajando con ${proName}`;
+                        statusClass =
+                            "bg-emerald-50 text-emerald-600 border-emerald-100";
+                        icon = "🚀";
 
-                                actionsHTML = `
+                        actionsHTML = `
                                     <button 
                                         onclick="cancelarTrabajo('${s.id}')"
                                         class="text-[10px] bg-amber-50 text-amber-600 font-black px-3 py-1.5 rounded-xl hover:bg-amber-100 transition-all uppercase tracking-widest border border-amber-100"
@@ -1165,23 +1243,26 @@ console.error("DEBUG - Error cargando reseñas:", e);
                                         🔄 Republicar
                                     </button>
                                 `;
-                            } else if (propuestas.length > 0) {
-                                statusLabel = `${propuestas.length} presupuesto${propuestas.length > 1 ? 's' : ''}`;
-                                statusClass = "bg-indigo-50 text-indigo-600 border-indigo-100";
-                                icon = "💬";
-                            } else if (contactados > 0) {
-                                statusLabel = `${contactados} contactos`;
-                                statusClass = "bg-blue-50 text-blue-600 border-blue-100";
-                                icon = "💬";
-                            } else if (candidatos > 0) {
-                                statusLabel = "Buscando expertos...";
-                                statusClass = "bg-amber-50 text-amber-600 border-amber-100";
-                                icon = "🔍";
-                            }
+                    } else if (propuestas.length > 0) {
+                        statusLabel = `${propuestas.length} presupuesto${propuestas.length > 1 ? "s" : ""}`;
+                        statusClass =
+                            "bg-indigo-50 text-indigo-600 border-indigo-100";
+                        icon = "💬";
+                    } else if (contactados > 0) {
+                        statusLabel = `${contactados} contactos`;
+                        statusClass =
+                            "bg-blue-50 text-blue-600 border-blue-100";
+                        icon = "💬";
+                    } else if (candidatos > 0) {
+                        statusLabel = "Buscando expertos...";
+                        statusClass =
+                            "bg-amber-50 text-amber-600 border-amber-100";
+                        icon = "🔍";
+                    }
 
-                            let securityCodeHTML = "";
-                            if (s.trabajoAceptadoPor && s.codigoSeguridad) {
-                                securityCodeHTML = `
+                    let securityCodeHTML = "";
+                    if (s.trabajoAceptadoPor && s.codigoSeguridad) {
+                        securityCodeHTML = `
                                     <div class="mt-5 bg-gradient-to-br from-emerald-500 to-green-600 rounded-3xl p-6 shadow-xl border-4 border-white/20 relative overflow-hidden group">
                                         <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
                                         
@@ -1196,37 +1277,46 @@ console.error("DEBUG - Error cargando reseñas:", e);
                                                 <p class="text-[10px] text-green-100 font-medium mt-3 uppercase tracking-wider opacity-80">Proporcionar solo al finalizar el trabajo</p>
                                             </div>
                                             
-                                            ${s.profesionalNombre || s.profesionalId ? `
+                                            ${
+                                                s.profesionalNombre ||
+                                                s.profesionalId
+                                                    ? `
                                             <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-4 mb-4 shadow-xl flex items-center gap-4 border border-white">
                                                 <div class="relative">
-                                                    <img src="${s.profesionalFoto || 'https://ui-avatars.com/api/?name=' + s.profesionalNombre}" 
+                                                    <img src="${s.profesionalFoto || "https://ui-avatars.com/api/?name=" + s.profesionalNombre}" 
                                                          class="w-14 h-14 rounded-xl object-cover border-2 border-green-500 shadow-md" alt="Pro"/>
                                                     <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full flex items-center justify-center text-[10px]">✅</div>
                                                 </div>
                                                 <div class="flex-1">
                                                     <p class="text-[10px] font-black text-green-700 uppercase tracking-widest leading-none mb-1">Profesional Asignado</p>
-                                                    <h4 class="font-bold text-slate-900 text-lg leading-tight">${s.profesionalNombre || 'Profesional'}</h4>
-                                                    <p class="text-xs text-slate-500 font-medium">${s.rubro || 'Especialista'}</p>
+                                                    <h4 class="font-bold text-slate-900 text-lg leading-tight">${s.profesionalNombre || "Profesional"}</h4>
+                                                    <p class="text-xs text-slate-500 font-medium">${s.rubro || "Especialista"}</p>
                                                 </div>
                                             </div>
-                                            ` : ''}
+                                            `
+                                                    : ""
+                                            }
                                             
-                                            ${s.profesionalTelefono ? `
+                                            ${
+                                                s.profesionalTelefono
+                                                    ? `
                                             <a href="https://wa.me/549${s.profesionalTelefono.replace(/\D/g, "")}" target="_blank" 
                                                class="w-full bg-white text-green-600 hover:bg-green-50 font-black py-4 px-6 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl active:scale-95 group/btn">
                                                 <span class="text-xl group-hover/btn:scale-110 transition-transform">💬</span>
                                                 Contactar por WhatsApp
                                             </a>
-                                            ` : ''}
+                                            `
+                                                    : ""
+                                            }
                                         </div>
                                     </div>
                                 `;
-                            }
+                    }
 
-                            // Render propuestas if any
-                            let propuestasHTML = "";
-                            if (propuestas.length > 0) {
-                                propuestasHTML = `
+                    // Render propuestas if any
+                    let propuestasHTML = "";
+                    if (propuestas.length > 0) {
+                        propuestasHTML = `
                                     <div class="mt-6 space-y-3">
                                         <div class="flex items-center gap-2 px-1">
                                             <div class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
@@ -1234,57 +1324,84 @@ console.error("DEBUG - Error cargando reseñas:", e);
                                         </div>
                                         
                                         <div class="grid grid-cols-1 gap-3">
-                                            ${propuestas.map(p => {
-                                                const isAccepted = s.trabajoAceptadoPor === p.proId;
-                                                const isRejected = s.propuestasRechazadas?.includes(p.id);
-                                                
-                                                return `
-                                                <div id="budget-card-${p.id}" class="group/budget bg-white rounded-2xl p-5 border-2 ${isAccepted ? 'border-green-500 shadow-green-100 shadow-xl' : isRejected ? 'border-slate-100 opacity-60 grayscale' : 'border-blue-50 hover:border-blue-200'} transition-all duration-300">
+                                            ${propuestas
+                                                .map((p) => {
+                                                    const isAccepted =
+                                                        s.trabajoAceptadoPor ===
+                                                        p.proId;
+                                                    const isRejected =
+                                                        s.propuestasRechazadas?.includes(
+                                                            p.id,
+                                                        );
+
+                                                    return `
+                                                <div id="budget-card-${p.id}" class="group/budget bg-white rounded-2xl p-5 border-2 ${isAccepted ? "border-green-500 shadow-green-100 shadow-xl" : isRejected ? "border-slate-100 opacity-60 grayscale" : "border-blue-50 hover:border-blue-200"} transition-all duration-300">
                                                     <div class="flex justify-between items-start mb-4">
                                                         <div class="flex items-center gap-3">
                                                             <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-lg font-bold text-slate-400 border border-slate-200">
-                                                                ${(p.proNombre || 'P')[0]}
+                                                                ${(p.proNombre || "P")[0]}
                                                             </div>
                                                             <div>
-                                                                <p class="font-bold text-slate-900 text-base leading-tight">${p.proNombre || 'Profesional'}</p>
-                                                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">${p.fecha?.toDate ? p.fecha.toDate().toLocaleDateString('es-AR') : 'Reciente'}</span>
+                                                                <p class="font-bold text-slate-900 text-base leading-tight">${p.proNombre || "Profesional"}</p>
+                                                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">${p.fecha?.toDate ? p.fecha.toDate().toLocaleDateString("es-AR") : "Reciente"}</span>
                                                             </div>
                                                         </div>
                                                         <div class="text-right">
-                                                            <p class="text-2xl font-black ${isAccepted ? 'text-green-600' : 'text-blue-600'} leading-none tracking-tight">$${p.precio ? parseInt(p.precio).toLocaleString('es-AR') : '0'}</p>
+                                                            <p class="text-2xl font-black ${isAccepted ? "text-green-600" : "text-blue-600"} leading-none tracking-tight">$${p.precio ? parseInt(p.precio).toLocaleString("es-AR") : "0"}</p>
                                                             <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest mt-1">Total Estimado</p>
                                                         </div>
                                                     </div>
 
                                                     <div class="bg-slate-50/50 rounded-xl p-4 mb-4 border border-slate-100/50 group-hover/budget:bg-blue-50/30 transition-colors">
-                                                        <p class="text-sm text-slate-600 leading-relaxed font-medium">"${p.mensaje || 'Hola, puedo realizar el trabajo...'}"</p>
+                                                        <p class="text-sm text-slate-600 leading-relaxed font-medium">"${p.mensaje || "Hola, puedo realizar el trabajo..."}"</p>
                                                     </div>
 
-                                                    ${isAccepted ? `
+                                                    ${
+                                                        isAccepted
+                                                            ? `
                                                         <div class="flex gap-2">
                                                             <div class="flex-1 bg-green-50 text-green-700 rounded-xl py-3 px-4 flex items-center justify-center gap-2 font-black text-xs uppercase tracking-widest border border-green-200">
                                                                 <span>✅</span> Aceptado
                                                             </div>
                                                             <button 
-                                                                onclick='renderClientBudgetPDF(${JSON.stringify({
-                                                                    cliente: currentUser.displayName || 'Cliente',
-                                                                    titulo: s.rubro,
-                                                                    items: [{desc: p.mensaje || "Servicio profesional", cant: 1, precio: p.precio}],
-                                                                    total: p.precio,
-                                                                    profesional: p.proNombre || "Profesional",
-                                                                    profesionalTel: p.telefono || ""
-                                                                })})'
+                                                                onclick='renderClientBudgetPDF(${JSON.stringify(
+                                                                    {
+                                                                        cliente:
+                                                                            currentUser.displayName ||
+                                                                            "Cliente",
+                                                                        titulo: s.rubro,
+                                                                        items: [
+                                                                            {
+                                                                                desc:
+                                                                                    p.mensaje ||
+                                                                                    "Servicio profesional",
+                                                                                cant: 1,
+                                                                                precio: p.precio,
+                                                                            },
+                                                                        ],
+                                                                        total: p.precio,
+                                                                        profesional:
+                                                                            p.proNombre ||
+                                                                            "Profesional",
+                                                                        profesionalTel:
+                                                                            p.telefono ||
+                                                                            "",
+                                                                    },
+                                                                )})'
                                                                 class="p-3 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-xl transition-all shadow-sm active:scale-95"
                                                                 title="Descargar PDF"
                                                             >
                                                                 📄
                                                             </button>
                                                         </div>
-                                                    ` : isRejected ? `
+                                                    `
+                                                            : isRejected
+                                                              ? `
                                                         <div class="bg-slate-100 text-slate-500 rounded-xl py-2 px-4 text-center font-bold text-[10px] uppercase tracking-widest border border-slate-200">
                                                             Presupuesto Rechazado
                                                         </div>
-                                                    ` : `
+                                                    `
+                                                              : `
                                                         <div class="flex gap-3">
                                                             <button 
                                                                 onclick="aceptarPresupuesto('${s.id}', '${p.id}', '${p.proId}')"
@@ -1299,23 +1416,26 @@ console.error("DEBUG - Error cargando reseñas:", e);
                                                                 Rechazar
                                                             </button>
                                                         </div>
-                                                    `}
+                                                    `
+                                                    }
                                                 </div>
-                                                `}).join('')}
+                                                `;
+                                                })
+                                                .join("")}
                                         </div>
                                     </div>
                                 `;
-                            }
+                    }
 
-                            const unreadCount = unreadSolicitudes.get(s.id) || 0;
-                            const isUnread = unreadCount > 0;
+                    const unreadCount = unreadSolicitudes.get(s.id) || 0;
+                    const isUnread = unreadCount > 0;
 
-                            return `
+                    return `
                         <div 
                             onclick="marcarSolicitudLeida('${s.id}')"
-                            class="bg-white hover:bg-slate-50/50 rounded-[2.5rem] p-8 transition-all duration-300 border-2 ${isUnread ? 'border-indigo-400 shadow-xl ring-4 ring-indigo-50 shadow-indigo-100' : 'border-slate-100 shadow-sm hover:shadow-xl'} group relative overflow-hidden"
+                            class="bg-white hover:bg-slate-50/50 rounded-[2.5rem] p-8 transition-all duration-300 border-2 ${isUnread ? "border-indigo-400 shadow-xl ring-4 ring-indigo-50 shadow-indigo-100" : "border-slate-100 shadow-sm hover:shadow-xl"} group relative overflow-hidden"
                         >
-                            ${isUnread ? `<div class="absolute top-0 right-12 bg-indigo-600 text-white text-[11px] font-black px-4 py-2 rounded-b-2xl shadow-lg animate-bounce z-10">${unreadCount > 1 ? unreadCount : '¡NUEVO!'}</div>` : ''}
+                            ${isUnread ? `<div class="absolute top-0 right-12 bg-indigo-600 text-white text-[11px] font-black px-4 py-2 rounded-b-2xl shadow-lg animate-bounce z-10">${unreadCount > 1 ? unreadCount : "¡NUEVO!"}</div>` : ""}
                             
                             <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-4">
                                 <div class="flex items-center gap-4">
@@ -1347,17 +1467,20 @@ console.error("DEBUG - Error cargando reseñas:", e);
 
                             <div class="w-full h-px bg-gradient-to-r from-transparent via-slate-100 to-transparent my-6"></div>
 
-                            ${securityCodeHTML || propuestasHTML || `
+                            ${
+                                securityCodeHTML ||
+                                propuestasHTML ||
+                                `
                                 <div class="bg-slate-50/50 rounded-2xl p-6 border border-slate-100/50">
                                     <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Tu Pedido Original:</p>
-                                    <p class="text-slate-600 text-sm italic font-medium leading-relaxed">"${s.detalle || 'Buscando el mejor profesional para este trabajo...'}"</p>
+                                    <p class="text-slate-600 text-sm italic font-medium leading-relaxed">"${s.detalle || "Buscando el mejor profesional para este trabajo..."}"</p>
                                 </div>
-                            `}
+                            `
+                            }
                         </div>
                     `;
-
-                        })
-                        .join("");
+                })
+                .join("");
         }
 
         // --- FUNCIONES GLOBALES DE GESTIÓN ---
@@ -1365,13 +1488,13 @@ console.error("DEBUG - Error cargando reseñas:", e);
             if (!currentUser) return;
 
             const result = await Swal.fire({
-title: "¿Volver a Publicar?",
+                title: "¿Volver a Publicar?",
                 text: "El trabajo volverá a estar disponible para otros profesionales. Úsalo si el profesional actual no respondió.",
                 icon: "question",
                 showCancelButton: true,
                 confirmButtonColor: "#f97316",
                 cancelButtonColor: "#64748b",
-confirmButtonText: "Sí, republicar",
+                confirmButtonText: "Sí, republicar",
                 cancelButtonText: "Cancelar",
             });
 
@@ -1381,7 +1504,7 @@ confirmButtonText: "Sí, republicar",
                 // @ts-ignore
                 const docRef = doc(db, "solicitudes", id);
                 await updateDoc(docRef, {
-status: "pendiente",
+                    status: "pendiente",
                     profesionalId: deleteField(),
                     profesionalNombre: deleteField(),
                     profesionalFoto: deleteField(),
@@ -1390,7 +1513,7 @@ status: "pendiente",
                 await loadMisSolicitudes(currentUser.uid);
 
                 Swal.fire({
-title: "¡Republicada!",
+                    title: "¡Republicada!",
                     text: "Tu solicitud está visible nuevamente en la bolsa de trabajo.",
                     icon: "success",
                     timer: 2000,
@@ -1406,16 +1529,15 @@ title: "¡Republicada!",
             }
         };
 
-
         (window as any).borrarSolicitud = async (id: string) => {
             const result = await Swal.fire({
-title: "¿Eliminar Solicitud?",
+                title: "¿Eliminar Solicitud?",
                 text: "Se perderá el historial y los profesionales no podrán contactarte.",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#ef4444",
                 cancelButtonColor: "#64748b",
-confirmButtonText: "Sí, eliminar",
+                confirmButtonText: "Sí, eliminar",
                 cancelButtonText: "Cancelar",
             });
 
@@ -1423,22 +1545,40 @@ confirmButtonText: "Sí, eliminar",
 
             try {
                 const solicitudDoc = await getDoc(doc(db, "solicitudes", id));
-                
+
                 // If there's a professional assigned with a security code, delete it
-                if (solicitudDoc.exists() && solicitudDoc.data().profesionalId && solicitudDoc.data().codigoSeguridad) {
+                if (
+                    solicitudDoc.exists() &&
+                    solicitudDoc.data().profesionalId &&
+                    solicitudDoc.data().codigoSeguridad
+                ) {
                     const proId = solicitudDoc.data().profesionalId;
-                    
+
                     // Find and delete the code from professional's codigos subcollection
-                    const { collection, query, where, getDocs, deleteDoc: delDoc } = await import("firebase/firestore");
+                    const {
+                        collection,
+                        query,
+                        where,
+                        getDocs,
+                        deleteDoc: delDoc,
+                    } = await import("firebase/firestore");
                     const codigosQuery = query(
                         collection(db, "profesionales", proId, "codigos"),
-                        where("solicitudId", "==", id)
+                        where("solicitudId", "==", id),
                     );
                     const codigosSnap = await getDocs(codigosQuery);
-                    
+
                     // Delete all matching codes
-                    const deletePromises = codigosSnap.docs.map(codeDoc => 
-                        delDoc(doc(db, "profesionales", proId, "codigos", codeDoc.id))
+                    const deletePromises = codigosSnap.docs.map((codeDoc) =>
+                        delDoc(
+                            doc(
+                                db,
+                                "profesionales",
+                                proId,
+                                "codigos",
+                                codeDoc.id,
+                            ),
+                        ),
                     );
                     await Promise.all(deletePromises);
                 }
@@ -1468,7 +1608,7 @@ confirmButtonText: "Sí, eliminar",
             if (!currentUser) return;
 
             const result = await Swal.fire({
-title: "¿Quitar de favoritos?",
+                title: "¿Quitar de favoritos?",
                 icon: "question",
                 showCancelButton: true,
                 confirmButtonText: "Sí, quitar",
@@ -1521,7 +1661,7 @@ title: "¿Quitar de favoritos?",
                 } else {
                     Swal.fire(
                         "Error",
-"No se pudo enviar el correo de verificación.",
+                        "No se pudo enviar el correo de verificación.",
                         "error",
                     );
                 }
@@ -1541,47 +1681,83 @@ title: "¿Quitar de favoritos?",
                 confirmButtonColor: "#d33",
                 cancelButtonColor: "#3085d6",
                 confirmButtonText: "Sí, eliminar cuenta",
-                cancelButtonText: "Cancelar"
+                cancelButtonText: "Cancelar",
             });
 
             if (result.isConfirmed) {
                 try {
-                    // Opción 1: Borrado lógico (recomendado por seguridad si no hay re-auth inmediato)
-                    // await updateDoc(doc(db, "users", currentUser.uid), { active: false, deletedAt: serverTimestamp() });
-                    
-                    // Opción 2: Borrado físico de datos (requiere reglas permisivas o Cloud Functions)
-                    const { deleteDoc, doc } = await import("firebase/firestore");
-                    await deleteDoc(doc(db, "users", currentUser.uid));
-                    
-                    // Auth delete (client-side only allowed if recent login)
+                    console.log(
+                        "🗑️ [MI-CUENTA] Iniciando eliminación de cuenta...",
+                    );
+                    const { deleteDoc, doc } =
+                        await import("firebase/firestore");
+
+                    // 1. Borrar datos de Firestore (Clientes)
+                    await deleteDoc(doc(db, "clientes", currentUser.uid));
+                    console.log(
+                        "✅ [MI-CUENTA] Datos en 'clientes' eliminados",
+                    );
+
+                    // 2. Borrar Favoritos
                     try {
-                        await currentUser.delete();
-                    } catch (authError) {
-                        console.error("Error al borrar auth user (probablemente requiere re-login):", authError);
-                        // Aún así cerramos sesión si falló el borrado de auth
+                        await deleteDoc(doc(db, "favoritos", currentUser.uid));
+                        console.log(
+                            "✅ [MI-CUENTA] Datos en 'favoritos' eliminados",
+                        );
+                    } catch (favErr) {
+                        console.warn(
+                            "⚠️ [MI-CUENTA] No se pudo borrar el documento de favoritos (quizás no existía):",
+                            favErr,
+                        );
                     }
 
-                    await auth.signOut();
-                    
-                    await Swal.fire(
-                        "Cuenta eliminada",
-                        "Tu cuenta ha sido eliminada correctamente.",
-                        "success"
-                    );
+                    // 3. Borrar Auth User (si es reciente)
+                    try {
+                        await currentUser.delete();
+                        console.log(
+                            "✅ [MI-CUENTA] Usuario de Firebase Auth eliminado",
+                        );
+                    } catch (authError: any) {
+                        console.warn(
+                            "⚠️ [MI-CUENTA] Deletion en Auth requiere re-login o falló:",
+                            authError,
+                        );
+                        // Si falla porque requiere login reciente, al menos cerramos sesión
+                        await auth.signOut();
+                    }
+
+                    await Swal.fire({
+                        title: "Cuenta eliminada",
+                        text: "Tu cuenta y tus datos han sido eliminados correctamente.",
+                        icon: "success",
+                        confirmButtonColor: "#2563eb",
+                    });
+
                     window.location.href = "/";
-                } catch (error) {
-                    console.error("Error eliminando cuenta:", error);
-                    Swal.fire(
-                        "Error",
-                        "No se pudo eliminar la cuenta. Por favor contacta a soporte.",
-                        "error"
+                } catch (error: any) {
+                    console.error(
+                        "❌ [MI-CUENTA] Error eliminando cuenta:",
+                        error,
                     );
+                    let msg = "No se pudo eliminar la cuenta.";
+                    if (error.code === "permission-denied")
+                        msg =
+                            "No tenés permisos para borrar tus datos (Error de reglas).";
+
+                    Swal.fire({
+                        title: "Error",
+                        text: msg + " Por favor contactá a soporte.",
+                        icon: "error",
+                    });
                 }
             }
         });
 
         // --- FUNCIONES DE PRESUPUESTOS ---
-        (window as any).rechazarPresupuesto = async (solicitudId: string, propuestaId: string) => {
+        (window as any).rechazarPresupuesto = async (
+            solicitudId: string,
+            propuestaId: string,
+        ) => {
             const result = await Swal.fire({
                 title: "¿Rechazar Presupuesto?",
                 text: "El presupuesto será eliminado y la solicitud volverá a estar disponible para otros profesionales.",
@@ -1598,7 +1774,13 @@ title: "¿Quitar de favoritos?",
             try {
                 // Get proposal data to know who to notify before deleting
                 // @ts-ignore
-                const proposalRef = doc(db, "solicitudes", solicitudId, "propuestas", propuestaId);
+                const proposalRef = doc(
+                    db,
+                    "solicitudes",
+                    solicitudId,
+                    "propuestas",
+                    propuestaId,
+                );
                 const proposalSnap = await getDoc(proposalRef);
                 const proposalData = proposalSnap.data();
 
@@ -1607,7 +1789,7 @@ title: "¿Quitar de favoritos?",
                 const solSnap = await getDoc(solRef);
                 const solData = solSnap.data();
                 const rechazados = solData?.propuestasRechazadas || [];
-                
+
                 // Add this propuesta to rejected list if not already there
                 if (!rechazados.includes(propuestaId)) {
                     rechazados.push(propuestaId);
@@ -1616,23 +1798,35 @@ title: "¿Quitar de favoritos?",
                 // Update solicitud with rejected proposals list and keep it open
                 await updateDoc(solRef, {
                     status: "nueva",
-                    propuestasRechazadas: rechazados
+                    propuestasRechazadas: rechazados,
                 });
-                
+
                 // NOTIFY PROFESSIONAL
                 if (proposalData && proposalData.proId) {
                     try {
-                        const { addDoc, collection, serverTimestamp } = await import("firebase/firestore");
-                        await addDoc(collection(db, "profesionales", proposalData.proId, "notificaciones"), {
-                            tipo: "presupuesto_rechazado",
-                            titulo: "Presupuesto Rechazado",
-                            mensaje: `Tu presupuesto para "${solData?.rubro || 'el trabajo'}" ha sido desestimado por el cliente.`,
-                            fecha: serverTimestamp(),
-                            leido: false,
-                            link: "/panel/presupuestos"
-                        });
+                        const { addDoc, collection, serverTimestamp } =
+                            await import("firebase/firestore");
+                        await addDoc(
+                            collection(
+                                db,
+                                "profesionales",
+                                proposalData.proId,
+                                "notificaciones",
+                            ),
+                            {
+                                tipo: "presupuesto_rechazado",
+                                titulo: "Presupuesto Rechazado",
+                                mensaje: `Tu presupuesto para "${solData?.rubro || "el trabajo"}" ha sido desestimado por el cliente.`,
+                                fecha: serverTimestamp(),
+                                leido: false,
+                                link: "/panel/presupuestos",
+                            },
+                        );
                     } catch (notifError) {
-                        console.error("Error enviando notificación de rechazo:", notifError);
+                        console.error(
+                            "Error enviando notificación de rechazo:",
+                            notifError,
+                        );
                     }
                 }
 
@@ -1655,7 +1849,11 @@ title: "¿Quitar de favoritos?",
             }
         };
 
-        (window as any).aceptarPresupuesto = async (solicitudId: string, propuestaId: string, proId: string) => {
+        (window as any).aceptarPresupuesto = async (
+            solicitudId: string,
+            propuestaId: string,
+            proId: string,
+        ) => {
             const result = await Swal.fire({
                 title: "¿Aceptar Presupuesto?",
                 text: "Este profesional será asignado a tu solicitud.",
@@ -1684,7 +1882,9 @@ title: "¿Quitar de favoritos?",
                 const proData = proDoc.data();
 
                 // Generate 6-digit security code
-                const codigoSeguridad = Math.floor(100000 + Math.random() * 900000).toString();
+                const codigoSeguridad = Math.floor(
+                    100000 + Math.random() * 900000,
+                ).toString();
 
                 // Update solicitud with professional info including contact details
                 await updateDoc(solRef, {
@@ -1699,32 +1899,47 @@ title: "¿Quitar de favoritos?",
                 });
 
                 // Save code to professional's codigos subcollection
-                const { addDoc, collection, serverTimestamp } = await import("firebase/firestore");
-                await addDoc(collection(db, "profesionales", proId, "codigos"), {
-                    codigo: codigoSeguridad,
-                    solicitudId: solicitudId,
-                    clienteId: currentUser.uid,
-                    fecha: serverTimestamp(),
-                    usado: false,
-                });
+                const { addDoc, collection, serverTimestamp } =
+                    await import("firebase/firestore");
+                await addDoc(
+                    collection(db, "profesionales", proId, "codigos"),
+                    {
+                        codigo: codigoSeguridad,
+                        solicitudId: solicitudId,
+                        clienteId: currentUser.uid,
+                        fecha: serverTimestamp(),
+                        usado: false,
+                    },
+                );
 
                 // NOTIFY PROFESSIONAL
                 try {
-                    await addDoc(collection(db, "profesionales", proId, "notificaciones"), {
-                        tipo: "presupuesto_aceptado",
-                        titulo: "¡Presupuesto Aceptado! 🚀",
-                        mensaje: `¡Felicidades! ${currentUser.displayName || 'El cliente'} ha aceptado tu presupuesto para "${solData?.rubro || 'el trabajo'}".`,
-                        clienteNombre: currentUser.displayName || "Cliente",
-                        clienteEmail: currentUser.email || "",
-                        clienteFoto: currentUser.photoURL || "",
-                        clienteTelefono: solData?.telefono || "",
-                        codigoSeguridad: codigoSeguridad,
-                        fecha: serverTimestamp(),
-                        leido: false,
-                        link: "/panel/oportunidades"
-                    });
+                    await addDoc(
+                        collection(
+                            db,
+                            "profesionales",
+                            proId,
+                            "notificaciones",
+                        ),
+                        {
+                            tipo: "presupuesto_aceptado",
+                            titulo: "¡Presupuesto Aceptado! 🚀",
+                            mensaje: `¡Felicidades! ${currentUser.displayName || "El cliente"} ha aceptado tu presupuesto para "${solData?.rubro || "el trabajo"}".`,
+                            clienteNombre: currentUser.displayName || "Cliente",
+                            clienteEmail: currentUser.email || "",
+                            clienteFoto: currentUser.photoURL || "",
+                            clienteTelefono: solData?.telefono || "",
+                            codigoSeguridad: codigoSeguridad,
+                            fecha: serverTimestamp(),
+                            leido: false,
+                            link: "/panel/oportunidades",
+                        },
+                    );
                 } catch (notifError) {
-                    console.error("Error enviando notificación de aceptación:", notifError);
+                    console.error(
+                        "Error enviando notificación de aceptación:",
+                        notifError,
+                    );
                 }
 
                 // Reload dashboard
@@ -1738,7 +1953,7 @@ title: "¿Quitar de favoritos?",
                     html: `
                         <div class="text-left space-y-4">
                             <div class="flex items-center gap-3 bg-slate-50 p-4 rounded-xl">
-                                <img src="${proData.foto || '/default-avatar.png'}" alt="${proData.nombre}" class="w-16 h-16 rounded-full object-cover border-2 border-green-500" />
+                                <img src="${proData.foto || "/default-avatar.png"}" alt="${proData.nombre}" class="w-16 h-16 rounded-full object-cover border-2 border-green-500" />
                                 <div>
                                     <h3 class="font-bold text-lg text-slate-900">${proData.nombre || "Profesional"}</h3>
                                     <p class="text-sm text-slate-500">${proData.rubro_principal || "Profesional"}</p>
@@ -1747,31 +1962,47 @@ title: "¿Quitar de favoritos?",
                             
 
                             <div class="space-y-2 text-sm">
-                                ${proData.telefono ? `
+                                ${
+                                    proData.telefono
+                                        ? `
                                     <div class="flex items-center gap-2">
                                         <span class="font-bold">📱 Teléfono:</span>
                                         <a href="https://wa.me/549${proData.telefono.replace(/\D/g, "")}" target="_blank" class="text-green-600 hover:underline">${proData.telefono}</a>
                                     </div>
-                                ` : ''}
-                                ${proData.email ? `
+                                `
+                                        : ""
+                                }
+                                ${
+                                    proData.email
+                                        ? `
                                     <div class="flex items-center gap-2">
                                         <span class="font-bold">📧 Email:</span>
                                         <span class="text-slate-700">${proData.email}</span>
                                     </div>
-                                ` : ''}
-                                ${proData.promedio ? `
+                                `
+                                        : ""
+                                }
+                                ${
+                                    proData.promedio
+                                        ? `
                                     <div class="flex items-center gap-2">
                                         <span class="font-bold">⭐ Calificación:</span>
                                         <span class="text-yellow-600">${proData.promedio.toFixed(1)}/5</span>
                                     </div>
-                                ` : ''}
+                                `
+                                        : ""
+                                }
                             </div>
 
-                            ${proData.telefono ? `
+                            ${
+                                proData.telefono
+                                    ? `
                                 <a href="https://wa.me/549${proData.telefono.replace(/\D/g, "")}" target="_blank" class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl transition text-center">
                                     💬 Contactar por WhatsApp
                                 </a>
-                            ` : ''}
+                            `
+                                    : ""
+                            }
                         </div>
                     `,
                     width: "500px",
@@ -1801,13 +2032,13 @@ title: "¿Quitar de favoritos?",
 
             // Branding
             doc.setFillColor(79, 70, 229); // Indigo 600
-            doc.rect(0, 0, 210, 40, 'F');
-            
+            doc.rect(0, 0, 210, 40, "F");
+
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(24);
             doc.setFont("helvetica", "bold");
             doc.text("RED DE OFICIOS", margin, 25);
-            
+
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
             doc.text("PRESUPUESTO PROFESIONAL", margin, 32);
@@ -1818,12 +2049,16 @@ title: "¿Quitar de favoritos?",
             doc.setFontSize(14);
             doc.setFont("helvetica", "bold");
             doc.text(`Presupuesto para: ${data.titulo}`, margin, y);
-            
+
             y += 10;
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
             doc.text(`Cliente: ${data.cliente}`, margin, y);
-            doc.text(`Fecha: ${new Date().toLocaleDateString('es-AR')}`, 150, y);
+            doc.text(
+                `Fecha: ${new Date().toLocaleDateString("es-AR")}`,
+                150,
+                y,
+            );
 
             y += 15;
             doc.setDrawColor(226, 232, 240); // Slate 200
@@ -1846,8 +2081,13 @@ title: "¿Quitar de favoritos?",
                 const lines = doc.splitTextToSize(item.desc, 110);
                 doc.text(lines, margin, y);
                 doc.text(item.cant.toString(), 140, y, { align: "center" });
-                doc.text(`$${parseInt(item.precio).toLocaleString('es-AR')}`, 170, y, { align: "right" });
-                y += (lines.length * 5) + 5;
+                doc.text(
+                    `$${parseInt(item.precio).toLocaleString("es-AR")}`,
+                    170,
+                    y,
+                    { align: "right" },
+                );
+                y += lines.length * 5 + 5;
             });
 
             // Total
@@ -1855,51 +2095,93 @@ title: "¿Quitar de favoritos?",
             doc.setDrawColor(79, 70, 229);
             doc.setLineWidth(1);
             doc.line(130, y, 190, y);
-            
+
             y += 12;
             doc.setFontSize(16);
             doc.setFont("helvetica", "bold");
             doc.setTextColor(79, 70, 229);
             doc.text("TOTAL ESTIMADO:", 130, y);
-            doc.text(`$${parseInt(data.total).toLocaleString('es-AR')}`, 190, y, { align: "right" });
+            doc.text(
+                `$${parseInt(data.total).toLocaleString("es-AR")}`,
+                190,
+                y,
+                { align: "right" },
+            );
 
             // Footer
             doc.setFontSize(8);
             doc.setTextColor(148, 163, 184);
-            doc.text("Este es un presupuesto generado a través de Red de Oficios.", 105, 285, { align: "center" });
-            doc.text("La validez del mismo depende del acuerdo final con el profesional.", 105, 290, { align: "center" });
+            doc.text(
+                "Este es un presupuesto generado a través de Red de Oficios.",
+                105,
+                285,
+                { align: "center" },
+            );
+            doc.text(
+                "La validez del mismo depende del acuerdo final con el profesional.",
+                105,
+                290,
+                { align: "center" },
+            );
 
-            doc.save(`Presupuesto-${data.titulo.replace(/\s+/g, '-')}.pdf`);
-            
+            doc.save(`Presupuesto-${data.titulo.replace(/\s+/g, "-")}.pdf`);
+
             Swal.fire({
                 title: "¡PDF Generado!",
                 text: "El presupuesto se ha descargado correctamente.",
                 icon: "success",
                 timer: 2000,
-                showConfirmButton: false
+                showConfirmButton: false,
             });
         };
-        
+
         // Mark solicitud as read
         (window as any).marcarSolicitudLeida = async (solicitudId: string) => {
             if (!currentUser) return;
-            
+
             try {
-                const { collection, query, where, getDocs, updateDoc: updateDocFn, doc: docFn } = await import("firebase/firestore");
-                const notifsRef = collection(db, "clientes", currentUser.uid, "notificaciones");
-                const q = query(notifsRef, where("solicitudId", "==", solicitudId), where("leida", "==", false));
+                const {
+                    collection,
+                    query,
+                    where,
+                    getDocs,
+                    updateDoc: updateDocFn,
+                    doc: docFn,
+                } = await import("firebase/firestore");
+                const notifsRef = collection(
+                    db,
+                    "clientes",
+                    currentUser.uid,
+                    "notificaciones",
+                );
+                const q = query(
+                    notifsRef,
+                    where("solicitudId", "==", solicitudId),
+                    where("leida", "==", false),
+                );
                 const snap = await getDocs(q);
-                
-                const promises = snap.docs.map((d) => updateDocFn(docFn(db, "clientes", currentUser.uid, "notificaciones", d.id), { leida: true }));
+
+                const promises = snap.docs.map((d) =>
+                    updateDocFn(
+                        docFn(
+                            db,
+                            "clientes",
+                            currentUser.uid,
+                            "notificaciones",
+                            d.id,
+                        ),
+                        { leida: true },
+                    ),
+                );
                 await Promise.all(promises);
-                
+
                 // Refresh notifications
                 await loadClientNotifications(currentUser.uid);
             } catch (e) {
                 console.error("Error marcando notificaciones como leídas:", e);
             }
         };
-        
+
         // --- NOTIFICACIONES ---
         let isFirstNotifLoadClient = true;
 
@@ -1908,16 +2190,17 @@ title: "¿Quitar de favoritos?",
             if (unsubNotifs) unsubNotifs();
 
             try {
-                const { collection, query, where, onSnapshot } = await import("firebase/firestore");
+                const { collection, query, where, onSnapshot } =
+                    await import("firebase/firestore");
                 const q = query(
                     collection(db, "clientes", userId, "notificaciones"),
-                    where("leida", "==", false)
+                    where("leida", "==", false),
                 );
 
                 unsubNotifs = onSnapshot(q, (snap) => {
                     const counts = new Map();
-                    
-                    snap.docs.forEach(d => {
+
+                    snap.docs.forEach((d) => {
                         const solId = d.data().solicitudId;
                         if (solId) {
                             counts.set(solId, (counts.get(solId) || 0) + 1);
@@ -1926,12 +2209,17 @@ title: "¿Quitar de favoritos?",
 
                     // Toast logic for new notifications
                     if (!isFirstNotifLoadClient) {
-                        snap.docChanges().forEach(change => {
+                        snap.docChanges().forEach((change) => {
                             if (change.type === "added") {
                                 const notif = change.doc.data();
-                                if (notif.tipo === "presupuesto" || notif.tipo === "presupuesto_aceptado") {
+                                if (
+                                    notif.tipo === "presupuesto" ||
+                                    notif.tipo === "presupuesto_aceptado"
+                                ) {
                                     Swal.fire({
-                                        title: notif.titulo || "¡Nueva notificación!",
+                                        title:
+                                            notif.titulo ||
+                                            "¡Nueva notificación!",
                                         text: notif.mensaje,
                                         icon: "info",
                                         toast: true,
@@ -1941,7 +2229,7 @@ title: "¿Quitar de favoritos?",
                                         timerProgressBar: true,
                                         background: "#fff",
                                         color: "#1e293b",
-                                        iconColor: "#3b82f6"
+                                        iconColor: "#3b82f6",
                                     });
                                 }
                             }
@@ -1950,12 +2238,13 @@ title: "¿Quitar de favoritos?",
                     isFirstNotifLoadClient = false;
 
                     unreadSolicitudes = counts;
-                    
+
                     if (badge) {
                         if (unreadSolicitudes.size > 0) {
                             badge.classList.remove("hidden");
                             badge.innerText = unreadSolicitudes.size.toString();
-                            badge.className = "absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full font-bold border-2 border-white shadow-sm";
+                            badge.className =
+                                "absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full font-bold border-2 border-white shadow-sm";
                         } else {
                             badge.classList.add("hidden");
                         }
@@ -1966,7 +2255,6 @@ title: "¿Quitar de favoritos?",
                         loadMisSolicitudes(auth.currentUser.uid);
                     }
                 });
-
             } catch (e) {
                 console.error("Error notifs:", e);
             }
@@ -1977,7 +2265,9 @@ title: "¿Quitar de favoritos?",
             // Mark as read first
             await marcarLeida(id);
             // Switch to solicitudes tab
-            const btn = document.querySelector('[data-tab="solicitudes"]') as HTMLElement;
+            const btn = document.querySelector(
+                '[data-tab="solicitudes"]',
+            ) as HTMLElement;
             btn?.click();
             // Scroll to the solicitud if possible (optional)
         };
@@ -1986,9 +2276,18 @@ title: "¿Quitar de favoritos?",
             if (!currentUser) return;
             try {
                 const { updateDoc, doc } = await import("firebase/firestore");
-                await updateDoc(doc(db, "clientes", currentUser.uid, "notificaciones", notifId), {
-                    leida: true
-                });
+                await updateDoc(
+                    doc(
+                        db,
+                        "clientes",
+                        currentUser.uid,
+                        "notificaciones",
+                        notifId,
+                    ),
+                    {
+                        leida: true,
+                    },
+                );
             } catch (e) {
                 console.error("Error marking read:", e);
             }
@@ -1999,7 +2298,15 @@ title: "¿Quitar de favoritos?",
             if (!currentUser) return;
             try {
                 const { deleteDoc, doc } = await import("firebase/firestore");
-                await deleteDoc(doc(db, "clientes", currentUser.uid, "notificaciones", notifId));
+                await deleteDoc(
+                    doc(
+                        db,
+                        "clientes",
+                        currentUser.uid,
+                        "notificaciones",
+                        notifId,
+                    ),
+                );
             } catch (e) {
                 console.error("Error deleting notif:", e);
             }
@@ -2007,28 +2314,37 @@ title: "¿Quitar de favoritos?",
 
         async function clearSpecificNotif(userId, solId) {
             try {
-                const { collection, query, where, getDocs, deleteDoc } = await import("firebase/firestore");
+                const { collection, query, where, getDocs, deleteDoc } =
+                    await import("firebase/firestore");
                 const q = query(
                     collection(db, "clientes", userId, "notificaciones"),
-                    where("solicitudId", "==", solId)
+                    where("solicitudId", "==", solId),
                 );
                 const snap = await getDocs(q);
-                snap.docs.forEach(d => deleteDoc(d.ref));
+                snap.docs.forEach((d) => deleteDoc(d.ref));
             } catch (e) {}
         }
 
         async function marcarSolicitudLeida(solId: string) {
             if (!currentUser || !unreadSolicitudes.has(solId)) return;
-            
+
             try {
-                const { collection, query, where, getDocs, updateDoc } = await import("firebase/firestore");
+                const { collection, query, where, getDocs, updateDoc } =
+                    await import("firebase/firestore");
                 const q = query(
-                    collection(db, "clientes", currentUser.uid, "notificaciones"),
+                    collection(
+                        db,
+                        "clientes",
+                        currentUser.uid,
+                        "notificaciones",
+                    ),
                     where("solicitudId", "==", solId),
-                    where("leida", "==", false)
+                    where("leida", "==", false),
                 );
                 const snap = await getDocs(q);
-                const promises = snap.docs.map(doc => updateDoc(doc.ref, { leida: true }));
+                const promises = snap.docs.map((doc) =>
+                    updateDoc(doc.ref, { leida: true }),
+                );
                 await Promise.all(promises);
                 console.log(`✅ [NOTIF] Solicitud ${solId} marcada como leída`);
                 // El onSnapshot de loadClientNotifications hará el resto

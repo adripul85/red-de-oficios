@@ -219,9 +219,40 @@ export default function RegistrationWizard() {
             setLoading(false);
 
         } catch (err: any) {
-            console.error(err);
-            setError(err.message || 'Error al registrar. Verifica tus datos.');
+            console.error("❌ [REGISTRO ERROR]", err);
             setLoading(false);
+
+            // Translate error
+            const translateError = (code: string) => {
+                switch (code) {
+                    case 'auth/email-already-in-use':
+                        return 'Este correo electrónico ya está registrado. Intentá con otro o recuperá tu contraseña.';
+                    case 'auth/invalid-email':
+                        return 'El formato del correo electrónico no es válido.';
+                    case 'auth/weak-password':
+                        return 'La contraseña es muy débil. Usá al menos 6 caracteres.';
+                    case 'auth/network-request-failed':
+                        return 'Error de conexión. Verificá tu internet e intentá de nuevo.';
+                    case 'permission-denied':
+                        return 'No tenés permisos para realizar esta acción. Contactá a soporte.';
+                    default:
+                        return err.message || 'Ocurrió un error inesperado. Por favor, intentá más tarde.';
+                }
+            };
+
+            import('sweetalert2').then((Swal) => {
+                Swal.default.fire({
+                    title: '¡Ups! Algo salió mal',
+                    text: translateError(err.code || ''),
+                    icon: 'error',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#ea580c',
+                    customClass: {
+                        popup: 'rounded-2xl border-0 shadow-2xl',
+                        confirmButton: 'rounded-xl px-8 py-3 uppercase tracking-wider font-bold text-sm'
+                    }
+                });
+            });
         }
     };
 

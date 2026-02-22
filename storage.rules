@@ -40,6 +40,13 @@ service firebase.storage {
         && request.resource.contentType.matches('image/.*');
     }
     
+    // Reglas para registros temporales (antes de tener UID)
+    match /temp_registro/{filename} {
+      allow read: if true;
+      allow write: if request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
     // Denegar todo lo demás por defecto
     match /{allPaths=**} {
       allow read, write: if false;

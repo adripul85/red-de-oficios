@@ -120,6 +120,110 @@ import Layout from "../../layouts/Layout.astro";
             </header>
 
             <div class="flex-1 overflow-y-auto p-6 bg-slate-50">
+                <!-- BANNER ORO / REVISION -->
+                <div
+                    id="banner-oro"
+                    class="hidden bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-orange-200 rounded-2xl p-6 mb-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6"
+                >
+                    <div class="flex items-start gap-4">
+                        <div class="text-5xl drop-shadow-sm">🏅</div>
+                        <div>
+                            <h3 class="font-black text-orange-900 text-xl mb-1">
+                                ¡Convertite en un Profesional Nivel Oro!
+                            </h3>
+                            <p class="text-orange-800 text-sm">
+                                Los clientes contratan un <strong
+                                    >80% más</strong
+                                > a los prestadores con <strong
+                                    >Antecedentes Penales verificados</strong
+                                >. Subí tu certificado, ganá tu medalla
+                                exclusiva y aparecé primero en las búsquedas.
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        id="open-modal-antecedentes"
+                        class="shrink-0 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-transform hover:scale-105"
+                    >
+                        Subir Certificado
+                    </button>
+                </div>
+
+                <div
+                    id="banner-revision"
+                    class="hidden bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8 flex items-center gap-3"
+                >
+                    <span class="text-2xl animate-spin">⏳</span>
+                    <div>
+                        <p class="text-blue-900 font-bold text-sm">
+                            Certificado en revisión
+                        </p>
+                        <p class="text-blue-700 text-xs">
+                            Estamos validando tu documento. ¡Pronto tendrás tu
+                            medalla Nivel Oro!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- BANNERS DE RECHAZO -->
+                <div
+                    id="banner-dni-rechazado"
+                    class="hidden bg-red-50 border-2 border-red-200 rounded-2xl p-6 mb-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6"
+                >
+                    <div class="flex items-start gap-4">
+                        <div class="text-4xl">⚠️</div>
+                        <div>
+                            <h3 class="font-black text-red-900 text-lg mb-1">
+                                Tu DNI fue rechazado
+                            </h3>
+                            <p
+                                id="motivo-rechazo-dni"
+                                class="text-red-800 text-sm font-semibold mb-2"
+                            >
+                            </p>
+                            <p class="text-red-700 text-sm">
+                                Por favor, revisá el error y volvé a subir tu
+                                DNI en "Mi Perfil" para validar tu cuenta.
+                            </p>
+                        </div>
+                    </div>
+                    <a
+                        href="/mi-perfil"
+                        class="shrink-0 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors"
+                    >
+                        Ir a Mi Perfil
+                    </a>
+                </div>
+
+                <div
+                    id="banner-ant-rechazado"
+                    class="hidden bg-red-50 border-2 border-red-200 rounded-2xl p-6 mb-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6"
+                >
+                    <div class="flex items-start gap-4">
+                        <div class="text-4xl">⚠️</div>
+                        <div>
+                            <h3 class="font-black text-red-900 text-lg mb-1">
+                                Tus Antecedentes fueron rechazados
+                            </h3>
+                            <p
+                                id="motivo-rechazo-ant"
+                                class="text-red-800 text-sm font-semibold mb-2"
+                            >
+                            </p>
+                            <p class="text-red-700 text-sm">
+                                Por favor, revisá el error y volvé a subir el
+                                documento para conseguir tu Medalla Oro.
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onclick="document.getElementById('modal-antecedentes').classList.remove('hidden')"
+                        class="shrink-0 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors"
+                    >
+                        Volver a Subir
+                    </button>
+                </div>
+
                 <div
                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
                 >
@@ -592,6 +696,83 @@ import Layout from "../../layouts/Layout.astro";
         </main>
     </div>
 
+    <!-- MODAL ANTECEDENTES -->
+    <div
+        id="modal-antecedentes"
+        class="hidden fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 backdrop-blur-sm"
+    >
+        <div
+            class="bg-white rounded-[2.5rem] max-w-md w-full p-8 relative shadow-2xl border border-slate-100"
+        >
+            <button
+                id="close-modal-antecedentes"
+                class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-slate-800 transition-all font-black text-xl"
+            >
+                &times;
+            </button>
+            <h3 class="text-2xl font-black mb-2 text-slate-900 tracking-tight">
+                Subir Certificado
+            </h3>
+            <p class="text-sm text-slate-500 mb-8 font-medium italic">
+                Asegurate de que el documento sea legible (PDF o Imagen) y no
+                mayor a 6 meses de antigüedad.
+            </p>
+
+            <div
+                class="bg-slate-50 p-6 rounded-3xl border border-dashed border-slate-200 mb-6 flex flex-col items-center justify-center"
+            >
+                <input
+                    type="file"
+                    id="archivo-antecedentes"
+                    accept=".pdf,image/jpeg,image/png"
+                    class="hidden"
+                />
+                <label
+                    for="archivo-antecedentes"
+                    class="cursor-pointer flex flex-col items-center gap-3"
+                >
+                    <div
+                        class="w-16 h-16 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center text-3xl"
+                    >
+                        📄
+                    </div>
+                    <span
+                        class="text-xs font-black text-blue-600 uppercase tracking-widest hover:underline"
+                        >Seleccionar Archivo</span
+                    >
+                </label>
+                <p
+                    id="file-name-display"
+                    class="text-[10px] text-slate-400 mt-2 font-bold hidden"
+                >
+                </p>
+            </div>
+
+            <button
+                id="btn-upload-antecedentes"
+                class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl hover:bg-black transition-all shadow-lg active:scale-95 text-xs uppercase tracking-widest"
+            >
+                Enviar para revisión
+            </button>
+            <div id="upload-status" class="hidden mt-4">
+                <div
+                    class="w-full bg-slate-100 rounded-full h-2 overflow-hidden"
+                >
+                    <div
+                        id="upload-progress-bar"
+                        class="bg-orange-500 h-full w-0 transition-all duration-300"
+                    >
+                    </div>
+                </div>
+                <p
+                    class="text-center text-[10px] font-black text-orange-600 mt-3 uppercase tracking-widest animate-pulse"
+                >
+                    Subiendo documento...
+                </p>
+            </div>
+        </div>
+    </div>
+
     <script>
         import {
             db,
@@ -605,10 +786,12 @@ import Layout from "../../layouts/Layout.astro";
             limit,
             orderBy,
             onSnapshot,
-            deleteDoc,
-            updateDoc,
             onAuthStateChanged,
             signOut,
+            storage,
+            ref,
+            uploadBytesResumable,
+            getDownloadURL,
         } from "../../firebase/client";
         import { registerPushNotifications } from "../../utils/push-notifications";
         import { getAuthRedirect } from "../../utils/auth-redirects";
@@ -628,13 +811,33 @@ import Layout from "../../layouts/Layout.astro";
         const quickOportunidadesEl = document.getElementById(
             "quick-opportunities-list",
         );
-        // Security Code Elements
-        const securityCodeContainer = document.getElementById(
-            "security-code-container",
-        );
         const securityCodeValue = document.getElementById(
             "security-code-value",
         );
+
+        // Elementos Antecedentes
+        const bannerOro = document.getElementById("banner-oro");
+        const bannerRevision = document.getElementById("banner-revision");
+        const bannerAntRechazado = document.getElementById(
+            "banner-ant-rechazado",
+        );
+        const motivoAntEl = document.getElementById("motivo-rechazo-ant");
+        const bannerDniRechazado = document.getElementById(
+            "banner-dni-rechazado",
+        );
+        const motivoDniEl = document.getElementById("motivo-rechazo-dni");
+        const modalAnt = document.getElementById("modal-antecedentes");
+        const btnOpenModalAnt = document.getElementById(
+            "open-modal-antecedentes",
+        );
+        const btnCloseModalAnt = document.getElementById(
+            "close-modal-antecedentes",
+        );
+        const btnUploadAnt = document.getElementById("btn-upload-antecedentes");
+        const inputAnt = document.getElementById("archivo-antecedentes");
+        const fileNameDisplay = document.getElementById("file-name-display");
+        const uploadStatus = document.getElementById("upload-status");
+        const progressBar = document.getElementById("upload-progress-bar");
 
         // Cache simple
         let currentUser = null;
@@ -646,6 +849,7 @@ import Layout from "../../layouts/Layout.astro";
             currentUser = user;
             dashboardInitialized = true;
             await loadDashboardData(user.uid);
+            await loadNotifications(user.uid);
             registerPushNotifications(user.uid);
             loadQuickOpportunities();
         }
@@ -830,10 +1034,122 @@ import Layout from "../../layouts/Layout.astro";
                         if (totalPointsCardEl)
                             totalPointsCardEl.innerHTML = puntos.toString();
 
+                        // Lógica de Banners de Confianza Progresiva (Antecedentes/Oro)
+                        if (data.antecedentes_verificados) {
+                            // Ya es oro, ocultamos banners de acción/revisión
+                            bannerOro?.classList.add("hidden");
+                            bannerRevision?.classList.add("hidden");
+                            bannerAntRechazado?.classList.add("hidden");
+                        } else if (data.estado_antecedentes === "pendiente") {
+                            // En revisión
+                            bannerOro?.classList.add("hidden");
+                            bannerRevision?.classList.remove("hidden");
+                            bannerAntRechazado?.classList.add("hidden");
+                        } else if (data.estado_antecedentes === "rechazado") {
+                            // Rechazado - Mostrar banner rojo con motivo
+                            bannerOro?.classList.add("hidden");
+                            bannerRevision?.classList.add("hidden");
+                            bannerAntRechazado?.classList.remove("hidden");
+                            if (motivoAntEl) {
+                                motivoAntEl.innerText = `Motivo: "${data.motivo_rechazo_antecedentes || "El documento no cumple con los requisitos."}"`;
+                            }
+                        } else {
+                            // No tiene nada subido, mostrar invitación
+                            bannerOro?.classList.remove("hidden");
+                            bannerRevision?.classList.add("hidden");
+                            bannerAntRechazado?.classList.add("hidden");
+                        }
+
+                        // Lógica de Banner de DNI Rechazado (Independiente)
+                        if (data.estado_dni === "rechazado") {
+                            bannerDniRechazado?.classList.remove("hidden");
+                            if (motivoDniEl) {
+                                motivoDniEl.innerText = `Motivo: "${data.motivo_rechazo_dni || "El documento no es legible o es inválido."}"`;
+                            }
+                        } else {
+                            bannerDniRechazado?.classList.add("hidden");
+                        }
+
                         console.log(
                             "✅ [DASHBOARD] Profile updated in real-time",
                         );
                     }
+                });
+
+                // --- LÓGICA MODAL ANTECEDENTES ---
+                btnOpenModalAnt?.addEventListener("click", () =>
+                    modalAnt?.classList.remove("hidden"),
+                );
+                btnCloseModalAnt?.addEventListener("click", () =>
+                    modalAnt?.classList.add("hidden"),
+                );
+
+                inputAnt?.addEventListener("change", (e) => {
+                    const file = (e.target as HTMLInputElement).files?.[0];
+                    if (file && fileNameDisplay) {
+                        fileNameDisplay.innerText = `Seleccionado: ${file.name}`;
+                        fileNameDisplay.classList.remove("hidden");
+                    }
+                });
+
+                btnUploadAnt?.addEventListener("click", async () => {
+                    const file = (inputAnt as HTMLInputElement).files?.[0];
+                    if (!file)
+                        return alert(
+                            "Por favor seleccioná un archivo primero.",
+                        );
+
+                    btnUploadAnt.disabled = true;
+                    btnUploadAnt.innerText = "Procesando...";
+                    uploadStatus?.classList.remove("hidden");
+
+                    const storageRef = ref(
+                        storage,
+                        `antecedentes/${uid}/${file.name}`,
+                    );
+                    const uploadTask = uploadBytesResumable(storageRef, file);
+
+                    uploadTask.on(
+                        "state_changed",
+                        (snapshot) => {
+                            const progress =
+                                (snapshot.bytesTransferred /
+                                    snapshot.totalBytes) *
+                                100;
+                            if (progressBar)
+                                progressBar.style.width = progress + "%";
+                        },
+                        (error) => {
+                            console.error("Upload error:", error);
+                            alert("Error al subir archivo.");
+                            btnUploadAnt.disabled = false;
+                            uploadStatus?.classList.add("hidden");
+                        },
+                        async () => {
+                            const downloadURL = await getDownloadURL(
+                                uploadTask.snapshot.ref,
+                            );
+
+                            // Actualizamos Firestore
+                            const profRef = doc(db, "profesionales", uid);
+                            await updateDoc(profRef, {
+                                url_antecedentes: downloadURL,
+                                estado_antecedentes: "pendiente",
+                            });
+
+                            // @ts-ignore
+                            Swal.fire({
+                                icon: "success",
+                                title: "¡Documento enviado!",
+                                text: "Estamos revisando tu certificado. Te avisaremos pronto.",
+                                confirmButtonColor: "#0f172a",
+                            });
+
+                            modalAnt?.classList.add("hidden");
+                            uploadStatus?.classList.add("hidden");
+                            btnUploadAnt.disabled = false;
+                        },
+                    );
                 });
 
                 // Load subcollections that need their own listeners/queries

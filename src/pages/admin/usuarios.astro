@@ -97,9 +97,18 @@ try {
                                                     👤
                                                 </div>
                                             )}
-                                            {u.verificado && (
+                                            {(u.verificado ||
+                                                u.dni_verificado) && (
                                                 <span class="absolute -top-1 -right-1 bg-blue-500 text-white text-[8px] p-0.5 rounded-full ring-2 ring-white">
                                                     ✅
+                                                </span>
+                                            )}
+                                            {u.antecedentes_verificados && (
+                                                <span
+                                                    class="absolute -bottom-1 -right-1 bg-amber-400 text-white text-[8px] p-0.5 rounded-full ring-2 ring-white"
+                                                    title="Nivel Oro"
+                                                >
+                                                    ⭐
                                                 </span>
                                             )}
                                         </div>
@@ -142,16 +151,26 @@ try {
                                         </span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-5" id={`status-${u.id}`}>
-                                    {u.verificado ? (
-                                        <span class="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase rounded-lg border border-blue-100">
-                                            Verificado
-                                        </span>
-                                    ) : (
-                                        <span class="px-3 py-1 bg-slate-100 text-slate-400 text-[10px] font-black uppercase rounded-lg">
-                                            Pendiente
-                                        </span>
-                                    )}
+                                <td
+                                    class="px-6 py-5 whitespace-nowrap"
+                                    id={`status-${u.id}`}
+                                >
+                                    <div class="flex flex-col gap-1">
+                                        {u.verificado || u.dni_verificado ? (
+                                            <span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-black uppercase rounded border border-blue-100 w-fit">
+                                                Identidad OK
+                                            </span>
+                                        ) : (
+                                            <span class="px-2 py-0.5 bg-slate-100 text-slate-400 text-[9px] font-black uppercase rounded w-fit">
+                                                ID Pendiente
+                                            </span>
+                                        )}
+                                        {u.antecedentes_verificados && (
+                                            <span class="px-2 py-0.5 bg-amber-50 text-amber-600 text-[9px] font-black uppercase rounded border border-amber-100 w-fit shadow-inner">
+                                                Nivel Oro
+                                            </span>
+                                        )}
+                                    </div>
                                 </td>
                                 <td class="px-6 py-5" id={`plan-${u.id}`}>
                                     {u.plan &&
@@ -251,6 +270,18 @@ try {
                                     id="m-cuit"
                                     class="text-xs font-black text-slate-800"
                                     >-</span
+                                >
+                            </div>
+                            <div
+                                class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl"
+                            >
+                                <span class="text-xs font-bold text-slate-500"
+                                    >Estado Oro</span
+                                >
+                                <strong
+                                    id="m-oro-status"
+                                    class="text-[10px] font-black uppercase text-amber-600"
+                                    >-</strong
                                 >
                             </div>
                             <div
@@ -435,6 +466,16 @@ try {
             if (mId) mId.textContent = "ID: " + u.id;
             if (mDni) mDni.textContent = u.dni || "No cargado";
             if (mCuit) mCuit.textContent = u.cuit || "No cargado";
+
+            const oroEl = document.getElementById("m-oro-status");
+            if (oroEl) {
+                oroEl.textContent = u.antecedentes_verificados
+                    ? "NIVEL ORO"
+                    : "PENDIENTE/NO SUBIDO";
+                oroEl.className = u.antecedentes_verificados
+                    ? "text-[10px] font-black uppercase text-amber-600"
+                    : "text-[10px] font-black uppercase text-slate-400";
+            }
 
             if (mFotoContainer) {
                 if (u.foto) {
