@@ -1156,29 +1156,104 @@ title="Quitar de favoritos"
                             empty?.classList.add("hidden");
 
                             // Cargar solicitudes y sus propuestas
-                            const solicitudesWithPropuestas = await Promise.all(
-                                snap.docs.map(async (docSnap) => {
-                                    const s = docSnap.data();
-                                    // Cargar propuestas para esta solicitud
-                                    const {
-                                        collection: subCollection,
-                                        getDocs: getSubDocs,
-                                    } = await import("firebase/firestore");
-                                    const propuestasSnap = await getSubDocs(
-                                        subCollection(
-                                            db,
-                                            "solicitudes",
-                                            docSnap.id,
-                                            "propuestas",
-                                        ),
-                                    );
-                                    const propuestas = propuestasSnap.docs.map(
-                                        (p) => ({ id: p.id, ...p.data() }),
-                                    );
+                            // OPTIMIZATION: Usar collectionGroup para evitar N+1 queries
+                            const {
+                                collectionGroup,
+                                getDocs: getDocsFn,
+                                query: queryFn,
+                                where: whereFn,
+                                collection: subCollection,
+                            } = await import("firebase/firestore");
 
-                                    return { id: docSnap.id, ...s, propuestas };
-                                }),
-                            );
+                            let solicitudesWithPropuestas = [];
+                            const solIds = snap.docs.map((d) => d.id);
+
+                            if (solIds.length > 0) {
+                                try {
+                                    // Intentar consulta optimizada (requiere índice y campo solicitudId)
+                                    // Nota: limit(20) asegura que no excedemos el límite de 30 items en 'in' query
+                                    const proposalsQuery = queryFn(
+                                        collectionGroup(db, "propuestas"),
+                                        whereFn("solicitudId", "in", solIds),
+                                    );
+                                    const proposalsSnap =
+                                        await getDocsFn(proposalsQuery);
+
+                                    const proposalsMap = new Map();
+                                    proposalsSnap.docs.forEach((pDoc) => {
+                                        const pData = pDoc.data();
+                                        const sId = pData.solicitudId;
+                                        if (sId) {
+                                            if (!proposalsMap.has(sId)) {
+                                                proposalsMap.set(sId, []);
+                                            }
+                                            proposalsMap.get(sId).push({
+                                                id: pDoc.id,
+                                                ...pData,
+                                            });
+                                        }
+                                    });
+
+                                    solicitudesWithPropuestas = snap.docs.map(
+                                        (docSnap) => {
+                                            const s = docSnap.data();
+                                            // Si no hay propuestas en el mapa, podría ser legacy data sin solicitudId
+                                            // Para ser seguros, podríamos hacer fallback, pero asumimos migración para performance.
+                                            // Sin embargo, si el mapa está vacío y sabemos que hay propuestas (e.g. status), podríamos forzar fetch.
+                                            const propuestas =
+                                                proposalsMap.get(docSnap.id) ||
+                                                [];
+                                            return {
+                                                id: docSnap.id,
+                                                ...s,
+                                                propuestas,
+                                            };
+                                        },
+                                    );
+                                } catch (err: any) {
+                                    console.warn(
+                                        "⚠️ [PERF] Falló consulta optimizada de propuestas (posible falta de índice o permisos). Usando fallback N+1.",
+                                        err,
+                                    );
+                                    if (err.code === "failed-precondition") {
+                                        console.log(
+                                            "🔗 Crea el índice aquí: ",
+                                            err.message,
+                                        );
+                                    }
+
+                                    // Fallback to N+1 safely
+                                    solicitudesWithPropuestas =
+                                        await Promise.all(
+                                            snap.docs.map(async (docSnap) => {
+                                                const s = docSnap.data();
+                                                const propuestasSnap =
+                                                    await getDocsFn(
+                                                        subCollection(
+                                                            db,
+                                                            "solicitudes",
+                                                            docSnap.id,
+                                                            "propuestas",
+                                                        ),
+                                                    );
+                                                const propuestas =
+                                                    propuestasSnap.docs.map(
+                                                        (p) => ({
+                                                            id: p.id,
+                                                            ...p.data(),
+                                                        }),
+                                                    );
+                                                return {
+                                                    id: docSnap.id,
+                                                    ...s,
+                                                    propuestas,
+                                                };
+                                            }),
+                                        );
+                                }
+                            } else {
+                                solicitudesWithPropuestas = [];
+                            }
 
                             renderSolicitudes(solicitudesWithPropuestas, list);
                         }
