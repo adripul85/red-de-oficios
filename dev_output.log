@@ -1,0 +1,45 @@
+
+> reddeoficio@0.0.1 dev
+> astro dev
+
+11:04:31 [types] Generated 1ms
+11:04:32 [content] Syncing content
+11:04:32 [content] Synced content
+
+ astro  v5.16.6 ready in 1032 ms
+
+┃ Local    http://localhost:4321/
+┃ Network  use --host to expose
+
+11:04:32 watching for file changes...
+11:05:17 [200] /benchmark-presupuestos 8115ms
+11:05:18 [vite] ✨ new dependencies optimized: firebase/firestore, firebase/app, firebase/auth, firebase/storage, firebase/messaging
+11:05:18 [vite] ✨ optimized dependencies changed. reloading
+11:05:30 [200] /panel 5525ms
+11:05:31 [200] / 11548ms
+11:06:23 [200] /benchmark-presupuestos 5488ms
+11:06:34 [200] /panel 5496ms
+11:06:34 [200] / 11161ms
+11:07:11 [watch] src/firebase/client.js
+11:07:11 [watch] src/firebase/client.js
+11:07:35 [watch] src/pages/benchmark-presupuestos.astro
+11:07:35 [watch] src/pages/benchmark-presupuestos.astro
+11:07:51 [200] /benchmark-presupuestos 5760ms
+11:08:03 [200] /panel 5369ms
+11:08:03 [200] / 11254ms
+11:09:31 [watch] src/pages/benchmark-presupuestos.astro
+11:09:31 [watch] src/pages/benchmark-presupuestos.astro
+11:09:54 [200] /benchmark-presupuestos 5452ms
+11:10:05 [200] /panel 5241ms
+11:10:05 [200] / 10715ms
+11:10:32 [watch] src/pages/benchmark-presupuestos.astro
+11:10:32 [watch] src/pages/benchmark-presupuestos.astro
+11:10:44 [200] /benchmark-presupuestos 5600ms
+11:10:56 [200] /panel 5430ms
+11:10:56 [200] / 10850ms
+11:12:34 [watch] src/pages/panel/presupuestos.astro
+11:12:34 [watch] src/pages/panel/presupuestos.astro
+11:12:42 [watch] src/pages/benchmark-presupuestos.astro
+11:12:42 [watch] src/pages/benchmark-presupuestos.astro
+11:12:57 [watch] src/firebase/client.js
+11:12:57 [watch] src/firebase/client.js
