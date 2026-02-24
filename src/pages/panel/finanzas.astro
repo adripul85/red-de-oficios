@@ -858,6 +858,7 @@ import Layout from "../../layouts/Layout.astro";
             orderBy,
             limit,
             Timestamp,
+            writeBatch,
         } from "firebase/firestore";
 
         (function () {
@@ -2048,53 +2049,30 @@ import Layout from "../../layouts/Layout.astro";
                 if (!segundaConfirmacion) return;
 
                 try {
-                    const { deleteDoc, getDocs, collection } =
-                        await import("firebase/firestore");
-
-                    // 1. Borrar Equipo
-                    const equipoSnap = await getDocs(
-                        collection(
-                            db,
-                            "profesionales",
-                            currentUser.uid,
-                            "equipo",
-                        ),
-                    );
-                    const equipoPromises = equipoSnap.docs.map((doc) =>
-                        deleteDoc(doc.ref),
-                    );
-
-                    // 2. Borrar Finanzas
-                    const finanzasSnap = await getDocs(
-                        collection(
-                            db,
-                            "profesionales",
-                            currentUser.uid,
-                            "finanzas",
-                        ),
-                    );
-                    const finanzasPromises = finanzasSnap.docs.map((doc) =>
-                        deleteDoc(doc.ref),
-                    );
-
-                    // 3. Borrar Derivaciones
-                    const derivacionesSnap = await getDocs(
-                        collection(
-                            db,
-                            "profesionales",
-                            currentUser.uid,
-                            "derivaciones",
-                        ),
-                    );
-                    const derivacionesPromises = derivacionesSnap.docs.map(
-                        (doc) => deleteDoc(doc.ref),
-                    );
-
-                    await Promise.all([
-                        ...equipoPromises,
-                        ...finanzasPromises,
-                        ...derivacionesPromises,
+                    // 1. Fetch all documents first
+                    const [equipoSnap, finanzasSnap, derivacionesSnap] = await Promise.all([
+                        getDocs(collection(db, "profesionales", currentUser.uid, "equipo")),
+                        getDocs(collection(db, "profesionales", currentUser.uid, "finanzas")),
+                        getDocs(collection(db, "profesionales", currentUser.uid, "derivaciones"))
                     ]);
+
+                    const allDocs = [
+                        ...equipoSnap.docs,
+                        ...finanzasSnap.docs,
+                        ...derivacionesSnap.docs
+                    ];
+
+                    // 2. Batch delete (chunked by 500)
+                    const chunks = [];
+                    for (let i = 0; i < allDocs.length; i += 500) {
+                        chunks.push(allDocs.slice(i, i + 500));
+                    }
+
+                    for (const chunk of chunks) {
+                        const batch = writeBatch(db);
+                        chunk.forEach(doc => batch.delete(doc.ref));
+                        await batch.commit();
+                    }
 
                     await showAlert(
                         "Panel Reiniciado",
