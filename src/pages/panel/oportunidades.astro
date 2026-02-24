@@ -1423,6 +1423,7 @@ import Layout from "../../layouts/Layout.astro";
 
                         // 1. Guardar propuesta en subcolección
                         const propuestaData = {
+                            solicitudId: cotizacionActual.id,
                             proId: currentUser.uid,
                             proNombre: currentUser.displayName || "Profesional",
                             proFoto: currentUser.photoURL || "",
