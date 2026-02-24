@@ -36,26 +36,6 @@ async function generateEmbedding(text: string): Promise<number[]> {
     }
 }
 
-/**
- * Calcular similitud de coseno entre dos vectores
- */
-function cosineSimilarity(a: number[], b: number[]): number {
-    if (a.length !== b.length) {
-        throw new Error("Los vectores deben tener la misma longitud");
-    }
-
-    let dotProduct = 0;
-    let normA = 0;
-    let normB = 0;
-
-    for (let i = 0; i < a.length; i++) {
-        dotProduct += a[i] * b[i];
-        normA += a[i] * a[i];
-        normB += b[i] * b[i];
-    }
-
-    return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
-}
 
 /**
  * Cloud Function: Generar embedding cuando se crea una solicitud
@@ -109,55 +89,47 @@ export const semanticSearch = onCall(async (request) => {
         // 1. Generar embedding del query
         const queryEmbedding = await generateEmbedding(query);
 
-        // 2. Obtener todas las solicitudes (con filtro de zona si aplica)
-        let solicitudesQuery = db.collection("solicitudes");
+        // 2. Búsqueda vectorial optimizada en Firestore
+        let vectorQuery: any = db.collection("solicitudes");
 
         if (zona) {
-            solicitudesQuery = solicitudesQuery.where("zona", "==", zona) as any;
+            vectorQuery = vectorQuery.where("zona", "==", zona);
         }
 
-        const snapshot = await solicitudesQuery.get();
+        // Ejecutar búsqueda vectorial
+        // Nota: Requiere índice vectorial en Firestore sobre el campo "embedding"
+        // Esto reemplaza la iteración en memoria O(N) por una búsqueda indexada eficiente
+        const snapshot = await vectorQuery.findNearest({
+            vectorField: "embedding",
+            queryVector: queryEmbedding,
+            distanceMeasure: "COSINE",
+            limit: limit,
+            distanceResultField: "similarity",
+        }).get();
 
-        // 3. Calcular similitud con cada solicitud
-        const results: Array<{
-            id: string;
-            data: any;
-            similarity: number;
-        }> = [];
-
-        snapshot.forEach((doc) => {
+        // 3. Procesar resultados
+        const results = snapshot.docs.map((doc: any) => {
             const data = doc.data();
-
-            // Solo procesar si tiene embedding
-            if (data.embedding && Array.isArray(data.embedding)) {
-                const similarity = cosineSimilarity(queryEmbedding, data.embedding);
-
-                results.push({
-                    id: doc.id,
-                    data: {
-                        detalle: data.detalle,
-                        rubro: data.rubro,
-                        zona: data.zona,
-                        fecha: data.fecha,
-                        clienteNombre: data.clienteNombre,
-                    },
-                    similarity: similarity,
-                });
-            }
+            return {
+                id: doc.id,
+                data: {
+                    detalle: data.detalle,
+                    rubro: data.rubro,
+                    zona: data.zona,
+                    fecha: data.fecha,
+                    clienteNombre: data.clienteNombre,
+                },
+                // Firestore devuelve distancia (0 = idéntico), convertimos a similitud (1 = idéntico)
+                similarity: 1.0 - (data.similarity || 0),
+            };
         });
 
-        // 4. Ordenar por similitud (mayor a menor)
-        results.sort((a, b) => b.similarity - a.similarity);
-
-        // 5. Retornar top N resultados
-        const topResults = results.slice(0, limit);
-
-        logger.info(`Encontrados ${topResults.length} resultados relevantes`);
+        logger.info(`Encontrados ${results.length} resultados relevantes`);
 
         return {
             success: true,
-            results: topResults,
-            total: results.length,
+            results: results,
+            total: results.length, // Nota: esto es el total devuelto, no el total en DB
         };
     } catch (error) {
         logger.error("Error en búsqueda semántica:", error);
