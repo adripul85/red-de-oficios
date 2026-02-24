@@ -827,35 +827,58 @@ import Layout from "../../layouts/Layout.astro";
 
                     // We have proposals. Note: they are in subcollections solicitudes/{solId}/propuestas
                     // We need the parent request data for context (rubro, cliente, etc.)
-                    const cardsHtml = await Promise.all(
-                        snap.docs.map(async (pDoc) => {
-                            const pData = pDoc.data();
-                            const solId = pDoc.ref.parent.parent?.id;
 
-                            // Get request data (optional cache would be better)
-                            let solData: any = {};
-                            if (solId) {
-                                const solSnap = await getDocs(
-                                    query(
-                                        collection(db, "solicitudes"),
-                                        where("__name__", "==", solId),
-                                    ),
-                                );
-                                if (!solSnap.empty)
-                                    solData = solSnap.docs[0].data();
-                            }
+                    // OPTIMIZATION: Batch fetch parent requests
+                    const solIds = new Set();
+                    snap.docs.forEach((pDoc) => {
+                        const solId = pDoc.ref.parent.parent?.id;
+                        if (solId) solIds.add(solId);
+                    });
 
-                            const fecha = pData.fecha?.toDate
-                                ? pData.fecha.toDate().toLocaleDateString()
-                                : "Sin fecha";
-                            const statusColor =
-                                pData.estado === "aceptada"
-                                    ? "bg-green-100 text-green-700"
-                                    : pData.estado === "rechazada"
-                                      ? "bg-red-100 text-red-700"
-                                      : "bg-blue-100 text-blue-700";
+                    const solIdsArray = Array.from(solIds);
+                    const solDataMap = new Map();
 
-                            return `
+                    // Chunk in groups of 30 for 'in' query
+                    const chunks = [];
+                    for (let i = 0; i < solIdsArray.length; i += 30) {
+                        chunks.push(solIdsArray.slice(i, i + 30));
+                    }
+
+                    // Fetch all chunks in parallel
+                    await Promise.all(
+                        chunks.map(async (chunk) => {
+                            if (chunk.length === 0) return;
+                            const qSol = query(
+                                collection(db, "solicitudes"),
+                                where("__name__", "in", chunk),
+                            );
+                            const solSnap = await getDocs(qSol);
+                            solSnap.forEach((doc) => {
+                                solDataMap.set(doc.id, doc.data());
+                            });
+                        }),
+                    );
+
+                    const cardsHtml = snap.docs.map((pDoc) => {
+                        const pData = pDoc.data();
+                        const solId = pDoc.ref.parent.parent?.id;
+
+                        // Get request data from cache
+                        const solData = solId
+                            ? solDataMap.get(solId) || {}
+                            : {};
+
+                        const fecha = pData.fecha?.toDate
+                            ? pData.fecha.toDate().toLocaleDateString()
+                            : "Sin fecha";
+                        const statusColor =
+                            pData.estado === "aceptada"
+                                ? "bg-green-100 text-green-700"
+                                : pData.estado === "rechazada"
+                                  ? "bg-red-100 text-red-700"
+                                  : "bg-blue-100 text-blue-700";
+
+                        return `
                                 <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                     <div class="flex-1">
                                         <div class="flex items-center gap-2 mb-1">
@@ -874,8 +897,7 @@ import Layout from "../../layouts/Layout.astro";
                                     </div>
                                 </div>
                             `;
-                        }),
-                    );
+                    });
 
                     contentOportunidades.innerHTML = cardsHtml.join("");
                 } catch (err) {
