@@ -1662,12 +1662,6 @@ import Layout from "../../layouts/Layout.astro";
                         orderBy("fecha", "desc"),
                         limit(50),
                     );
-                    const snapshot = await getDocs(q);
-                    const movimientos = snapshot.docs.map((doc) => ({
-                        id: doc.id,
-                        tipo: doc.data().tipo,
-                        ...doc.data(),
-                    }));
 
                     // Cargar derivaciones pagadas
                     const derivacionesQuery = query(
@@ -1676,7 +1670,18 @@ import Layout from "../../layouts/Layout.astro";
                         orderBy("fechaPago", "desc"),
                         limit(20),
                     );
-                    const derivacionesSnap = await getDocs(derivacionesQuery);
+
+                    const [snapshot, derivacionesSnap] = await Promise.all([
+                        getDocs(q),
+                        getDocs(derivacionesQuery),
+                    ]);
+
+                    const movimientos = snapshot.docs.map((doc) => ({
+                        id: doc.id,
+                        tipo: doc.data().tipo,
+                        ...doc.data(),
+                    }));
+
                     const derivaciones = derivacionesSnap.docs.map((doc) => ({
                         id: doc.id,
                         tipo: "derivacion",
