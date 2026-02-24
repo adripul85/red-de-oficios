@@ -842,10 +842,11 @@ import Layout from "../../layouts/Layout.astro";
     </div>
 
     <script>
-        import { auth, db } from "../../firebase/client";
-        import { onAuthStateChanged, signOut } from "firebase/auth";
-        import { getAuthRedirect } from "../../utils/auth-redirects";
         import {
+            auth,
+            db,
+            onAuthStateChanged,
+            signOut,
             doc,
             getDoc,
             updateDoc,
@@ -858,7 +859,10 @@ import Layout from "../../layouts/Layout.astro";
             orderBy,
             limit,
             Timestamp,
-        } from "firebase/firestore";
+            getAggregateFromServer,
+            sum,
+        } from "../../firebase/client";
+        import { getAuthRedirect } from "../../utils/auth-redirects";
 
         (function () {
             console.log("🚀 [FINANZAS] Página cargada/navegada");
@@ -1733,12 +1737,14 @@ import Layout from "../../layouts/Layout.astro";
                             ),
                             where("pagado", "==", false),
                         );
-                        const derivacionesSnap =
-                            await getDocs(derivacionesQuery);
-                        derivacionesPendientes = derivacionesSnap.docs.reduce(
-                            (sum, doc) => sum + (doc.data().monto || 0),
-                            0,
+                        const derivacionesSnap = await getAggregateFromServer(
+                            derivacionesQuery,
+                            {
+                                totalPendiente: sum("monto"),
+                            },
                         );
+                        derivacionesPendientes =
+                            derivacionesSnap.data().totalPendiente || 0;
                     } catch (error) {
                         console.error("Error calculando derivaciones:", error);
                     }
