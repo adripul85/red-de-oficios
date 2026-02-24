@@ -1003,8 +1003,14 @@ title="Quitar de favoritos"
             if (!list && !empty) return;
 
             try {
-                const { collectionGroup, query, where, getDocs } =
-                    await import("firebase/firestore");
+                const {
+                    collectionGroup,
+                    query,
+                    where,
+                    getDocs,
+                    collection,
+                    documentId,
+                } = await import("firebase/firestore");
                 const q = query(
                     collectionGroup(db, "resenas"),
                     where("clienteId", "==", userId),
@@ -1020,42 +1026,68 @@ title="Quitar de favoritos"
                 } else {
                     empty?.classList.add("hidden");
                     if (list) {
-                        const reviewPromises = snap.docs.map(
-                            async (docSnap) => {
-                                const r = docSnap.data();
-                                // El ID del profesional puede venir en un campo o ser el padre del documento
-                                const proId =
-                                    r.profesionalId ||
-                                    docSnap.ref.parent.parent?.id ||
-                                    "";
+                        // 1. Identify unique Professional IDs
+                        const proIds = new Set();
+                        snap.docs.forEach((docSnap) => {
+                            const r = docSnap.data();
+                            const proId =
+                                r.profesionalId ||
+                                docSnap.ref.parent.parent?.id;
+                            if (proId) proIds.add(proId);
+                        });
 
-                                // Fetch professional details
-                                let proData: any = {
-                                    nombre: "Profesional",
-                                    foto: "",
-                                    rubro_principal: "Oficio",
-                                };
+                        // 2. Fetch Professionals in Batches (max 30 for 'in' query)
+                        const proDataMap = new Map();
+                        const idsArray = Array.from(proIds);
+                        const chunks = [];
 
-                                if (proId) {
+                        for (let i = 0; i < idsArray.length; i += 30) {
+                            chunks.push(idsArray.slice(i, i + 30));
+                        }
+
+                        if (chunks.length > 0) {
+                            await Promise.all(
+                                chunks.map(async (chunk) => {
                                     try {
-                                        const proDoc = await getDoc(
-                                            doc(db, "profesionales", proId),
+                                        const qPro = query(
+                                            collection(db, "profesionales"),
+                                            where(documentId(), "in", chunk),
                                         );
-                                        if (proDoc.exists())
-                                            proData = proDoc.data();
-                                    } catch (e) {
+                                        const proSnap = await getDocs(qPro);
+                                        proSnap.forEach((d) => {
+                                            if (d.exists())
+                                                proDataMap.set(d.id, d.data());
+                                        });
+                                    } catch (err) {
                                         console.error(
-                                            "Error fetching pro details:",
-                                            e,
+                                            "Error fetching pro batch:",
+                                            err,
                                         );
                                     }
-                                }
+                                }),
+                            );
+                        }
 
-                                return { id: docSnap.id, proId, ...r, proData };
-                            },
-                        );
+                        // 3. Map Data to Reviews
+                        const reviewsData = snap.docs.map((docSnap) => {
+                            const r = docSnap.data();
+                            const proId =
+                                r.profesionalId ||
+                                docSnap.ref.parent.parent?.id ||
+                                "";
 
-                        const reviewsData = await Promise.all(reviewPromises);
+                            let proData: any = {
+                                nombre: "Profesional",
+                                foto: "",
+                                rubro_principal: "Oficio",
+                            };
+
+                            if (proId && proDataMap.has(proId)) {
+                                proData = proDataMap.get(proId);
+                            }
+
+                            return { id: docSnap.id, proId, ...r, proData };
+                        });
 
                         list.innerHTML = reviewsData
                             .map((r: any) => {
