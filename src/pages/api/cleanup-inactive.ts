@@ -19,19 +19,43 @@ export async function GET() {
 
             console.log(`🔍 [CLEANUP] Encontrados ${snap.size} usuarios inactivos en '${colName}'`);
 
-            for (const doc of snap.docs) {
-                const uid = doc.id;
+            if (snap.empty) continue;
+
+            const BATCH_SIZE = 500;
+            const chunks = [];
+            for (let i = 0; i < snap.docs.length; i += BATCH_SIZE) {
+                chunks.push(snap.docs.slice(i, i + BATCH_SIZE));
+            }
+
+            for (const chunk of chunks) {
+                const batch = dbAdmin.batch();
+                const uidsToDelete: string[] = [];
+
+                for (const doc of chunk) {
+                    batch.delete(doc.ref);
+                    uidsToDelete.push(doc.id);
+                }
+
                 try {
-                    // 1. Eliminar de Firestore
-                    await doc.ref.delete();
+                    // 1. Eliminar de Firestore en lote
+                    await batch.commit();
 
-                    // 2. Eliminar de Auth
-                    await authAdmin.deleteUser(uid);
+                    // 2. Eliminar de Auth en lote
+                    // authAdmin.deleteUsers accepts up to 1000 UIDs
+                    const result = await authAdmin.deleteUsers(uidsToDelete);
 
-                    deletedCount++;
-                    console.log(`✅ [CLEANUP] Usuario eliminado: ${uid} (${colName})`);
+                    deletedCount += result.successCount;
+
+                    if (result.failureCount > 0) {
+                        console.error(`⚠️ [CLEANUP] ${result.failureCount} fallos al eliminar de Auth en '${colName}'`);
+                        result.errors.forEach((err) => {
+                            console.error(`Error Auth para usuario ${uidsToDelete[err.index]}:`, err.error);
+                        });
+                    }
+
+                    console.log(`✅ [CLEANUP] Eliminado lote de ${uidsToDelete.length} usuarios en '${colName}'`);
                 } catch (err) {
-                    console.error(`❌ [CLEANUP] Error eliminando usuario ${uid}:`, err);
+                    console.error(`❌ [CLEANUP] Error procesando lote en '${colName}':`, err);
                 }
             }
         }
