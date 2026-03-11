@@ -18,6 +18,7 @@ interface PortfolioManagerProps {
     userId?: string; // Optional
     userTrade?: string; // Optional
     userPlan?: string; // Optional
+    initialData?: any; // Optional: Pass full user object to avoid fetch
 }
 
 export default function PortfolioManager(props: PortfolioManagerProps) {
@@ -86,11 +87,18 @@ export default function PortfolioManager(props: PortfolioManagerProps) {
         if (!userId) return;
         setLoading(true);
         try {
-            const docRef = doc(db, 'profesionales', userId);
-            const docSnap = await getDoc(docRef);
+            let data = props.initialData;
 
-            if (docSnap.exists()) {
-                const data = docSnap.data();
+            if (!data) {
+                const docRef = doc(db, 'profesionales', userId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    data = docSnap.data();
+                }
+            }
+
+            if (data) {
                 let pData = data.portfolio_categorizado || {};
 
                 // Migración automática de datos antiguos si no existe estructura nueva
@@ -110,6 +118,10 @@ export default function PortfolioManager(props: PortfolioManagerProps) {
                     pData = { [defaultCat]: migratedPhotos };
 
                     // Guardar migración
+                    // Only update if we have a userId to write to.
+                    // If initialData was passed, we assume userId matches props.userId or is derived from auth.
+                    // But to be safe, we use the userId state which is guaranteed to be set if we are here.
+                    const docRef = doc(db, 'profesionales', userId);
                     await updateDoc(docRef, { portfolio_categorizado: pData });
                     setMigrating(false);
                 }
