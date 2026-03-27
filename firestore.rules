@@ -35,14 +35,30 @@ service cloud.firestore {
       // Todo el mundo puede ver los perfiles
       allow read: if true;
       
-      // Crear: Solo el dueño al registrarse
-      allow create: if isOwner(userId);
+      // Crear: Solo el dueño al registrarse, con validación de campos sensibles
+      allow create: if isOwner(userId) && (
+        // Rol debe ser 'profesional' o por defecto
+        (!('rol' in request.resource.data) || request.resource.data.rol == 'profesional') &&
+        // No permitir 'role' (versión inglés)
+        !('role' in request.resource.data) &&
+        // Plan debe ser 'gratuito' o 'prueba'
+        (!('plan' in request.resource.data) || request.resource.data.plan in ['gratuito', 'prueba']) &&
+        // Estado de validación debe ser 'pendiente'
+        (!('validacion_estado' in request.resource.data) || request.resource.data.validacion_estado == 'pendiente') &&
+        // Si se envía 'is_verified', debe ser false
+        (!('is_verified' in request.resource.data) || request.resource.data.is_verified == false) &&
+        // No permitir establecer estos campos
+        !request.resource.data.keys().hasAny(['verificado', 'destacado', 'saldo', 'admin', 'moderador'])
+      );
       
       // Actualizar: 
-      // 1. El dueño (sus datos propios).
-      // 2. El Admin (para verificar cuentas, cambiar planes, etc).
+      // 1. El Admin (para verificar cuentas, cambiar planes, etc).
+      // 2. El dueño (sus datos propios), EXCEPTO campos sensibles.
       // 3. Contadores automáticos (likes, vistas) permitidos a usuarios logueados.
-      allow update: if isOwner(userId) || isStaff() || (
+      allow update: if isStaff() || (
+        isOwner(userId) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['rol', 'role', 'plan', 'saldo', 'destacado', 'verificado', 'is_verified', 'validacion_estado'])
+      ) || (
         isSignedIn() && 
         request.resource.data.diff(resource.data).affectedKeys()
         .hasOnly(['promedio', 'total_votos', 'puntuacion', 'total_valoraciones', 'suma_puntuacion', 'vistas_perfil', 'contactos_whatsapp', 'likes', 'portfolio', 'servicios_lista'])
