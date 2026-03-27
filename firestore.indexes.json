@@ -253,5 +253,20 @@
         }
       ]
     }
+  ],
+  "vectorIndexes": [
+    {
+      "collectionGroup": "solicitudes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "embedding",
+          "dimension": 768,
+          "vectorFieldConfig": {
+            "flat": {}
+          }
+        }
+      ]
+    }
   ]
 }
