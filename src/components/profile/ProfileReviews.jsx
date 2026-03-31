@@ -61,24 +61,26 @@ export default function ProfileReviews({ idProfesional }) {
                 collection(db, `profesionales/${idProfesional}/resenas`),
                 orderBy("fecha", "desc")
             );
-            const snapshot = await getDocs(q);
-            const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const q2 = query(
+                collection(db, `profesionales/${idProfesional}/reseñas`),
+                orderBy("fecha", "desc")
+            );
 
-            // Si no hay en 'resenas', intentar 'reseñas' como fallback (por migración)
-            if (list.length === 0) {
-                const q2 = query(
-                    collection(db, `profesionales/${idProfesional}/reseñas`),
-                    orderBy("fecha", "desc")
-                );
-                const snapshot2 = await getDocs(q2);
-                const list2 = snapshot2.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if (list2.length > 0) {
-                    setReviews(list2);
-                } else {
-                    setReviews([]);
-                }
-            } else {
+            const [snapshot, snapshot2] = await Promise.all([
+                getDocs(q),
+                getDocs(q2)
+            ]);
+
+            const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const list2 = snapshot2.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            // Si no hay en 'resenas', usar 'reseñas' como fallback (por migración)
+            if (list.length > 0) {
                 setReviews(list);
+            } else if (list2.length > 0) {
+                setReviews(list2);
+            } else {
+                setReviews([]);
             }
         } catch (error) {
             // Error
